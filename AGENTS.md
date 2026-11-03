@@ -185,20 +185,22 @@ checking. They are read-only references: never edit them unless explicitly asked
   and `.idea/codeStyles/Project.xml` (IntelliJ). Do not edit
   them unless asked.
 - Spotless is ratcheted from `origin/master`, so it only touches changed files. After
-  editing Java, `.gradle`, `.properties`, `.gitignore`, or `.md` files, run
-  `gradlew spotlessApply`, then `gradlew spotlessCheck`. Use `// spotless:off` /
+  editing Java or build configuration, run scoped `spotlessApply` and `spotlessCheck` together through
+  the selected validation profile. The Data profile handles Markdown, `.gitignore`, JSON and PowerShell
+  syntax without starting Gradle; it preserves legacy text-definition and binary layouts. Use `// spotless:off` /
   `// spotless:on` only for deliberately hand-aligned code. Never reformat files you
   did not otherwise change.
 - SonarLint runs through Gradle with one task per source set (`sonarlintMain`,
   `sonarlintTest`, `sonarlintPacksmanager`, ...). They are on demand only, not part of
   `check`/`build`, and analyse only files changed against `origin/master` (including
   uncommitted and nested pack repository changes); add `-PsonarlintAll` for a full scan.
-  `staticAnalysis` runs every source set. Run the tasks for the source sets you touched. Introduce no new issues in touched code and fix existing ones only when
+  `staticAnalysis` runs every source set. Run scoped analysis only when the chosen validation profile requires it. Introduce no new issues in touched code and fix existing ones only when
   they are in scope. Notable rules: no `volatile` on non-primitive fields (S3077; use
   `AtomicReference` or similar instead).
 - When code is required but a SonarLint or IntelliJ check flags it, keep the code and add a
   narrowly scoped `@SuppressWarnings` with a short reason, so the code is visibly intentional.
-- When SonarLint or IntelliJ inspections are required, delegate their execution, findings analysis, fixes and reruns to an
+- Run deterministic validation commands directly; successful checks do not need an additional reviewing agent.
+  When SonarLint or IntelliJ findings need interpretation or fixes, delegate that work and affected reruns to one
   available Terra, Luna, Sonnet or Haiku subagent. Prefer Terra with medium reasoning for Java findings;
   use Luna or Haiku for simple, mechanical findings, or Sonnet when available. Select a comparable thinking
   level where supported, raising it within these model families for harder findings. Opus, Sol
@@ -206,24 +208,39 @@ checking. They are read-only references: never edit them unless explicitly asked
   SonarLint or IntelliJ findings themselves. Start the subagent with fresh context, explicit affected paths,
   source sets and task scope rather than the full parent conversation. Use the validation
   coordinator and do not edit the delegated files concurrently. Preserve behaviour and unrelated
-  changes; return changed paths, validation results and unresolved blockers. If no eligible model
+  changes; return changed paths, a concise finding summary, validation results and unresolved blockers. If no eligible model
   or model-selectable subagent tool is available, report the affected analysis as incomplete rather than
   silently falling back to Opus, Sol or Astra. This delegation does not make either analysis mandatory
-  for changes exempted below.
+  for changes exempted below. Do not launch additional high-end models or increase delegated work to a high-end
+  model without the user's explicit approval. This does not require approval to continue the primary session
+  using the model the user already selected. Do not delegate mere command launching, waiting, or successful-log reading.
 
-## IntelliJ Inspections
+## Qodana Inspections
 
-When running or maintaining IntelliJ inspections, read `docs/intellij-inspections.md`
+When running or maintaining Qodana's IntelliJ-based inspections, read `docs/intellij-inspections.md`
 for scope, cache, timeout and process-safety instructions. Use the delegated analysis
 workflow above. The Build and Validation section below determines when inspections apply.
 
 ## Build and Validation
 
-For small, low-risk changes (for example a localized UI layout fix, typo, or simple
-data correction), skip SonarLint unless explicitly requested or a specific concern warrants it.
-Run IntelliJ inspections only for large Java changes or when explicitly requested. Keep formatting
-checks, scoped diff review, and validation appropriate to the change; mention skipped inspections
-in the final response.
+Choose one profile at the start and briefly state its scope and reason. Use
+`powershell -NoProfile -File scripts/validate.ps1 -Profile <profile> -Task '<user task>' -Files '<path1;path2>'`.
+Pass only task-owned files, including deletions; never select the whole dirty worktree automatically.
+`-Plan` prints the deterministic plan without starting validation. `-Apply` formats the selected files.
+
+| Profile | When | Checks |
+| --- | --- | --- |
+| Data | Documentation, translations, simple data, tooling syntax | Scoped lightweight formatting, JSON/PowerShell syntax, diff checks; use owning pack/data validators when needed |
+| Focused | Small Java feature or fix | Scoped Spotless, affected compilation, explicitly selected tests; no SonarLint or Qodana |
+| Analysis | Substantial logic changes or refactoring | Focused checks plus SonarLint for selected files/source sets |
+| Deep | Large Java refactor, or requested inspections | Analysis plus one Gradle-managed Qodana scan for selected Java/Kotlin files |
+| Release | Branch ports, build setup, shared contracts with broad effects, release verification | Full build and explicitly selected additional artifact tasks |
+
+`-Tests '<class/package pattern>'` selects tests. Focused, Analysis and Deep require tests or an explicit
+`-NoTestsReason`; it is not permission to omit useful tests. `-SourceSets` overrides source-set inference,
+and `-Artifacts` adds the affected jar tasks. Small shared-contract changes may still require consumer builds.
+Do not run a full build or static analysis merely because Java changed. Automatic inspection Stop hooks are disabled by
+default; both Codex and Claude Code use the same explicit profiles. See `docs/validation.md` for examples.
 
 Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
 `officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Keep `gradlew` executable.
@@ -246,7 +263,7 @@ at the end of every task. `build` assembles and reobfuscates every module, inclu
 - Keep Gradle's required task dependencies. Test filters select tests to execute; they do not prune
   compilation dependencies. Some analysis tasks also need outputs of other source sets. Use
   `--dry-run` if the task graph is unexpectedly broad; do not add blanket `-x compile...` exclusions.
-- Batch related Gradle checks into one invocation where practical. Queue Gradle and IntelliJ through
+- Batch related Gradle checks into one invocation where practical. Queue Gradle and Qodana through
   the validation coordinator below instead of starting competing invocations for the same checkout.
   In a mixed worktree, scope formatting and analysis to this task's files or validate an isolated
   checkout when unrelated changes prevent checks; preserve unrelated edits and staged content.
@@ -255,9 +272,17 @@ at the end of every task. `build` assembles and reobfuscates every module, inclu
   do not repeat a full test suite or rebuild all artifacts automatically. A commit-only request does
   not require repeating previously completed checks.
 
-Before completion, review the scoped diff, run relevant checks, `spotlessCheck`,
-SonarLint on touched source sets unless exempted above (using the delegated workflow), and `git diff --check`,
-and report validation that could not be performed.
+- Let Gradle reuse up-to-date outputs; do not routinely clean, rebuild, change build directories, or disable caching.
+  Finish related edits, then batch checks once. After a finding fix, rerun the affected check and its necessary
+  dependencies rather than restarting the whole profile. Do not automatically retry failed infrastructure;
+  report the failure, diagnose a concrete cause, and retry once only if that cause was corrected.
+- Read the compact result first. Full logs and reports stay on disk; open only the relevant diagnostic excerpt
+  on failure. Group duplicate findings and distinguish introduced issues from pre-existing ones before editing.
+  Do not turn validation into unrelated warning cleanup. Do not repeatedly poll tools or reread guides to fill
+  waiting time. Use bounded waits and meaningful progress updates.
+
+Before completion, review the scoped diff and complete the chosen profile's relevant checks. Report the profile,
+outcome and material validation gaps concisely. Do not list every heavier check intentionally excluded by that profile.
 
 ### Parallel tasks and shared build outputs
 
@@ -267,13 +292,25 @@ and report validation that could not be performed.
   and dependency cache can remain shared; do not create separate dependency caches by default.
 - Within one checkout, run agent build and inspection commands through
   `powershell -NoProfile -File scripts/run-validation.ps1 Gradle <tasks and options>` or
-  `powershell -NoProfile -File scripts/run-validation.ps1 Idea <inspection options>`.
-  The coordinator holds a checkout-specific mutex for the entire invocation; competing callers wait
-  up to ten minutes by default (`-WaitSeconds` changes the queue timeout). Different worktrees have
+  `powershell -NoProfile -File scripts/run-validation.ps1 Qodana <inspection options>`.
+  The coordinator holds a checkout-specific mutex for the entire invocation. Different worktrees have
   independent queues. Gradle's parallelism inside one invocation remains enabled.
+  `-WaitSeconds` limits queue waiting (default 600 seconds); `-TimeoutSeconds` limits execution
+  (default 1800 seconds for Gradle and Qodana). Both options precede the tool name.
+  Status on stderr identifies the owner and reports progress every 30 seconds (`-StatusSeconds` overrides it).
+  Use `-Task '<user task>'` to label low-level commands. Output defaults to Compact: full logs and a structured
+  `result.json` stay on disk; `-OutputMode Json` returns a run envelope and `-OutputMode Full` streams raw logs.
+  `scripts/run-validation.ps1 Status` shows the current task, last observed Gradle task and output age.
+  `scripts/run-validation.ps1 -RunId <id from Status> Cancel` requests cancellation of that exact invocation.
+  Quiet output is a liveness observation, not proof of progress or a hang. Keep periodic waiting output out of
+  model reasoning; the scripts supervise processes without an agent loop.
+  The coordinator contains each invocation in a Windows job and stops its descendants before releasing the
+  queue. Gradle runs with `--no-daemon` so timeout cancellation cannot leave work in a shared daemon;
+  batch related checks to amortize startup. Logs remain under `.gradle/validation-runs/`.
   Check coordinator changes with `powershell -NoProfile -File scripts/test-validation-coordinator.ps1`;
   its process tests use fake tools and launch neither Minecraft nor IntelliJ.
-- Direct `gradlew` and `idea-inspect.ps1` launches, IDE auto-builds, and source edits bypass the queue.
+- Direct `gradlew` and internal `qodana-inspect.ps1` launches, IDE auto-builds, and source edits bypass the queue.
+  `idea-inspect.ps1` and the coordinator's `Idea` tool are compatibility aliases for queued Qodana scans.
   Coordinate those explicitly or use another worktree. Do not edit, format, clean, or regenerate a
   checkout while another task validates it. A queued command sees the files present when it starts;
   it does not capture or freeze a source snapshot.

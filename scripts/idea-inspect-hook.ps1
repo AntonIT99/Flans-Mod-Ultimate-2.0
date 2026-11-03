@@ -3,13 +3,13 @@
     Stop hook: makes an agent look at the IntelliJ inspection warnings of the Java it just changed.
 
 .DESCRIPTION
-    Registered as a Stop hook in .claude/settings.json. It reads the hook payload on stdin, runs
-    scripts/idea-inspect.ps1 over the locally changed Java and Kotlin files, and, when there are warnings,
+    Optional Stop hook, disabled in the shared .claude/settings.json. It reads the hook payload on stdin, runs
+    Qodana through Gradle over the locally changed Java and Kotlin files, and, when there are warnings,
     answers with decision 'block' so the warnings reach the agent before it finishes.
 
-    It is cheap in the cases that matter: with no changed Java or Kotlin file, and with a working tree the
-    result cache already covers, it exits in well under a second. The cost is paid when Java changed and the
-    answer is not cached, which is when the check is worth something.
+    With no changed Java or Kotlin file, it exits immediately. Otherwise an explicitly enabled hook runs
+    Qodana and may take minutes even with its engine cache; there is no instant inspection-result cache.
+    Keep this hook disabled by default and use explicit task-scoped validation profiles instead.
 
     It blocks at most once per stop: the second time it is asked about the same tree it stays out of the way,
     so warnings that are deliberately left (pre-existing, or required by a project convention) cannot trap the
@@ -65,7 +65,7 @@ try
 {
     # Windows PowerShell treats native stderr as error records, including the coordinator's normal queue notice.
     $ErrorActionPreference = 'Continue'
-    $report = @(& powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\run-validation.ps1') Idea -MinSeverity WARNING 2>&1)
+    $report = @(& powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\run-validation.ps1') Qodana -MinSeverity WARNING 2>&1)
     $inspectionExit = $LASTEXITCODE
 }
 finally
@@ -74,10 +74,10 @@ finally
 }
 if ($inspectionExit -ne 0)
 {
-    # The inspection itself failed (no IntelliJ, a broken index). Do not hold up the turn for it, but say so,
+    # The inspection itself failed (setup, import, or analysis). Do not hold up the turn for it, but say so,
     # otherwise a check that quietly stopped working looks exactly like a clean run.
     ConvertTo-Json -Compress -InputObject ([pscustomobject]@{
-            systemMessage = "scripts/idea-inspect.ps1 failed, so the IntelliJ check was skipped: $(($report | Select-Object -Last 3) -join ' ')"
+            systemMessage = "Qodana failed, so inspections are incomplete: $(($report | Select-Object -Last 3) -join ' ')"
         })
     exit 0
 }

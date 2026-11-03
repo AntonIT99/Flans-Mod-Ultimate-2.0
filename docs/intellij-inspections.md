@@ -1,40 +1,50 @@
-# IntelliJ inspections
+# Qodana inspections
 
-IntelliJ editor warnings are available headlessly through
-`scripts/idea-inspect.ps1`, which starts the local IDE headlessly once per call with the shared
-profile `.idea/inspectionProfiles/Project_Default.xml` (works while the IDE is open and
-alongside other runs). The Minecraft Development plugin is taken from the local IntelliJ
-installation when present, so mixins and Minecraft APIs are understood; its
-`AddedMixinMembersNamePattern` is switched off, because it contradicts the shared mixin naming rule.
+The `scripts/idea-inspect.ps1` compatibility entry point runs JetBrains Qodana through the
+`qodanaScan` Gradle task. Qodana uses the native Windows JVM Community linter, the shared project
+profile `.idea/inspectionProfiles/Project_Default.xml`, and a managed download of the Minecraft
+Development plugin. It does not use a local IntelliJ installation or upload reports to Qodana Cloud.
 
-- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/idea-inspect.ps1` inspects
-  files with uncommitted changes; `-Path <dir>` inspects a directory instead;
-  `-MinSeverity WARNING` hides weak warnings; `-Json` gives machine-readable output.
-- Finish source edits and `spotlessApply` before inspecting. Start the inspection through the
-  validation coordinator described in the root `AGENTS.md` and read its result before reporting. It may run in the
-  background, but queues behind validation of the same checkout. Run it once per task, not after
-  every edit, and do not edit inspected sources while it runs.
-- By default the whole-project inspections (duplicated code, unused declarations, spelling and
-  grammar, vulnerable libraries, Javadoc) are disabled: they analyse the whole dependency graph
-  however narrow the scope is. `-Full` adds them back; use it when the question
-  really is about dead code or duplication.
-- Every run indexes the project and takes one to a few minutes, so give it a 10-minute timeout. Keeping
-  the index between runs is not an option: with the indexes of an earlier run in place the headless IDE
-  analyses the file snapshot they were built from, and reports warnings for content that has since been
-  edited. What does carry over is the result cache under `build/idea-inspect/cache`, so re-running on an
-  unchanged working tree answers instantly; `-Rebuild` ignores it.
-- Capture the launched inspection's process ID and command when starting it, and enforce the timeout
-  on that process only. Verify its parent command and run directory before stopping it; another
-  inspection or the user's open IDE may be running alongside it. Report index failures or timeouts
-  as incomplete validation instead of repeatedly starting fresh inspections during the same task.
-- Output lines are `file:line: [SEVERITY] InspectionId: message`, followed by the problem count and
-  how the answer was produced (`cached`, `warm index`, `cold index`).
-- For large Java changes, run it on the changed files, and fix warnings you introduced in touched
-  code. Pre-existing warnings are fixed only when in scope; report remaining ones you chose
-  to leave. Treat `LombokGetterMayBeUsed`-style suggestions per the Lombok rule above.
+```powershell
+powershell -NoProfile -File scripts/run-validation.ps1 -Task 'Feature inspection' Qodana -Files 'src/main/java/com/flansmodultimate/platform/PlatformEnvironment.java'
+```
+
+The first explicit scan downloads the native engine and plugin and indexes the imported dependencies.
+Subsequent scans reuse the checkout-local cache, while writing a fresh SARIF report for every invocation.
+Ordinary Gradle tasks neither load the Qodana plugin nor download its engine. `qodanaScan` is not attached
+to `check` or `build`. Direct Gradle use remains available through the coordinator's Gradle tool, but the
+Qodana tool adds scope checks, timeouts, unique report directories and SARIF validation.
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/idea-inspect.ps1` inspects changed
+  Java or Kotlin files; `-Path <dir>` scopes to a directory; `-Files <file1,file2>` accepts explicit
+  source files; `-MinSeverity WARNING` hides weak warnings; and `-Json` returns a JSON array.
+- Finish source edits before inspecting. Run the command through the validation coordinator described
+  in the root `AGENTS.md`, and read its result before reporting. It queues behind validation for this
+  checkout. Do not edit inspected sources while the scan runs.
+- Whole-project inspections for duplicate code, unused declarations, spelling and grammar, vulnerable
+  libraries, and Javadoc are disabled by default because they are expensive across the full project.
+  `-Full` enables them. `AddedMixinMembersNamePattern` remains disabled because it conflicts with the
+  repository's mixin naming convention.
+- Each invocation writes reports under its unique `build/qodana/inspect/<run-id>/results` directory.
+  Qodana's engine cache is shared under `build/qodana/cache`; `-NoCache` and `-Rebuild` use a private
+  cache for that invocation. The Gradle launcher uses a separate project-cache directory so Qodana's
+  Gradle import does not contend with the scan task's project-cache lock. Dependencies still use the
+  normal Gradle user home.
+- The worker rejects a nonzero scan, a missing or malformed SARIF report, and any report that does not
+  mark its invocation successful. These failures are incomplete validation. Findings are returned for
+  review without making a successful scan task fail. The worker prints at most 2,000 findings while the
+  JSON array includes the complete filtered result set.
+- The worker timeout defaults to 1,200 seconds; the coordinator limit defaults to 1,800 seconds. If
+  raising the worker timeout, pass `-InspectionTimeoutSeconds` and raise the coordinator's `-TimeoutSeconds`
+  before the tool name as well. Native project import may invoke
+  Gradle tooling outside the worker's process tree, so cancellation can stop the owned scan processes
+  without guaranteeing that an already-created Gradle daemon ends immediately.
+- Run inspections for large Java changes or when requested, passing `-Files` with task-owned source
+  paths. Small features should use an affected-source compile and focused tests; they do not need
+  inspections automatically. Fix warnings introduced in touched code. Pre-existing warnings are fixed
+  only when in scope; report remaining ones you chose to leave. Treat `LombokGetterMayBeUsed`-style
+  suggestions per the Lombok rule in `AGENTS.md`.
 - When an inspection conflicts with SonarLint (for example `PointlessBooleanExpression` on
   `Boolean.TRUE.equals(...)`, which Sonar java:S5411 requires), keep the Sonar-compliant code.
-- If IntelliJ is not installed (`IDEA_HOME` unset and not found), say that this check could
-  not be performed.
-- `scripts/idea-inspect-hook.ps1` can wrap the check as a Claude Code `Stop` hook, but it runs
-  on all changed Java. Use it only when that behavior is wanted; do not register it by default.
+- Do not register `scripts/idea-inspect-hook.ps1` as an automatic Claude Code `Stop` hook. Inspections
+  are task-scoped and run only for large Java changes or when requested.
