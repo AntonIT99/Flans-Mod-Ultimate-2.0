@@ -37,7 +37,7 @@ public final class NpcTypeProperties
      */
     private static final Set<Feature> UNINHERITED = EnumSet.of(Feature.AUTOMATIC_REPAIRS, Feature.RETURN_WHEN_INACTIVE, Feature.LIMB_HITBOXES, Feature.WEAPON_FIRING_RANGE, Feature.OUTRANGED_COVER,
         Feature.NON_LETHAL, Feature.SUPPRESSIBLE, Feature.SUITED_TARGETS, Feature.ALLY_NAME_TAGS, Feature.TACTICAL_COVER, Feature.AVOID_UNWINNABLE_FIGHTS, Feature.VEHICLE_EVASION,
-        Feature.TACTICAL_WEAPON_SWITCH, Feature.ADAPTIVE_FLANKING, Feature.ALLY_SPACING, Feature.ADAPTIVE_VEHICLE_COMBAT, Feature.DEFENSIVE_GUNNERS);
+        Feature.TACTICAL_WEAPON_SWITCH, Feature.ADAPTIVE_FLANKING, Feature.ALLY_SPACING, Feature.ADAPTIVE_VEHICLE_COMBAT, Feature.DEFENSIVE_GUNNERS, Feature.FRONTAL_ARMOR_ANGLING);
     private final NpcPropertyOverrides overrides = new NpcPropertyOverrides();
     private IContentType lastType;
     private LivingEntity lastModel;

@@ -28,6 +28,24 @@ class NpcPilotTest
     }
 
     @Test
+    void aPlaneDivingOnAGroundTargetKeepsItsDiveWhereLevelFlightWouldPullUp()
+    {
+        // The default attack height, sinking as a 40-degree dive does: level flight reads the ground as rushing up.
+        assertTrue(NpcPilot.tooLow(24D, -0.6D, false));
+        assertFalse(NpcPilot.tooLow(24D, -0.6D, true));
+    }
+
+    @Test
+    void anAircraftPullsUpOffTheHardFloorHoweverItIsFlying()
+    {
+        assertTrue(NpcPilot.tooLow(6.5D, 0D, true));
+        assertTrue(NpcPilot.tooLow(6.5D, 0D, false));
+        assertFalse(NpcPilot.tooLow(40D, 0D, false));
+        // Even in a dive, a sink that would reach the floor within the pull-out pulls up.
+        assertTrue(NpcPilot.tooLow(14D, -1D, true));
+    }
+
+    @Test
     void anIdleAircraftLandsAfterItsDelayUnlessThatIsZero()
     {
         assertFalse(NpcPilot.Settings.landsAfter(600, 600));

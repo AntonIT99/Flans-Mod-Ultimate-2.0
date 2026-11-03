@@ -1,8 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.driveables.AircraftMode;
-import com.flansmodultimate.api.driveables.DriveControl;
-import com.flansmodultimate.api.driveables.DriveableAttitude;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.sim.MountMotion;
 import com.wolffsmod.npcs.sim.NpcTuning;
@@ -20,9 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.EnumSet;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Flies the aircraft an NPC sits at the controls of, wherever the NPC would walk. A plane takes off along its heading,
@@ -41,6 +37,12 @@ final class NpcPilot
     /** Ticks ahead the ground is looked for, at the aircraft's speed and down its path, and the sink rate projected. */
     private static final int[] TERRAIN_LOOKAHEAD = {0, 20, 40, 60};
     private static final int SINK_LOOKAHEAD = 30;
+    /**
+     * Ticks ahead a plane diving on its target projects its sink rate. A dive on a ground target is a wanted descent,
+     * so projecting it as far as level flight does would read the ground as rushing up and level the wings off every
+     * attacking pass; the dive is broken off by its own break-off height instead.
+     */
+    private static final int DIVE_SINK_LOOKAHEAD = 10;
     /** Degrees of nose-up a plane rolls for take-off with. */
     private static final float TAKEOFF_PITCH = 10F;
     /** Degrees of nose-up with which an aircraft pulls away from the ground. */
@@ -330,7 +332,8 @@ final class NpcPilot
         runway = null;
         float heading = flight.attitude().heading();
         Course course = target != null ? attack(level, flight, target) : travel(flight, place);
-        if (tooLow(flight))
+        // A dive set up by the attack above is flown as it asked, down to the hard floor; it breaks itself off below.
+        if (tooLow(flight, phase == Phase.DIVE))
         {
             phase = Phase.PULL_UP;
             return new FlightControl.Command(PULL_UP_PITCH, 0F, heading, 1F);
@@ -538,10 +541,33 @@ final class NpcPilot
     /** Whether the aircraft is in the air and about to come too close to the ground. */
     private static boolean tooLow(Flight flight)
     {
-        if (flight.grounded())
-            return false;
-        double sinking = Math.min(0D, flight.velocity().y) * SINK_LOOKAHEAD;
-        return flight.position().y - flight.terrain() + sinking < FLOOR;
+        return tooLow(flight, false);
+    }
+
+    /**
+     * @param diving
+     *            whether a plane is diving on its target, when its sink is projected only as far as the pull-out needs
+     * @return whether the aircraft is in the air and about to come too close to the ground
+     */
+    private static boolean tooLow(Flight flight, boolean diving)
+    {
+        return !flight.grounded() && tooLow(flight.position().y - flight.terrain(), flight.velocity().y, diving);
+    }
+
+    /**
+     * @param clearance
+     *            blocks the aircraft is above the terrain ahead of it
+     * @param climb
+     *            blocks it climbs per tick; negative while it sinks
+     * @param diving
+     *            whether a plane is diving on its target, when its sink is projected only as far as the pull-out needs
+     * @return whether it is about to come too close to the ground
+     */
+    static boolean tooLow(double clearance, double climb, boolean diving)
+    {
+        if (clearance < FLOOR)
+            return true;
+        return clearance + Math.min(0D, climb) * (diving ? DIVE_SINK_LOOKAHEAD : SINK_LOOKAHEAD) < FLOOR;
     }
 
     /** @return the height of the ground at a place, or the fallback where it is not loaded */

@@ -20,10 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Finds cover from a target: a place to stand where something solid is between the target's eyes and the NPC's, with a
@@ -38,6 +35,10 @@ public final class NpcCover
     static final double MIN_TARGET_DISTANCE = 3D;
     /** Steps to the side, along each axis, at which the NPC may step out of cover. */
     private static final int[][] PEEKS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {2, 0}, {-2, 0}, {0, 2}, {0, -2}};
+    /** Squared blocks of extra walk an NPC that enters buildings accepts for cover inside one. */
+    private static final double INDOOR_PREFERENCE = 48D;
+    /** Rings a firing search keeps looking for a window or doorway after finding cover outdoors. */
+    private static final int INDOOR_EXTRA_RINGS = 2;
 
     /** A pending search is distinct from a completed search that found no cover. */
     public record Result<T>(boolean complete, @Nullable T value)
@@ -176,6 +177,9 @@ public final class NpcCover
                 score -= 12D * intent.progress(origin, stand);
             if (!hidden(npc, sources, origin.lerp(stand, 0.5D)))
                 score += 12D;
+            // A roof and walls also shelter from shells, splinters and aircraft that the sight lines above do not cover.
+            if (NpcBuildings.entersBuildings(npc) && NpcBuildings.indoors(npc.level(), point))
+                score -= INDOOR_PREFERENCE;
             choices.add(new Candidate(point, score));
         }
 
@@ -387,6 +391,11 @@ public final class NpcCover
         private int blockTests;
         @Nullable
         private Cover found;
+        /** Cover outdoors, kept while the search looks a little farther for a window or doorway. */
+        @Nullable
+        private Cover outdoors;
+        private int lastRing;
+        private final boolean prefersIndoors;
 
         private RingSearch(EntityNPCInterface npc, LivingEntity target, BlockPos origin, int radius, double farthest, boolean firing)
         {
@@ -400,6 +409,8 @@ public final class NpcCover
             this.firing = firing;
             enemyPosition = target.position();
             started = npc.level().getGameTime();
+            // Hiding places carry no window to fire from; only firing cover looks for one.
+            prefersIndoors = firing && NpcBuildings.entersBuildings(npc);
         }
 
         private boolean matches(EntityNPCInterface viewer, LivingEntity enemy, BlockPos centre, int reach, double distance)
@@ -425,6 +436,8 @@ public final class NpcCover
                     return Result.pending();
             }
             complete |= budget <= 0 || blockTests >= 2048;
+            if (complete && found == null)
+                found = outdoors;
             if (complete)
                 completedAt = level.getGameTime();
             return new Result<>(complete, found);
@@ -446,7 +459,7 @@ public final class NpcCover
         {
             if (index < blocks.size())
                 return true;
-            if (ring > radius)
+            if (ring > radius || outdoors != null && ring > lastRing)
                 return false;
             blocks = ring(origin, ring++);
             index = 0;
@@ -473,8 +486,17 @@ public final class NpcCover
             BlockPos peek = firing ? peek(stand) : stand;
             if (peek != null)
             {
-                found = new Cover(stand, peek);
-                complete = true;
+                if (!prefersIndoors || NpcBuildings.indoors(level, stand))
+                {
+                    found = new Cover(stand, peek);
+                    complete = true;
+                }
+                else if (outdoors == null)
+                {
+                    // A window or doorway a little farther protects better than a wall outside.
+                    outdoors = new Cover(stand, peek);
+                    lastRing = ring - 1 + INDOOR_EXTRA_RINGS;
+                }
             }
             return true;
         }

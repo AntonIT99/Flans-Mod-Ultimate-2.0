@@ -2195,6 +2195,8 @@
   "wolffsmodnpcs.weapons.default_ammo_list": "Standardmunition je Waffe:",
   "wolffsmodnpcs.weapons.defensive_gunners": "Eigenständige Schützenabwehr",
   "wolffsmodnpcs.weapons.defensive_gunners.help": "Eigenständige Sitzwaffen suchen Gegner auch ohne Hauptziel des Fahrzeugs. Leere Sitze benötigen weiterhin die Erlaubnis zum unbemannten Feuern.",
+  "wolffsmodnpcs.weapons.frontal_armor_angling": "Frontpanzerung anwinkeln",
+  "wolffsmodnpcs.weapons.frontal_armor_angling.help": "Ein haltendes Kettenfahrzeug dreht seine um etwa 25 Grad angewinkelte Frontpanzerung zum nächsten feindlichen Bodenfahrzeug. Der Turm zielt weiter auf sein Ziel.",
   "wolffsmodnpcs.weapons.doors_open": "Türen offen",
   "wolffsmodnpcs.weapons.doors_open.help": "Das Modell mit offenen Türen zeichnen.",
   "wolffsmodnpcs.weapons.drive_driveables": "Flan-Fahrzeuge betreten und steuern",

@@ -4,9 +4,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
-import com.flansmodultimate.platform.entity.FlanSpawnEntity;
-import com.flansmodultimate.platform.entity.SpawnDataEntity;
-import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.platform.entity.*;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
@@ -16,21 +14,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
+/**
+ * An open parachute, which carries its rider down at a steady descent until it touches the ground. The entity rides at the
+ * rider's own feet, so it lands when the rider would, and its canopy is drawn above both; a blast nearby leaves it be, as
+ * it carries whoever just left a burning aircraft, but a hit collapses it.
+ */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlanEntity<ToolType>
 {
@@ -39,8 +35,6 @@ public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlan
     public static final String NBT_TYPE_NAME = "type";
 
     private static final EntityDataAccessor<String> DATA_TOOL_TYPE = SynchedEntityData.defineId(Parachute.class, EntityDataSerializers.STRING);
-    private static final double START_Y_OFFSET = -2.5D;
-    private static final double RIDER_Y_OFFSET = 2.5D;
     private static final double DESCENT_SPEED = -0.3D;
     private static final double STEERING_ACCELERATION = 0.025D;
     private static final double HORIZONTAL_DRAG = 0.93D;
@@ -60,7 +54,7 @@ public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlan
         this(FlansModEntities.parachuteEntity.get(), level);
         configType = type;
         setShortName(type.getShortName());
-        setPos(rider.getX(), rider.getY() + START_Y_OFFSET, rider.getZ());
+        setPos(rider.getX(), rider.getY(), rider.getZ());
         setYRot(rider.getYRot());
         yRotO = getYRot();
     }
@@ -178,7 +172,7 @@ public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlan
     @Override
     protected void positionRider(@NotNull Entity passenger, @NotNull MoveFunction move)
     {
-        move.accept(passenger, getX(), getY() + RIDER_Y_OFFSET, getZ());
+        move.accept(passenger, getX(), getY(), getZ());
         passenger.setDeltaMovement(Vec3.ZERO);
         passenger.fallDistance = 0.0F;
     }
@@ -202,6 +196,16 @@ public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlan
     {
         if (!level().isClientSide)
             discard();
+        return true;
+    }
+
+    /**
+     * A canopy is left alone by blasts: it is a wide box hanging over whoever just jumped from a burning aircraft or past a
+     * gun position, and the explosion of the aircraft itself would otherwise collapse it in mid-air. A hit still does.
+     */
+    @Override
+    public boolean ignoreExplosion()
+    {
         return true;
     }
 

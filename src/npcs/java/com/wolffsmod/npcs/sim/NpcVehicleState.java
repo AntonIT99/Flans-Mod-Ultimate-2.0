@@ -1,12 +1,7 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.DriveableKind;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.MountAim;
-import com.flansmodultimate.api.driveables.TerrainAttitude;
-import com.flansmodultimate.api.driveables.WeaponMount;
-import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
@@ -534,8 +529,12 @@ public final class NpcVehicleState
 
     /**
      * Decides whether the NPC flies a bomb run at the target, and where its bombs have to come down. A bomb of the main
-     * weapon is let go when it would come down on the target, whatever the switches say: from anywhere else it misses. The
-     * group beside the main attack lets its own bombs go; the plane only has to fly over where they meet the target.
+     * weapon is let go when it would come down on the target, whatever the switches say: from anywhere else it misses.
+     * Only the weapon group making the attack decides how the plane flies. A plane whose main weapon bombs flies the run
+     * level; one whose main weapon is its guns makes a gun run, diving to put its nose on the target as its fixed guns
+     * need, and the group beside them lets its bombs go whenever they would come down on the target anyway. A plane with
+     * bombs beside its guns used to fly level at every ground target, which its guns, pointing along its flight path,
+     * could never bear on.
      *
      * @param target
      *            the living target the NPC fights, or null
@@ -543,12 +542,15 @@ public final class NpcVehicleState
     private void planBombing(EntityNPCInterface npc, Layout current, @Nullable LivingEntity target, NpcWeaponOptions options)
     {
         bombPoint = null;
-        bombRun = target != null && !NpcBombTargets.airborne(target.getRootVehicle()) && (bombing || otherBombs && NpcBombTargets.worthBombing(target));
-        if (target == null || !bombRun)
+        if (target == null || NpcBombTargets.airborne(target.getRootVehicle()))
+        {
+            bombRun = false;
             return;
+        }
+        bombRun = bombing;
         if (bombing)
             aligned = bombsAway(npc, current, target, options);
-        else
+        else if (otherBombs && NpcBombTargets.worthBombing(target))
             bombPoint = bombDrop(npc, npc.position(), otherGravity, otherDrag, target, options).meeting();
     }
 

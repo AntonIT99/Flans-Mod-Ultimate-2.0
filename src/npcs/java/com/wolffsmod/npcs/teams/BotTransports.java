@@ -118,8 +118,8 @@ final class BotTransports
             npc.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, FALL_TICKS));
     }
 
-    /** Leaves a damaged, empty driveable where a vehicle bot was destroyed, for players to repair and use. */
-    static void leaveWreck(ServerLevel level, BotSlot slot, Vec3 position, float yaw)
+    /** Leaves a damaged, empty driveable in the bot's paintjob where a vehicle bot was destroyed, for players to repair and use. */
+    static void leaveWreck(ServerLevel level, BotSlot slot, Vec3 position, float yaw, int paintjob)
     {
         slot.setWreckPending(false);
         FlansModApi.getType(slot.getRole()).ifPresent(type ->
@@ -128,7 +128,7 @@ final class BotTransports
             for (int attempt = 0; attempt <= WRECK_ATTEMPTS; attempt++)
             {
                 Vec3 spot = attempt == 0 ? position : wreckSpot(position, attempt);
-                if (FlansEntityTypes.spawnDriveable(level, type, spot, yaw, WRECK_HEALTH).isPresent())
+                if (FlansEntityTypes.spawnDriveable(level, type, spot, yaw, WRECK_HEALTH, paintjob).isPresent())
                     return;
             }
             NpcsMod.log.debug("No room for the wreck of {} near {}", slot.getRole(), position);

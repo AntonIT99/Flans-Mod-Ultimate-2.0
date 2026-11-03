@@ -122,7 +122,9 @@ public final class NpcWeaponOptions
         /** Allied players may deploy from a vehicle spawner into this NPC's seat in a real Flan driveable. */
         PLAYER_SEAT_DEPLOYMENT(true),
         /** Occasionally crouches or crawls when holding a firing position or approaching nearby cover. */
-        TACTICAL_POSTURES(true);
+        TACTICAL_POSTURES(true),
+        /** A halted tracked ground vehicle turns its angled front armour toward the nearest dangerous enemy vehicle. */
+        FRONTAL_ARMOR_ANGLING(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

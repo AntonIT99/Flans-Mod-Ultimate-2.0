@@ -64,7 +64,7 @@ class SquadTacticsTest
     void assaultWaitsForSupportingFireAndHasABoundedFallback()
     {
         SquadTactics tactics = new SquadTactics();
-        tactics.update(context(1D, OBJECTIVE), group(0D), 0L);
+        tactics.update(context(1D, at(20D, 0D)), group(0D), 0L);
         assertEquals(SquadTactics.Phase.SUPPORT, tactics.getPhase());
         assertEquals(SquadTask.Kind.HOLD, tactics.order(TASK, group(0D).get(0).id()).kind());
         tactics.update(context(1D, OBJECTIVE), group(0D), 20L);
@@ -72,9 +72,55 @@ class SquadTacticsTest
         assertEquals(OBJECTIVE, tactics.order(TASK, group(0D).get(0).id()).spot());
         List<SquadCombat.Member> unable = List.of(soldier(1, 0D, BotSettings.ClassRole.ASSAULT, false, false), soldier(2, 2D, BotSettings.ClassRole.SUPPORT, false, false));
         SquadTactics fallback = new SquadTactics();
-        fallback.update(context(1D, OBJECTIVE), unable, 0L);
+        fallback.update(context(1D, at(20D, 0D)), unable, 0L);
         fallback.update(context(1D, OBJECTIVE), unable, 80L);
         assertEquals(SquadTactics.Phase.ASSAULT, fallback.getPhase());
+    }
+
+    @Test
+    void distantReportsAndNearbyFightingDoNotCancelABypass()
+    {
+        var members = group(0D);
+        SquadTactics tactics = new SquadTactics();
+        tactics.update(context(1D, OBJECTIVE), members, 0L);
+        assertEquals(SquadTactics.Phase.APPROACH, tactics.getPhase());
+        Vec3 bypass = at(0D, 40D);
+        var flanking = new SquadTactics.Context(TASK, bypass, 1D, HOME, at(20D, 0D), false, null, List.of());
+        tactics.update(flanking, members, 40L);
+        assertEquals(SquadTactics.Phase.APPROACH, tactics.getPhase());
+        var directive = tactics.order(TASK, members.get(0).id());
+        assertNotNull(directive);
+        assertEquals(bypass, directive.spot());
+        assertEquals(SquadTask.Kind.ATTACK, directive.kind());
+    }
+
+    @Test
+    void riflemenAndSupportAlsoEnterSmallCaptureZones()
+    {
+        var members = group(50D);
+        SquadTask small = new SquadTask(SquadTask.Kind.ATTACK, OBJECTIVE, 1D);
+        var context = new SquadTactics.Context(small, OBJECTIVE, 1D, HOME, null, false, null, List.of());
+        SquadTactics tactics = new SquadTactics();
+        tactics.update(context, members, 0L);
+        for (var member : members)
+        {
+            var order = tactics.order(small, member.id());
+            assertNotNull(order);
+            assertTrue(order.spot().distanceTo(OBJECTIVE) + order.arrival() < small.radius());
+        }
+    }
+
+    @Test
+    void aNewBypassLegDoesNotLookLikeLostProgressTowardThePreviousWaypoint()
+    {
+        SquadTactics tactics = new SquadTactics();
+        tactics.update(context(1D, null), group(0D), 0L);
+        tactics.update(context(1D, null), group(20D), 40L);
+        var nextLeg = new SquadTactics.Context(TASK, at(200D, 0D), 1D, HOME, null, false, null, List.of());
+        tactics.update(nextLeg, group(20D), 240L);
+        assertFalse(tactics.takeRetry());
+        tactics.update(nextLeg, group(40D), 400L);
+        assertFalse(tactics.takeRetry());
     }
 
     @Test
@@ -141,6 +187,31 @@ class SquadTacticsTest
             positions.add(tactics.order(TASK, member.id()).spot());
         assertEquals(members.size(), positions.size());
         assertTrue(tactics.order(TASK, members.get(0).id()).spot().distanceTo(OBJECTIVE) < TASK.radius());
+    }
+
+    @Test
+    void travellingSoldierKeepsMovingPastDistantEnemiesButFightsCloseOnes()
+    {
+        Vec3 soldier = at(0D, 0D);
+        // A front line 30 blocks to the side does not stop a squad bound for a capture point.
+        assertTrue(SquadTactics.transit(SquadTactics.Phase.APPROACH, SquadTask.Kind.ATTACK, soldier, OBJECTIVE, 1D, at(0D, 30D), false));
+        assertTrue(SquadTactics.transit(SquadTactics.Phase.ASSAULT, SquadTask.Kind.DEFEND, soldier, OBJECTIVE, 2.5D, at(0D, 30D), false));
+        // An enemy in the way, close by, is fought.
+        assertFalse(SquadTactics.transit(SquadTactics.Phase.APPROACH, SquadTask.Kind.ATTACK, soldier, OBJECTIVE, 1D, at(8D, 0D), false));
+        // Arrived soldiers, holding phases and hunting squads fight where they are.
+        assertFalse(SquadTactics.transit(SquadTactics.Phase.APPROACH, SquadTask.Kind.ATTACK, OBJECTIVE, OBJECTIVE, 1D, at(0D, 30D), false));
+        assertFalse(SquadTactics.transit(SquadTactics.Phase.SUPPORT, SquadTask.Kind.ATTACK, soldier, OBJECTIVE, 1D, at(0D, 30D), false));
+        assertFalse(SquadTactics.transit(SquadTactics.Phase.SECURE, SquadTask.Kind.DEFEND, soldier, OBJECTIVE, 1D, at(0D, 30D), false));
+        assertFalse(SquadTactics.transit(SquadTactics.Phase.APPROACH, SquadTask.Kind.HUNT, soldier, OBJECTIVE, 1D, at(0D, 30D), false));
+        assertFalse(SquadTactics.transit(SquadTactics.Phase.WITHDRAW, SquadTask.Kind.HOLD, soldier, HOME, 3D, at(0D, 30D), false));
+    }
+
+    @Test
+    void pinnedTravellingSoldierOnlyMovesWhereItGetsNoCloserToTheEnemy()
+    {
+        Vec3 soldier = at(0D, 0D);
+        assertFalse(SquadTactics.transit(SquadTactics.Phase.APPROACH, SquadTask.Kind.ATTACK, soldier, OBJECTIVE, 1D, at(60D, 0D), true));
+        assertTrue(SquadTactics.transit(SquadTactics.Phase.APPROACH, SquadTask.Kind.ATTACK, soldier, OBJECTIVE, 1D, at(-40D, 0D), true));
     }
 
     @Test

@@ -553,7 +553,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("survival", Scope.STANDARD, Feature.TACTICAL_COVER, Feature.AVOID_UNWINNABLE_FIGHTS, Feature.VEHICLE_EVASION, Feature.ADAPTIVE_FLANKING),
             Tab.named("advance", Scope.STANDARD, Feature.COMBAT_ADVANCE, Feature.COVERING_FIRE, Feature.TACTICAL_POSTURES, Value.ADVANCE_DISTANCE, Value.ADVANCE_FIRE_TICKS),
             Tab.named("movement_limits", Value.TACTICAL_PROFILE, Value.COMBAT_MOVEMENT, Value.MANOEUVRE_RADIUS, Value.WITHDRAW_DISTANCE, Feature.ALLY_SPACING, Value.ALLY_GAP),
-            Tab.named("vehicle_tactics", Feature.ADAPTIVE_VEHICLE_COMBAT, Feature.DEFENSIVE_GUNNERS),
+            Tab.named("vehicle_tactics", Feature.ADAPTIVE_VEHICLE_COMBAT, Feature.DEFENSIVE_GUNNERS, Feature.FRONTAL_ARMOR_ANGLING),
             Tab.named("duties", Scope.STANDARD, Value.DUTY, Value.RETREAT_HEALTH, Feature.SUITED_TARGETS)),
         PATHFINDING(Section.PLANNING, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT)),
         MOVEMENT(Section.TRAVEL, Scope.ALL,

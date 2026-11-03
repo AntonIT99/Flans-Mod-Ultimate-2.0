@@ -335,6 +335,7 @@ public final class Doctrine
             return;
         }
         Map<Integer, Double> assigned = new HashMap<>();
+        Map<Integer, Double> infantry = new HashMap<>();
         List<Pressure> pressure = field.points().stream().map(point -> pressure(field, point)).toList();
         // Summed once per point, rather than scanning requesting squads inside the assignment loop.
         List<Double> support = field.points().stream()
@@ -343,24 +344,41 @@ public final class Doctrine
         ordered.sort(Comparator.comparingDouble(SquadView::power).reversed().thenComparingInt(SquadView::id));
         for (SquadView squad : ordered)
         {
-            int best = -1;
-            double bestValue = Double.NEGATIVE_INFINITY;
-            for (int i = 0; i < field.points().size(); i++)
-            {
-                TeamsCapturePoint candidate = field.points().get(i);
-                if (!field.mayCapture() && candidate.ownerSide() != field.side())
-                    continue;
-                double value = objectiveValue(field, candidate, squad, pressure.get(i), assigned.getOrDefault(i, 0D), support.get(i));
-                if (value > bestValue)
-                {
-                    bestValue = value;
-                    best = i;
-                }
-            }
+            int best = bestObjective(field, squad, pressure, assigned, support, infantry);
             TeamsCapturePoint point = field.points().get(best);
             assigned.merge(best, squad.power(), Double::sum);
+            if (squad.role() == BotRole.INFANTRY && squad.readiness() >= 0.5D)
+                infantry.merge(best, squad.power(), Double::sum);
             tasks.put(squad.id(), new SquadTask(kindAt(field, point), point.position(), point.radius()));
         }
+    }
+
+    private static int bestObjective(Battlefield field, SquadView squad, List<Pressure> pressure, Map<Integer, Double> assigned, List<Double> support, Map<Integer, Double> infantry)
+    {
+        int best = -1;
+        double bestValue = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < field.points().size(); i++)
+        {
+            TeamsCapturePoint candidate = field.points().get(i);
+            if (!field.mayCapture() && candidate.ownerSide() != field.side())
+                continue;
+            double value = objectiveValue(field, candidate, squad, pressure.get(i), assigned.getOrDefault(i, 0D), support.get(i));
+            // Reinforce a fight with one ready squad before committing every remaining squad to it.
+            // Keep the ordinary travel, danger and failure costs, so distant or impossible objectives still lose.
+            if (needsInfantryReinforcement(field, squad) && infantry.getOrDefault(i, 0D) >= 4D)
+                value -= 12D;
+            if (value > bestValue)
+            {
+                bestValue = value;
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    private static boolean needsInfantryReinforcement(Battlefield field, SquadView squad)
+    {
+        return field.mayCapture() && squad.role() == BotRole.INFANTRY && squad.readiness() >= 0.5D;
     }
 
     private static double objectiveValue(Battlefield field, TeamsCapturePoint point, SquadView squad, Pressure pressure, double assigned, double requested)

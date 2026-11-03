@@ -29,7 +29,8 @@ public final class NpcCombatApproachGoal extends Goal
     @Override
     public boolean canUse()
     {
-        return !TeamsBots.isCommander(npc) && NpcEquipmentRangedGoal.engages(npc);
+        // A soldier on its way to an objective leaves its movement to the objective goal and fires as it goes.
+        return !TeamsBots.isCommander(npc) && NpcEquipmentRangedGoal.engages(npc) && !TeamsBots.movesUnderFire(npc);
     }
 
     @Override

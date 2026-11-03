@@ -6,9 +6,7 @@ import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.NpcSafetyState.Action;
-import com.wolffsmod.npcs.teams.NpcDuties;
-import com.wolffsmod.npcs.teams.NpcSuppression;
-import com.wolffsmod.npcs.teams.TeamsBots;
+import com.wolffsmod.npcs.teams.*;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -178,6 +176,13 @@ public final class NpcSafetyGoal extends Goal
         LivingEntity target = npc.getTarget();
         if (retreatToRefuge() || keepClearOfBlast(target))
             return;
+        if (TeamsBots.movesUnderFire(npc))
+        {
+            // On its way to an objective: the objective goal walks it on while it fires; no stopping for cover or bounds.
+            state.clear();
+            state.setAdvanceIntent(null);
+            return;
+        }
         Situation fight = situation(target, now);
         if (fight == null)
         {

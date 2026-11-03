@@ -19,18 +19,54 @@ final class BotApproach
     private Vec3 waypoint;
     private long expiresAt;
     private int retries;
+    private List<Vec3> bypass = List.of();
+    private boolean bypassed;
 
     /** Keeps an approach until reached or timed out; repeated commander passes never send a squad back to it. */
     void update(SquadTask next, Vec3 position, int lane, List<Vec3> markers, long now, boolean enabled)
     {
+        update(next, position, lane, markers, List.of(), now, enabled);
+    }
+
+    void update(SquadTask next, Vec3 position, int lane, List<Vec3> markers, List<Vec3> contacts, long now, boolean enabled)
+    {
         if (!matches(next))
         {
+            bypass = List.of();
+            bypassed = false;
+            retries = 0;
             task = next;
             waypoint = enabled ? waypoint(position, next, lane, markers) : null;
             expiresAt = now + TIMEOUT;
         }
-        if (!enabled || waypoint != null && (now >= expiresAt || position.subtract(waypoint).horizontalDistance() <= REACHED))
+        updateRoute(next, position, lane, markers, contacts, now, enabled);
+    }
+
+    private void updateRoute(SquadTask next, Vec3 position, int lane, List<Vec3> markers, List<Vec3> contacts, long now, boolean enabled)
+    {
+        if (enabled && !bypassed && now < expiresAt)
+        {
+            bypass = BotBypass.route(position, next, lane, contacts, markers);
+            if (!bypass.isEmpty())
+            {
+                bypassed = true;
+                waypoint = bypass.get(0);
+                expiresAt = now + TIMEOUT;
+            }
+        }
+        if (!enabled || now >= expiresAt)
+        {
             waypoint = null;
+            bypass = List.of();
+        }
+        else if (waypoint != null && position.subtract(waypoint).horizontalDistance() <= REACHED)
+        {
+            if (!bypass.isEmpty())
+                bypass = bypass.subList(1, bypass.size());
+            waypoint = bypass.isEmpty() ? null : bypass.get(0);
+            if (waypoint != null)
+                expiresAt = now + TIMEOUT;
+        }
     }
 
     void clear()
@@ -38,6 +74,8 @@ final class BotApproach
         task = null;
         waypoint = null;
         retries = 0;
+        bypass = List.of();
+        bypassed = false;
     }
 
     /** A leader-reported failure tries the other side before asking the commander for another objective. */
@@ -45,6 +83,7 @@ final class BotApproach
     {
         task = next;
         retries++;
+        bypass = List.of();
         waypoint = waypoint(position, next, 1 + Math.floorMod(lane + retries, 4), markers);
         expiresAt = now + TIMEOUT;
     }

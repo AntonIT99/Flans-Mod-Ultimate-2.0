@@ -23,7 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class NpcTacticalPostureTest
@@ -44,10 +44,10 @@ class NpcTacticalPostureTest
             assertEquals(AnimationType.CRAWL, scene.posture.animation(AnimationType.AIM));
             assertEquals(AnimationType.SIT, scene.posture.animation(AnimationType.SIT), "an explicit animation wins");
             assertEquals(0.3F, NpcTacticalPosture.speed(scene.npc, 1F));
-            scene.now = 60L;
+            scene.now = 80L;
             scene.posture.tick(scene.npc);
             assertEquals(0, scene.npc.currentAnimation);
-            scene.now = 100L;
+            scene.now = 120L;
             scene.posture.tick(scene.npc);
             assertEquals(0, scene.npc.currentAnimation);
             verify(scene.npc, times(2)).setCurrentAnimation(anyInt());

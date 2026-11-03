@@ -6,14 +6,10 @@ import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.sim.NpcTuning.AircraftRole;
 import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
@@ -197,7 +193,7 @@ public final class BotSettings
     /** How many loose infantry bots form one squad. */
     private int squadSize = 6;
     /** Chance, in percent, that a destroyed vehicle bot leaves a damaged vehicle players can repair and use. */
-    private int abandonChance = 25;
+    private int abandonChance = 100;
     /** Most extra infantry, in percent of its force, a side gets while it trails on score; 0 switches it off. */
     private int rubberBand;
     private Difficulty difficulty = Difficulty.REGULAR;

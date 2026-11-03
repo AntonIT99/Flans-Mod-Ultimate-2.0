@@ -1,11 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.driveables.AircraftMode;
-import com.flansmodultimate.api.driveables.DriveControl;
-import com.flansmodultimate.api.driveables.DriveableKind;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.IEmplacement;
-import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.teams.FlansTeams;
@@ -14,9 +9,7 @@ import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
-import com.wolffsmod.npcs.sim.NpcModels;
-import com.wolffsmod.npcs.sim.NpcParachutes;
-import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Claim;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.teams.FactionRelations;
@@ -115,6 +108,16 @@ public final class NpcDrivers
     {
         return entity instanceof EntityNPCInterface npc && !npc.level().isClientSide
             && (npc.getVehicle() instanceof IEmplacement || enabled(npc) && drivenSeat(npc).isPresent() || DriveableCrew.mansGun(npc));
+    }
+
+    /**
+     * Whether the NPC rides a mount that keeps its rider on its feet, such as a deployed gun. Custom NPCs otherwise seats
+     * every rider: it shrinks the box to 77% and draws the body half a block lower, below where a player operator stands.
+     */
+    public static boolean standsWhileRiding(EntityNPCInterface npc)
+    {
+        Entity vehicle = npc.getVehicle();
+        return vehicle != null && !vehicle.shouldRiderSit() && npc.currentAnimation != noppes.npcs.api.constants.AnimationType.SIT && !npc.isSleeping();
     }
 
     /** Drives for an NPC at the wheel, or gets it out once its switch is turned off. Runs on the NPC's server tick. */

@@ -2,11 +2,7 @@ package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.teams.FlansTeams;
-import com.flansmodultimate.api.teams.ITeam;
-import com.flansmodultimate.api.teams.TeamsCapturePoint;
-import com.flansmodultimate.api.teams.TeamsFlag;
-import com.flansmodultimate.api.teams.TeamsScoreEntry;
+import com.flansmodultimate.api.teams.*;
 import com.wolffsmod.npcs.tactics.NpcCombatIntent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -85,6 +81,7 @@ final class BotCommander
             }
             List<BotIntelligence.Contact> contacts = battle.getIntelligence().contacts(side, level.getGameTime());
             List<Vec3> enemies = contacts.stream().map(BotIntelligence.Contact::position).toList();
+            List<Vec3> groundEnemies = contacts.stream().filter(contact -> !contact.airborne()).map(BotIntelligence.Contact::position).toList();
             List<Vec3> armour = contacts.stream().filter(BotIntelligence.Contact::armoured).map(BotIntelligence.Contact::position).toList();
             List<Vec3> enemySpawns = new ArrayList<>();
             List<Vec3> homes = homePositions(ground, side, points);
@@ -95,7 +92,7 @@ final class BotCommander
             if (!views.isEmpty())
                 Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side), ground.front().orElse(null), armour), views)
                     .forEach((squadId, task) -> Optional.ofNullable(battle.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
-            approaches(level, battle, views, new BotSquadTactics.Field(enemies, homes, posts, routes, points, side));
+            approaches(level, battle, views, new BotSquadTactics.Field(groundEnemies, homes, posts, routes, points, side));
         }
     }
 
@@ -124,7 +121,7 @@ final class BotCommander
                 continue;
             int lane = (int) assigned.stream().filter(target -> target.distanceToSqr(task.target()) <= 256D).count();
             boolean enabled = !view.carrying() && view.readiness() >= 0.5D;
-            squad.getApproach().update(task, view.position(), lane, field.routes(), now, enabled);
+            squad.getApproach().update(task, view.position(), lane, field.routes(), field.enemies(), now, enabled);
             BotSquadTactics.update(level, battle, view, field, lane);
             assigned.add(task.target());
         }
@@ -268,7 +265,7 @@ final class BotCommander
         if (squad.getRole() == BotRole.INFANTRY && (task.kind() == SquadTask.Kind.DEFEND || task.kind() == SquadTask.Kind.GUARD))
             posts = posts(server, battle, task);
         Vec3 spot = BotFormation.spot(task.target(), index, task.radius(), posts);
-        boolean capture = captures(battle, slot, squad, task);
+        boolean capture = squad.getRole() == BotRole.INFANTRY && task.kind() == SquadTask.Kind.ATTACK;
         double arrival = 2.5D;
         if (capture)
         {
@@ -289,14 +286,6 @@ final class BotCommander
             return new Order(spot, 2.5D, squad.getRole(), task.kind(), approach, 8D);
         }
         return new Order(spot, arrival, squad.getRole(), task.kind(), task.target(), task.radius());
-    }
-
-    private static boolean captures(BotBattle battle, BotSlot slot, BotSquad squad, SquadTask task)
-    {
-        if (squad.getRole() != BotRole.INFANTRY || task.kind() != SquadTask.Kind.ATTACK)
-            return false;
-        BotSettings.ClassRole role = BotRoles.of(battle.getSettings().team(slot.getTeam()), slot.getRole());
-        return role == BotSettings.ClassRole.ASSAULT || role == BotSettings.ClassRole.MELEE;
     }
 
     /** The sniper posts, then the garrison posts, around a defended objective, nearest first. */

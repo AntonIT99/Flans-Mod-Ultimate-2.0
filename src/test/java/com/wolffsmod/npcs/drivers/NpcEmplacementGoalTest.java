@@ -22,13 +22,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class NpcEmplacementGoalTest
@@ -87,7 +86,7 @@ class NpcEmplacementGoalTest
             goal.tick();
             verify(emplacement).setEmplacementFiring(false);
             when(npc.getTarget()).thenReturn(null);
-            for (int tick = 0; tick < 100; tick++)
+            for (int tick = 0; tick < 300; tick++)
                 goal.tick();
             assertFalse(goal.canContinueToUse());
             goal.stop();

@@ -21,7 +21,8 @@ public class ParachuteRenderer extends FlanEntityRenderer<Parachute>
     public void render(@NotNull Parachute parachute, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
         poseStack.pushPose();
-        poseStack.translate(0, 1.5, 0);
+        // The entity hangs at its rider's feet; the canopy belongs above their head, where it was drawn from an entity 2.5 blocks lower.
+        poseStack.translate(0, -1.0, 0);
         poseStack.mulPose(Axis.YP.rotationDegrees(-Mth.rotLerp(partialTicks, parachute.yRotO, parachute.getYRot())));
         poseStack.mulPose(Axis.XP.rotationDegrees(-Mth.lerp(partialTicks, parachute.xRotO, parachute.getXRot())));
         super.render(parachute, entityYaw, partialTicks, poseStack, buffer, packedLight);

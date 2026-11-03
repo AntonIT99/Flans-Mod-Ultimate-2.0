@@ -7,9 +7,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +28,36 @@ class DoctrineTest
     private static Doctrine.SquadView squad(int id, BotRole role, double x)
     {
         return new Doctrine.SquadView(id, role, SquadTemplate.Posture.BALANCED, new Vec3(x, 64D, 0D), 4, false, null);
+    }
+
+    @Test
+    void bothSidesKeepFightingWhileOtherSquadsTakeTheOuterObjectives()
+    {
+        var front = point('A', 60D, -1, -1, true);
+        var outer = point('B', 140D, -1, -1, false);
+        var far = point('C', 220D, -1, -1, false);
+        for (int side : new int[]{US, GERMANY})
+        {
+            var squads = List.of(squad(1, BotRole.INFANTRY, 0D), squad(2, BotRole.INFANTRY, 0D), squad(3, BotRole.INFANTRY, 0D));
+            var field = new Doctrine.Battlefield(side, -1, List.of(front, outer, far), List.of(), List.of(), List.of(), List.of());
+            var tasks = Doctrine.plan(field, squads);
+            assertEquals(3L, tasks.values().stream().map(SquadTask::target).distinct().count());
+            var committed = squads.stream().map(squad -> new Doctrine.SquadView(squad.id(), squad.role(), squad.posture(), squad.position(), squad.strength(), false, tasks.get(squad.id()).target()))
+                .toList();
+            assertEquals(tasks, Doctrine.plan(field, committed), "repeated planning must preserve the split");
+        }
+    }
+
+    @Test
+    void reinforcementsCannotAbsorbEveryReadySquadWhileNeutralPointsAreUnclaimed()
+    {
+        var held = point('A', 30D, US, -1, false);
+        var neutral = point('B', 100D, -1, -1, false);
+        var field = new Doctrine.Battlefield(US, -1, List.of(held, neutral), List.of(), List.of(), List.of(), List.of());
+        var pinned = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, held.position(), 4, false, held.position(), 0.3D, 0D, null, held.position());
+        var tasks = Doctrine.plan(field, List.of(pinned, squad(2, BotRole.INFANTRY, 0D), squad(3, BotRole.INFANTRY, 0D)));
+        assertEquals(held.position(), tasks.get(2).target());
+        assertEquals(neutral.position(), tasks.get(3).target());
     }
 
     @Test

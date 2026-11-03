@@ -5,9 +5,7 @@ import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
-import com.flansmodultimate.common.FlanDamageSources;
-import com.flansmodultimate.common.FlanEntityPermissions;
-import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.distant.DistantRenderRange;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.*;
@@ -5859,6 +5857,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (level().isClientSide || isRemoved() || !leavesWreck())
             return false;
         wreckTicks = 0;
+        FlansMod.teamsManager.stampWreck(this);
         wreckLanded = onGround() || isInWater();
         seedWreckTumble();
         // The wreck burns as a whole from here on; its parts no longer burn away one by one.

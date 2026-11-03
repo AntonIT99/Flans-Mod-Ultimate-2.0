@@ -655,7 +655,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (gunner != null)
             return gunner.hurt(source, amount);
 
-        if (attacker instanceof Player player && FlansMod.teamsManager.isCanBreakGuns())
+        if (attacker instanceof Player player && FlansMod.teamsManager.isCanBreakAAGuns())
         {
             if (FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_PICKUP))
                 discard();
@@ -1297,6 +1297,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         setHealth(0);
         entityData.set(DATA_WRECK, true);
         wreckTicks = 0;
+        FlansMod.teamsManager.stampWreck(this);
         ejectPassengers();
         target = null;
         shootKeyPressed = false;

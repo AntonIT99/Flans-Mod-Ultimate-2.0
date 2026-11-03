@@ -9,11 +9,10 @@ import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.ObjIntConsumer;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /** Global Teams configuration only. Built-in presets intentionally change the same subset as the legacy commands. */
 final class TeamsRulePresets implements ISettingsPresets
@@ -24,13 +23,13 @@ final class TeamsRulePresets implements ISettingsPresets
     private static final String SEA_LEVEL = "seaLevel";
     private static final Map<String, BiConsumer<TeamsManager, Boolean>> SWITCHES = Map.ofEntries(Map.entry("restoreBlocks", TeamsManager::setRestoreBlocks),
         Map.entry("bodyPartDamageModifiers", TeamsManager::setBodyPartDamageModifiers), Map.entry("explosions", TeamsManager::setExplosionsBreakBlocks),
-        Map.entry("canBreakGlass", TeamsManager::setCanBreakGlass), Map.entry("canBreakGuns", TeamsManager::setCanBreakGuns), Map.entry("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks),
-        Map.entry("survivalCanBreakVehicles", TeamsManager::setSurvivalCanBreakVehicles), Map.entry("survivalCanPlaceVehicles", TeamsManager::setSurvivalCanPlaceVehicles),
-        Map.entry("forceAdventure", TeamsManager::setForceAdventureMode), Map.entry("pacifism", TeamsManager::setPacifism), Map.entry("bombs", TeamsManager::setBombsEnabled),
-        Map.entry("shells", TeamsManager::setShellsEnabled), Map.entry("bullets", TeamsManager::setBulletsEnabled), Map.entry("armourDrops", TeamsManager::setArmourDrops),
-        Map.entry("overrideHunger", TeamsManager::setOverrideHunger), Map.entry("regeneration", TeamsManager::setRegeneration), Map.entry("alliedSpawns", TeamsManager::setAlliedSpawnSharing),
-        Map.entry("fuelNeeded", TeamsManager::setVehiclesNeedFuel), Map.entry("vehiclesCanZoom", TeamsManager::setVehiclesCanZoom), Map.entry("movieProp", TeamsManager::setMovieProp),
-        Map.entry("bloodEffects", TeamsManager::setBloodEffects));
+        Map.entry("canBreakGlass", TeamsManager::setCanBreakGlass), Map.entry("canBreakGuns", TeamsManager::setCanBreakGuns), Map.entry("canBreakAAGuns", TeamsManager::setCanBreakAAGuns),
+        Map.entry("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks), Map.entry("survivalCanBreakVehicles", TeamsManager::setSurvivalCanBreakVehicles),
+        Map.entry("survivalCanPlaceVehicles", TeamsManager::setSurvivalCanPlaceVehicles), Map.entry("forceAdventure", TeamsManager::setForceAdventureMode),
+        Map.entry("pacifism", TeamsManager::setPacifism), Map.entry("bombs", TeamsManager::setBombsEnabled), Map.entry("shells", TeamsManager::setShellsEnabled),
+        Map.entry("bullets", TeamsManager::setBulletsEnabled), Map.entry("armourDrops", TeamsManager::setArmourDrops), Map.entry("overrideHunger", TeamsManager::setOverrideHunger),
+        Map.entry("regeneration", TeamsManager::setRegeneration), Map.entry("alliedSpawns", TeamsManager::setAlliedSpawnSharing), Map.entry("fuelNeeded", TeamsManager::setVehiclesNeedFuel),
+        Map.entry("vehiclesCanZoom", TeamsManager::setVehiclesCanZoom), Map.entry("movieProp", TeamsManager::setMovieProp), Map.entry("bloodEffects", TeamsManager::setBloodEffects));
     private static final Map<String, ObjIntConsumer<TeamsManager>> NUMBERS = Map.of("playerHealth", TeamsManager::setPlayerHealth, "botHealth", TeamsManager::setBotHealth, "spawnProtection",
         TeamsManager::setSpawnProtectionSeconds, "mgLife", TeamsManager::setMgLife, "planeLife", TeamsManager::setPlaneLife, "vehicleLife", TeamsManager::setVehicleLife, "mechaLife",
         TeamsManager::setMechaLife, "aaLife", TeamsManager::setAaLife);
@@ -93,7 +92,7 @@ final class TeamsRulePresets implements ISettingsPresets
         CompoundTag data = new CompoundTag();
         for (String key : List.of("explosions", "vehiclesBreakBlocks", "fuelNeeded", "armourDrops", "canBreakGlass"))
             data.putBoolean(key, !arena);
-        for (String key : List.of("bombs", "shells", "bullets", "canBreakGuns"))
+        for (String key : List.of("bombs", "shells", "bullets", "canBreakGuns", "canBreakAAGuns"))
             data.putBoolean(key, true);
         data.putBoolean("forceAdventure", arena);
         data.putBoolean("overrideHunger", arena);

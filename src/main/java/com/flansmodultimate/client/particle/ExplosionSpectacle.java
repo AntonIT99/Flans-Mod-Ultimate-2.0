@@ -36,9 +36,9 @@ public final class ExplosionSpectacle
     /** Staged explosions playing at once, so a barrage cannot stack unbounded work. */
     private static final int MAX_ACTIVE = 12;
     /** Ticks between successive rings of the dust skirt. */
-    private static final int SKIRT_WAVE_INTERVAL_TICKS = 2;
+    private static final int SKIRT_WAVE_INTERVAL_TICKS = 5;
     /** Ticks over which the cap spreads once the stem has reached its height. */
-    private static final int CAP_TICKS = 4;
+    private static final int CAP_TICKS = 40;
 
     /** Earth-coloured dust that every ground colour is blended with, so a lawn does not throw green dust. */
     private static final float DUST_BASE_R = 0.60F;
@@ -57,7 +57,7 @@ public final class ExplosionSpectacle
         if (level == null)
             return;
 
-        WaterEffects.splash(level, position, Math.max(0.5F, craterRadius));
+        WaterEffects.splash(level, position, Math.max(0.5F, ExplosionVisuals.fireballDiameter(craterRadius) * 0.5F));
         spawnAfterglow(level, position, craterRadius);
 
         Staged staged = Staged.of(level, position, craterRadius, blastRadius, groundBurst, fiery);
@@ -90,7 +90,7 @@ public final class ExplosionSpectacle
         if (scale <= 0F)
             return;
 
-        int lifetime = 5 + Mth.ceil(8F * ExplosionVisuals.intensity(craterRadius));
+        int lifetime = Math.min(ExplosionVisuals.fireballDurationTicks(craterRadius), 8);
         emit(level, ExplosionVisuals.landmarkRange(craterRadius), position.x, position.y, position.z, 0D, 0D, 0D, AFTERGLOW, scale * 0.6F, lifetime);
     }
 
@@ -118,6 +118,8 @@ public final class ExplosionSpectacle
         private final int skirtPuffs;
         private final float skirtReach;
 
+        private final int stemInterval;
+        private final int stemRiseTicks;
         private final int stemSteps;
         private final float stemHeight;
         private final int stemPuffs;
@@ -138,7 +140,7 @@ public final class ExplosionSpectacle
             this.landmarkRange = ExplosionVisuals.landmarkRange(craterRadius);
             this.lifetimeScale = ExplosionVisuals.lifetimeScale(craterRadius);
             this.skirtY = skirtY;
-            this.dustLook = new BlastPuffParticle.Look(dust[0], dust[1], dust[2], dust[0] * 0.85F, dust[1] * 0.85F, dust[2] * 0.85F, 0.8F, 1.6F, 0.9F, 0.0015F, 0F, false, true);
+            this.dustLook = new BlastPuffParticle.Look(dust[0], dust[1], dust[2], dust[0] * 0.85F, dust[1] * 0.85F, dust[2] * 0.85F, 0.65F, 0.6F, 0.9F, 0.0015F, 0F, false, true);
 
             boolean hasGround = !Double.isNaN(skirtY);
             this.skirtWaves = hasGround ? ExplosionVisuals.dustSkirtWaves(craterRadius) : 0;
@@ -147,6 +149,8 @@ public final class ExplosionSpectacle
 
             this.stemSteps = ExplosionVisuals.fireballStemSteps(craterRadius);
             this.stemHeight = ExplosionVisuals.fireballStemHeight(craterRadius);
+            this.stemInterval = stemSteps == 0 ? 1 : Math.max(1, ExplosionVisuals.cloudRiseTicks(craterRadius) / stemSteps);
+            this.stemRiseTicks = stemSteps * stemInterval;
             this.stemPuffs = ExplosionVisuals.fireballStemPuffsPerStep(craterRadius);
             this.hotStemSteps = Mth.ceil(stemSteps * ExplosionVisuals.hotStemShare(fiery));
 
@@ -154,7 +158,7 @@ public final class ExplosionSpectacle
             this.capRadius = ExplosionVisuals.mushroomCapRadius(craterRadius);
 
             int skirtEnd = skirtWaves * SKIRT_WAVE_INTERVAL_TICKS;
-            int stemEnd = stemSteps + (capPuffs > 0 ? CAP_TICKS : 0);
+            int stemEnd = stemRiseTicks + (capPuffs > 0 ? CAP_TICKS : 0);
             this.duration = Math.max(skirtEnd, stemEnd);
         }
 
@@ -191,10 +195,14 @@ public final class ExplosionSpectacle
 
             if (age % SKIRT_WAVE_INTERVAL_TICKS == 0 && age / SKIRT_WAVE_INTERVAL_TICKS < skirtWaves)
                 emitSkirtWave(level, random, age / SKIRT_WAVE_INTERVAL_TICKS);
-            if (age < stemSteps)
-                emitStemStep(level, random, age);
-            if (capPuffs > 0 && age >= stemSteps && age < stemSteps + CAP_TICKS)
-                emitCapPart(level, random);
+            if (age < stemRiseTicks && age % stemInterval == 0)
+                emitStemStep(level, random, age / stemInterval);
+            if (capPuffs > 0 && age >= stemRiseTicks && age < stemRiseTicks + CAP_TICKS)
+            {
+                int capAge = age - stemRiseTicks;
+                int count = (capAge + 1) * capPuffs / CAP_TICKS - capAge * capPuffs / CAP_TICKS;
+                emitCapPart(level, random, count);
+            }
 
             return ++age > duration;
         }
@@ -209,7 +217,7 @@ public final class ExplosionSpectacle
             double inner = sizingRadius * 0.4D;
             double ring = Mth.lerp(progress, inner, skirtReach * 0.85D);
             double push = Math.max(0.05D, (skirtReach - ring) * 0.06D);
-            float size = sizingRadius * 0.3F * (1F + 0.6F * progress);
+            float size = sizingRadius * 0.15F * (1F + 0.4F * progress);
             int lifetime = Math.max(20, Math.round((35F + 45F * progress) * lifetimeScale));
 
             for (int i = 0; i < skirtPuffs; i++)
@@ -226,16 +234,15 @@ public final class ExplosionSpectacle
         }
 
         /**
-         * One step of the fireball stem. The first steps are hot, glowing and orange; each one after
-         * is laid higher and a shade darker, so the column is seen lifting off and cooling into
-         * smoke. The climb decelerates toward the top the way a rising fireball does.
+         * One step of an irregular smoke plume. Compact grey puffs are placed progressively higher
+         * over several seconds, decelerating toward the top. Only incendiary bursts add fire at the foot.
          */
         private void emitStemStep(ClientLevel level, RandomSource random, int step)
         {
             float progress = (step + 1) / (float) stemSteps;
-            double height = stemHeight * (1D - (1D - progress) * (1D - progress));
-            double width = sizingRadius * 0.35D * (1D - 0.3D * progress);
-            float size = sizingRadius * 0.4F * (1F + 0.3F * progress);
+            double height = stemHeight * (1D - (1D - progress) * (1D - progress)) * (0.85D + random.nextDouble() * 0.15D);
+            double width = sizingRadius * (0.4D + 0.5D * progress);
+            float size = sizingRadius * 0.16F * (1F + 0.3F * progress);
             int lifetime = Math.max(30, Math.round((70F + 70F * progress) * lifetimeScale));
             BlastPuffParticle.Look look = stemLook(progress);
 
@@ -250,7 +257,7 @@ public final class ExplosionSpectacle
             // The foot of the stem burns. The fire sprite plays out in about half a second, so it is
             // laid over the lasting puffs rather than instead of them: the fire rolls up the lower
             // column as it forms, and the puffs are what is left standing once it has burnt out.
-            if (step < hotStemSteps)
+            if (step < hotStemSteps && age <= 20)
             {
                 for (int i = 0; i < stemPuffs; i++)
                 {
@@ -264,22 +271,21 @@ public final class ExplosionSpectacle
 
         private static BlastPuffParticle.Look stemLook(float progress)
         {
-            // Hot orange at the foot, near-black smoke at the top.
-            float r = Mth.lerp(progress, 1.0F, 0.22F);
-            float g = Mth.lerp(progress, 0.55F, 0.19F);
-            float b = Mth.lerp(progress, 0.18F, 0.16F);
-            return new BlastPuffParticle.Look(r, g, b, 0.14F, 0.13F, 0.12F, 0.9F, 0.8F, 0.93F, 0.003F, 0.4F * (1F - progress), false, false);
+            // Dusty grey at the foot, darker smoke above; ordinary HE has already cooled.
+            float r = Mth.lerp(progress, 0.38F, 0.22F);
+            float g = Mth.lerp(progress, 0.33F, 0.19F);
+            float b = Mth.lerp(progress, 0.27F, 0.16F);
+            return new BlastPuffParticle.Look(r, g, b, 0.14F, 0.13F, 0.12F, 0.7F, 0.5F, 0.93F, 0.0005F, 0F, false, false);
         }
 
         /**
          * A slice of the mushroom cap. Puffs spread outwards from the top of the stem and curl
-         * slightly down at the rim; the core stays hot for a moment, the rim is already smoke.
+         * slightly down at the rim. All of it has cooled to smoke by this stage.
          */
-        private void emitCapPart(ClientLevel level, RandomSource random)
+        private void emitCapPart(ClientLevel level, RandomSource random, int count)
         {
-            int count = Mth.ceil(capPuffs / (float) CAP_TICKS);
             double top = position.y + stemHeight;
-            float size = sizingRadius * 0.55F;
+            float size = sizingRadius * 0.2F;
             int lifetime = Math.max(60, Math.round(150F * lifetimeScale));
 
             for (int i = 0; i < count; i++)
@@ -289,11 +295,9 @@ public final class ExplosionSpectacle
                 double distance = capRadius * share * 0.5D;
                 double dx = Math.cos(angle);
                 double dz = Math.sin(angle);
-                double outward = capRadius * 0.035D * (0.6D + random.nextDouble() * 0.8D);
+                double outward = capRadius * 0.008D * (0.6D + random.nextDouble() * 0.8D);
 
-                BlastPuffParticle.Look look = share < 0.4D
-                    ? new BlastPuffParticle.Look(0.95F, 0.5F, 0.18F, 0.16F, 0.14F, 0.12F, 0.9F, 1.0F, 0.94F, 0.002F, 0.3F, false, false)
-                    : new BlastPuffParticle.Look(0.26F, 0.22F, 0.2F, 0.13F, 0.12F, 0.11F, 0.85F, 1.2F, 0.94F, 0.001F, 0F, false, false);
+                BlastPuffParticle.Look look = new BlastPuffParticle.Look(0.26F, 0.22F, 0.2F, 0.13F, 0.12F, 0.11F, 0.65F, 0.5F, 0.94F, 0.0005F, 0F, false, false);
 
                 emit(level, landmarkRange, position.x + dx * distance, top + random.nextGaussian() * size * 0.4D, position.z + dz * distance, dx * outward, -0.02D * share + 0.01D, dz * outward, look,
                     size * (0.8F + random.nextFloat() * 0.5F), lifetime + random.nextInt(40));

@@ -14,7 +14,8 @@ import java.util.List;
 /**
  * Walks, drives or flies a bot to where its squad's task puts it, while it has nobody to fight. Long ways are strung
  * through the map's route markers and covered a stretch at a time, which keeps each path search short; a fight on the
- * way takes over, and the bot carries on once it is over. Any NPC with a duty, bot or not, walks to its duty the same way.
+ * way takes over, and the bot carries on once it is over, except that a squad soldier on its way to an objective fires at
+ * distant enemies as it walks on. Any NPC with a duty, bot or not, walks to its duty the same way.
  */
 public final class BotObjectiveGoal extends Goal
 {
@@ -140,10 +141,15 @@ public final class BotObjectiveGoal extends Goal
         return stalled >= STALLED_SEARCHES;
     }
 
-    /** Whether the bot is free to move: alive, not fighting, not riding and not pinned down by fire. */
+    /**
+     * Whether the bot is free to move: alive, not riding, and either not fighting and not pinned down by fire, or a squad
+     * soldier still on its way, which fires as it walks on.
+     */
     private boolean free()
     {
-        return npc.isAlive() && !npc.isKilled() && npc.getTarget() == null && !npc.isPassenger() && !NpcSuppression.isPinned(npc);
+        if (!npc.isAlive() || npc.isKilled() || npc.isPassenger())
+            return false;
+        return npc.getTarget() == null ? !NpcSuppression.isPinned(npc) : TeamsBots.movesUnderFire(npc);
     }
 
     private boolean away(BotCommander.Order current)

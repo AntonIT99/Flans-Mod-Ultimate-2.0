@@ -1,22 +1,16 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.teams.FlansTeams;
-import com.flansmodultimate.api.teams.ITeam;
-import com.flansmodultimate.api.teams.ITeamsListener;
-import com.flansmodultimate.api.teams.ITeamsLiveRound;
+import com.flansmodultimate.api.teams.*;
 import com.flansmodultimate.api.teams.ITeamsRespawnRule.Reason;
-import com.flansmodultimate.api.teams.ITeamsSpawnProvider;
-import com.flansmodultimate.api.teams.TeamsCapturePoint;
-import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcAirCombat;
+import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
-import com.wolffsmod.npcs.tactics.NpcCombatIntent;
-import com.wolffsmod.npcs.tactics.NpcCombatPolicy;
-import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
+import com.wolffsmod.npcs.tactics.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,9 +19,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -188,6 +180,23 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     public static Optional<Boolean> coveringFire(EntityNPCInterface npc, long now)
     {
         return combatSquad(npc).map(entry -> entry.squad().getCombat().decisions().covers(BotSquadCombat.snapshot(npc, now), entry.members(npc, now), now));
+    }
+
+    /**
+     * Whether an autonomous squad soldier still travelling to its objective walks on while it fires at a distant target,
+     * instead of standing to fight it or chasing it; see {@link SquadTactics#transit}. Reads cached orders only.
+     */
+    public static boolean movesUnderFire(EntityNPCInterface npc)
+    {
+        LivingEntity target = npc.getTarget();
+        if (target == null || !target.isAlive() || target.level() != npc.level() || NpcDuties.retreating(npc) || !NpcCombatMovement.allowed(npc))
+            return false;
+        BotSquad squad = combatSquad(npc).map(CombatSquad::squad).orElse(null);
+        if (squad == null || squad.getOrder() != null || squad.getTask() == null)
+            return false;
+        return orderFor(npc).filter(order -> order.role() == BotRole.INFANTRY)
+            .map(order -> SquadTactics.transit(squad.getTactics().getPhase(), order.kind(), npc.position(), order.spot(), order.arrival(), target.position(), NpcSuppression.isPinned(npc)))
+            .orElse(false);
     }
 
     /** Leadership orders are cached by the commander; reading them never samples combat or starts a path search. */
@@ -412,8 +421,14 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     {
         remove(npc);
         if (dead && slot.isWreckPending())
-            BotTransports.leaveWreck(level, slot, npc.position(), npc.getYRot());
+            BotTransports.leaveWreck(level, slot, npc.position(), npc.getYRot(), paintjobOf(npc));
         forget(current, slot);
+    }
+
+    /** The paintjob a vehicle bot is drawn with, which its wreck keeps. */
+    private static int paintjobOf(EntityNPCInterface npc)
+    {
+        return npc instanceof EntityCustomNpc custom ? Math.max(0, custom.modelData.extra.getInt(FlanModelEntity.PAINTJOB_KEY)) : 0;
     }
 
     private static void fallen(BotBattle current, BotSlot slot, long now)

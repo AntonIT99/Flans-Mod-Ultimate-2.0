@@ -1,30 +1,15 @@
 package com.wolffsmod.npcs.drivers;
 
-import com.flansmodultimate.api.driveables.AircraftMode;
-import com.flansmodultimate.api.driveables.DriveControl;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
-import com.wolffsmod.npcs.combat.NpcBlastSafety;
-import com.wolffsmod.npcs.combat.NpcEquipment;
-import com.wolffsmod.npcs.combat.NpcVehicleCombat;
-import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelKind;
-import com.wolffsmod.npcs.sim.MountMotion;
-import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
-import com.wolffsmod.npcs.sim.NpcVehicleState;
-import com.wolffsmod.npcs.sim.TargetMotion;
-import com.wolffsmod.npcs.tactics.NpcCombatMovement;
-import com.wolffsmod.npcs.tactics.NpcTactics;
-import com.wolffsmod.npcs.tactics.NpcVehicleThreats;
-import com.wolffsmod.npcs.tactics.ShipBearing;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import com.wolffsmod.npcs.tactics.*;
+import lombok.*;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -143,6 +128,8 @@ public final class NpcDriver
     private int waited;
     private long passUntil;
     private final NpcPilot pilot = new NpcPilot();
+    /** Shows the front armour of a halted tracked vehicle to the enemy vehicle that threatens it. */
+    private final NpcHullAngling angling = new NpcHullAngling();
     /** How the target fired at moves, to lead it, and which target that is. */
     private final TargetMotion motion = new TargetMotion();
     @Nullable
@@ -233,7 +220,10 @@ public final class NpcDriver
             anchor = null;
             reversing = false;
             Set<DriveControl> controls = DriveSteering.brake(speed);
-            report(mecha, null, controls, 0F, 0D, speed);
+            Float angle = tracked && !mecha && !ship(seat) && NpcEquipment.enabled(npc, Feature.FRONTAL_ARMOR_ANGLING) ? angling.turn(npc, driveable, heading) : null;
+            if (angle != null && angle != 0F && Math.abs(speed) <= DriveSteering.STOPPED)
+                controls = EnumSet.of(angle > 0F ? DriveControl.RIGHT : DriveControl.LEFT);
+            report(mecha, null, controls, angle == null ? 0F : angle, 0D, speed);
             act(npc, seat, driveable, mecha, controls, null);
             return true;
         }
@@ -798,6 +788,7 @@ public final class NpcDriver
         weaponsAt = Long.MIN_VALUE;
         primaryBlast = 0D;
         secondaryBlast = 0D;
+        angling.reset();
         bowWeapon = false;
         course = null;
     }

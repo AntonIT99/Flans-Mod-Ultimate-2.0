@@ -2273,6 +2273,8 @@
   "wolffsmodnpcs.weapons.default_ammo_list": "Default rounds per weapon:",
   "wolffsmodnpcs.weapons.defensive_gunners": "Independent gunner defence",
   "wolffsmodnpcs.weapons.defensive_gunners.help": "Independent seat guns look for hostile targets even without a vehicle main target. Empty seats still require unmanned firing to be enabled.",
+  "wolffsmodnpcs.weapons.frontal_armor_angling": "Frontal armour angling",
+  "wolffsmodnpcs.weapons.frontal_armor_angling.help": "A halted tracked vehicle turns its front armour, angled about 25 degrees, toward the nearest enemy ground vehicle. The turret keeps aiming at its target.",
   "wolffsmodnpcs.weapons.doors_open": "Doors open",
   "wolffsmodnpcs.weapons.doors_open.help": "Draw the model with its doors open.",
   "wolffsmodnpcs.weapons.drive_driveables": "Board and operate Flan vehicles",

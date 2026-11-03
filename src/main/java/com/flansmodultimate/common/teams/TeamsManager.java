@@ -1,13 +1,10 @@
 package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.teams.ITeamsRespawnRule;
-import com.flansmodultimate.api.teams.ITeamsRound;
-import com.flansmodultimate.api.teams.TeamsScoreEntry;
-import com.flansmodultimate.api.teams.TeamsSpawner;
+import com.flansmodultimate.api.teams.*;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
-import com.flansmodultimate.common.entity.Flag;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.types.*;
@@ -33,9 +30,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
@@ -75,6 +70,7 @@ public final class TeamsManager
     private static final String NBT_EXPLOSIONS = "explosions";
     private static final String NBT_BREAK_GLASS = "break_glass";
     private static final String NBT_BREAK_GUNS = "break_guns";
+    private static final String NBT_BREAK_AA_GUNS = "break_aa_guns";
     private static final String NBT_DRIVEABLES_BREAK_BLOCKS = "driveables_break_blocks";
     private static final String NBT_BOMBS = "bombs";
     private static final String NBT_SHELLS = "shells";
@@ -101,6 +97,7 @@ public final class TeamsManager
     private static final String NBT_SCORES = "scores";
     private static final String NBT_QUEUED_ROUND = "queued_round";
     private static final String NBT_ROUND_INSTANCE = "round_instance";
+    private static final String NBT_WRECK_ROUND = "flansmodultimate_wreck_round";
     private static final String NBT_PACIFISM = "pacifism";
     private static final String NBT_MOVIE_PROP = "movie_prop";
     private static final String NBT_BLOOD_EFFECTS = "blood_effects";
@@ -167,6 +164,8 @@ public final class TeamsManager
     private boolean restoreBlocks;
     @Getter @Setter
     private boolean canBreakGuns = true;
+    @Getter @Setter
+    private boolean canBreakAAGuns = true;
     @Getter @Setter
     private boolean driveablesBreakBlocks = true;
     @Getter @Setter
@@ -888,6 +887,8 @@ public final class TeamsManager
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
         getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
+        // The wrecks of the round that was played last do not carry over into this one.
+        clearMapWrecks();
         rotationIndex = index;
         currentRoundId = next.getId();
         roundInstanceId = UUID.randomUUID();
@@ -1050,6 +1051,7 @@ public final class TeamsManager
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
         getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
+        clearMapWrecks();
         roundRunning = false;
         roundRuleRuntime.clear();
         currentRoundId = null;
@@ -1066,6 +1068,41 @@ public final class TeamsManager
         addonScoreEntries.clear();
         saveRuntime();
         syncAll(PacketTeamsState.OpenScreen.CLOSE);
+    }
+
+    private void clearMapWrecks()
+    {
+        TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
+        if (server == null || map == null)
+            return;
+        ServerLevel level = server.getLevel(map.getDimension());
+        if (level == null)
+            return;
+        List<Entity> wrecks = new ArrayList<>();
+        for (Entity entity : level.getAllEntities())
+        {
+            if ((entity instanceof Driveable driveable && driveable.isWreck() || entity instanceof AAGun aaGun && aaGun.isWreck())
+                && (map.getBounds() == null || map.getBounds().contains(entity.position())))
+                wrecks.add(entity);
+        }
+        wrecks.forEach(Entity::discard);
+    }
+
+    /** Marks a vehicle that has just become a wreck with the round it belongs to, so it can be removed once that round is over. */
+    public void stampWreck(Entity wreck)
+    {
+        if (server != null && roundRunning && roundInstanceId != null && wreck.level() == getCurrentLevel())
+            wreck.getPersistentData().putUUID(NBT_WRECK_ROUND, roundInstanceId);
+    }
+
+    /**
+     * Whether a wreck belongs to a round that is over: it was stamped by one, and the round now running (if any) is another.
+     * Used for wrecks that were in unloaded chunks while {@link #stopRound} cleared the map.
+     */
+    public boolean isStaleWreck(Entity wreck)
+    {
+        CompoundTag data = wreck.getPersistentData();
+        return savedData != null && data.hasUUID(NBT_WRECK_ROUND) && !data.getUUID(NBT_WRECK_ROUND).equals(roundInstanceId);
     }
 
     public void tick()
@@ -1214,6 +1251,8 @@ public final class TeamsManager
         roundRunning = false;
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         restoreRoundBlocks();
+        // The battlefield is cleared as the round ends, as it is when an operator stops it.
+        clearMapWrecks();
         awardRoundStats();
         voteOptionIds.clear();
         intermissionPhase = IntermissionPhase.NONE;
@@ -2504,7 +2543,7 @@ public final class TeamsManager
     public void applyArenaPreset()
     {
         explosionsBreakBlocks = driveablesBreakBlocks = vehiclesNeedFuel = armourDrops = false;
-        bombsEnabled = shellsEnabled = bulletsEnabled = forceAdventureMode = overrideHunger = canBreakGuns = true;
+        bombsEnabled = shellsEnabled = bulletsEnabled = forceAdventureMode = overrideHunger = canBreakGuns = canBreakAAGuns = true;
         canBreakGlass = false;
         weaponDrops = EnumWeaponDrop.SMART_DROPS;
         mgLife = planeLife = vehicleLife = mechaLife = aaLife = 120;
@@ -2513,7 +2552,7 @@ public final class TeamsManager
 
     public void applySurvivalPreset()
     {
-        explosionsBreakBlocks = driveablesBreakBlocks = bombsEnabled = shellsEnabled = bulletsEnabled = canBreakGuns = canBreakGlass = true;
+        explosionsBreakBlocks = driveablesBreakBlocks = bombsEnabled = shellsEnabled = bulletsEnabled = canBreakGuns = canBreakAAGuns = canBreakGlass = true;
         survivalCanBreakVehicles = survivalCanPlaceVehicles = armourDrops = vehiclesNeedFuel = true;
         forceAdventureMode = overrideHunger = false;
         weaponDrops = EnumWeaponDrop.DROPS;
@@ -2580,7 +2619,9 @@ public final class TeamsManager
         if (tag.contains(NBT_BREAK_GLASS))
             canBreakGlass = tag.getBoolean(NBT_BREAK_GLASS);
         if (tag.contains(NBT_BREAK_GUNS))
-            canBreakGuns = tag.getBoolean(NBT_BREAK_GUNS);
+            canBreakGuns = canBreakAAGuns = tag.getBoolean(NBT_BREAK_GUNS);
+        if (tag.contains(NBT_BREAK_AA_GUNS))
+            canBreakAAGuns = tag.getBoolean(NBT_BREAK_AA_GUNS);
         if (tag.contains(NBT_DRIVEABLES_BREAK_BLOCKS))
             driveablesBreakBlocks = tag.getBoolean(NBT_DRIVEABLES_BREAK_BLOCKS);
         if (tag.contains(NBT_BOMBS))
@@ -2711,6 +2752,7 @@ public final class TeamsManager
         tag.putBoolean(NBT_EXPLOSIONS, explosionsBreakBlocks);
         tag.putBoolean(NBT_BREAK_GLASS, canBreakGlass);
         tag.putBoolean(NBT_BREAK_GUNS, canBreakGuns);
+        tag.putBoolean(NBT_BREAK_AA_GUNS, canBreakAAGuns);
         tag.putBoolean(NBT_DRIVEABLES_BREAK_BLOCKS, driveablesBreakBlocks);
         tag.putBoolean(NBT_BOMBS, bombsEnabled);
         tag.putBoolean(NBT_SHELLS, shellsEnabled);

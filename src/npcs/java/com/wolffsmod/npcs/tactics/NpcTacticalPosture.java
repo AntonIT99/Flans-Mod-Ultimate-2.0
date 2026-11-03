@@ -37,18 +37,21 @@ public final class NpcTacticalPosture
             return;
         nextChoice = now + 40L;
         // Most opportunities pass without a posture change; after each actual use there is a longer cooldown.
-        if (npc.getRandom().nextFloat() >= 0.2F)
+        if (npc.getRandom().nextFloat() >= 0.35F)
             return;
         boolean pinned = NpcSuppression.isPinned(npc);
         boolean support = NpcInfantryRole.support(npc);
         NpcSafetyState safety = NpcTacticState.of(npc).getSafety();
         boolean hiding = safety.active(now) && safety.getAction() == NpcSafetyState.Action.HIDE;
-        int chosen = (support || pinned) && flat(npc) && safe(npc, AnimationType.CRAWL) ? AnimationType.CRAWL : AnimationType.CROUCH;
-        if (!support && !pinned && !hiding || !safe(npc, chosen))
+        boolean holding = npc.getNavigation().isDone() && !npc.isInRange(npc.getTarget(), 16D);
+        boolean longRange = holding && !npc.isInRange(npc.getTarget(), 32D);
+        boolean crawl = (support || pinned || hiding && npc.getRandom().nextBoolean() || longRange && npc.getRandom().nextFloat() < 0.3F) && flat(npc) && safe(npc, AnimationType.CRAWL);
+        int chosen = crawl ? AnimationType.CRAWL : AnimationType.CROUCH;
+        if (!support && !pinned && !hiding && !holding || !safe(npc, chosen))
             return;
         animation = chosen;
         previousAnimation = npc.currentAnimation;
-        until = now + (npc.getNavigation().isDone() ? 60L + npc.getRandom().nextInt(41) : 40L);
+        until = now + (npc.getNavigation().isDone() ? 80L + npc.getRandom().nextInt(81) : 40L);
         anchor = npc.position();
         npc.setCurrentAnimation(animation);
         npc.refreshDimensions();
@@ -115,7 +118,7 @@ public final class NpcTacticalPosture
         int owned = animation;
         animation = 0;
         anchor = null;
-        nextChoice = now + 400L + npc.getRandom().nextInt(301);
+        nextChoice = now + 200L + npc.getRandom().nextInt(201);
         if (npc.currentAnimation == owned)
         {
             npc.setCurrentAnimation(previousAnimation);

@@ -20,10 +20,7 @@ import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
-import com.wolffsmod.npcs.tactics.NpcSafetyGoal;
-import com.wolffsmod.npcs.tactics.NpcTacticGoal;
-import com.wolffsmod.npcs.tactics.NpcTacticState;
-import com.wolffsmod.npcs.tactics.NpcTacticalPosture;
+import com.wolffsmod.npcs.tactics.*;
 import com.wolffsmod.npcs.teams.*;
 import noppes.npcs.Resistances;
 import noppes.npcs.ai.EntityAIAttackTarget;
@@ -33,10 +30,7 @@ import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
 import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -46,9 +40,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.*;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
@@ -59,6 +51,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -208,6 +201,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private NpcCombatApproachGoal wolffsmodnpcsApproachGoal;
     @Unique
     private BotObjectiveGoal wolffsmodnpcsObjectiveGoal;
+    @Unique @Nullable
+    private NpcBuildingClearGoal wolffsmodnpcsBuildingClearGoal;
     @Unique
     private NpcBoardingGoal wolffsmodnpcsBoardingGoal;
     @Unique
@@ -535,6 +530,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         else
             wolffsmodnpcsObjectiveGoal = new BotObjectiveGoal(npc);
         goalSelector.addGoal(3, wolffsmodnpcsObjectiveGoal);
+        // It follows an enemy that slipped into a building, ahead of the objective it would otherwise return to.
+        if (wolffsmodnpcsBuildingClearGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsBuildingClearGoal);
+        else
+            wolffsmodnpcsBuildingClearGoal = new NpcBuildingClearGoal(npc);
+        goalSelector.addGoal(2, wolffsmodnpcsBuildingClearGoal);
         if (wolffsmodnpcsApproachGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
         wolffsmodnpcsApproachGoal = null;
@@ -615,6 +616,10 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (!npc.isPassenger() && npc.currentAnimation == noppes.npcs.api.constants.AnimationType.CROUCH)
             callback.setReturnValue(callback.getReturnValue().scale(1F, 0.8F));
+        // Custom NPCs gives every rider a seated 77% box; an operator standing at a deployed gun keeps its full height like a player.
+        else if (npc.deathTime <= 0 && npc.currentAnimation != noppes.npcs.api.constants.AnimationType.SLEEP && npc.currentAnimation != noppes.npcs.api.constants.AnimationType.CRAWL
+            && NpcDrivers.standsWhileRiding(npc))
+            callback.setReturnValue(callback.getReturnValue().scale(1F, 1F / 0.77F));
     }
 
     @Inject(method = {"tick", "m_8119_"}, at = @At("TAIL"))
@@ -1320,6 +1325,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsCrewOnDeath(DamageSource source, CallbackInfo callback)
     {
         if (!level().isClientSide)
+            NpcCrew.destroyed((EntityNPCInterface) (Object) this);
+    }
+
+    /** Custom NPCs can enter its killed state directly, ejecting passengers before deleting its body. */
+    @Inject(method = {"remove", "m_142687_"}, at = @At("HEAD"))
+    private void wolffsmodnpcsCrewOnKilledRemoval(Entity.RemovalReason reason, CallbackInfo callback)
+    {
+        if (!level().isClientSide && reason == Entity.RemovalReason.KILLED)
             NpcCrew.destroyed((EntityNPCInterface) (Object) this);
     }
 

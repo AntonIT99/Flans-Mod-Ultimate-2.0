@@ -8,7 +8,7 @@
 * Player classes can use repeatable `AddToTeam <packId>:<teamShortName>` lines to extend another pack's teams without a reverse dependency
 * New companion mod: **Flan's Ultimate 2: NPC Vehicles & Soldiers**, which lets Custom NPCs soldiers use Flan's weapons, vehicles, planes, ships and mechas, crew them and fight Teams rounds, skirmishes and wars (separate download, requires Custom NPCs)
 * Driveable damage and destruction: damaged parts smoke, burn, steam and spark, each machine class dies its own way (tank cook-off, ship magazines and boilers, aircraft fuel, rotor and wing loss, mecha collapse), and parts shot off fly away; destruction bursts stay bounded, ship magazine blasts scale with ammunition rather than hull size, and machine-gun-only boats produce small cook-off pops
-* Destroyed driveables stay as burning wrecks that tumble as they fall, come to rest along the ground they land on, slide down steep slopes, keep their collision, char and settle, burn out and sink away after five minutes by default, and can be shoved about or blown apart by explosives; the scorch mark under a wreck lasts as long as the wreck and fades when it is broken up or removed (`driveableWreckLifetime`, `NoWreck`)
+* Destroyed driveables stay as burning wrecks that tumble as they fall, come to rest along the ground they land on, slide down steep slopes, keep their collision, char and settle, burn out and sink away after five minutes by default, and can be shoved about or blown apart by explosives; their smoke clouds are slightly smaller; the scorch mark under a wreck lasts as long as the wreck and fades when it is broken up or removed (`driveableWreckLifetime`, `NoWreck`)
 * Driveable repairs and carrier servicing, with repair tools, the Blowtorch, a repair progress display and an operator command to fully repair a driveable
 * New Teams command centre for operators (F7, `/teams admin` or `/teams gui`) covering rounds, rotation, maps, rules, game type variables and server settings; global Teams rules can be saved as named presets, previewed and imported/exported as JSON files alongside built-in Arena and Survival presets, with preset management beside weapon drops on the Combat page
 * Reimplemented missing features of Flan's Mod Ultimate 1.7.10, including Teams rule commands, lag compensation settings, death drop rules, item spawners, `ShootWithOpenDoor`, kill messages with distance and hit markers
@@ -51,7 +51,7 @@
 
 * Spawn protection: players cannot be hurt for a few seconds after taking the field in a round, until they fire, throw, swing or hit an enemy; set the time with `/teams spawnProtection <seconds>` (default 3, 0 turns it off, at most 60) or on the Protection tab of the command centre's Rules page
 * `/teams regeneration <true|false>` controls passive healing for players and bots during rounds; the default is now half a heart every five seconds, preserving the value of medical supplies
-* `/teams stop` stops the current round, with the same cleanup as `/teams admin stop`; operators can use `/teams restart` to stop it and immediately start the next configured round
+* `/teams stop` stops the current round, with the same cleanup as `/teams admin stop`; operators can use `/teams restart` to stop it and immediately start the next configured round; both commands clear driveable and AA-gun wrecks within the current map, and wrecks of a finished round that were in unloaded chunks are removed when those chunks load; a round that ends normally clears its map's wrecks too
 * Kill messages and the kill feed name the weapon, grenade or vehicle responsible
 * Holding a healing tool in either hand shows the health of the living target within five blocks, including players and Flan soldiers, inside and outside rounds; vehicle models are excluded
 
@@ -110,6 +110,8 @@
 
 * Supply bags retain their remaining uses across saves and spend a use only on delivered healing, effects or ammunition; mines respect their arming delay before applying trigger damage, and living vehicle models can participate in vehicle proximity fuses
 
+* Open parachutes carry their rider down to the ground instead of letting go a couple of blocks above it, and nearby explosions, including that of the aircraft a crew just bailed out of, no longer collapse a canopy in mid-air; a direct hit still does
+
 * Fixed a crash when an NPC reloads a gun without a configured reload sound
 * Fixed shots sometimes having no recoil or firing animation when shooting-state updates arrive between client ticks
 * Fixed automatic weapon firing animations and muzzle flashes continuing after death and respawn without firing
@@ -139,7 +141,7 @@
 * Armour level of detail leaves out uniform parts too small to see, with `Enable Armor LOD` and `Armor LOD Strength` in quick options and `minimumArmorPartPixelSize` / `maximumArmorLodPartPixelSize` in the client config. Parts are measured by the size they project to, so a scope brings a distant soldier's full detail back, and no armour piece is ever hidden
 * Oculus/Iris shader packs: correct glow layers and muzzle flashes, and a cheaper shadow pass
 * Sodium and Embeddium fast vertex writing, and EntityCulling compatibility
-* Normal explosions use ordinary smoke particles instead of persistent smoke-screen emitters
+* Normal explosions use ordinary smoke particles instead of persistent smoke-screen emitters; HE shells and bombs have smaller, brief charge-scaled fireballs followed by compact dust and smoke clouds that rise over several seconds, including distant explosion effects
 * Smoke grenades and shells have separate emission and live-particle limits for each source, including existing content packs; `flansmod.smoker` and `flansmod.smoker1` form broad smoke clouds at their origin instead of throwing multiplying smoke emitters away from the detonation; Warfare 44 M8 and Star Wars Smoke Detonator grenades reuse this smoke effect; `SmokeRadius` scales cloud size and the cloud fills the whole radius, positive `SmokeRadius` and `SmokeTime` appear in tooltips, and source packs balance smoke radius and duration by shell size and role, with smaller areas for traps and self-use effects; built-in smoke grenade, gas grenade and smoke shell categories set `SmokeTime` and `SmokeRadius` from real burn times
 * Burnt-out wrecks use the far-distance impostor again once they have charred to one colour, so a field left after a big battle costs what the vehicles in it did
 * Clouds no longer draw over Flan particles
@@ -151,6 +153,7 @@
 
 ## Settings & Commands
 
+* The `canBreakGuns` team rule now covers only deployed guns; the new `canBreakAAGuns` rule (`/teams canBreakAAGuns`) controls AA guns separately and starts from the old value in existing saves
 * `maxFlansParticlesPerTick` now defaults to 128 and has a maximum of 4096; it limits new particles per tick, not the total still alive
 * Added the missing label and tooltip for `fragSparkMultiplier` in all supported languages
 
@@ -189,7 +192,7 @@
 * Official WW2 teams gain dedicated Bren, DP-28 and Type 99 gunners, PIAT, bazooka, Panzerschreck and Panzerfaust specialists, PIAT ammunition bearers, Thompson assault troops, Springfield riflemen, Type 38 engineers and national pilot loadouts
 
 * 38 new national and historical flags in Wolff's Flag Pack, including Spain, Turkey, China, Romania, Yugoslavia and several historical German states
-* New Warfare 44, Germany WW2, Warhammer 40k classes and teams; Warfare 44 class menus group related roles and weapon variants, use every uniform piece across winter, military police, camouflage and command loadouts, and label experimental, legacy and postwar equipment choices; additional Warfare 44 loadouts include winter BAR, Thompson, M3, MG34, MG42 and MP40 variants, M1943 airborne uniforms, a Sumpftarn M43 rifleman, an MG42 Fallschirmjager and rifle-equipped MG ammunition bearers for all seven teams; further W44 variants expand winter engineers, Browning gunners and anti-tank troops, camouflage machine gunners, G43 paratroopers and rifle-equipped engineers and leaders
+* New Warfare 44, Germany WW2, Warhammer 40k classes and teams; Warfare 44 class menus group related roles and weapon variants, use every uniform piece across winter, military police, camouflage and command loadouts, and label experimental, legacy and postwar equipment choices; additional Warfare 44 loadouts include winter BAR, Thompson, M3, MG34, MG42 and MP40 variants, M1943 airborne uniforms, a Sumpftarn M43 rifleman, an MG42 Fallschirmjager and rifle-equipped MG ammunition bearers for all seven teams; further W44 variants expand winter engineers, Browning gunners and anti-tank troops, camouflage machine gunners, G43 paratroopers and rifle-equipped engineers and leaders, plus rifle-equipped anti-tank variants for all seven teams; Warfare 44 classes include a knife as basic equipment
 * Sniper classes carry scopes, including attachments resolved from legacy mixed-case shortnames; new WW2 riflemen; Warfare 44 scouts, machine gunners and automatic riflemen carry faction sidearms and spare ammunition; new Warfare 44 specialist classes use the ZF 4, ZF 41, PU and M3 infrared scopes and the Sten suppressor (Gewehr 43 and FG 42 marksmen, Kar98k sharpshooter, SVT-40 marksman, sniperscope carbine night scout, Sten Mk II(S) commando)
 * Classes can override skins for several models
 * New Roman shields

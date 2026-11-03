@@ -8,9 +8,7 @@ import com.flansmodultimate.common.types.Team;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
@@ -78,9 +76,9 @@ public final class TeamsSection
      * The boolean rules, by the {@code /teams} command that sets each; {@code noHunger} in the screen is the legacy
      * {@code overrideHunger}.
      */
-    public static final List<String> SWITCHES = List.of("restoreBlocks", "bodyPartDamageModifiers", "explosions", "canBreakGlass", "canBreakGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles",
-        "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "regeneration", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom",
-        "movieProp", "bloodEffects");
+    public static final List<String> SWITCHES = List.of("restoreBlocks", "bodyPartDamageModifiers", "explosions", "canBreakGlass", "canBreakGuns", "canBreakAAGuns", "vehiclesBreakBlocks",
+        "survivalCanBreakVehicles", "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "regeneration", "alliedSpawns",
+        "fuelNeeded", "vehiclesCanZoom", "movieProp", "bloodEffects");
     /** How long abandoned driveables last, by the {@code /teams} command that sets each, in seconds. */
     public static final List<String> LIFETIMES = List.of("mgLife", "planeLife", "vehicleLife", "mechaLife", "aaLife");
 
@@ -254,6 +252,7 @@ public final class TeamsSection
         tag.putBoolean("explosions", manager.isExplosionsBreakBlocks());
         tag.putBoolean("canBreakGlass", manager.isCanBreakGlass());
         tag.putBoolean("canBreakGuns", manager.isCanBreakGuns());
+        tag.putBoolean("canBreakAAGuns", manager.isCanBreakAAGuns());
         tag.putBoolean("vehiclesBreakBlocks", manager.isDriveablesBreakBlocks());
         tag.putBoolean("survivalCanBreakVehicles", manager.isSurvivalCanBreakVehicles());
         tag.putBoolean("survivalCanPlaceVehicles", manager.isSurvivalCanPlaceVehicles());

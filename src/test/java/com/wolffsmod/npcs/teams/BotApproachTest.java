@@ -98,4 +98,66 @@ class BotApproachTest
         approach.update(ATTACK, START, lane, markers, 0L, true);
         return approach;
     }
+
+    @Test
+    void loneCaptureSquadLeavesTheFrontEarlyAndStaysOutsideUntilPastIt()
+    {
+        SquadTask task = new SquadTask(SquadTask.Kind.ATTACK, START.add(160D, 0D, 0D), 6D);
+        BotApproach approach = new BotApproach();
+        List<Vec3> contacts = List.of(START.add(50D, 0D, 0D));
+        approach.update(task, START, 0, List.of(), contacts, 0L, true);
+        Vec3 entry = approach.waypoint(task);
+        assertNotNull(entry, "a lone squad also bypasses intervening fighting");
+        assertTrue(entry.x < 50D);
+        assertTrue(Math.abs(entry.z) >= 40D);
+        approach.update(task, START.add(2D, 0D, 0D), 2, List.of(), List.of(), 40L, true);
+        assertEquals(entry, approach.waypoint(task), "reports and lane changes cannot make the route oscillate");
+        approach.update(task, entry, 0, List.of(), contacts, 500L, true);
+        Vec3 exit = approach.waypoint(task);
+        assertNotNull(exit);
+        assertTrue(exit.x > 50D);
+        assertEquals(entry.z, exit.z);
+        approach.update(task, entry, 0, List.of(), contacts, 700L, true);
+        assertEquals(exit, approach.waypoint(task), "each leg has its own progress deadline");
+        approach.update(task, exit, 0, List.of(), contacts, 800L, true);
+        assertNull(approach.waypoint(task));
+        approach.update(task, exit, 0, List.of(), contacts, 840L, true);
+        assertNull(approach.waypoint(task), "a completed bypass cannot send the squad backwards");
+    }
+
+    @Test
+    void newlyReportedFrontCanRerouteAnAlreadyMarchingSquad()
+    {
+        BotApproach approach = approach(0, List.of());
+        approach.update(ATTACK, START.add(10D, 0D, 0D), 0, List.of(), List.of(START.add(45D, 0D, 0D)), 40L, true);
+        assertNotNull(approach.waypoint(ATTACK));
+    }
+
+    @Test
+    void aLateContactStartsAFreshTimeoutForTheBypass()
+    {
+        SquadTask task = new SquadTask(SquadTask.Kind.ATTACK, START.add(160D, 0D, 0D), 6D);
+        BotApproach approach = new BotApproach();
+        approach.update(task, START, 0, List.of(), List.of(), 0L, true);
+        assertNull(approach.waypoint(task));
+
+        List<Vec3> contacts = List.of(START.add(50D, 0D, 0D));
+        approach.update(task, START, 0, List.of(), contacts, 580L, true);
+        Vec3 first = approach.waypoint(task);
+        assertNotNull(first);
+        approach.update(task, START, 0, List.of(), contacts, 620L, true);
+        assertEquals(first, approach.waypoint(task));
+
+        approach.update(task, START, 0, List.of(), contacts, 1180L, true);
+        assertNull(approach.waypoint(task));
+    }
+
+    @Test
+    void bypassChoosesTheLessExposedSideAndDoesNotAvoidTheCapturePointItself()
+    {
+        var contacts = List.of(START.add(45D, 0D, 0D), START.add(45D, 0D, 30D));
+        assertTrue(BotBypass.route(START, ATTACK, 1, contacts, List.of()).get(0).z < 0D);
+        assertTrue(BotBypass.route(START, ATTACK, 0, List.of(ATTACK.target()), List.of()).isEmpty());
+        assertTrue(BotBypass.route(START, ATTACK, 0, List.of(START.add(-20D, 0D, 0D), START.add(45D, 0D, 100D)), List.of()).isEmpty());
+    }
 }

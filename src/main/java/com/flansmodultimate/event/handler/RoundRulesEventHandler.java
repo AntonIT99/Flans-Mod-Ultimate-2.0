@@ -1,16 +1,14 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.event.GunFiredEvent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
-import net.minecraftforge.event.entity.EntityMountEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.*;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -61,8 +59,16 @@ public final class RoundRulesEventHandler
     @SubscribeEvent
     public static void joined(EntityJoinLevelEvent event)
     {
-        if (!event.getLevel().isClientSide())
-            runtime().getVehicles().joined(event.getEntity());
+        if (event.getLevel().isClientSide())
+            return;
+        Entity entity = event.getEntity();
+        // A wreck of a finished round that sat in an unloaded chunk when the round was stopped is dropped as it loads back in.
+        if ((entity instanceof Driveable driveable && driveable.isWreck() || entity instanceof AAGun aaGun && aaGun.isWreck()) && TeamsManager.getInstance().isStaleWreck(entity))
+        {
+            event.setCanceled(true);
+            return;
+        }
+        runtime().getVehicles().joined(entity);
     }
 
     @SubscribeEvent

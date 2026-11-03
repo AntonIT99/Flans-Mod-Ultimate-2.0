@@ -10,6 +10,11 @@ import java.util.*;
 /** Pure squad leadership over commander snapshots. No entity references, world queries, or path searches. */
 final class SquadTactics
 {
+    /** Blocks within which an enemy is close enough that a travelling soldier stops to fight it. */
+    static final double CLOSE_CONTACT = 12D;
+    /** Blocks from its spot beyond which a soldier still counts as travelling. */
+    private static final double TRANSIT_ARRIVAL = 4D;
+
     enum Phase
     {
         APPROACH, SUPPORT, ASSAULT, SECURE, REGROUP, WITHDRAW
@@ -41,6 +46,8 @@ final class SquadTactics
     private long pinnedSince = -1L;
     private long progressedAt;
     private double bestDistance = Double.POSITIVE_INFINITY;
+    @Nullable
+    private Vec3 progressDestination;
     private Report report = Report.NONE;
     private long reportUntil;
     private int failures;
@@ -159,7 +166,10 @@ final class SquadTactics
     {
         if (secure(context, members, now))
             return;
-        if (phase == Phase.APPROACH && (context.threat() != null || distance(members.get(0).position(), context.destination()) <= 12D))
+        // A report elsewhere on the map must not stop a squad before it has travelled around the fighting.
+        boolean bypassing = distance(context.destination(), context.task().target()) > 8D;
+        boolean contact = context.threat() != null && distance(members.get(0).position(), context.threat()) <= 24D;
+        if (phase == Phase.APPROACH && !bypassing && (contact || distance(members.get(0).position(), context.destination()) <= 12D))
             transition(Phase.SUPPORT, context.coveredRally() == null ? members.get(0).position() : context.coveredRally(), now);
         if (phase == Phase.SUPPORT && now - phaseSince >= 20L && (supportReady(members) || now - phaseSince >= 80L))
             transition(Phase.ASSAULT, anchor, now);
@@ -192,6 +202,12 @@ final class SquadTactics
 
     private void progress(Vec3 destination, SquadCombat.Member first, long now)
     {
+        if (progressDestination == null || distance(progressDestination, destination) > 8D)
+        {
+            progressDestination = destination;
+            bestDistance = Double.POSITIVE_INFINITY;
+            progressedAt = now;
+        }
         double remaining = distance(first.position(), destination);
         if (remaining < 12D || remaining <= bestDistance - 2D)
         {
@@ -236,7 +252,7 @@ final class SquadTactics
         if (phase == Phase.REGROUP || phase == Phase.SUPPORT)
             return new Directive(BotFormation.spot(anchor, index, 6D, List.of()), 3D, SquadTask.Kind.HOLD, 8D, false, facing);
         double radius = context.task().radius();
-        boolean capture = member.role() == BotSettings.ClassRole.ASSAULT || member.role() == BotSettings.ClassRole.MELEE;
+        boolean capture = context.task().kind() == SquadTask.Kind.ATTACK && distance(context.destination(), context.task().target()) <= 8D;
         Vec3 spot = BotFormation.spot(context.destination(), index, capture ? Math.min(3D, radius * 0.5D) : radius, List.of());
         return new Directive(spot, capture ? Math.min(1D, radius * 0.25D) : 2.5D, context.task().kind(), radius, false, facing);
     }
@@ -259,6 +275,21 @@ final class SquadTactics
             spot = BotFormation.spot(desired, index + 1, 3D, List.of());
         occupied.add(spot);
         return spot;
+    }
+
+    /**
+     * Whether a soldier on its way to an objective keeps moving while it fires, rather than stopping to fight, or chasing,
+     * whatever enemy it sees. In a large battle somebody is always in sight, so without this no squad would ever leave the
+     * front line for an objective. An enemy close by is still fought, and a pinned soldier only keeps going where its way
+     * leads no closer to the enemy.
+     */
+    static boolean transit(Phase phase, SquadTask.Kind kind, Vec3 position, Vec3 spot, double arrival, Vec3 enemy, boolean pinned)
+    {
+        if (phase != Phase.APPROACH && phase != Phase.ASSAULT || kind != SquadTask.Kind.ATTACK && kind != SquadTask.Kind.DEFEND && kind != SquadTask.Kind.GUARD)
+            return false;
+        if (distance(position, spot) <= Math.max(arrival, TRANSIT_ARRIVAL) || distance(position, enemy) <= CLOSE_CONTACT)
+            return false;
+        return !pinned || distance(spot, enemy) >= distance(position, enemy);
     }
 
     @Nullable

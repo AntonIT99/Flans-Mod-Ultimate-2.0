@@ -5,9 +5,7 @@ import com.flansmodultimate.client.particle.BlastPuffParticle;
 import com.flansmodultimate.client.sound.SoundHelper;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
-import com.flansmodultimate.common.driveables.damage.DriveableDamageClass;
-import com.flansmodultimate.common.driveables.damage.PartDamageKind;
+import com.flansmodultimate.common.driveables.damage.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
@@ -45,6 +43,8 @@ final class DamageEffectEmitter
     private static final double VAPOUR_SPEED = 0.5D;
     /** How much a wreck's fire is held down by rain falling on it. */
     private static final float RAIN_DAMPING = 0.5F;
+    /** Wreck smoke stays substantial, but individual clouds do not grow quite as wide. */
+    private static final float WRECK_SMOKE_SIZE = 0.85F;
     /** Ages up to which a fresh wreck creaks as it settles. */
     private static final int CREAK_TICKS = 400;
 
@@ -139,6 +139,8 @@ final class DamageEffectEmitter
         // Ships vent from deck level: their engine and boiler rooms sit inside the hull.
         boolean vents = tick.source().damageClass() == DriveableDamageClass.SHIP && (kind == PartDamageKind.ENGINE || kind == PartDamageKind.BOILER);
         float scale = (float) Math.sqrt(size);
+        if (tick.wreck())
+            scale *= WRECK_SMOKE_SIZE;
         for (int i = 0; i < count; i++)
         {
             Vec3 at = tick.source().pointInPart(part, random.nextDouble(), vents ? 1D : 0.5D + random.nextDouble() * 0.5D, random.nextDouble());
@@ -176,8 +178,8 @@ final class DamageEffectEmitter
                 continue;
             DamageParticles.puff(DamageParticles.FIRE, placed[0], placed[1].x, placed[1].y, placed[1].z, (0.35F + random.nextFloat() * 0.35F) * scale, 10 + random.nextInt(10), false);
             if (random.nextFloat() < 0.6F)
-                DamageParticles.puff(DamageParticles.BLACK_SMOKE, placed[0].add(0D, 0.4D * scale, 0D), placed[1].x, placed[1].y + 0.02D, placed[1].z, (0.5F + random.nextFloat() * 0.4F) * scale,
-                    60 + random.nextInt(40), false);
+                DamageParticles.puff(DamageParticles.BLACK_SMOKE, placed[0].add(0D, 0.4D * scale, 0D), placed[1].x, placed[1].y + 0.02D, placed[1].z,
+                    (0.5F + random.nextFloat() * 0.4F) * scale * (tick.wreck() ? WRECK_SMOKE_SIZE : 1F), 60 + random.nextInt(40), false);
         }
     }
 
@@ -324,6 +326,7 @@ final class DamageEffectEmitter
         RandomSource random = tick.random();
         double size = core == null ? 1D : sizeOf(source, core);
         float scale = (float) Math.sqrt(size);
+        float smokeScale = scale * WRECK_SMOKE_SIZE;
         Vec3 top = wreckTop(source);
         if (isSubmerged(entity, top))
         {
@@ -336,9 +339,9 @@ final class DamageEffectEmitter
         Vec3 wind = tick.wind();
         for (int i = 0; i < column; i++)
         {
-            Vec3 at = top.add((random.nextDouble() - 0.5D) * scale, 0.2D, (random.nextDouble() - 0.5D) * scale);
+            Vec3 at = top.add((random.nextDouble() - 0.5D) * smokeScale, 0.2D, (random.nextDouble() - 0.5D) * smokeScale);
             DamageParticles.puff(tick.wreckFire() > 0F ? DamageParticles.COLUMN_SMOKE : DamageParticles.THIN_SMOKE, at, wind.x + (random.nextDouble() - 0.5D) * 0.02D,
-                0.05D + random.nextDouble() * 0.04D, wind.z + (random.nextDouble() - 0.5D) * 0.02D, (1.0F + random.nextFloat() * 0.8F) * scale * (0.5F + 0.5F * tick.wreckSmoke()),
+                0.05D + random.nextDouble() * 0.04D, wind.z + (random.nextDouble() - 0.5D) * 0.02D, (1.0F + random.nextFloat() * 0.8F) * smokeScale * (0.5F + 0.5F * tick.wreckSmoke()),
                 120 + random.nextInt(60), true);
         }
         int flames = DamageParticles.count(tick.wreckFire() * 0.8D * scale * tick.density(), random);

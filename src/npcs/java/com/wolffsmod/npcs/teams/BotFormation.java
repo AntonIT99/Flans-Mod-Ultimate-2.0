@@ -35,7 +35,7 @@ public final class BotFormation
         int spiralIndex = index - posts.size();
         if (spiralIndex == 0 && posts.isEmpty())
             return target;
-        double distance = Math.min(Math.max(1D, radius * 0.8D), FIRST_RING + RING_STEP * Math.sqrt(spiralIndex));
+        double distance = Math.min(Math.max(0D, radius * 0.8D), FIRST_RING + RING_STEP * Math.sqrt(spiralIndex));
         double angle = spiralIndex * GOLDEN_ANGLE;
         return target.add(Math.cos(angle) * distance, 0D, Math.sin(angle) * distance);
     }

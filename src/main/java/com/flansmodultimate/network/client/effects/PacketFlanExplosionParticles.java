@@ -32,10 +32,6 @@ import net.minecraft.world.phys.Vec3;
 @NoArgsConstructor
 public class PacketFlanExplosionParticles implements IClientPacket
 {
-    /** Blast radius at which flare/debris particles reach their largest size. */
-    private static final float MAX_SCALE_RADIUS = 60.0F;
-    private static final float MAX_PARTICLE_SCALE = 4.0F;
-
     /** Where the shockwave ring starts, as a share of the blast radius it sweeps out to. */
     private static final float SHOCKWAVE_START_SHARE = 0.2F;
     /**
@@ -67,6 +63,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
     private int numSmoke;
     private int numDebris;
     private float blastRadius;
+    /** Charge-normalized visual reference radius, not the configured gameplay crater radius. */
     private float explosionRadius;
     private float fragRadius;
     private float fragIntensity;
@@ -138,19 +135,14 @@ public class PacketFlanExplosionParticles implements IClientPacket
         boolean groundBurst = isGroundBurst(level, position);
 
         spawnFlash();
-        spawnFireball(lifetimeScale);
+        spawnFireball(level);
 
-        // Bigger blasts get bigger flares and debris rather than just more of them, both for
-        // the visual read (a huge charge should look huge, not just noisy) and because the
-        // particle count still comes from the content pack's flat FlareParticleCount /
-        // DebrisParticleCount, which does not scale with the blast on its own. The counts are
-        // then grown for the charge too, so a heavy round is not limited to whatever number a
-        // pack author happened to pick for a hand grenade.
-        float t = Mth.clamp(blastRadius / MAX_SCALE_RADIUS, 0.0F, 1.0F);
-        float particleScale = 1.0F + t * (MAX_PARTICLE_SCALE - 1.0F);
-
-        spawn(level, FlanParticles.FM_FLARE, position, ExplosionVisuals.scaledCount(numSmoke, explosionRadius), blastRadius * 0.12F, particleScale, lifetimeScale);
-        spawn(level, FlanParticles.FM_DEBRIS_1, position, ExplosionVisuals.scaledCount(numDebris, explosionRadius), blastRadius * 0.12F, particleScale, lifetimeScale);
+        // Keep burning ejecta compact and short-lived; fragmentation has its own envelope cues.
+        float diameter = ExplosionVisuals.fireballDiameter(explosionRadius);
+        float particleScale = Mth.clamp(diameter * 0.04F, 0.25F, 1.2F);
+        float ejectaSpeed = Math.min(1.5F, diameter * 0.04F);
+        spawn(level, FlanParticles.FM_FLARE, position, ExplosionVisuals.scaledCount(numSmoke, explosionRadius), ejectaSpeed, particleScale, lifetimeScale * 0.03F);
+        spawn(level, FlanParticles.FM_DEBRIS_1, position, ExplosionVisuals.scaledCount(numDebris, explosionRadius), ejectaSpeed, particleScale, lifetimeScale);
 
         // The envelope cues go before the extra layers deliberately: they tell a player how far
         // the explosion can actually hurt them, so if a barrage exhausts the client's particle
@@ -179,8 +171,8 @@ public class PacketFlanExplosionParticles implements IClientPacket
             return;
 
         RandomSource random = level.random;
-        double spread = explosionRadius * layer.spreadShare();
-        double speed = explosionRadius * layer.speedShare();
+        double spread = ExplosionVisuals.fireballDiameter(explosionRadius) * layer.spreadShare();
+        double speed = ExplosionVisuals.fireballDiameter(explosionRadius) * layer.speedShare();
 
         for (int i = 0; i < count; i++)
         {
@@ -202,7 +194,8 @@ public class PacketFlanExplosionParticles implements IClientPacket
             if (at == null)
                 continue;
 
-            ClientHooks.RENDER.spawnParticle(layer.particle(), at.x, at.y, at.z, dx * speed * jitter, vertical * speed * jitter, dz * speed * jitter, 1.0F, lifetimeScale * layer.lifetimeShare());
+            ClientHooks.RENDER.spawnParticle(layer.particle(), at.x, at.y, at.z, dx * speed * jitter, vertical * speed * jitter, dz * speed * jitter,
+                Math.min(1F, ExplosionVisuals.fireballDiameter(explosionRadius) * 0.12F), lifetimeScale * layer.lifetimeShare());
         }
     }
 
@@ -262,33 +255,29 @@ public class PacketFlanExplosionParticles implements IClientPacket
     }
 
     /**
-     * The classic Minecraft explosion puff, blown up to match the charge. Its size is linear in
-     * the crater radius, which is what makes a heavy charge actually read as heavy: the vanilla
-     * emitter is a fixed size no matter the yield, so without this a 100 block detonation looks
-     * exactly like a stick of TNT viewed from further away. A handful of sprites are scattered
-     * through the crater rather than one pinned to the centre, so the fireball keeps some depth
-     * instead of reading as a single flat billboard.
-     * <p>
-     * How long it burns for comes from the charge as well, but that duration is achieved by
-     * replacing puffs as they expire rather than by stretching any one of them: a single sprite
-     * told to live ten times longer just animates ten times slower. Each puff runs its own
-     * animation at its natural speed, and fresh ones keep taking over until the time is up. A
-     * small round asks for a duration under one puff's life, which leaves it a single burst.
-     * <p>
-     * The opening waves burn as the fire-explosion sprite and the rest cool to the grey puff, so a
-     * detonation reads as fire turning into smoke. A fire explosion stays fire the whole way.
+     * One brief burst, with the scatter included in its diameter. Particle lifetimes are shortened
+     * to the hot-phase budget rather than replenishing animated fire for several seconds.
+     * The staged smoke supplies the cooling cloud independently.
      */
-    private void spawnFireball(float lifetimeScale)
+    private void spawnFireball(Level level)
     {
         if (explosionRadius <= 0F)
             return;
-
-        double spread = explosionRadius * 0.3D;
-        double drift = explosionRadius * 0.02D;
-
-        ClientHooks.RENDER.spawnSustainedParticles(FlanParticles.FM_FIRE_EXPLOSION, FlanParticles.LARGE_EXPLODE, ExplosionVisuals.fireballHotTicks(explosionRadius, fiery), position.x, position.y,
-            position.z, spread, drift, ExplosionVisuals.fireballScale(explosionRadius), ExplosionVisuals.fireballCount(explosionRadius), ExplosionVisuals.fireballDurationTicks(explosionRadius),
-            lifetimeScale);
+        float diameter = ExplosionVisuals.fireballDiameter(explosionRadius);
+        int hotTicks = ExplosionVisuals.fireballHotTicks(explosionRadius, fiery);
+        String particle = hotTicks > 0 ? FlanParticles.FM_FIRE_EXPLOSION : FlanParticles.LARGE_EXPLODE;
+        int duration = hotTicks > 0 ? hotTicks : ExplosionVisuals.fireballDurationTicks(explosionRadius);
+        // Fire sprites live 8-11 ticks; the grey vanilla puff lives 6-9. Bound the final puff's life.
+        float lifetime = duration / (hotTicks > 0 ? 11F : 9F);
+        for (int i = 0; i < ExplosionVisuals.fireballCount(explosionRadius); i++)
+        {
+            double dx = (level.random.nextDouble() * 2D - 1D) * diameter * 0.15D;
+            double dy = (level.random.nextDouble() * 2D - 1D) * diameter * 0.15D;
+            double dz = (level.random.nextDouble() * 2D - 1D) * diameter * 0.15D;
+            Vec3 at = place(level, dx, dy, dz);
+            if (at != null)
+                ClientHooks.RENDER.spawnParticle(particle, at.x, at.y, at.z, 0D, 0D, 0D, ExplosionVisuals.fireballScale(explosionRadius), lifetime);
+        }
     }
 
     /**
@@ -399,8 +388,8 @@ public class PacketFlanExplosionParticles implements IClientPacket
             return;
 
         RandomSource random = level.random;
-        double rise = explosionRadius * COLUMN_RISE_PER_RADIUS;
-        double foot = explosionRadius * COLUMN_FOOT_SHARE;
+        double rise = ExplosionVisuals.stagedSizingRadius(explosionRadius) * COLUMN_RISE_PER_RADIUS;
+        double foot = ExplosionVisuals.stagedSizingRadius(explosionRadius) * COLUMN_FOOT_SHARE;
         float columnLifetime = ExplosionVisuals.lifetimeScale(explosionRadius);
 
         for (int i = 0; i < count; i++)

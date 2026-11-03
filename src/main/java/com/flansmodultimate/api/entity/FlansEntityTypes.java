@@ -6,24 +6,15 @@
 package com.flansmodultimate.api.entity;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.AircraftMode;
-import com.flansmodultimate.api.driveables.DriveableAttitude;
-import com.flansmodultimate.api.driveables.FlightPerformance;
-import com.flansmodultimate.api.driveables.GroundHandling;
-import com.flansmodultimate.api.driveables.GroundPropulsion;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.MechaMobility;
-import com.flansmodultimate.api.driveables.ReloadCycle;
-import com.flansmodultimate.api.driveables.TerrainAttitude;
-import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.parts.PartArmor;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.item.DriveableItem;
+import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
-import com.flansmodultimate.common.types.DriveableMobilityProfiles;
-import com.flansmodultimate.common.types.EntityTypePropertySupport;
-import com.flansmodultimate.common.types.GroundPropulsionProfiles;
+import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,10 +24,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 /** Read-only AA and driveable property inspection for addons, without creating a live vehicle. */
@@ -478,9 +466,23 @@ public final class FlansEntityTypes
      */
     public static Optional<Entity> spawnDriveable(ServerLevel level, IContentType type, Vec3 position, float yaw, float health)
     {
+        return spawnDriveable(level, type, position, yaw, health, 0);
+    }
+
+    /**
+     * As {@link #spawnDriveable(ServerLevel, IContentType, Vec3, float, float)}, painted with one of the definition's paintjobs.
+     *
+     * @param paintjob
+     *            the paintjob id, 0 for the default one
+     */
+    public static Optional<Entity> spawnDriveable(ServerLevel level, IContentType type, Vec3 position, float yaw, float health, int paintjob)
+    {
         if (!(type.getItem() instanceof DriveableItem<?, ?> item))
             return Optional.empty();
-        Driveable driveable = item.spawnDriveable(level, position.x, position.y, position.z, yaw, null, ItemStack.EMPTY);
+        ItemStack source = new ItemStack(item);
+        if (paintjob != 0)
+            ItemStackData.update(source, tag -> tag.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob));
+        Driveable driveable = item.spawnDriveable(level, position.x, position.y, position.z, yaw, null, source);
         if (driveable == null)
             return Optional.empty();
         driveable.wearDown(health);

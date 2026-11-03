@@ -12,7 +12,8 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 class BotSquadTacticsTest
@@ -49,7 +50,7 @@ class BotSquadTacticsTest
         squad.getSlots().add(slot.getId());
         battle.getSlotOfEntity().put(id, slot.getId());
         var snapshot = new SquadCombat.Member(id, npc.position(), 10, true, false, false, false, BotSettings.ClassRole.ASSAULT, true, target);
-        var field = new BotSquadTactics.Field(List.of(target), List.of(npc.position()), List.of(), List.of(), List.of(), 0);
+        var field = new BotSquadTactics.Field(List.of(npc.position().add(20D, 0D, 0D)), List.of(npc.position()), List.of(), List.of(), List.of(), 0);
         var view = new Doctrine.SquadView(squad.getId(), BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, npc.position(), 1, false, null);
         when(combat.commandMembers(level, battle, squad, 0L)).thenReturn(List.of(snapshot));
         BotSquadTactics.update(level, battle, view, field, 0);

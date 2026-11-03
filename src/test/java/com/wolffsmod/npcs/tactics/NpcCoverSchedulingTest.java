@@ -5,6 +5,7 @@ import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.diag.NpcBudgets;
 import com.wolffsmod.npcs.sim.NpcSight;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataAI;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -36,8 +37,12 @@ class NpcCoverSchedulingTest
         private long now;
         private int rays;
 
-        private Fixture(boolean visible)
+        @SuppressWarnings("java:S3011") // Mockito skips the dependency's final AI container construction.
+        private Fixture(boolean visible) throws ReflectiveOperationException
         {
+            var ai = EntityNPCInterface.class.getField("ais");
+            ai.setAccessible(true);
+            ai.set(npc, new DataAI(npc));
             when(npc.level()).thenReturn(level);
             when(npc.position()).thenReturn(new Vec3(0D, 64D, 0D));
             when(npc.blockPosition()).thenReturn(new BlockPos(0, 64, 0));
@@ -72,7 +77,7 @@ class NpcCoverSchedulingTest
 
     @Test
     @SuppressWarnings("java:S8714") // fail bounds a resumable search; the try-with-resources only closes static mocks.
-    void aCoverShortlistResumesAcrossTicksAndBoundsEachSlicesRays()
+    void aCoverShortlistResumesAcrossTicksAndBoundsEachSlicesRays() throws ReflectiveOperationException
     {
         try (Fixture fixture = new Fixture(false))
         {
@@ -101,7 +106,7 @@ class NpcCoverSchedulingTest
 
     @Test
     @SuppressWarnings("java:S8714") // fail bounds a resumable search; the try-with-resources only closes static mocks.
-    void budgetDeferralIsNotReportedAsNoCoverAndResumesAfterCapacityReturns()
+    void budgetDeferralIsNotReportedAsNoCoverAndResumesAfterCapacityReturns() throws ReflectiveOperationException
     {
         try (Fixture fixture = new Fixture(false); MockedStatic<NpcBudgets> budgets = mockStatic(NpcBudgets.class))
         {
@@ -127,7 +132,7 @@ class NpcCoverSchedulingTest
 
     @Test
     @SuppressWarnings("java:S8714") // fail bounds a resumable search; the try-with-resources only closes static mocks.
-    void firingCoverSearchRetainsItsCandidateLimitAcrossSlicesInOpenGround()
+    void firingCoverSearchRetainsItsCandidateLimitAcrossSlicesInOpenGround() throws ReflectiveOperationException
     {
         try (Fixture fixture = new Fixture(true))
         {
