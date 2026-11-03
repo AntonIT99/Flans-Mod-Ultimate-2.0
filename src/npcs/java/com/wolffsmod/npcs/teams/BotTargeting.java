@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.teams;
 import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.wolffsmod.npcs.combat.NpcAirCombat;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcVehicleCombat;
 import com.wolffsmod.npcs.combat.NpcWeaponChoice;
@@ -32,6 +33,8 @@ final class BotTargeting
     /** @return 0 for a candidate a soldier looks at first, 1 for one it looks at after those; 0 for every candidate of anyone else */
     static int rank(EntityNPCInterface npc, LivingEntity candidate)
     {
+        if (NpcAirCombat.active(npc))
+            return NpcAirCombat.of(npc).rank(npc, candidate);
         if (NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) && NpcVehicleThreats.groundVehicle(npc))
             return NpcVehicleCombat.threatRank(npc, candidate);
         if (NpcEquipment.enabled(npc, Feature.SUITED_TARGETS) && NpcVehicleThreats.groundVehicle(candidate)

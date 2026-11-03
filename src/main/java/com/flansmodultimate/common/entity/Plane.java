@@ -1461,7 +1461,7 @@ public class Plane extends Driveable implements PlaneVisual
         createExplosion(new DriveableExplosion(Math.max(type.getDeathFireRadius(), blast.fireRadius()), blast.radius(), type.isDeathExplosionBreaksBlocks()), position());
         // Sent on top of the blast's own visuals, which are sized by the radius
         // that does harm and so always look far too small for an aircraft.
-        PacketHandler.sendToAllAround(new PacketDriveableCrashFireball(position(), blast.visualRadius()), position(), CRASH_FIREBALL_VIEW_RANGE, level().dimension());
+        PacketHandler.sendToAllAround(new PacketDriveableCrashFireball(getId(), position(), blast.visualRadius()), position(), CRASH_FIREBALL_VIEW_RANGE, level().dimension());
     }
 
     /** How full the tank was, where a type that carries no tank always has something to burn. */

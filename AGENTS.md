@@ -38,6 +38,16 @@ matching `mineflayer_<minecraft version>` MCP server and isolated
 `runServer -PwithMineflayer` profile. Check `get_server_status` before joining;
 bots do not replace real-client rendering, GUI or modded-physics checks.
 
+## Reading and investigation
+
+- Use `rg` to locate relevant symbols or headings, then read matching sections and enough
+  surrounding code to understand callers and invariants. Expand when evidence requires it;
+  avoid dumping whole large files or reference repositories by default.
+- Read applicable skills once and follow only references relevant to the selected workflow.
+  For long guides, locate and read relevant sections rather than every section.
+- Reuse instructions, excerpts and findings already in the current context; reread when files
+  change, context is missing or correctness needs confirmation.
+
 ## Task-specific workflows
 
 - For version-dependent changes or work ported between maintained branches, read
@@ -95,6 +105,25 @@ bots do not replace real-client rendering, GUI or modded-physics checks.
   Before assuming a `src/` directory is untracked or disposable, check for a nested
   `.git`.
 
+## Delegated commits
+
+When the user requests a commit in a worktree containing unrelated changes:
+
+- The main agent identifies the intended repository, files and exact hunks, describes what
+  belongs in the commit, and supplies the commit message. Do not delegate ownership decisions
+  based only on a fresh subagent's interpretation of the working diff.
+- Delegate staging and committing to an available Terra, Luna, Sonnet or Haiku subagent with
+  low reasoning for mechanical staging or medium reasoning for mixed hunks, where supported.
+  Give it fresh context with the explicit scope, exact hunks or patch, commit message and
+  completed validation results. Do not edit the affected files or index concurrently.
+- The subagent stages only the specified changes, inspects the complete staged diff, runs
+  `git diff --cached --check`, and commits only the intended changes. Preserve unrelated working
+  and staged changes. Stop and return to the main agent on ambiguous hunks or pre-existing
+  staged changes whose ownership is unclear; never reset or unstage them to simplify the commit.
+- Return the commit hash, included paths and any blockers in a concise summary. Reuse successful
+  validation; a commit-only request does not trigger new builds or inspections. If no eligible
+  subagent is available, report the limitation before substituting another model or workflow.
+
 ## Changelogs
 
 `CHANGELOG.md` holds the release notes of the next main mod release, and `src/npcs/CHANGELOG.md`
@@ -117,30 +146,9 @@ root one. These are the one exception to the documentation rule above: keep them
 
 ## Mixins
 
-Mixins live in `src/main/java/com/flansmodultimate/mixin` (config
-`src/main/resources/flansmodultimate.mixins.json`) and `src/npcs/java/com/wolffsmod/npcs/mixin`
-(config `src/npcs/resources/wolffsmodnpcs.mixins.json`).
-
-- At most one mixin class per target class, across every source set and mixin config. Add new
-  injections, shadows, and accessors to the existing class for that target instead of creating
-  another. A class with a multi-target `@Mixin({A.class, B.class})` owns all of those targets.
-- Name a new mixin after its target (`EntityMixin`, `EntityRendererMixin`); `*Accessor` is for a
-  class that only declares `@Accessor`/`@Invoker` methods. Older feature-named mixins
-  (for example `NpcArmorControlsMixin`) keep their names.
-- Keep each class's Javadoc listing what it does for its target, so merged hooks stay findable,
-  and group the hooks by feature inside the class.
-- Register every mixin in its config: `mixins` for targets present on both sides, `client` for
-  client-only targets. A mixin whose target is common but that also hooks a client-only member
-  (for example `@OnlyIn(Dist.CLIENT)` methods) stays in `mixins` and marks that injector
-  `require = 0`, with a comment saying why.
-- Prefix handler methods, `@Unique` members, accessor/invoker methods, and methods of
-  interfaces a mixin adds to its target with the mod id, without `$`, so they cannot collide
-  with the target or other mods: `flansmodultimateCollideWithDriveableHulls`,
-  `wolffsmodnpcsShieldCooldown`, and `WOLFFSMODNPCS_DISTANCE_DATA` for `@Unique` constants.
-- IntelliJ and SonarLint misread mixin code. Suppress such false positives with
-  `@SuppressWarnings` on the class or member plus a short reason, for example `DataFlowIssue`
-  on `(Target) (Object) this` casts, `java:S1905` on a required `(Object) this instanceof`
-  cast, or `FieldCanBeLocal` on `@Shadow` fields.
+Before editing any mixin or mixin config, read
+`src/main/java/com/flansmodultimate/mixin/AGENTS.md`; its shared rules apply to all
+source sets, including NPCs. Keep at most one mixin class per target across the repository.
 
 ## External Reference Paths
 
@@ -190,58 +198,32 @@ checking. They are read-only references: never edit them unless explicitly asked
   `AtomicReference` or similar instead).
 - When code is required but a SonarLint or IntelliJ check flags it, keep the code and add a
   narrowly scoped `@SuppressWarnings` with a short reason, so the code is visibly intentional.
+- When SonarLint or IntelliJ inspections are required, delegate their execution, findings analysis, fixes and reruns to an
+  available Terra, Luna, Sonnet or Haiku subagent. Prefer Terra with medium reasoning for Java findings;
+  use Luna or Haiku for simple, mechanical findings, or Sonnet when available. Select a comparable thinking
+  level where supported, raising it within these model families for harder findings. Opus, Sol
+  and Astra must only coordinate this work and consume a concise result, not analyse or fix the
+  SonarLint or IntelliJ findings themselves. Start the subagent with fresh context, explicit affected paths,
+  source sets and task scope rather than the full parent conversation. Use the validation
+  coordinator and do not edit the delegated files concurrently. Preserve behaviour and unrelated
+  changes; return changed paths, validation results and unresolved blockers. If no eligible model
+  or model-selectable subagent tool is available, report the affected analysis as incomplete rather than
+  silently falling back to Opus, Sol or Astra. This delegation does not make either analysis mandatory
+  for changes exempted below.
 
 ## IntelliJ Inspections
 
-IntelliJ editor warnings are available headlessly through
-`scripts/idea-inspect.ps1`, which starts the local IDE headlessly once per call with the shared
-profile `.idea/inspectionProfiles/Project_Default.xml` (works while the IDE is open and
-alongside other runs). The Minecraft Development plugin is taken from the local IntelliJ
-installation when present, so mixins and Minecraft APIs are understood; its
-`AddedMixinMembersNamePattern` is switched off, because it contradicts the mixin naming rule above.
-
-- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/idea-inspect.ps1` inspects
-  files with uncommitted changes; `-Path <dir>` inspects a directory instead;
-  `-MinSeverity WARNING` hides weak warnings; `-Json` gives machine-readable output.
-- Finish source edits and `spotlessApply` before inspecting. Start the inspection through the
-  validation coordinator described below and read its result before reporting. It may run in the
-  background, but queues behind validation of the same checkout. Run it once per task, not after
-  every edit, and do not edit inspected sources while it runs.
-- By default the whole-project inspections (duplicated code, unused declarations, spelling and
-  grammar, vulnerable libraries, Javadoc) are disabled: they analyse the whole dependency graph
-  however narrow the scope is. `-Full` adds them back; use it when the question
-  really is about dead code or duplication.
-- Every run indexes the project and takes one to a few minutes, so give it a 10-minute timeout. Keeping
-  the index between runs is not an option: with the indexes of an earlier run in place the headless IDE
-  analyses the file snapshot they were built from, and reports warnings for content that has since been
-  edited. What does carry over is the result cache under `build/idea-inspect/cache`, so re-running on an
-  unchanged working tree answers instantly; `-Rebuild` ignores it.
-- Capture the launched inspection's process ID and command when starting it, and enforce the timeout
-  on that process only. Verify its parent command and run directory before stopping it; another
-  inspection or the user's open IDE may be running alongside it. Report index failures or timeouts
-  as incomplete validation instead of repeatedly starting fresh inspections during the same task.
-- Output lines are `file:line: [SEVERITY] InspectionId: message`, followed by the problem count and
-  how the answer was produced (`cached`, `warm index`, `cold index`).
-- After editing Java, run it on the changed files, and fix warnings you introduced in touched
-  code. Pre-existing warnings are fixed only when in scope; report remaining ones you chose
-  to leave. Treat `LombokGetterMayBeUsed`-style suggestions per the Lombok rule above.
-- When an inspection conflicts with SonarLint (for example `PointlessBooleanExpression` on
-  `Boolean.TRUE.equals(...)`, which Sonar java:S5411 requires), keep the Sonar-compliant code.
-- If IntelliJ is not installed (`IDEA_HOME` unset and not found), say that this check could
-  not be performed.
-- `scripts/idea-inspect-hook.ps1` wraps the check as a Claude Code `Stop` hook: it runs on the
-  changed Java and blocks once with the warnings, so the check cannot be forgotten. It costs
-  nothing when no Java changed or the result is cached. Register it in `.claude/settings.json`
-  under `hooks.Stop` as `powershell -NoProfile -ExecutionPolicy Bypass -File
-  scripts/idea-inspect-hook.ps1` with a 600-second timeout.
+When running or maintaining IntelliJ inspections, read `docs/intellij-inspections.md`
+for scope, cache, timeout and process-safety instructions. Use the delegated analysis
+workflow above. The Build and Validation section below determines when inspections apply.
 
 ## Build and Validation
 
 For small, low-risk changes (for example a localized UI layout fix, typo, or simple
-data correction), skip SonarLint and IntelliJ inspections unless explicitly requested
-or a specific concern warrants them. This exception overrides the requirements above
-and below to run those two checks. Keep formatting checks, scoped diff review, and
-validation appropriate to the change; mention skipped inspections in the final response.
+data correction), skip SonarLint unless explicitly requested or a specific concern warrants it.
+Run IntelliJ inspections only for large Java changes or when explicitly requested. Keep formatting
+checks, scoped diff review, and validation appropriate to the change; mention skipped inspections
+in the final response.
 
 Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
 `officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Keep `gradlew` executable.
@@ -274,7 +256,7 @@ at the end of every task. `build` assembles and reobfuscates every module, inclu
   not require repeating previously completed checks.
 
 Before completion, review the scoped diff, run relevant checks, `spotlessCheck`,
-SonarLint on touched source sets, and `git diff --check`,
+SonarLint on touched source sets unless exempted above (using the delegated workflow), and `git diff --check`,
 and report validation that could not be performed.
 
 ### Parallel tasks and shared build outputs

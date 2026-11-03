@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.tactics.NpcTacticState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.ai.EntityAISprintToTarget;
+import noppes.npcs.api.constants.AnimationType;
 import noppes.npcs.entity.EntityNPCInterface;
 
 import net.minecraft.world.entity.LivingEntity;
@@ -46,7 +47,8 @@ public final class NpcSprinting
 
     private static boolean wantsSprint(EntityNPCInterface npc, boolean sprinting, boolean objectiveTravel)
     {
-        if (!npc.ais.canSprint || !npc.isAlive() || npc.isKilled() || npc.isNoAi() || npc.isPassenger() || npc.ais.movementType != 0 || npc.isInWater() || npc.isInLava())
+        if (!npc.ais.canSprint || !npc.isAlive() || npc.isKilled() || npc.isNoAi() || npc.isPassenger() || npc.ais.movementType != 0 || npc.isInWater() || npc.isInLava()
+            || npc.currentAnimation == AnimationType.CROUCH || npc.currentAnimation == AnimationType.CRAWL)
             return false;
         if (npc.getNavigation().isDone())
             return false;

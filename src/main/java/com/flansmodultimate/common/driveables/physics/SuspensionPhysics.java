@@ -80,6 +80,27 @@ public final class SuspensionPhysics
         return (float) clamp(desired, current - maximumChange, current + maximumChange);
     }
 
+    /**
+     * Moves a drawn model's vertical offset toward the one that puts its wheels on their support, with the same
+     * over-damped feel as {@link #dampVerticalVelocity}.
+     *
+     * @param current
+     *            current offset, blocks
+     * @param supportError
+     *            how far the supporting wheel sits below its support at the current offset, blocks
+     * @param scale
+     *            entity scale, so large models settle as fast as small ones look to
+     */
+    public static float smoothLift(float current, double supportError, float springStrength, double scale)
+    {
+        if (!Float.isFinite(current) || !Double.isFinite(supportError))
+            return 0F;
+        double spring = clamp(springStrength, 0D, 1D);
+        double response = 0.25D + spring * 0.35D;
+        double maximumChange = (0.12D + spring * 0.08D) * Math.max(0.1D, Double.isFinite(scale) ? scale : 1D);
+        return (float) (current + clamp(supportError * response, -maximumChange, maximumChange));
+    }
+
     private static double clamp(double value, double minimum, double maximum)
     {
         return Math.max(minimum, Math.min(maximum, value));

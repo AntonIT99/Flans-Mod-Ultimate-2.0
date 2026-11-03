@@ -11,6 +11,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class RoundRulesTest
 {
     @Test
+    void deployedGunDestructionDefaultsOffAndPersists()
+    {
+        RoundRules defaults = new RoundRules();
+        assertFalse(defaults.enabled(RoundRule.DESTROYABLE_DEPLOYED_GUNS));
+        defaults.set(RoundRule.DESTROYABLE_DEPLOYED_GUNS, "true");
+        RoundRules round = new RoundRules();
+        assertTrue(round.resolve(RoundRules.load(defaults.save())).enabled(RoundRule.DESTROYABLE_DEPLOYED_GUNS));
+        round.set(RoundRule.DESTROYABLE_DEPLOYED_GUNS, "false");
+        assertFalse(RoundRules.load(round.save()).resolve(defaults).enabled(RoundRule.DESTROYABLE_DEPLOYED_GUNS));
+    }
+
+    @Test
     void legacyRoundsHaveNoEnabledRestrictionsOrTimingChanges()
     {
         TeamsRound old = new TeamsRound("map", "tdm", List.of("red", "blue"), 15, 50);

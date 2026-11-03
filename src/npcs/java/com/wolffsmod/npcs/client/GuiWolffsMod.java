@@ -545,13 +545,13 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         /** Its single tab keeps the General name, which {@link #changes(Tab)} uses to count the knockback and minimum-hit controls. */
         DAMAGE(Section.PROTECTION, Scope.ALL, Tab.named(GENERAL_TAB, Feature.INVULNERABLE, Feature.FLAN_DAMAGE_TYPES, Feature.LIMB_HITBOXES)),
         MODEL_ARMOUR(Section.PROTECTION, Scope.MODELS, Tab.of(Feature.VEHICLE_DAMAGE, Feature.MODEL_ARMOUR)),
-        PARTS(Section.PROTECTION, Scope.DRIVEABLES, Tab.of(Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.AUTOMATIC_REPAIRS, Feature.BROKEN_PARTS_PASS,
+        PARTS(Section.PROTECTION, Scope.DRIVEABLES, Tab.of(Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.AUTOMATIC_REPAIRS,
             Feature.PART_REPAIR, Feature.SOLID_HITBOXES)),
         TACTICS(Section.PLANNING, Scope.ALL,
             Tab.named("tactic_movement", Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN, Feature.SHIP_WEAPON_BEARING),
             Tab.named("return_fire", Value.THREAT_MEMORY, Value.ALERT_RADIUS, Feature.OUTRANGED_COVER, Feature.SUPPRESSIBLE),
             Tab.named("survival", Scope.STANDARD, Feature.TACTICAL_COVER, Feature.AVOID_UNWINNABLE_FIGHTS, Feature.VEHICLE_EVASION, Feature.ADAPTIVE_FLANKING),
-            Tab.named("advance", Scope.STANDARD, Feature.COMBAT_ADVANCE, Feature.COVERING_FIRE, Value.ADVANCE_DISTANCE, Value.ADVANCE_FIRE_TICKS),
+            Tab.named("advance", Scope.STANDARD, Feature.COMBAT_ADVANCE, Feature.COVERING_FIRE, Feature.TACTICAL_POSTURES, Value.ADVANCE_DISTANCE, Value.ADVANCE_FIRE_TICKS),
             Tab.named("movement_limits", Value.TACTICAL_PROFILE, Value.COMBAT_MOVEMENT, Value.MANOEUVRE_RADIUS, Value.WITHDRAW_DISTANCE, Feature.ALLY_SPACING, Value.ALLY_GAP),
             Tab.named("vehicle_tactics", Feature.ADAPTIVE_VEHICLE_COMBAT, Feature.DEFENSIVE_GUNNERS),
             Tab.named("duties", Scope.STANDARD, Value.DUTY, Value.RETREAT_HEALTH, Feature.SUITED_TARGETS)),
@@ -560,7 +560,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("movement_terrain", Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Feature.STEP_CLIMB, Value.STEP_HEIGHT, Feature.SLOPE_PHYSICS),
             Tab.named("movement_speed", Value.LAND_SPEED, Value.WATER_SPEED),
             Tab.named("movement_watercraft", Value.SUBMARINE_DEPTH, Value.DIVE_RATE),
-            Tab.named("movement_flight", Scope.PLANES_AND_VEHICLES, Value.FLIGHT_TYPE, Value.ATTACK_ALTITUDE, Feature.MODEL_FLIGHT, Value.FLIGHT_SPEED, Value.CRUISE_SPEED,
+            Tab.named("movement_flight", Scope.PLANES_AND_VEHICLES, Value.FLIGHT_TYPE, Value.AIRCRAFT_ROLE, Value.AIR_SEARCH_RANGE, Value.ATTACK_ALTITUDE, Feature.MODEL_FLIGHT, Layout.COLUMN, Value.FLIGHT_SPEED, Value.CRUISE_SPEED,
                 Value.FLIGHT_TURN_RATE, Value.CLIMB_RATE)),
         VEHICLE_HANDLING(Section.TRAVEL, Scope.VEHICLES,
             Tab.named("vehicle_setup", MovementRow.CONTROLLER, Value.DRIVE_PRESET, Value.DRIVE_TYPE),
@@ -1841,8 +1841,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             {
                 case MODEL_WEAPON_STATS, SECONDARY_BANK, ALTERNATE_BARRELS, RELOAD_CYCLE, MODEL_MUZZLES, TURRET_MUZZLES, EYE_AT_MUZZLE, ADVANCED_LEAD, FIRE_WHEN_ALIGNED, GRADUAL_AIM, PASSENGER_GUNS,
                     TURRET_LOCKED, VEHICLE_DAMAGE, MODEL_ARMOUR, ANIMATED_MODEL, DOORS_OPEN, GEAR_UP, WINGS_FOLDED, ENGINE_RUNNING, FULL_THROTTLE, RIDER_AT_SEAT, MODEL_CULLING -> Scope.MODELS;
-                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, AUTOMATIC_REPAIRS, BROKEN_PARTS_PASS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, UNMANNED_GUNS_FIRE, GUNNER_TARGETS,
-                    DRIVER_GUNS, MUZZLE_FLASHES -> Scope.DRIVEABLES;
+                case PART_HITBOXES, PART_HEALTH, PART_EFFECTS, AUTOMATIC_REPAIRS, PART_REPAIR, SOLID_HITBOXES, HITBOX_OUTLINES, MANNED_GUNS_FIRE, UNMANNED_GUNS_FIRE, GUNNER_TARGETS, DRIVER_GUNS,
+                    MUZZLE_FLASHES -> Scope.DRIVEABLES;
                 case HULL_ASSISTS_AIM, MANOEUVRE_TO_FIRE, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
                 case HULL_FACES_TRAVEL -> Scope.HULLS;
                 case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;
@@ -1979,6 +1979,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case DRIVE_PRESET -> NpcTuning.DrivePreset.values();
             case DRIVE_TYPE -> NpcTuning.DriveType.values();
             case FLIGHT_TYPE -> NpcTuning.Flight.values();
+            case AIRCRAFT_ROLE -> NpcTuning.AircraftRole.values();
             case WEAPON_SWITCH -> NpcTuning.WeaponSwitch.values();
             case TACTIC -> NpcTuning.Tactic.values();
             case COMBAT_MOVEMENT -> NpcTuning.MovementFreedom.values();

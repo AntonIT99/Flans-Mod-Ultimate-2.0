@@ -146,7 +146,7 @@ public final class NpcAmmunition
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
         boolean secondary = NpcEquipment.secondaryBank(npc, weapon);
         // Anything but Flan ammunition in the projectile slot is the NPC's own Custom NPCs projectile.
-        boolean arbitrarySlot = slotChoice(npc) && !(weapon instanceof IDriveableType && NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT));
+        boolean arbitrarySlot = slotChoice(npc) && !(weapon instanceof IDriveableType && (NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || NpcAirCombat.active(npc)));
         if (!projectile.isEmpty() && (arbitrarySlot || !FlansProjectiles.isProjectile(projectile)))
             return projectile;
         List<ItemStack> pool = carried(npc, weapon, secondary, projectile);

@@ -11,6 +11,7 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -100,7 +101,19 @@ public class BlastPuffParticle extends TextureSheetParticle
     @Nullable
     public static BlastPuffParticle createFlat(ClientLevel level, double x, double y, double z, Look look, float size, int lifetime)
     {
-        return sprites == null ? null : new Flat(level, x, y, z, sprites, look, size, lifetime);
+        return createFlat(level, x, y, z, look, size, lifetime, null);
+    }
+
+    /**
+     * As {@link #createFlat(ClientLevel, double, double, double, Look, float, int)}, but bound to an entity: when that entity is
+     * destroyed or removed for good, the mark fades out over a short time instead of outliving it.
+     */
+    // Keeps the existing flat-particle factory parameters together with the optional owner.
+    @SuppressWarnings("java:S107")
+    @Nullable
+    public static BlastPuffParticle createFlat(ClientLevel level, double x, double y, double z, Look look, float size, int lifetime, @Nullable Entity owner)
+    {
+        return sprites == null ? null : new Flat(level, x, y, z, sprites, look, size, lifetime, owner);
     }
 
     @Override
@@ -187,14 +200,38 @@ public class BlastPuffParticle extends TextureSheetParticle
     private static final class Flat extends BlastPuffParticle
     {
         private static final float[][] CORNERS = {{-1F, -1F}, {-1F, 1F}, {1F, 1F}, {1F, -1F}};
+        /** Ticks a mark takes to fade once the entity it belongs to is gone. */
+        private static final int OWNER_GONE_FADE_TICKS = 40;
+
+        @Nullable
+        private final Entity owner;
+        /** The age at which the owner was found gone, or -1 while it is there. */
+        private int goneAt = -1;
 
         // Mirrors the vanilla particle constructor shape: level, position and sprites, with the look.
         @SuppressWarnings("java:S107")
-        private Flat(ClientLevel level, double x, double y, double z, SpriteSet sprites, Look look, float size, int lifetime)
+        private Flat(ClientLevel level, double x, double y, double z, SpriteSet sprites, Look look, float size, int lifetime, @Nullable Entity owner)
         {
             super(level, x, y, z, 0D, 0D, 0D, sprites, look, size, lifetime);
+            this.owner = owner;
             spin = 0F;
             hasPhysics = false;
+        }
+
+        @Override
+        public void tick()
+        {
+            if (goneAt < 0 && owner != null && owner.isRemoved())
+                goneAt = age;
+            super.tick();
+            if (goneAt >= 0 && !removed)
+            {
+                int gone = age - goneAt;
+                if (gone >= OWNER_GONE_FADE_TICKS)
+                    remove();
+                else
+                    alpha *= 1F - gone / (float) OWNER_GONE_FADE_TICKS;
+            }
         }
 
         @Override

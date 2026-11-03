@@ -96,6 +96,12 @@ public interface IClientRenderHooks
     /** Leaves a scorch mark on the ground below a point, as a fire or a crash does. */
     void spawnScorchMark(Vec3 position, float radius);
 
+    /** Leaves a scorch mark whose lifetime follows the driveable that made it. */
+    default void spawnScorchMark(Vec3 position, float radius, Driveable owner)
+    {
+        spawnScorchMark(position, radius);
+    }
+
     // Mirrors Level#addParticle: position and velocity, plus the effect options.
     @SuppressWarnings("java:S107")
     void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale);

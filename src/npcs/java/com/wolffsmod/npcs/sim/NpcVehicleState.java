@@ -122,6 +122,9 @@ public final class NpcVehicleState
     private float attitudePitch;
     @Getter
     private float attitudeBank;
+    /** Blocks a ground vehicle's model is drawn above, negative below, the NPC's feet so that its wheels rest on the terrain. */
+    @Getter
+    private float attitudeLift;
     /** Where a bomb let go now would have to come down to meet the target, while the NPC bombs one. */
     @Nullable
     private Vec3 bombPoint;
@@ -194,8 +197,10 @@ public final class NpcVehicleState
     private boolean gearDown = true;
     private float targetAttitudePitch;
     private float targetAttitudeBank;
+    private float targetAttitudeLift;
     private float previousAttitudePitch;
     private float previousAttitudeBank;
+    private float previousAttitudeLift;
 
     /**
      * A bomb let go now.
@@ -392,6 +397,8 @@ public final class NpcVehicleState
         attitudeBank = 0F;
         targetAttitudePitch = 0F;
         targetAttitudeBank = 0F;
+        attitudeLift = 0F;
+        targetAttitudeLift = 0F;
         speedFactor = 1F;
         climbRise = 0D;
         climbRun = 0D;
@@ -442,6 +449,7 @@ public final class NpcVehicleState
         turretPitch = 0F;
         attitudePitch = 0F;
         attitudeBank = 0F;
+        attitudeLift = 0F;
         sent = false;
         return created;
     }
@@ -493,7 +501,8 @@ public final class NpcVehicleState
             solvedFrom = null;
         }
         // The current terrain pose must already carry the muzzle when the firing solution is computed.
-        terrainAttitude(npc, current);
+        TerrainAttitude previousTerrain = new TerrainAttitude(attitudePitch, attitudeBank, attitudeLift);
+        terrainAttitude(npc, current, options.enabled(Feature.SOLID_HITBOXES));
         Vec3 aim = engaged ? solve(npc, current, target, options) : null;
         attitude(npc, current, aim);
         // Relative to the hull as it is pitched and banked, which the guns are carried with.
@@ -501,7 +510,17 @@ public final class NpcVehicleState
         float tolerance = tuning.get(Value.ALIGN_TOLERANCE);
         if (held && wanted != null && current.kind() == FlanModelKind.VEHICLE && options.enabled(Feature.HULL_ASSISTS_AIM) && !driving(npc))
         {
+            float sampledYaw = hullYaw;
             assistWithHull(npc, current, tuning, wanted, tolerance);
+            // A standing hull can turn after the first sample to bring a fixed gun onto its target.
+            // Sample that new footprint from the original pose, so suspension still advances only once this tick.
+            if (hullYaw != sampledYaw)
+            {
+                attitudePitch = previousTerrain.pitch();
+                attitudeBank = previousTerrain.bank();
+                attitudeLift = previousTerrain.lift();
+                terrainAttitude(npc, current, options.enabled(Feature.SOLID_HITBOXES));
+            }
             // Turning a tilted hull changes both relative traverse and elevation.
             wanted = NpcModels.relative(npc, aim, hullYaw);
         }
@@ -524,7 +543,7 @@ public final class NpcVehicleState
     private void planBombing(EntityNPCInterface npc, Layout current, @Nullable LivingEntity target, NpcWeaponOptions options)
     {
         bombPoint = null;
-        bombRun = target != null && (bombing || otherBombs && NpcBombTargets.worthBombing(target));
+        bombRun = target != null && !NpcBombTargets.airborne(target.getRootVehicle()) && (bombing || otherBombs && NpcBombTargets.worthBombing(target));
         if (target == null || !bombRun)
             return;
         if (bombing)
@@ -597,26 +616,34 @@ public final class NpcVehicleState
         attitudeBank = 0F;
     }
 
-    private void terrainAttitude(EntityNPCInterface npc, Layout current)
+    /**
+     * @param solid
+     *            whether the NPC moves its posed part hull against the terrain, which then already rests its body on the
+     *            ground: lowering that hull as well would sink it in and let it fall through
+     */
+    private void terrainAttitude(EntityNPCInterface npc, Layout current, boolean solid)
     {
         if (current.kind() != FlanModelKind.VEHICLE || isShip())
+        {
+            attitudeLift = 0F;
             return;
+        }
         if (npc.isPassenger() || npc.isInWater())
         {
             attitudePitch = 0F;
             attitudeBank = 0F;
+            attitudeLift = 0F;
             return;
         }
-        // Retain the last support pose across brief airborne gaps instead of snapping flat at every block edge.
-        if (!npc.onGround())
-            return;
+        // The wheel probes decide support, including while the mob crosses a block edge with onGround briefly false.
         FlanModelEntity model = NpcModels.flan(npc);
         if (model == null)
             return;
         TerrainAttitude next = FlansEntityTypes.sampleTerrainAttitude(npc, current.model(), point -> NpcModels.world(npc, model, point, hullYaw), NpcModels.scale(npc),
-            new TerrainAttitude(attitudePitch, attitudeBank));
+            new TerrainAttitude(attitudePitch, attitudeBank, attitudeLift));
         attitudePitch = next.pitch();
         attitudeBank = next.bank();
+        attitudeLift = solid && parts.body().isPresent() ? Mth.approach(attitudeLift, 0F, 0.1F) : next.lift();
     }
 
     /**
@@ -1248,7 +1275,8 @@ public final class NpcVehicleState
         int signature = Arrays.hashCode(
             // A hull the model does not hold is the body yaw of the NPC, which clients already know.
             new int[]{held ? Math.round(hullYaw * 2F) : 0, Math.round(turretYaw * 4F), Math.round(turretPitch * 4F), Arrays.hashCode(quantise(seatYaw)), Arrays.hashCode(quantise(seatPitch)), shots,
-                barrel, Math.round(attitudePitch * 2F), Math.round(attitudeBank * 2F)});
+                barrel, Math.round(attitudePitch * VehicleStatePacket.ATTITUDE_STEPS), Math.round(attitudeBank * VehicleStatePacket.ATTITUDE_STEPS),
+                Math.round(attitudeLift * VehicleStatePacket.LIFT_STEPS)});
         if (sent && signature == sentSignature || npc.tickCount % SYNC_INTERVAL != 0)
             return;
         sent = true;
@@ -1267,7 +1295,7 @@ public final class NpcVehicleState
     /** @return the state as sent to a client that starts tracking the NPC */
     public VehicleStatePacket packet(EntityNPCInterface npc)
     {
-        return new VehicleStatePacket(npc.getId(), hullYaw, turretYaw, turretPitch, seatYaw.clone(), seatPitch.clone(), shots, barrel, attitudePitch, attitudeBank);
+        return new VehicleStatePacket(npc.getId(), hullYaw, turretYaw, turretPitch, seatYaw.clone(), seatPitch.clone(), shots, barrel, attitudePitch, attitudeBank, attitudeLift);
     }
 
     /**
@@ -1307,6 +1335,7 @@ public final class NpcVehicleState
         barrel = packet.barrel();
         targetAttitudePitch = packet.attitudePitch();
         targetAttitudeBank = packet.attitudeBank();
+        targetAttitudeLift = packet.attitudeLift();
         lerpSteps = received ? LERP_STEPS : 1;
         received = true;
     }
@@ -1323,10 +1352,17 @@ public final class NpcVehicleState
         return Mth.lerp(partialTick, previousAttitudeBank, attitudeBank);
     }
 
+    /** @return the ground vehicle's lift between the last tick and this one, in blocks, for drawing. Client only. */
+    public float attitudeLift(float partialTick)
+    {
+        return Mth.lerp(partialTick, previousAttitudeLift, attitudeLift);
+    }
+
     private void clientTick(boolean held)
     {
         previousAttitudePitch = attitudePitch;
         previousAttitudeBank = attitudeBank;
+        previousAttitudeLift = attitudeLift;
         if (!received)
             return;
         // States arrive every few ticks and unevenly, so easing onto each one in turn would turn the hull and turret in fits
@@ -1338,6 +1374,7 @@ public final class NpcVehicleState
             return;
         attitudePitch += (targetAttitudePitch - attitudePitch) / lerpSteps;
         attitudeBank += (targetAttitudeBank - attitudeBank) / lerpSteps;
+        attitudeLift += (targetAttitudeLift - attitudeLift) / lerpSteps;
         turretPitch += (targetTurretPitch - turretPitch) / lerpSteps;
         for (int seat = 0; seat < seatYaw.length && seat < targetSeatYaw.length && seat < targetSeatPitch.length; seat++)
         {

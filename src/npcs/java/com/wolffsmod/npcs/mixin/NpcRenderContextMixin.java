@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 
 /**
- * Carries render context through borrowed buffers, copies visual policies and a plane's pitch and bank to Flan models, immediately
+ * Carries render context through borrowed buffers, copies visual policies and model pitch, bank and ground lift to Flan models, immediately
  * hides killed bodies when requested and leaves the body of an invisible NPC undrawn.
  */
 @Mixin(value = RenderCustomNpc.class, remap = false)
@@ -37,7 +37,7 @@ public abstract class NpcRenderContextMixin
         {
             model.setVisualEffects(settings.isHurtFlash(), settings.isDeathRotation());
             NpcVehicleState state = NpcVehicleState.of(npc);
-            model.setAttitude(state.attitudePitch(partialTick), state.attitudeBank(partialTick));
+            model.setAttitude(state.attitudePitch(partialTick), state.attitudeBank(partialTick), state.attitudeLift(partialTick) / Math.max(0.01F, npc.display.getSize() / 5F));
         }
         if (!settings.isDeathRotation() && npc.stats.hideKilledBody && npc.isKilled())
             callback.cancel();

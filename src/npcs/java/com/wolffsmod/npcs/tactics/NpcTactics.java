@@ -3,10 +3,12 @@ package com.wolffsmod.npcs.tactics;
 import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.TacticKind;
+import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -25,6 +27,9 @@ public final class NpcTactics
         if (TeamsBots.isCommander(npc))
             return Tactic.HOLD;
         Tactic stored = NpcTuning.of(npc).tactic();
+        if (stored == Tactic.CUSTOM_NPCS && TacticKind.of(npc) == TacticKind.STANDARD && NpcInfantryRole.of(npc) == ClassRole.SKIRMISHER && NpcEquipment.fightsAtRange(npc)
+            && NpcCombatMovement.allowed(npc) && CustomNpcsPlatform.tacticalVariant(npc) == 0)
+            return Tactic.STAND_OFF;
         if (stored == Tactic.CUSTOM_NPCS && npc.getTarget() != null && TacticKind.of(npc) == TacticKind.VEHICLE && NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT)
             && NpcCombatMovement.allowed(npc))
             return Tactic.STAND_OFF;
@@ -55,7 +60,9 @@ public final class NpcTactics
      */
     public static Engagement engagement(EntityNPCInterface npc)
     {
-        return Engagement.of(NpcWeaponRange.firing(npc), NpcTuning.of(npc).get(Value.TACTIC_DISTANCE), role(npc), NpcBlastSafety.standoff(npc));
+        int distance = NpcTuning.of(npc).get(Value.TACTIC_DISTANCE);
+        Engagement base = Engagement.of(NpcWeaponRange.firing(npc), distance, role(npc), NpcBlastSafety.standoff(npc));
+        return TacticKind.of(npc) == TacticKind.STANDARD ? NpcInfantryRole.engagement(base, NpcInfantryRole.of(npc), distance == 0) : base;
     }
 
     /** @return the role of the ranged weapon the NPC holds; a projectile fired from the slot alone counts as a rifle */

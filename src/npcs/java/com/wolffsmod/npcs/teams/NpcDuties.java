@@ -131,6 +131,9 @@ public final class NpcDuties
             case ENGINEER -> BotSettings.ClassRole.ENGINEER;
             case SUPPORT -> BotSettings.ClassRole.SUPPORT;
             case ANTI_TANK -> BotSettings.ClassRole.ANTI_TANK;
+            case ASSAULT -> BotSettings.ClassRole.ASSAULT;
+            case MELEE -> BotSettings.ClassRole.MELEE;
+            case SKIRMISHER -> BotSettings.ClassRole.SKIRMISHER;
             case NONE, FROM_EQUIPMENT -> kit(npc).role();
         };
     }
@@ -306,8 +309,8 @@ public final class NpcDuties
             case ENGINEER -> repair(level, npc, self, fighters, now, friendlyRider);
             case SUPPORT -> supply(npc, self, fighters, now);
             case ANTI_TANK -> engageArmour(npc, self, fighters, armoured);
-            case RIFLEMAN -> {
-                // A rifleman only fights.
+            case RIFLEMAN, ASSAULT, MELEE, SKIRMISHER -> {
+                // Infantry combat movement handles these roles.
             }
         }
     }

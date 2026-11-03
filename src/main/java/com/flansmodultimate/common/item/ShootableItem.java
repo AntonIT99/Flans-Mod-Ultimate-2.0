@@ -16,7 +16,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.*;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +96,21 @@ public abstract class ShootableItem extends FlanItem
             return;
         }
 
-        ItemStackData.update(stack, tag -> tag.putInt(NBT_ROUNDS, Math.max(0, Math.min(rounds, roundsPerItem))));
+        ItemStackData.update(stack, tag ->
+        {
+            if (rounds >= roundsPerItem)
+                tag.remove(NBT_ROUNDS);
+            else
+                tag.putInt(NBT_ROUNDS, Math.max(0, rounds));
+        });
+    }
+
+    @Override
+    public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slotId, boolean isSelected)
+    {
+        // Older full magazines explicitly stored their capacity, preventing merges with fresh items.
+        if (!level.isClientSide && getMaxRounds(stack) > 1 && ItemStackData.view(stack).contains(NBT_ROUNDS) && getRoundsRemaining(stack) == getMaxRounds(stack))
+            setRoundsRemaining(stack, getMaxRounds(stack));
     }
 
     public static int getMaxRounds(ItemStack stack)

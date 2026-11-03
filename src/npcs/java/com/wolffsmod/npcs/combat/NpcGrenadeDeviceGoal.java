@@ -193,11 +193,10 @@ public final class NpcGrenadeDeviceGoal extends Goal
 
     private boolean planBag(ItemStack stack, List<Entity> devices)
     {
-        if (devices.stream().anyMatch(device -> npc.distanceToSqr(device) < 36D && FlansGrenadeDevices.properties(device).map(GrenadeDeviceProperties::supplyBag).orElse(false) && friendly(device)))
+        if (devices.stream().anyMatch(device -> npc.distanceToSqr(device) <= BAG_SEARCH * BAG_SEARCH && friendly(device) && NpcDeviceSupplies.needs(npc, device)))
             return false;
-        boolean needed = NpcDeviceSupplies.needs(npc, stack) || !npc.level().getEntitiesOfClass(EntityNPCInterface.class, npc.getBoundingBox().inflate(6D),
-            other -> other != npc && other.isAlive() && !other.isKilled() && NpcDrivers.ally(npc, other) && NpcDeviceSupplies.needs(other, stack)).isEmpty();
-        return needed && ground(npc.position().add(npc.getLookAngle().multiply(1D, 0D, 1D).normalize()));
+        // Nearby allies may be moving away or fighting, so deploy for a recipient that will actually use the bag.
+        return NpcDeviceSupplies.needs(npc, stack) && ground(npc.position().add(npc.getLookAngle().multiply(1D, 0D, 1D).normalize()));
     }
 
     private boolean planTrap(ItemStack stack, GrenadeDeviceProperties properties, List<Entity> devices)
@@ -281,6 +280,8 @@ public final class NpcGrenadeDeviceGoal extends Goal
         }
         if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
             NpcAmmunition.consume(npc, stack);
+        if (!trap && NpcDeviceSupplies.use(npc, placed.get()))
+            nextSupply = npc.level().getGameTime() + SUPPLY_TICKS;
         npc.swing(InteractionHand.MAIN_HAND);
         npc.updateClient = true;
         nextDeploy = npc.level().getGameTime() + DEPLOY_TICKS;

@@ -9,7 +9,8 @@
   Mojang-named in the development dependency, so a vanilla method it overrides is targeted by both
   names, for example `method = {"tick", "m_8119_"}`.
 - All Custom NPCs entity hooks belong in `EntityNPCInterfaceMixin` and all fallback ranged-AI hooks
-  in `EntityAIRangedAttackMixin`, following the root one-mixin-per-target rule.
+  in `EntityAIRangedAttackMixin`, following the shared one-mixin-per-target rule in
+  `src/main/java/com/flansmodultimate/mixin/AGENTS.md`.
 
 ## Older Custom NPCs build on 1.21.1
 

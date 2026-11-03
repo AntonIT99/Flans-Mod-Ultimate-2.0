@@ -47,7 +47,8 @@ public final class NpcEquipment
     /** Effective bank for a live NPC; the configured preference is preserved while combat chooses a suitable weapon. */
     public static boolean secondaryBank(EntityNPCInterface npc, @Nullable IContentType model)
     {
-        return NpcVehicleCombat.bank(npc, model, secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), model));
+        boolean configured = secondaryBank(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions(), model);
+        return NpcAirCombat.active(npc) ? NpcAirCombat.of(npc).bank(npc, model, configured) : NpcVehicleCombat.bank(npc, model, configured);
     }
 
     /**

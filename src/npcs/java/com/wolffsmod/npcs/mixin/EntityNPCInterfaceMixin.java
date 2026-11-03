@@ -23,6 +23,7 @@ import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.tactics.NpcSafetyGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticGoal;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.tactics.NpcTacticalPosture;
 import com.wolffsmod.npcs.teams.*;
 import noppes.npcs.Resistances;
 import noppes.npcs.ai.EntityAIAttackTarget;
@@ -73,6 +74,7 @@ import java.util.*;
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
+ * <li>Infantry roles coordinate assault, melee and skirmishing; temporary crouch/crawl postures synchronize through the native animation data with matching dimensions and speed.</li>
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling. The entity box always
  * has the size Custom NPCs works out for the NPC, on both sides, which it otherwise misses on several changes.</li>
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat;
@@ -192,6 +194,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
 
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
+    @Unique
+    private NpcMeleeRoleGoal wolffsmodnpcsMeleeRoleGoal;
     @Unique
     private final NpcExternalImpulses wolffsmodnpcsExternalImpulses = new NpcExternalImpulses();
     @Unique
@@ -514,11 +518,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         else
             wolffsmodnpcsSafetyGoal = new NpcSafetyGoal(npc);
         goalSelector.addGoal(0, wolffsmodnpcsSafetyGoal);
-        if (wolffsmodnpcsItemGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsItemGoal);
-        else
-            wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
-        goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
+        wolffsmodnpcsRegisterInfantryAttacks(npc);
         if (wolffsmodnpcsThrowGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsThrowGoal);
         else
@@ -543,6 +543,21 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             wolffsmodnpcsApproachGoal = new NpcCombatApproachGoal(npc);
             goalSelector.addGoal(priority, wolffsmodnpcsApproachGoal);
         });
+    }
+
+    @Unique
+    private void wolffsmodnpcsRegisterInfantryAttacks(EntityNPCInterface npc)
+    {
+        if (wolffsmodnpcsItemGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsItemGoal);
+        else
+            wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
+        goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
+        if (wolffsmodnpcsMeleeRoleGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsMeleeRoleGoal);
+        else
+            wolffsmodnpcsMeleeRoleGoal = new NpcMeleeRoleGoal(npc);
+        goalSelector.addGoal(1, wolffsmodnpcsMeleeRoleGoal);
     }
 
     // Teams owns passive healing during a round; explicit healing and vehicle repairs remain independent.
@@ -583,7 +598,23 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Inject(method = {"getSpeed", "m_6113_"}, at = @At("RETURN"), cancellable = true)
     private void wolffsmodnpcsSprintSpeed(CallbackInfoReturnable<Float> callback)
     {
-        callback.setReturnValue(NpcSprinting.movementSpeed((EntityNPCInterface) (Object) this, callback.getReturnValue()));
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        callback.setReturnValue(NpcTacticalPosture.speed(npc, NpcSprinting.movementSpeed(npc, callback.getReturnValue())));
+    }
+
+    @ModifyVariable(method = "setCurrentAnimation", at = @At("HEAD"), argsOnly = true)
+    private int wolffsmodnpcsTacticalAnimation(int requested)
+    {
+        return level().isClientSide ? requested : wolffsmodnpcsTacticState().getPosture().animation(requested);
+    }
+
+    /** Custom NPCs' crouch animation otherwise retains a standing collision box. Crawl already has native dimensions. */
+    @Inject(method = {"getDimensions", "m_6972_"}, at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsCrouchDimensions(Pose pose, CallbackInfoReturnable<EntityDimensions> callback)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (!npc.isPassenger() && npc.currentAnimation == noppes.npcs.api.constants.AnimationType.CROUCH)
+            callback.setReturnValue(callback.getReturnValue().scale(1F, 0.8F));
     }
 
     @Inject(method = {"tick", "m_8119_"}, at = @At("TAIL"))
@@ -595,6 +626,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return;
         NpcSkill.watch(npc);
         NpcDuties.tick(npc);
+        NpcTacticalPosture.update(npc);
         NpcSprinting.tick(npc, goalSelector.getRunningGoals().anyMatch(goal -> goal.getGoal() == wolffsmodnpcsObjectiveGoal));
         NpcParachutes.tick(npc);
         if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))

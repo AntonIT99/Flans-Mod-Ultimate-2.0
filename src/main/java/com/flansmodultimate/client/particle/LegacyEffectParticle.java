@@ -12,6 +12,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -33,7 +34,7 @@ public final class LegacyEffectParticle extends ParticleBase
     {
         BLOOD(18, 0.22F, 1.5F, 0.008F, false, false), OVERKILL(30, 0.35F, 2F, 0.025F, false, false), TANK_DEATH(400, 0.6F, 0.5F, -0.001F, false, true), SHIP_DEATH(400, 0.9F, 0.5F, -0.001F, false,
             true), NUKE(400, 1.4F, 0.5F, -0.001F, false, true), SMOKE_SHELL(500, 0.8F, 5F, -0.0002F, true, false), MUSTARD(500, 0.8F, 5F, 0F, true, false), CHLORINE(500, 0.8F, 5F, 0F, true,
-                false), WATER(55, 0.7F, 2F, 0.025F, false, false), WATER_MINI(28, 0.2F, 1F, 0.025F, false, false), SHIP_SMOKE(150, 0.7F, 3F, -0.001F, true, false), GUN_SMOKE(35, 0.12F, 3F, -0.0004F,
+                false), WATER(55, 0.7F, 2F, 0.025F, false, false), WATER_MINI(28, 0.2F, 1F, 0.025F, false, false), SHIP_SMOKE(150, 0.7F, 3F, -0.001F, true, false), GUN_SMOKE(12, 0.045F, 2F, -0.0004F,
                     true, false), LOCKED(10, 0.35F, 0F, 0F, false, false), FLASHER(5, 0.08F, 0F, 0.04F, false, false), NU_FLASH(3, 0.75F, 0.5F, 0F, false, true), NU_MUZZLE(3, 0.3F, 0.2F, 0F, false,
                         true), NU_SPARK(7, 0.12F, -0.5F, 0.02F, false, true), CASING(45, 0.06F, 0F, 0.04F, false, false), TURRET_TEST(40, 0.4F, 0F, 0F, false, false);
 
@@ -176,6 +177,9 @@ public final class LegacyEffectParticle extends ParticleBase
         float progress = Mth.clamp(age / (float) Math.max(1, lifetime), 0F, 1F);
         quadSize = baseSize * (1F + style.growth * Mth.sqrt(progress));
         alpha = (style.wind ? 0.65F : 1F) * (1F - progress * progress);
+        if (style == Style.GUN_SMOKE)
+            // The flash lasts two ticks. Let it lead before the smoke becomes visible.
+            alpha = age < 2 ? 0F : 0.22F * (1F - progress);
         if (style.column())
         {
             // The visible column is its children; its controller must not draw a flame under water.
@@ -201,6 +205,12 @@ public final class LegacyEffectParticle extends ParticleBase
     }
 
     @Override
+    public @NotNull ParticleRenderType getRenderType()
+    {
+        return style == Style.GUN_SMOKE ? LegacyParticleRenderTypes.GUN_SMOKE : super.getRenderType();
+    }
+
+    @Override
     public int getLightColor(float partialTick)
     {
         return style.hot ? 0xF000F0 : super.getLightColor(partialTick);
@@ -209,6 +219,8 @@ public final class LegacyEffectParticle extends ParticleBase
     @Override
     public void render(VertexConsumer buffer, Camera camera, float partialTick)
     {
+        if (hiddenByPreferences())
+            return;
         if (style != Style.CASING)
         {
             super.render(buffer, camera, partialTick);
@@ -241,6 +253,12 @@ public final class LegacyEffectParticle extends ParticleBase
         }
     }
 
+    private boolean hiddenByPreferences()
+    {
+        ModClientConfig config = ModClientConfig.get();
+        return config != null && ((style == Style.BLOOD || style == Style.OVERKILL) && !config.showBloodEffects || style == Style.GUN_SMOKE && !config.showWeaponSmoke);
+    }
+
     /** One provider per registered preset; sprites remain resource-reload aware. */
     public record Provider(SpriteSet sprites, Style style) implements ParticleProvider<SimpleParticleType>
     {
@@ -265,6 +283,8 @@ public final class LegacyEffectParticle extends ParticleBase
             if (style == Style.CASING && ModClientConfig.get() != null && !ModClientConfig.get().showCasingEjections)
                 return null;
             LegacyEffectParticle particle = new LegacyEffectParticle(level, x, y, z, vx, vy, vz, sprites, style);
+            if (particle.hiddenByPreferences())
+                return null;
             if (style.column())
                 CONTROLLERS.add(particle);
             if (style.wind && style.lifetime > 100)

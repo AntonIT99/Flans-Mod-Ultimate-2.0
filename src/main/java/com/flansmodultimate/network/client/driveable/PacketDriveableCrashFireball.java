@@ -1,6 +1,7 @@
 package com.flansmodultimate.network.client.driveable;
 
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
@@ -36,6 +37,7 @@ public class PacketDriveableCrashFireball implements IClientPacket
     private static final int MAX_DEBRIS = 70;
     private static final float MAX_RADIUS = 24F;
 
+    private int driveableId = -1;
     private Vec3 position;
     private float radius;
 
@@ -45,9 +47,16 @@ public class PacketDriveableCrashFireball implements IClientPacket
         this.radius = radius;
     }
 
+    public PacketDriveableCrashFireball(int driveableId, Vec3 position, float radius)
+    {
+        this(position, radius);
+        this.driveableId = driveableId;
+    }
+
     @Override
     public void encodeInto(PacketBuffer data)
     {
+        data.writeVarInt(driveableId);
         data.writeDouble(position.x);
         data.writeDouble(position.y);
         data.writeDouble(position.z);
@@ -57,6 +66,7 @@ public class PacketDriveableCrashFireball implements IClientPacket
     @Override
     public void decodeInto(PacketBuffer data)
     {
+        driveableId = data.readVarInt();
         position = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         radius = data.readFloat();
     }
@@ -71,7 +81,10 @@ public class PacketDriveableCrashFireball implements IClientPacket
         ClientHooks.RENDER.waterImpact(position, size);
         spawn(FlanParticles.FM_TANK_DEATH, position, Vec3.ZERO, Math.min(2F, size * 0.25F));
         // The ground where it went in stays burnt.
-        ClientHooks.RENDER.spawnScorchMark(position, size * 0.6F);
+        if (level.getEntity(driveableId) instanceof Driveable owner)
+            ClientHooks.RENDER.spawnScorchMark(position, size * 0.6F, owner);
+        else if (driveableId < 0)
+            ClientHooks.RENDER.spawnScorchMark(position, size * 0.6F);
 
         // Several emitters across the wreck rather than one at its centre: a
         // single emitter always looks the same size however big the crash was.

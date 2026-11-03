@@ -81,6 +81,7 @@ final class BotPopulation
         }
         List<String> classes = team.getClasses().stream().map(IPlayerClass::getShortName).toList();
         int kept = fielded.values().stream().mapToInt(Integer::intValue).sum();
+        splitLooseSquads(battle, team.getShortName());
         for (int i = kept; i < target; i++)
         {
             String playerClass = force.getClassLimits().isEmpty()
@@ -98,10 +99,32 @@ final class BotPopulation
         mergeLooseSquads(battle, team.getShortName());
     }
 
+    /** Reassigns excess members when a team's configured size is reduced. */
+    private static void splitLooseSquads(BotBattle battle, String team)
+    {
+        int size = battle.getSettings().squadSize(team);
+        List<BotSquad> loose = battle.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY).toList();
+        for (BotSquad squad : loose)
+        {
+            Iterator<Integer> members = squad.getSlots().iterator();
+            while (liveMembers(battle, squad) > size && members.hasNext())
+            {
+                BotSlot slot = battle.getSlots().get(members.next());
+                if (slot != null && !slot.isRetired())
+                {
+                    BotSquad destination = looseSquad(battle, team);
+                    members.remove();
+                    destination.getSlots().add(slot.getId());
+                    slot.setSquad(destination.getId());
+                }
+            }
+        }
+    }
+
     /** The loose infantry squad of a team that still has room, raised when none has. */
     private static BotSquad looseSquad(BotBattle battle, String team)
     {
-        int size = battle.getSettings().getSquadSize();
+        int size = battle.getSettings().squadSize(team);
         return battle.getSquads().values().stream()
             .filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY && liveMembers(battle, squad) < size).findFirst()
             .orElseGet(() -> battle.newSquad(team, BotRole.INFANTRY, BotSlot.Source.INFANTRY, -1, ""));
@@ -113,7 +136,7 @@ final class BotPopulation
      */
     private static void mergeLooseSquads(BotBattle battle, String team)
     {
-        int size = battle.getSettings().getSquadSize();
+        int size = battle.getSettings().squadSize(team);
         List<BotSquad> loose = battle.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY)
             .sorted(Comparator.comparingInt(BotSquad::getId)).toList();
         for (int from = loose.size() - 1; from > 0; from--)

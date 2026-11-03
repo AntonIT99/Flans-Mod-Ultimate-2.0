@@ -58,7 +58,6 @@ public final class PartBody implements IPartBody
     private Vec3 axisX = Vec3.ZERO;
     private Vec3 axisY = Vec3.ZERO;
     private Vec3 axisZ = Vec3.ZERO;
-    private boolean brokenPartsSolid;
     @Getter
     private boolean outlined;
     /** Unscaled distance from the model origin to the farthest box corner, or negative until measured. */
@@ -271,10 +270,11 @@ public final class PartBody implements IPartBody
         return resolvedArmor;
     }
 
+    @Deprecated
     @Override
     public void setBrokenPartsSolid(boolean solid)
     {
-        brokenPartsSolid = solid;
+        // Retained for addon compatibility; destroyed parts always let rounds through.
     }
 
     @Override
@@ -289,10 +289,10 @@ public final class PartBody implements IPartBody
         this.solid = solid;
     }
 
-    /** Whether rounds and blasts stop at the part: a broken part has been shot off unless broken parts stay solid. */
+    /** Whether the part remains in the way: destroyed parts have been shot off. */
     private boolean hittable(DriveablePart part)
     {
-        return enabled(part) && (brokenPartsSolid || part.getMaxHealth() <= 0F || !part.isDestroyed());
+        return enabled(part) && (part.getMaxHealth() <= 0F || !part.isDestroyed());
     }
 
     public float penetrationResistance(EnumDriveablePart part)
@@ -517,7 +517,7 @@ public final class PartBody implements IPartBody
     @Override
     public int signature()
     {
-        int signature = (Boolean.hashCode(brokenPartsSolid) * 31 + Boolean.hashCode(outlined)) * 31 + armorOverrides.hashCode();
+        int signature = Boolean.hashCode(outlined) * 31 + armorOverrides.hashCode();
         for (DriveablePart part : parts.values())
         {
             CollisionBox box = Objects.requireNonNull(part.getBox());

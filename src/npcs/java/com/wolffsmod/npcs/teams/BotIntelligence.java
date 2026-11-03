@@ -10,12 +10,17 @@ final class BotIntelligence
     static final long MEMORY_TICKS = 600L;
     static final int MAX_CONTACTS_PER_SIDE = 128;
 
-    record Contact(UUID enemy, Vec3 position, boolean armoured, long observedAt)
+    record Contact(UUID enemy, Vec3 position, boolean armoured, long observedAt, boolean airborne, boolean intercept)
     {}
 
     private final Map<Integer, Map<UUID, Contact>> sides = new HashMap<>();
 
     void report(int side, UUID enemy, Vec3 position, boolean armoured, long now)
+    {
+        report(side, enemy, position, armoured, now, false, false);
+    }
+
+    void report(int side, UUID enemy, Vec3 position, boolean armoured, long now, boolean airborne, boolean intercept)
     {
         if (side < 0)
             return;
@@ -24,7 +29,7 @@ final class BotIntelligence
         if (previous != null && previous.observedAt() > now)
             return;
         contacts.remove(enemy);
-        contacts.put(enemy, new Contact(enemy, position, armoured, now));
+        contacts.put(enemy, new Contact(enemy, position, armoured, now, airborne, intercept));
         if (contacts.size() > MAX_CONTACTS_PER_SIDE)
             contacts.remove(contacts.keySet().iterator().next());
     }

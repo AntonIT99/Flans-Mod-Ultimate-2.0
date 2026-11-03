@@ -107,6 +107,12 @@ public final class DriveableDamageEffects
         DestructionSequences.scorch(position, radius);
     }
 
+    /** Leaves a scorch mark that fades with the wreck that made it. */
+    public static void scorch(Vec3 position, float radius, Driveable owner)
+    {
+        DestructionSequences.scorch(position, radius, owner);
+    }
+
     /**
      * @return how hard the driveable's wreck burns now, for its sound, or 0 when it is no wreck; as its flames do, it
      *         burns less in the rain and not at all under water

@@ -190,7 +190,8 @@ final class SkirmishComposer
         List<BotSettings.VehicleEntry> vehicles = force.getVehicles();
         int index = vehicles.stream().map(BotSettings.VehicleEntry::type).toList().indexOf(listed.type());
         int total = index < 0 ? count : vehicles.get(index).count() + count;
-        BotSettings.VehicleEntry entry = new BotSettings.VehicleEntry(listed.type(), total, listed.budget(), listed.respawnSeconds(), listed.ticketCost(), null, listed.carry(), listed.paintjobs());
+        BotSettings.VehicleEntry entry = new BotSettings.VehicleEntry(listed.type(), total, listed.budget(), listed.respawnSeconds(), listed.ticketCost(), null, listed.carry(), listed.paintjobs(),
+            listed.aircraftRole());
         if (index < 0)
             vehicles.add(entry);
         else

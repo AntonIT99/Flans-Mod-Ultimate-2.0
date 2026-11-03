@@ -58,12 +58,13 @@ public final class FlansEntityTypes
      *            selected content definition
      * @param modelToWorld
      *            transforms static preview points (blocks, Y up, forward -Z, right +X) to world positions,
-     *            including the current attitude, model resting height and any body offset
+     *            including the current attitude, its lift, model resting height and any body offset
      * @param scale
      *            additional uniform entity scale, excluding the definition's ModelScale; must be positive and finite
      * @param current
-     *            current nose-down pitch and right-down bank, in degrees
-     * @return smoothed ground attitude, respecting the definition's wheel spring strength and roll permission
+     *            current nose-down pitch and right-down bank, in degrees, and lift in blocks
+     * @return smoothed ground attitude, respecting the definition's wheel spring strength and roll permission, lifted so the
+     *         wheels that bear the load rest on the terrain
      */
     public static TerrainAttitude sampleTerrainAttitude(Entity entity, IContentType type, UnaryOperator<Vec3> modelToWorld, double scale, TerrainAttitude current)
     {

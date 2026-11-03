@@ -13,6 +13,8 @@ import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.TacticKind;
 import com.wolffsmod.npcs.tactics.NpcSafetyState.Action;
+import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
+import com.wolffsmod.npcs.teams.NpcDuties;
 import com.wolffsmod.npcs.teams.NpcSuppression;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -48,6 +50,41 @@ class NpcCombatAdvanceTest
     }
 
     @Test
+    void emergencyMedicRetreatKeepsPriorityOverTheSquadWithdrawal() throws ReflectiveOperationException
+    {
+        try (Scene scene = new Scene(); var duties = mockStatic(NpcDuties.class))
+        {
+            Vec3 medic = new Vec3(-8D, 0D, 0D);
+            duties.when(() -> NpcDuties.retreating(scene.npc)).thenReturn(true);
+            duties.when(() -> NpcDuties.destination(scene.npc)).thenReturn(Optional.of(medic));
+            scene.orders.when(() -> TeamsBots.squadWithdrawal(scene.npc)).thenReturn(Optional.of(new Vec3(0D, 0D, -30D)));
+            assertTrue(scene.goal.canUse());
+            assertEquals(Action.RETREAT, scene.state.getSafety().getAction());
+            assertEquals(medic, scene.state.getSafety().getDestination());
+            scene.orders.verify(() -> TeamsBots.squadWithdrawal(scene.npc), never());
+        }
+    }
+
+    @Test
+    void squadWithdrawalInterruptsAnAssaultWithoutRequiringAnIndividualHealthRetreat() throws ReflectiveOperationException
+    {
+        try (Scene scene = new Scene())
+        {
+            scene.orders.when(() -> TeamsBots.squadWithdrawal(scene.npc)).thenReturn(Optional.of(new Vec3(-30D, 0D, 0D)));
+            scene.state.getSafety().setAdvanceIntent(scene.order);
+            assertTrue(scene.goal.canUse());
+            assertEquals(Action.RETREAT, scene.state.getSafety().getAction());
+            Vec3 refuge = scene.state.getSafety().getDestination();
+            assertNotNull(refuge);
+            assertTrue(refuge.x < 0D && refuge.horizontalDistance() <= 16D);
+            scene.goal.start();
+            scene.goal.tick();
+            verify(scene.navigation).moveTo(refuge.x, refuge.y, refuge.z, 1D);
+            assertSame(scene.enemy, scene.npc.getTarget());
+        }
+    }
+
+    @Test
     void aSoldierMovesTowardItsOrderWhileRetainingAnEnemyOffToTheSide() throws ReflectiveOperationException
     {
         try (Scene scene = new Scene())
@@ -63,14 +100,13 @@ class NpcCombatAdvanceTest
             assertTrue(bound.x > 5D, "progress follows the eastward order, not the enemy to the south");
             assertTrue(bound.horizontalDistance() <= scene.tuning.get(Value.ADVANCE_DISTANCE));
             assertTrue(Math.abs(bound.z) < 1D);
-            assertTrue(NpcCombatAdvance.holdsFire(scene.npc));
+            assertEquals(Action.ADVANCE, scene.state.getSafety().getAction());
             NpcSprinting.tick(scene.npc, false);
             verify(scene.npc).setSprinting(true);
             scene.position = bound;
             scene.now = 60L;
             scene.goal.tick();
             assertEquals(Action.FIRE, scene.state.getSafety().getAction());
-            assertFalse(NpcCombatAdvance.holdsFire(scene.npc));
             assertEquals(100L, scene.state.getSafety().getAdvanceReadyAt());
             scene.now = 90L;
             scene.goal.tick();
@@ -193,7 +229,6 @@ class NpcCombatAdvanceTest
                 assertEquals(scene.order.destination(), scene.state.getSafety().getDestination());
             }
             verify(scene.navigation, never()).moveTo(anyDouble(), anyDouble(), anyDouble(), anyDouble());
-            assertFalse(NpcCombatAdvance.holdsFire(scene.npc));
         }
     }
 
@@ -244,6 +279,7 @@ class NpcCombatAdvanceTest
         private final MockedStatic<NpcCover> cover = mockStatic(NpcCover.class);
         private final MockedStatic<NpcSuppression> suppression = mockStatic(NpcSuppression.class);
         private final MockedStatic<TeamsBots> orders = mockStatic(TeamsBots.class);
+        private final MockedStatic<NpcInfantryRole> roles = mockStatic(NpcInfantryRole.class, CALLS_REAL_METHODS);
         private final NpcSafetyGoal goal;
         private Vec3 position = Vec3.ZERO;
         private long now;
@@ -290,6 +326,7 @@ class NpcCombatAdvanceTest
             when(enemy.getEyePosition()).thenReturn(enemyPosition);
             when(npc.isInRange(eq(enemy), anyDouble())).thenAnswer(call -> position.distanceTo(enemyPosition) <= call.<Double>getArgument(1));
             options.set(Feature.TACTICAL_COVER, false);
+            roles.when(() -> NpcInfantryRole.of(npc)).thenReturn(ClassRole.RIFLEMAN);
             options.set(Feature.VEHICLE_EVASION, false);
             options.set(Feature.ALLY_SPACING, false);
             equipment.when(() -> NpcEquipment.enabled(eq(npc), any())).thenAnswer(call -> options.enabled(call.getArgument(1)));
@@ -306,6 +343,7 @@ class NpcCombatAdvanceTest
         @Override
         public void close()
         {
+            roles.close();
             orders.close();
             suppression.close();
             cover.close();

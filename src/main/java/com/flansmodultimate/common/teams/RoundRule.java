@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 @Getter
 public enum RoundRule
 {
-    DISABLE_CLASS_LIMITS("disableClassLimits"), RESPAWN_WAVE_SECONDS("respawnWaveSeconds", 0, 0, 300), PLAYER_LIVES("playerLives", 0, 0, 100), OVERTIME_SECONDS("overtimeSeconds", 0, 0,
-        600), TANK_LIMIT("tankLimit", -1, -1, 100), VEHICLE_LIMIT("vehicleLimit", -1, -1, 100), AIRCRAFT_LIMIT("aircraftLimit", -1, -1, 100), SHIP_LIMIT("shipLimit", -1, -1,
-            100), MECHA_LIMIT("mechaLimit", -1, -1, 100), AA_LIMIT("aaLimit", -1, -1, 100), VEHICLE_REPLACEMENT_SECONDS("vehicleReplacementSeconds", 0, 0,
+    DESTROYABLE_DEPLOYED_GUNS("destroyableDeployedGuns"), DISABLE_CLASS_LIMITS("disableClassLimits"), RESPAWN_WAVE_SECONDS("respawnWaveSeconds", 0, 0, 300), PLAYER_LIVES("playerLives", 0, 0,
+        100), OVERTIME_SECONDS("overtimeSeconds", 0, 0, 600), TANK_LIMIT("tankLimit", -1, -1, 100), VEHICLE_LIMIT("vehicleLimit", -1, -1, 100), AIRCRAFT_LIMIT("aircraftLimit", -1, -1,
+            100), SHIP_LIMIT("shipLimit", -1, -1, 100), MECHA_LIMIT("mechaLimit", -1, -1, 100), AA_LIMIT("aaLimit", -1, -1, 100), VEHICLE_REPLACEMENT_SECONDS("vehicleReplacementSeconds", 0, 0,
                 600), CAPTURE_ON_FOOT_ONLY("captureOnFootOnly"), MAX_CAPTURE_WEIGHT("maxCaptureWeight", 0, 0, 100), HOME_BASE_RADIUS("homeBaseRadius", 16, 1,
                     128), HOME_BASE_NO_ENTRY("homeBaseNoEntry"), HOME_BASE_NO_DAMAGE("homeBaseNoDamage"), WARMUP_SECONDS("warmupSeconds", 0, 0, 300), MINIMUM_PLAYERS("minimumPlayers", 0, 0,
                         100), REQUIRE_READY("requireReady"), TEAM_SWITCH_SECONDS("teamSwitchSeconds", 0, 0, 3600), PREVENT_LEADING_SIDE_JOIN("preventLeadingSideJoin"), FLAG_NO_VEHICLES(

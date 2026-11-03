@@ -21,7 +21,7 @@ class PacketArmourImpactTest
             PacketBuffer encoded = new PacketBuffer(TestPacketBuffers.buffer());
             try
             {
-                new PacketArmourImpact(new Vec3(29000123.125D, 72.5D, -918.125D), new Vec3(1D, 0D, 0D), new Vec3(-1D, 0D, 0D), 2.5F, blocked).encodeInto(original);
+                new PacketArmourImpact(new Vec3(29000123.125D, 72.5D, -918.125D), new Vec3(1D, 0D, 0D), new Vec3(-1D, 0D, 0D), 2.5F, blocked, 0).encodeInto(original);
                 byte[] expected = ByteBufUtil.getBytes(original);
                 PacketArmourImpact decoded = new PacketArmourImpact();
                 decoded.decodeInto(original);

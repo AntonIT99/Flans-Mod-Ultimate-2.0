@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.teams;
 
 import com.wolffsmod.npcs.crew.CrewPost;
+import com.wolffsmod.npcs.sim.NpcTuning.AircraftRole;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -78,7 +79,8 @@ public final class BotSettingsText
     }
 
     /**
-     * {@code type:count[:budget[:respawn[:ticket cost[:carried template[:paintjobs]]]]]}, a count left out being 1 and a ticket cost 1. Paintjobs are IDs separated by pipes, or * for all.
+     * {@code type:count[:budget[:respawn[:ticket cost[:carried template[:paintjobs[:aircraft role]]]]]]}, a count left out being 1 and a ticket cost 1. Paintjobs are IDs separated by pipes, or * for
+     * all.
      *
      * @param previous
      *            the entries before the edit, whose vehicle spawners the entries of the same type keep
@@ -93,7 +95,10 @@ public final class BotSettingsText
             List<Integer> paintjobs = values.length > 6
                 ? parsePaintjobs(values[6])
                 : previous.stream().filter(entry -> entry.type().equals(values[0])).map(BotSettings.VehicleEntry::paintjobs).findFirst().orElse(List.of());
-            vehicles.add(new BotSettings.VehicleEntry(values[0], number(values, 1, 1), number(values, 2, 0), number(values, 3, 0), number(values, 4, 1), spawner, carry, paintjobs));
+            vehicles.add(new BotSettings.VehicleEntry(values[0], number(values, 1, 1), number(values, 2, 0), number(values, 3, 0), number(values, 4, 1), spawner, carry, paintjobs,
+                values.length > 7
+                    ? BotSettings.parse(AircraftRole.class, values[7], AircraftRole.AUTO)
+                    : previous.stream().filter(entry -> entry.type().equals(values[0])).map(BotSettings.VehicleEntry::aircraftRole).findFirst().orElse(AircraftRole.AUTO)));
         }
         return vehicles;
     }
@@ -110,8 +115,9 @@ public final class BotSettingsText
         {
             String entry = String.join(VALUE_SEPARATOR, vehicle.type(), Integer.toString(vehicle.count()), Integer.toString(vehicle.budget()), Integer.toString(vehicle.respawnSeconds()),
                 Integer.toString(vehicle.ticketCost()));
-            joiner.add(
-                entry + VALUE_SEPARATOR + vehicle.carry() + VALUE_SEPARATOR + (vehicle.paintjobs().isEmpty() ? "*" : String.join("|", vehicle.paintjobs().stream().map(String::valueOf).toList())));
+            joiner
+                .add(entry + VALUE_SEPARATOR + vehicle.carry() + VALUE_SEPARATOR + (vehicle.paintjobs().isEmpty() ? "*" : String.join("|", vehicle.paintjobs().stream().map(String::valueOf).toList()))
+                    + VALUE_SEPARATOR + vehicle.aircraftRole().name().toLowerCase(Locale.ROOT));
         }
         return joiner.toString();
     }

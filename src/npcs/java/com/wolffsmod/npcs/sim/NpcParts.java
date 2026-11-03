@@ -133,7 +133,6 @@ public final class NpcParts
             pendingPacket.applyTo(current);
             pendingPacket = null;
         }
-        current.setBrokenPartsSolid(!options.enabled(Feature.BROKEN_PARTS_PASS));
         current.setOutlined(options.enabled(Feature.HITBOX_OUTLINES));
         current.setSolid(options.enabled(Feature.SOLID_HITBOXES));
         // A plane in flight is drawn pitched nose down and banked right by its attitude; a driveable pitches nose up.

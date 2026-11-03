@@ -2,22 +2,26 @@
 
 ## Highlights
 
+* Destroyed AA guns leave unusable, charred wrecks with a modest fire and smoke effect, using `driveableWreckLifetime`; destroyed guns and their ammunition do not drop
+
 * Cross-pack specialist classes: national WW2 flamethrowers, a Soviet NKVD officer and German support roles including Wolff MG34/MG42 gunners, modern attachment loadouts, survivor rescue and supply roles, and Zombie weapons for modern SWAT and Criminal teams
 * Player classes can use repeatable `AddToTeam <packId>:<teamShortName>` lines to extend another pack's teams without a reverse dependency
 * New companion mod: **Flan's Ultimate 2: NPC Vehicles & Soldiers**, which lets Custom NPCs soldiers use Flan's weapons, vehicles, planes, ships and mechas, crew them and fight Teams rounds, skirmishes and wars (separate download, requires Custom NPCs)
 * Driveable damage and destruction: damaged parts smoke, burn, steam and spark, each machine class dies its own way (tank cook-off, ship magazines and boilers, aircraft fuel, rotor and wing loss, mecha collapse), and parts shot off fly away; destruction bursts stay bounded, ship magazine blasts scale with ammunition rather than hull size, and machine-gun-only boats produce small cook-off pops
-* Destroyed driveables stay as burning wrecks that tumble as they fall, come to rest along the ground they land on, slide down steep slopes, keep their collision, char and settle, burn out and sink away, and can be shoved about or blown apart by explosives (`driveableWreckLifetime`, `NoWreck`)
+* Destroyed driveables stay as burning wrecks that tumble as they fall, come to rest along the ground they land on, slide down steep slopes, keep their collision, char and settle, burn out and sink away after five minutes by default, and can be shoved about or blown apart by explosives; the scorch mark under a wreck lasts as long as the wreck and fades when it is broken up or removed (`driveableWreckLifetime`, `NoWreck`)
 * Driveable repairs and carrier servicing, with repair tools, the Blowtorch, a repair progress display and an operator command to fully repair a driveable
-* New Teams command centre for operators (F7, `/teams admin` or `/teams gui`) covering rounds, rotation, maps, rules, game type variables and server settings; global Teams rules can be saved as named presets, previewed and imported/exported as JSON files alongside built-in Arena and Survival presets
+* New Teams command centre for operators (F7, `/teams admin` or `/teams gui`) covering rounds, rotation, maps, rules, game type variables and server settings; global Teams rules can be saved as named presets, previewed and imported/exported as JSON files alongside built-in Arena and Survival presets, with preset management beside weapon drops on the Combat page
 * Reimplemented missing features of Flan's Mod Ultimate 1.7.10, including Teams rule commands, lag compensation settings, death drop rules, item spawners, `ShootWithOpenDoor`, kill messages with distance and hit markers
 * Airborne wound puffs and severe-injury spray accompany temporary ground blood splatters on player and opted-in NPC injuries and deaths, controlled by the default-on Teams `Blood Effects` rule (`/teams bloodEffects true|false`); blocked hits do not bleed and fatal heavy hits do not duplicate splatters
 * New combat effects: screen shake and camera recoil, tracer beams and mixed belts, hold-to-throw grenades with realistic weight-based category speeds (up to 27 m/s) and weaker underhand tosses (hold and release attack for overhand, use for underhand); a quick click throws at full speed, holding longer charges the throw like a bow with a progress bar under the crosshair (`ThrowChargeTime`), thermal vision scopes, hot rounds and team IFF strobes, explosion shake, fly-by sounds and suppression
 * Large rendering performance improvements and shader pack compatibility (Oculus/Iris)
 * Faster content loading and startup, including reuse of model muzzle measurements after equivalent pack rebuilds and unrelated definition edits, with logged cache invalidation reasons
 
-* All 19 additional Labjac particle names resolve, including colored shell smoke, water plumes, blood spray, destruction columns, lock markers, canisters, the Nu muzzle sprites and working world casings; suitable weapon, vehicle and NPC events reuse them, and `flansmod.muzzleflashclassic` selects the dedicated legacy muzzle sprites
+* All 19 additional Labjac particle names resolve, including colored shell smoke, water plumes, blood spray, destruction columns, lock markers, canisters, the Nu muzzle sprites and working world casings; suitable weapon, vehicle and NPC events reuse them, and `flansmod.muzzleflashclassic` selects the dedicated legacy muzzle sprites; weapon smoke is subtle and short-lived, follows the rendered first-person muzzle without obscuring its flash, respects left-handed muzzle placement, and can be disabled with the client `showWeaponSmoke` option; quick-access settings include weapon smoke, personal blood visibility (`showBloodEffects`), casings, vehicle damage-effect density and detached debris
 
 ## Teams
+
+* The `destroyableDeployedGuns` round rule lets damage destroy deployed guns during a round (default false); destroyed guns and their ammunition do not drop
 
 * Teams vehicle spawners fill driveable fuel tanks and load default weapon ammunition plus up to 32 spare ammunition items per type in available cargo space; configure `teamsSpawnVehiclesWithFuel` and `teamsSpawnVehicleAmmo` (0 disables ammunition provisioning)
 
@@ -27,7 +31,7 @@
 
 * During Teams rounds, spawners, capture points and team banners are protected from weapons, explosions, mobs and other indirect destruction; operators can remove them only by directly breaking them or using the Operator Stick, while flags and flagpoles remain damage-proof
 
-* Addon API 1.21 adds server-side blood-effect opt-in through `ILivingVisualEffects` and exposes nominal per-face vehicle armour, turret facing, loaded seat ammunition performance including weapon overrides, projectile mass, per-bank barrel recoil eligibility and confirmed armour-impact callbacks for target-aware AI, plus shared operator preset libraries and client file import/export through the command centre API, mass-scaled external impulses for model entities, server-authored mounted firing effects through `FlansProjectiles.firingEffects`, shared terrain-following model suspension through `FlansEntityTypes.sampleTerrainAttitude`, and shared vehicle spawner cooldown queries and spawn notifications through `FlansTeams`, and lists every default round of a gun, an AA gun or a driveable weapon bank through `FlansEquipment.createDefaultAmmunitionChoices`, exposes grenade purpose and additional flash/gas reach through `FlansProjectiles.getGrenadeProperties`, without changing damage, and supports server-controlled living operators of placed deployable and AA guns through `IEmplacement`, with validated deployment through `FlansEmplacements`, with grenade-device placement, owned remote detonation and supply-bag use through `FlansGrenadeDevices` and living machine proximity routing through `IProximityTarget` and cooperative allied-player seat handoff through `IFlanSeatOccupant`
+* Addon API 1.21 adds server-side blood-effect opt-in through `ILivingVisualEffects` and exposes nominal per-face vehicle armour, turret facing, loaded seat ammunition performance including weapon overrides, projectile mass, per-bank barrel recoil eligibility and confirmed armour-impact callbacks for target-aware AI, plus shared operator preset libraries and client file import/export through the command centre API, mass-scaled external impulses for model entities, server-authored mounted firing effects through `FlansProjectiles.firingEffects`, shared terrain-following model suspension through `FlansEntityTypes.sampleTerrainAttitude`, and shared vehicle spawner cooldown queries and spawn notifications through `FlansTeams`, and lists every default round of a gun, an AA gun or a driveable weapon bank through `FlansEquipment.createDefaultAmmunitionChoices`, exposes grenade purpose and additional flash/gas reach through `FlansProjectiles.getGrenadeProperties`, without changing damage, and supports server-controlled living operators of placed deployable and AA guns through `IEmplacement`, retaining automated aim independently of operator look updates, with validated deployment through `FlansEmplacements`, with grenade-device placement, owned remote detonation and supply-bag use through `FlansGrenadeDevices` and living machine proximity routing through `IProximityTarget` and cooperative allied-player seat handoff through `IFlanSeatOccupant`
 
 * All spawners offer a base-assignment menu and immediately show their assigned base's team color, including before a round starts and when changing bases; item and vehicle spawners have a spawn delay in seconds (default 20), shared with NPC deployments on vehicle spawners, while vehicle spawners support AA guns, wait for their previous vehicle to be destroyed or leave the map by default, offer a nearby-only replacement mode, allow NPC vehicles by all, none, multiple categories or exact definitions, and select between spawning all ready NPC vehicles into clear nearby spaces (default) or deploying them one after another
 
@@ -84,6 +88,7 @@
 * Vehicle cannon screen shake
 * Depth charges, HESH rounds, tracer rounds and composite armour
 * Suitable ground vehicle categories squash mobs they run over
+* Ground vehicles ease back toward level when wheel support is lost instead of retaining a stale terrain tilt while their body rests on a ledge
 * Configurable driveable melee protection and weapon damage overrides
 * Configurable render and tracking distances for driveables and Flan NPC models
 * Smooth view and position for players standing or walking on moving hulls and turrets, including large ships; fixed sudden turns and drops from unstable carry transforms and replayed movement when server time is synchronized
@@ -98,6 +103,10 @@
 * Pointing a driveable repair tool (such as the blow torch) at a part of a driveable or Flan's NPC shows its remaining and total HP; debug mode shows it above the armor readout
 
 ## Weapons
+
+* `/rearm` and Teams vehicle spawning fill vehicle weapon ammunition slots to their item and inventory stack limits, including partially filled stacks
+
+* Full ammunition stacks now merge with freshly created ammunition after refilling or cycling to the next magazine; older full stacks are repaired when carried in a player inventory
 
 * Supply bags retain their remaining uses across saves and spend a use only on delivered healing, effects or ammunition; mines respect their arming delay before applying trigger damage, and living vehicle models can participate in vehicle proximity fuses
 

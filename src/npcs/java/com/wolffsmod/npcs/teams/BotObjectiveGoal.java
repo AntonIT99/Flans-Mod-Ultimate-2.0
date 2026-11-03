@@ -135,7 +135,9 @@ public final class BotObjectiveGoal extends Goal
                 detours = 0;
             return false;
         }
-        return ++stalled >= STALLED_SEARCHES;
+        if (++stalled == STALLED_SEARCHES)
+            TeamsBots.reportSquadRouteFailure(npc, npc.level().getGameTime());
+        return stalled >= STALLED_SEARCHES;
     }
 
     /** Whether the bot is free to move: alive, not fighting, not riding and not pinned down by fire. */

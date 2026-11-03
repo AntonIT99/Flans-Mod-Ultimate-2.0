@@ -146,6 +146,78 @@ class NpcGrenadeDeviceGoalTest
     }
 
     @Test
+    void supplyBagDeploymentRequiresPersonalNeedAndUsesThePlacedBagImmediately() throws ReflectiveOperationException
+    {
+        ServerLevel level = mock(ServerLevel.class);
+        EntityNPCInterface npc = npc(level);
+        when(npc.getLookAngle()).thenReturn(new Vec3(1D, 0D, 0D));
+        when(level.clip(any())).thenReturn(new BlockHitResult(new Vec3(1.5D, 0D, 0.5D), Direction.UP, new BlockPos(1, -1, 0), false));
+        ItemStack stack = new ItemStack(Items.STICK);
+        Entity placed = mock(Entity.class);
+        try (var devices = mockStatic(FlansGrenadeDevices.class);
+            var equipment = mockStatic(NpcEquipment.class);
+            var kinds = mockStatic(TacticKind.class);
+            var drivers = mockStatic(NpcDrivers.class);
+            var crew = mockStatic(NpcCrew.class);
+            var platform = mockStatic(CustomNpcsPlatform.class);
+            var ammunition = mockStatic(NpcAmmunition.class);
+            var supplies = mockStatic(NpcDeviceSupplies.class))
+        {
+            enabled(equipment, kinds, npc);
+            ammunition.when(() -> NpcAmmunition.supplies(npc)).thenReturn(List.of(stack));
+            devices.when(() -> FlansGrenadeDevices.properties(stack)).thenReturn(Optional.of(new GrenadeDeviceProperties(0D, 0D, 0, false, true)));
+            devices.when(() -> FlansGrenadeDevices.place(eq(npc), eq(stack), any(), any(), eq(true))).thenReturn(Optional.of(placed));
+            NpcGrenadeDeviceGoal goal = new NpcGrenadeDeviceGoal(npc);
+            assertFalse(goal.canUse());
+            devices.verify(() -> FlansGrenadeDevices.place(eq(npc), eq(stack), any(), any(), anyBoolean()), never());
+            when(level.getGameTime()).thenReturn(20L);
+            supplies.when(() -> NpcDeviceSupplies.needs(npc, stack)).thenReturn(true);
+            supplies.when(() -> NpcDeviceSupplies.use(npc, placed)).thenReturn(true);
+            assertTrue(goal.canUse());
+            goal.tick();
+            supplies.verify(() -> NpcDeviceSupplies.use(npc, placed));
+            verify(npc).swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        }
+    }
+
+    @Test
+    void usefulNearbyFriendlyBagPreventsAnotherDeploymentEvenWhenUnreachable() throws ReflectiveOperationException
+    {
+        ServerLevel level = mock(ServerLevel.class);
+        EntityNPCInterface npc = npc(level);
+        when(npc.getLookAngle()).thenReturn(new Vec3(1D, 0D, 0D));
+        when(level.clip(any())).thenReturn(new BlockHitResult(new Vec3(1.5D, 0D, 0.5D), Direction.UP, new BlockPos(1, -1, 0), false));
+        ItemStack stack = new ItemStack(Items.STICK);
+        Entity existing = mock(Entity.class);
+        when(existing.position()).thenReturn(new Vec3(10D, 0D, 0D));
+        when(npc.distanceToSqr(existing)).thenReturn(100D);
+        try (var devices = mockStatic(FlansGrenadeDevices.class);
+            var equipment = mockStatic(NpcEquipment.class);
+            var kinds = mockStatic(TacticKind.class);
+            var drivers = mockStatic(NpcDrivers.class);
+            var crew = mockStatic(NpcCrew.class);
+            var platform = mockStatic(CustomNpcsPlatform.class);
+            var movement = mockStatic(NpcCombatMovement.class);
+            var ammunition = mockStatic(NpcAmmunition.class);
+            var supplies = mockStatic(NpcDeviceSupplies.class))
+        {
+            enabled(equipment, kinds, npc);
+            ammunition.when(() -> NpcAmmunition.supplies(npc)).thenReturn(List.of(stack));
+            devices.when(() -> FlansGrenadeDevices.find(eq(level), any())).thenReturn(List.of(existing));
+            devices.when(() -> FlansGrenadeDevices.properties(existing)).thenReturn(Optional.of(new GrenadeDeviceProperties(0D, 0D, 0, false, true)));
+            devices.when(() -> FlansGrenadeDevices.properties(stack)).thenReturn(Optional.of(new GrenadeDeviceProperties(0D, 0D, 0, false, true)));
+            devices.when(() -> FlansGrenadeDevices.ownedBy(existing, npc)).thenReturn(true);
+            supplies.when(() -> NpcDeviceSupplies.needs(npc, stack)).thenReturn(true);
+            supplies.when(() -> NpcDeviceSupplies.needs(npc, existing)).thenReturn(true);
+            NpcGrenadeDeviceGoal goal = new NpcGrenadeDeviceGoal(npc);
+            assertFalse(goal.canUse());
+            when(level.getGameTime()).thenReturn(20L);
+            when(npc.distanceToSqr(existing)).thenReturn(145D);
+            assertTrue(goal.canUse());
+        }
+    }
+
+    @Test
     void failedPlacementPreservesTheCarriedMine() throws ReflectiveOperationException
     {
         ServerLevel level = mock(ServerLevel.class);

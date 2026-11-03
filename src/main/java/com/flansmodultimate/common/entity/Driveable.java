@@ -6320,13 +6320,13 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         float radius = Math.max(3F, getBbWidth() * 1.5F);
         if (getDamageClass().flies())
         {
-            PacketHandler.sendToAllAround(new PacketDriveableCrashFireball(position(), radius), position(), 256D, level().dimension());
+            PacketHandler.sendToAllAround(new PacketDriveableCrashFireball(getId(), position(), radius), position(), 256D, level().dimension());
             return;
         }
         // Not a fireball: a burnt-out hull coming down is dust, a scorched patch and a great deal of noise.
         if (!water)
         {
-            PacketHandler.sendToTracking(new PacketDriveableImpact(position(), radius * (0.4F + 0.6F * severity), severity), this);
+            PacketHandler.sendToTracking(new PacketDriveableImpact(getId(), position(), radius * (0.4F + 0.6F * severity), severity), this);
             breakGroundUnderWreck(fallSpeed);
         }
         String sound = water ? FlansModSounds.SOUND_IMPACT_WATER : FlansModSounds.SOUND_IMPACT_METAL;
@@ -7006,16 +7006,26 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
         double correctedY = SuspensionPhysics.dampVerticalVelocity(velocity.y, supportError / groundedWheelCount, spring, velocity.horizontalDistance(), appliedGravity);
 
-        if (alignToTerrain && frontCount > 0 && backCount > 0)
+        if (alignToTerrain)
         {
-            double front = frontHeight / frontCount;
-            double back = backHeight / backCount;
-            double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
-            double mountDifference = frontMountHeight / frontCount - backMountHeight / backCount;
-            float targetPitch = SuspensionPhysics.supportAngle(front - back, length, mountDifference, this instanceof Plane);
+            // Support found at only one end (the other wheels over a drop deeper than the probe) eases the
+            // driveable level instead of freezing whatever angle it had at that moment.
+            float targetPitch = 0F;
+            if (frontCount > 0 && backCount > 0)
+            {
+                double front = frontHeight / frontCount;
+                double back = backHeight / backCount;
+                double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
+                double mountDifference = frontMountHeight / frontCount - backMountHeight / backCount;
+                targetPitch = SuspensionPhysics.supportAngle(front - back, length, mountDifference, this instanceof Plane);
+            }
             float pitch = SuspensionPhysics.smoothTerrainAngle(getPitch(), targetPitch, spring);
             float roll = getRoll();
-            if (configType.isCanRoll() && leftCount > 0 && rightCount > 0)
+            if (configType.isCanRoll() && (leftCount == 0 || rightCount == 0))
+            {
+                roll = SuspensionPhysics.smoothTerrainAngle(getRoll(), 0F, spring);
+            }
+            else if (configType.isCanRoll())
             {
                 double left = leftHeight / leftCount;
                 double right = rightHeight / rightCount;

@@ -420,8 +420,10 @@ public final class ModCommonConfig
             "of the same ammunition, taken from the driveable's cargo first and then from the driver's inventory.").define("autoRefillVehicleAmmo", true);
         GUNS_IN_DESTROYED_PARTS_WORK = builder.comment("Whether an occupied passenger gun remains usable when the driveable part supporting its seat is destroyed.",
             "Disabled by default. Destroyed seats still cannot be newly occupied.").define("gunsInDestroyedPartsWork", false);
-        DRIVEABLE_WRECK_LIFETIME = builder.comment("Seconds a destroyed driveable stays as a burning wreck before it is removed. Wrecks cannot be driven, keep their collision and burn out over time.",
-            "0 removes destroyed driveables at once, as before.").defineInRange("driveableWreckLifetime", 120, 0, 3600);
+        DRIVEABLE_WRECK_LIFETIME = builder
+            .comment("Seconds a destroyed driveable stays as a burning wreck before it is removed. Wrecks cannot be driven, keep their collision and burn out over time.",
+                "The scorch mark under a wreck lasts as long as the wreck and fades when it is broken up or removed.", "0 removes destroyed driveables at once, as before.")
+            .defineInRange("driveableWreckLifetime", 300, 0, 3600);
         DRIVEABLE_MELEE_DAMAGE_THRESHOLD = builder.comment("Minimum melee damage in health points for driveables and NPC driveable models. Weaker hits are ignored; qualifying hits apply in full.",
             "Compared after Flan weapon vehicle modifiers, before armor and resistances. 0 disables the threshold.",
             "Content packs may override this with MeleeDamageThreshold; NPCs may override their model's threshold.").defineInRange("driveableMeleeDamageThreshold", 10D, 0D, 100_000D);

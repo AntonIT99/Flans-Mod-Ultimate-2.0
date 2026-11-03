@@ -43,7 +43,7 @@ public final class NpcBombTargets
         return FlansEntityTypes.getDriveableType(entity).isPresent() && !FlansEntityTypes.isWreck(entity);
     }
 
-    private static boolean airborne(Entity entity)
+    public static boolean airborne(Entity entity)
     {
         if (entity.onGround() || entity.isInWater())
             return false;

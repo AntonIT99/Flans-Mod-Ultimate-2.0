@@ -57,6 +57,8 @@ final class RulesPage extends TeamsPage
         int width = view.getWidth();
         int y = view.getTop() + tabs(view, Tab.values(), tab, shown -> tr("rules_tab." + shown.name().toLowerCase(Locale.ROOT)), left, view.getTop(), width, chosen -> tab = chosen);
         int bottom = view.getTop() + view.getHeight() - WIDGET_HEIGHT;
+        int presetLeft = left;
+        int presetWidth = width;
         switch (tab)
         {
             case PROTECTION -> {
@@ -70,6 +72,9 @@ final class RulesPage extends TeamsPage
                 int slot = COMBAT.size();
                 choice(view, tr(RULE + "weaponDrops"), WEAPON_DROPS, data.rules().getString(TeamsSection.WEAPON_DROPS), mode -> tr("weapon_drops." + mode), left + (slot % 2) * (columnWidth + GAP),
                     y + 16 + (slot / 2) * ROW, columnWidth, mode -> run(view, "teams weaponDrops", mode)).setTooltip(Tooltip.create(tr(RULE + "weaponDrops.tip")));
+                presetLeft = left + columnWidth + GAP;
+                presetWidth = columnWidth;
+                bottom = y + 16 + (slot / 2) * ROW;
             }
             case HEALTH -> initHealth(view, data.rules(), left, y + 16, width);
             case CLEANUP -> initCleanup(view, data.rules(), left, y + 16, width);
@@ -78,7 +83,7 @@ final class RulesPage extends TeamsPage
         }
         if (tab != Tab.GAME_TYPE && tab != Tab.MINECRAFT)
         {
-            button(view, Component.translatable("gui.flansmodultimate.presets.manage"), left, bottom, width,
+            button(view, Component.translatable("gui.flansmodultimate.presets.manage"), presetLeft, bottom, presetWidth,
                 () -> com.flansmodultimate.api.client.commandcentre.FlansCommandCentreClient.openPresets(com.flansmodultimate.common.teams.centre.SettingsPresets.TEAMS, ""));
         }
     }

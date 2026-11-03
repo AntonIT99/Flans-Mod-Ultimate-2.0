@@ -5,6 +5,9 @@ import com.flansmodultimate.api.projectiles.GrenadeProperties;
 import com.wolffsmod.npcs.combat.NpcThrowing.Choice;
 import com.wolffsmod.npcs.combat.NpcThrowing.Kind;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.tactics.NpcInfantryRole;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.event.NpcEvent;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -93,13 +96,18 @@ public final class NpcThrowGoal extends Goal
         }
         if (pending != null)
         {
+            if (pending.kind() != Kind.GRENADE && NpcMeleeRoleGoal.committed(npc, target))
+            {
+                giveUp(now);
+                return;
+            }
             windUp(pending, target, now);
             return;
         }
         if (--scan > 0)
             return;
         scan = SCAN_INTERVAL;
-        NpcThrowing.occasionalThrow(npc, target, readyAt, now).ifPresent(choice ->
+        NpcThrowing.occasionalThrow(npc, target, readyAt, now).filter(choice -> choice.kind() == Kind.GRENADE || !NpcMeleeRoleGoal.committed(npc, target)).ifPresent(choice ->
         {
             pending = choice;
             int charge = NpcEquipment.chargeTime(choice.stack(), npc);
@@ -132,6 +140,8 @@ public final class NpcThrowGoal extends Goal
         readyAt[choice.kind().ordinal()] = now + (thrown ? cooldown : RETRY_DELAY);
         if (!thrown)
             return;
+        if (choice.kind() != Kind.GRENADE && NpcInfantryRole.of(npc) == ClassRole.MELEE)
+            NpcTacticState.of(npc).setMeleeThrowTarget(target.getUUID());
         if (animated)
             npc.swing(InteractionHand.MAIN_HAND);
         npc.updateClient = true;

@@ -3,6 +3,8 @@ package com.wolffsmod.npcs.teams;
 import com.wolffsmod.npcs.crew.CrewPost;
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.nbt.CompoundTag;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -11,6 +13,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BotSettingsTextTest
 {
+    @Test
+    void aircraftRolesSurviveAllocationEditingAndNbtRoundTrips()
+    {
+        var role = com.wolffsmod.npcs.sim.NpcTuning.AircraftRole.BOMBER;
+        BotSettings.VehicleEntry original = new BotSettings.VehicleEntry("bomber", 2, 4, 15, 3, null, "", List.of(0)).withAircraftRole(role);
+        var parsed = BotSettingsText.parseVehicles(BotSettingsText.formatVehicles(List.of(original)), List.of());
+        assertEquals(original, parsed.get(0));
+        assertEquals(role, BotSettingsText.parseVehicles("bomber:3", List.of(original)).get(0).aircraftRole());
+        assertEquals(role, BotSettings.VehicleEntry.load(original.save()).aircraftRole());
+        CompoundTag legacy = original.save();
+        legacy.remove("aircraft_role");
+        assertEquals(com.wolffsmod.npcs.sim.NpcTuning.AircraftRole.AUTO, BotSettings.VehicleEntry.load(legacy).aircraftRole());
+    }
+
     @Test
     void classWeightsRoundTripAndDefaultToOne()
     {

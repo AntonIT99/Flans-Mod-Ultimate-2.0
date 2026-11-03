@@ -214,7 +214,9 @@ public class Vehicle extends Driveable implements VehicleVisual
         }
         if ((braking && tracked) || !isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
-        boolean supported = onGround() || hasWheelContact();
+        // Only wheel contact keeps the terrain pose: a body resting on a ledge with its wheels over a drop has nothing
+        // that aligns it, and would otherwise hold its last angle indefinitely. A wheelless type keeps its placed pose.
+        boolean supported = hasWheelContact() || onGround() && type.getWheelPositions().isEmpty();
 
         float pitch = supported ? getPitch() : approach(getPitch(), 0F, 0.8F);
         float roll;

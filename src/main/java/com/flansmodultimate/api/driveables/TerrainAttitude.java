@@ -14,10 +14,19 @@ import org.jetbrains.annotations.ApiStatus;
  *            degrees nose down, negative nose up
  * @param bank
  *            degrees rolled right, with the right side down
+ * @param lift
+ *            blocks the model is drawn above (negative: below) the entity's position, so that its wheels rest on the
+ *            terrain they were sampled on
  */
 @ApiStatus.Experimental
-public record TerrainAttitude(float pitch, float bank)
+public record TerrainAttitude(float pitch, float bank, float lift)
 {
     /** A model resting level. */
-    public static final TerrainAttitude LEVEL = new TerrainAttitude(0F, 0F);
+    public static final TerrainAttitude LEVEL = new TerrainAttitude(0F, 0F, 0F);
+
+    /** A tilt without vertical offset. */
+    public TerrainAttitude(float pitch, float bank)
+    {
+        this(pitch, bank, 0F);
+    }
 }

@@ -11,6 +11,7 @@ import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
 import com.flansmodultimate.client.input.*;
 import com.flansmodultimate.client.particle.ParticleHelper;
+import com.flansmodultimate.client.particle.WeaponShotEffects;
 import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.OpStickConnectionRenderer;
 import com.flansmodultimate.client.render.effects.*;
@@ -278,6 +279,7 @@ public final class ClientEventHandler
         }
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
+        WeaponShotEffects.captureWorldView(event.getPoseStack(), event.getProjectionMatrix());
         float partialTick = ClientPlatform.partialTick(event);
         MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
         InstantBulletRenderer.renderAllTrails(event.getPoseStack(), buffers, partialTick, event.getCamera());

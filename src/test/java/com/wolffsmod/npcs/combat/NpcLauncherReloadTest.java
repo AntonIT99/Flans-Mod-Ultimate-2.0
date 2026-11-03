@@ -5,7 +5,9 @@ import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.tactics.NpcInfantryRole;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataAI;
 import noppes.npcs.entity.data.DataRanged;
@@ -64,8 +66,10 @@ class NpcLauncherReloadTest
             var attacks = mockStatic(NpcItemAttacks.class);
             var ammunition = mockStatic(NpcAmmunition.class);
             var feedback = mockStatic(NpcReloadFeedback.class);
-            var tactics = mockStatic(NpcTacticState.class))
+            var tactics = mockStatic(NpcTacticState.class);
+            var roles = mockStatic(NpcInfantryRole.class))
         {
+            roles.when(() -> NpcInfantryRole.of(npc)).thenReturn(ClassRole.RIFLEMAN);
             NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
             tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());
@@ -143,8 +147,10 @@ class NpcLauncherReloadTest
             var attacks = mockStatic(NpcItemAttacks.class);
             var ammunition = mockStatic(NpcAmmunition.class);
             var feedback = mockStatic(NpcReloadFeedback.class);
-            var tactics = mockStatic(NpcTacticState.class))
+            var tactics = mockStatic(NpcTacticState.class);
+            var roles = mockStatic(NpcInfantryRole.class))
         {
+            roles.when(() -> NpcInfantryRole.of(npc)).thenReturn(ClassRole.RIFLEMAN);
             NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
             tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());
@@ -187,8 +193,10 @@ class NpcLauncherReloadTest
             var attacks = mockStatic(NpcItemAttacks.class);
             var ammunition = mockStatic(NpcAmmunition.class);
             var feedback = mockStatic(NpcReloadFeedback.class);
-            var tactics = mockStatic(NpcTacticState.class))
+            var tactics = mockStatic(NpcTacticState.class);
+            var roles = mockStatic(NpcInfantryRole.class))
         {
+            roles.when(() -> NpcInfantryRole.of(npc)).thenReturn(ClassRole.RIFLEMAN);
             NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
             tactics.when(() -> NpcTacticState.of(npc)).thenReturn(new NpcTacticState());

@@ -232,6 +232,8 @@ public final class NpcRangedAttack
             if (prepared.isEmpty())
                 return false;
             var shot = prepared.get();
+            if (shot.dropped() && target != null && NpcBombTargets.airborne(target.getRootVehicle()))
+                return false;
             // A model's rounds leave along its barrels, as a player's do, which were laid for them before the trigger was pulled. A
             // gun fixed to the hull of a turreted model waits for the hull to point where they have to go. A bomb just drops.
             boolean barrels = state.isActive() && definition != null && !shot.dropped();

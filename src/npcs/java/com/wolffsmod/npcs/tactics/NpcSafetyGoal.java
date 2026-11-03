@@ -339,10 +339,13 @@ public final class NpcSafetyGoal extends Goal
 
     private boolean retreatToRefuge()
     {
-        if (!NpcDuties.retreating(npc))
+        boolean personal = NpcDuties.retreating(npc);
+        Optional<Vec3> squad = personal ? Optional.empty() : TeamsBots.squadWithdrawal(npc);
+        if (!personal && squad.isEmpty())
             return false;
         state.setAdvanceIntent(null);
-        Optional<Vec3> refuge = NpcDuties.destination(npc).filter(point -> NpcCombatMovement.permits(npc, point));
+        Optional<Vec3> refuge = squad.map(point -> new NpcCombatIntent(point, 3D).step(npc.position(), 16D)).or(() -> NpcDuties.destination(npc))
+            .filter(point -> NpcCombatMovement.permits(npc, point));
         if (refuge.isEmpty())
             return false;
         order(Action.RETREAT, refuge.get(), 40L);

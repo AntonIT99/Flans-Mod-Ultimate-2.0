@@ -67,8 +67,14 @@ public final class Doctrine
      * @param antiArmour
      *            readiness-weighted members equipped to engage reported armour
      */
-    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget, double readiness, double antiArmour)
+    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget, double readiness, double antiArmour,
+        @Nullable Vec3 failedTarget, @Nullable Vec3 supportTarget)
     {
+        public SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget, double readiness, double antiArmour)
+        {
+            this(id, role, posture, position, strength, carrying, currentTarget, readiness, antiArmour, null, null);
+        }
+
         public SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget)
         {
             this(id, role, posture, position, strength, carrying, currentTarget, 1D, role == BotRole.ARMOR ? strength : 0D);
@@ -173,12 +179,22 @@ public final class Doctrine
     }
 
     /**
-     * Without objectives, squads seek out the nearest enemy, or the enemy's spawn when none is seen. With a front, they
-     * head for it instead and only turn to an enemy that comes near them, so the two sides meet there.
+     * Without objectives, squads divide reported enemies, or enemy spawns when none are seen, by travel cost and allied
+     * commitments. With a front, they head for it instead and only turn to nearby enemies, so the two sides meet there.
      */
     private static void planHunt(Battlefield field, List<SquadView> squads, Map<Integer, SquadTask> tasks)
     {
+        Map<Vec3, Double> assigned = new LinkedHashMap<>();
+        List<Vec3> candidates = new ArrayList<>(field.enemies().isEmpty() ? field.enemySpawns() : field.enemies());
         for (SquadView squad : squads)
+            if (squad.supportTarget() != null && !candidates.contains(squad.supportTarget()))
+                candidates.add(squad.supportTarget());
+        Map<Vec3, Double> support = new HashMap<>();
+        for (Vec3 candidate : candidates)
+            support.put(candidate, squads.stream().filter(squad -> squad.supportTarget() != null && squad.supportTarget().distanceToSqr(candidate) <= 576D).mapToDouble(SquadView::power).sum());
+        List<SquadView> ordered = new ArrayList<>(squads);
+        ordered.sort(Comparator.comparingDouble(SquadView::power).reversed().thenComparingInt(SquadView::id));
+        for (SquadView squad : ordered)
         {
             Optional<Vec3> enemy = nearest(squad.position(), field.enemies());
             if (field.front() != null && enemy.map(found -> found.distanceTo(squad.position()) > ENGAGE_RANGE).orElse(true))
@@ -186,9 +202,20 @@ public final class Doctrine
                 tasks.put(squad.id(), new SquadTask(SquadTask.Kind.HUNT, field.front(), FRONT_RADIUS));
                 continue;
             }
-            Vec3 target = enemy.or(() -> nearest(squad.position(), field.enemySpawns())).orElse(squad.position());
+            Vec3 target = candidates.stream().filter(candidate -> field.front() == null || candidate.distanceTo(squad.position()) <= ENGAGE_RANGE)
+                .min(Comparator.comparingDouble(candidate -> huntCost(squad, candidate, assigned, support.get(candidate)))).orElse(squad.position());
+            assigned.merge(target, squad.power(), Double::sum);
             tasks.put(squad.id(), new SquadTask(SquadTask.Kind.HUNT, target, HUNT_RADIUS));
         }
+    }
+
+    /** Nearby reports share a commitment count, so a cluster of enemies does not attract every squad independently. */
+    private static double huntCost(SquadView squad, Vec3 candidate, Map<Vec3, Double> assigned, double requested)
+    {
+        double committed = assigned.entrySet().stream().filter(entry -> entry.getKey().distanceToSqr(candidate) <= HUNT_RADIUS * HUNT_RADIUS).mapToDouble(Map.Entry::getValue).sum();
+        double staying = candidate.equals(squad.currentTarget()) ? STAY_BONUS : 0D;
+        double reinforcement = reinforcement(squad, requested);
+        return squad.position().distanceTo(candidate) / DISTANCE_SCALE + CROWDING * committed / 4D - staying + failureCost(squad, candidate) - reinforcement;
     }
 
     /**
@@ -309,6 +336,9 @@ public final class Doctrine
         }
         Map<Integer, Double> assigned = new HashMap<>();
         List<Pressure> pressure = field.points().stream().map(point -> pressure(field, point)).toList();
+        // Summed once per point, rather than scanning requesting squads inside the assignment loop.
+        List<Double> support = field.points().stream()
+            .map(point -> squads.stream().filter(squad -> squad.supportTarget() != null && near(point, squad.supportTarget())).mapToDouble(SquadView::power).sum()).toList();
         List<SquadView> ordered = new ArrayList<>(squads);
         ordered.sort(Comparator.comparingDouble(SquadView::power).reversed().thenComparingInt(SquadView::id));
         for (SquadView squad : ordered)
@@ -320,8 +350,7 @@ public final class Doctrine
                 TeamsCapturePoint candidate = field.points().get(i);
                 if (!field.mayCapture() && candidate.ownerSide() != field.side())
                     continue;
-                double demand = Math.max(4D, pressure.get(i).power());
-                double value = value(field, candidate, squad, pressure.get(i)) - CROWDING * assigned.getOrDefault(i, 0D) / demand;
+                double value = objectiveValue(field, candidate, squad, pressure.get(i), assigned.getOrDefault(i, 0D), support.get(i));
                 if (value > bestValue)
                 {
                     bestValue = value;
@@ -332,6 +361,21 @@ public final class Doctrine
             assigned.merge(best, squad.power(), Double::sum);
             tasks.put(squad.id(), new SquadTask(kindAt(field, point), point.position(), point.radius()));
         }
+    }
+
+    private static double objectiveValue(Battlefield field, TeamsCapturePoint point, SquadView squad, Pressure pressure, double assigned, double requested)
+    {
+        double demand = Math.max(4D, pressure.power() + requested);
+        // Pinning is itself a report of danger, even when the shooter has not been located.
+        double reportedThreat = requested > 0D && point.ownerSide() == field.side() && !pressure.threatened() ? (THREATENED_VALUE - SAFE_VALUE) * Math.min(1D, squad.readiness()) : 0D;
+        return value(field, point, squad, pressure) + reportedThreat + reinforcement(squad, requested) - CROWDING * assigned / demand;
+    }
+
+    private static double reinforcement(SquadView squad, double requested)
+    {
+        if (squad.supportTarget() != null || squad.readiness() < 0.5D || requested <= 0D)
+            return 0D;
+        return Math.min(8D, 4D + requested);
     }
 
     static double value(Battlefield field, TeamsCapturePoint point, SquadView squad)
@@ -350,7 +394,12 @@ public final class Doctrine
             value -= Math.max(0D, pressure.power() - squad.power());
             value -= 4D * Math.max(0D, pressure.armour() - squad.antiArmour());
         }
-        return value - squad.position().distanceTo(point.position()) / DISTANCE_SCALE;
+        return value - squad.position().distanceTo(point.position()) / DISTANCE_SCALE - failureCost(squad, point.position());
+    }
+
+    private static double failureCost(SquadView squad, Vec3 target)
+    {
+        return squad.failedTarget() != null && squad.failedTarget().distanceToSqr(target) <= 256D ? 12D : 0D;
     }
 
     private static double baseValue(Battlefield field, TeamsCapturePoint point, SquadView squad, boolean threatened)

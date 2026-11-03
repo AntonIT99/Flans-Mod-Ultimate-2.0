@@ -60,6 +60,37 @@ class SquadCombatTest
     }
 
     @Test
+    void machineGunCoversAssaultEvenWhenItAsksFirstAndFollowsOnceAssaultIsAtItsOrder()
+    {
+        SquadCombat combat = new SquadCombat();
+        var mg = new SquadCombat.Member(new UUID(0L, 1), Vec3.ZERO, 10, true, false, false, false, BotSettings.ClassRole.SUPPORT, true);
+        var assault = new SquadCombat.Member(new UUID(0L, 2), new Vec3(2D, 0D, 0D), 10, true, false, false, false, BotSettings.ClassRole.ASSAULT, true);
+        assertTrue(combat.covers(mg, List.of(mg, assault), 0L));
+        assertFalse(combat.covers(assault, List.of(mg, assault), 0L));
+        var arrived = new SquadCombat.Member(assault.id(), assault.position(), 10, true, false, false, false, BotSettings.ClassRole.ASSAULT, false);
+        assertFalse(combat.covers(mg, List.of(mg, arrived), 10L), "an assault soldier at its order must not keep the MG waiting forever");
+    }
+
+    @Test
+    void anAssaultSoldierWhoNeverStartsCannotKeepTheMachineGunWaitingForever()
+    {
+        SquadCombat combat = new SquadCombat();
+        var mg = new SquadCombat.Member(new UUID(0L, 1), Vec3.ZERO, 10, true, false, false, false, BotSettings.ClassRole.SUPPORT, true);
+        var blocked = new SquadCombat.Member(new UUID(0L, 2), new Vec3(2D, 0D, 0D), 10, true, false, false, false, BotSettings.ClassRole.ASSAULT, true);
+        assertTrue(combat.covers(mg, List.of(mg, blocked), 0L));
+        assertFalse(combat.covers(mg, List.of(mg, blocked), 10L));
+    }
+
+    @Test
+    void pinnedAssaultCannotReserveAMoveAndKeepSupportWaiting()
+    {
+        SquadCombat combat = new SquadCombat();
+        var mg = new SquadCombat.Member(new UUID(0L, 1), Vec3.ZERO, 10, true, false, false, false, BotSettings.ClassRole.SUPPORT, true);
+        var pinned = new SquadCombat.Member(new UUID(0L, 2), new Vec3(2D, 0D, 0D), 10, false, false, false, true, BotSettings.ClassRole.ASSAULT, true);
+        assertFalse(combat.covers(mg, List.of(mg, pinned), 0L));
+    }
+
+    @Test
     void coverCannotBeDoubleBookedAndExpiresOnDeathTargetChangeOrTimeout()
     {
         SquadCombat combat = new SquadCombat();

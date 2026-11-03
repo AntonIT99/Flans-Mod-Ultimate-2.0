@@ -65,6 +65,9 @@ final class BotCommander
         List<TeamsCapturePoint> points = ground.capturePoints();
         int attacking = ground.attackingSide().orElse(-1);
         List<Vec3> naval = markers(server, battle, BotMarkers.Type.NAVAL);
+        List<Vec3> routes = markers(server, battle, BotMarkers.Type.ROUTE);
+        List<Vec3> posts = new ArrayList<>(markers(server, battle, BotMarkers.Type.GARRISON));
+        posts.addAll(markers(server, battle, BotMarkers.Type.SNIPER));
         observe(level, battle);
         List<TeamsFlag> flags = ground.flags();
         List<Doctrine.FlagView> flagViews = flags.stream().map(flag -> flagView(server, level, battle, flag)).toList();
@@ -84,6 +87,7 @@ final class BotCommander
             List<Vec3> enemies = contacts.stream().map(BotIntelligence.Contact::position).toList();
             List<Vec3> armour = contacts.stream().filter(BotIntelligence.Contact::armoured).map(BotIntelligence.Contact::position).toList();
             List<Vec3> enemySpawns = new ArrayList<>();
+            List<Vec3> homes = homePositions(ground, side, points);
             for (ITeam team : ground.teams())
                 if (ground.hostile(side, ground.sideOf(team)))
                     enemySpawns.addAll(ground.spawnPositions(team));
@@ -91,6 +95,38 @@ final class BotCommander
             if (!views.isEmpty())
                 Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side), ground.front().orElse(null), armour), views)
                     .forEach((squadId, task) -> Optional.ofNullable(battle.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
+            approaches(level, battle, views, new BotSquadTactics.Field(enemies, homes, posts, routes, points, side));
+        }
+    }
+
+    private static List<Vec3> homePositions(Battleground ground, int side, List<TeamsCapturePoint> points)
+    {
+        List<Vec3> homes = new ArrayList<>();
+        for (ITeam team : ground.teams())
+            if (ground.sideOf(team) == side)
+                homes.addAll(ground.spawnPositions(team));
+        for (TeamsCapturePoint point : points)
+            if (point.ownerSide() == side && !point.contested() && (point.capturingSide() < 0 || point.capturingSide() == side))
+                homes.add(point.position());
+        return homes;
+    }
+
+    /** Squads sharing a destination take a direct approach, then alternating flanks, in a stable squad order. */
+    private static void approaches(ServerLevel level, BotBattle battle, List<Doctrine.SquadView> views, BotSquadTactics.Field field)
+    {
+        long now = level.getGameTime();
+        List<Vec3> assigned = new ArrayList<>();
+        for (Doctrine.SquadView view : views.stream().sorted(Comparator.comparingInt(Doctrine.SquadView::id)).toList())
+        {
+            BotSquad squad = battle.getSquads().get(view.id());
+            SquadTask task = squad.getTask();
+            if (task == null || view.role() != BotRole.INFANTRY && view.role() != BotRole.ARMOR)
+                continue;
+            int lane = (int) assigned.stream().filter(target -> target.distanceToSqr(task.target()) <= 256D).count();
+            boolean enabled = !view.carrying() && view.readiness() >= 0.5D;
+            squad.getApproach().update(task, view.position(), lane, field.routes(), now, enabled);
+            BotSquadTactics.update(level, battle, view, field, lane);
+            assigned.add(task.target());
         }
     }
 
@@ -111,7 +147,11 @@ final class BotCommander
             if (now >= order.expiresAt() || order.kind() == PlayerOrder.Kind.RELEASE || order.kind() == PlayerOrder.Kind.FOLLOW && !playing)
                 squad.setOrder(null);
             else
+            {
+                squad.getTactics().clear();
+                squad.getApproach().clear();
                 squad.setTask(order.task(player == null ? order.target() : player.position()));
+            }
         }
     }
 
@@ -163,7 +203,7 @@ final class BotCommander
             boolean carrying = members.stream().anyMatch(member -> carriers.contains(member.getUUID()));
             BotReadiness.Strength strength = BotReadiness.measure(members, squad.getSlots().size(), role, level.getGameTime());
             views.add(new Doctrine.SquadView(squad.getId(), role, posture(squad), members.get(0).position(), members.size(), carrying, squad.getTask() == null ? null : squad.getTask().target(),
-                strength.readiness(), strength.antiArmour()));
+                strength.readiness(), strength.antiArmour(), squad.getTactics().failedTarget(level.getGameTime()), squad.getTactics().supportTarget(level.getGameTime())));
         }
         return views;
     }
@@ -210,12 +250,31 @@ final class BotCommander
         ServerPlayer followed = playerOrder != null && playerOrder.kind() == PlayerOrder.Kind.FOLLOW ? server.getPlayerList().getPlayer(playerOrder.player()) : null;
         if (followed != null)
             task = playerOrder.task(followed.position());
+        return Optional.of(squadDestination(server, battle, slot, squad, task));
+    }
+
+    private static Order squadDestination(MinecraftServer server, BotBattle battle, BotSlot slot, BotSquad squad, SquadTask task)
+    {
+        var directed = squad.getOrder() == null ? squad.getTactics().order(task, slot.getEntity()) : null;
+        if (directed != null)
+            return new Order(directed.spot(), directed.arrival(), squad.getRole(), directed.kind(), directed.spot(), directed.radius());
+        return formationDestination(server, battle, slot, squad, task);
+    }
+
+    private static Order formationDestination(MinecraftServer server, BotBattle battle, BotSlot slot, BotSquad squad, SquadTask task)
+    {
         int index = Math.max(0, squad.getSlots().indexOf(slot.getId()));
         List<Vec3> posts = List.of();
         if (squad.getRole() == BotRole.INFANTRY && (task.kind() == SquadTask.Kind.DEFEND || task.kind() == SquadTask.Kind.GUARD))
             posts = posts(server, battle, task);
         Vec3 spot = BotFormation.spot(task.target(), index, task.radius(), posts);
+        boolean capture = captures(battle, slot, squad, task);
         double arrival = 2.5D;
+        if (capture)
+        {
+            spot = BotFormation.spot(task.target(), index, Math.min(3D, task.radius() * 0.5D), List.of());
+            arrival = Math.min(1D, task.radius() * 0.25D);
+        }
         if (squad.getRole() == BotRole.PLANE || squad.getRole() == BotRole.HELICOPTER)
         {
             spot = spot.add(0D, squad.getRole() == BotRole.PLANE ? PLANE_ALTITUDE : HELICOPTER_ALTITUDE, 0D);
@@ -223,7 +282,21 @@ final class BotCommander
         }
         else if (squad.getRole() != BotRole.INFANTRY)
             arrival = 6D;
-        return Optional.of(new Order(spot, arrival, squad.getRole(), task.kind(), task.target(), task.radius()));
+        Vec3 approach = squad.getOrder() == null ? squad.getApproach().waypoint(task) : null;
+        if (approach != null)
+        {
+            spot = BotFormation.spot(approach, index, 4D, List.of());
+            return new Order(spot, 2.5D, squad.getRole(), task.kind(), approach, 8D);
+        }
+        return new Order(spot, arrival, squad.getRole(), task.kind(), task.target(), task.radius());
+    }
+
+    private static boolean captures(BotBattle battle, BotSlot slot, BotSquad squad, SquadTask task)
+    {
+        if (squad.getRole() != BotRole.INFANTRY || task.kind() != SquadTask.Kind.ATTACK)
+            return false;
+        BotSettings.ClassRole role = BotRoles.of(battle.getSettings().team(slot.getTeam()), slot.getRole());
+        return role == BotSettings.ClassRole.ASSAULT || role == BotSettings.ClassRole.MELEE;
     }
 
     /** The sniper posts, then the garrison posts, around a defended objective, nearest first. */

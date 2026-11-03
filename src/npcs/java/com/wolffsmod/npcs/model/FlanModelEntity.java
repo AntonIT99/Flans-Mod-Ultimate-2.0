@@ -38,6 +38,8 @@ public class FlanModelEntity extends Mob implements ILivingVisualEffects
     /** Degrees the model is drawn pitched nose down and banked to its right this frame. Client only. */
     private float attitudePitch;
     private float attitudeBank;
+    /** Model lift in model blocks, with the NPC's size factored out. Client only. */
+    private float attitudeLift;
 
     public void setVisualEffects(boolean hurt, boolean death)
     {
@@ -45,11 +47,12 @@ public class FlanModelEntity extends Mob implements ILivingVisualEffects
         deathRotation = death;
     }
 
-    /** Sets the pitch and bank the NPC wearing the model is drawn at this frame, in degrees. Client only. */
-    public void setAttitude(float pitch, float bank)
+    /** Sets the drawn pitch and bank in degrees and vertical lift in model blocks for this frame. Client only. */
+    public void setAttitude(float pitch, float bank, float lift)
     {
         attitudePitch = pitch;
         attitudeBank = bank;
+        attitudeLift = lift;
     }
 
     @Override

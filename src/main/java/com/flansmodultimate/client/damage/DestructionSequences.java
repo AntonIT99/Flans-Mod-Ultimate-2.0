@@ -9,6 +9,8 @@ import com.flansmodultimate.common.driveables.damage.DriveableDamageClass;
 import com.flansmodultimate.common.driveables.damage.PartDamageKind;
 import com.flansmodultimate.common.driveables.damage.PartPieces;
 import com.flansmodultimate.common.driveables.damage.WreckLoad;
+import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformSounds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -105,7 +107,7 @@ final class DestructionSequences
         Vec3 centre = centre(source);
         DamageParticles.burst(centre, (float) Math.max(1D, coreSize(source)), sequence.random);
         // What burns on the ground leaves it black; an aircraft dying in the air scorches where it comes down instead.
-        scorch(centre, Math.max(1.5F, source.entity().getBbWidth() * 0.8F));
+        scorch(centre, Math.max(1.5F, source.entity().getBbWidth() * 0.8F), source.entity());
         if (DamageParticles.density() > 0D && sequence.load.fireStrength() > 0F && (source.damageClass() != DriveableDamageClass.PLANE && source.damageClass() != DriveableDamageClass.HELICOPTER
             || source instanceof PartBodyEffectSource && (source.entity().onGround() || source.entity().isInWater())))
         {
@@ -148,15 +150,32 @@ final class DestructionSequences
     /** Lays a scorch mark on the ground below the point, when there is ground close enough below to burn. */
     static void scorch(Vec3 point, float radius)
     {
+        scorch(point, radius, null);
+    }
+
+    /**
+     * Lays a scorch mark below the point. Given the driveable that burns, the mark lasts as long as its wreck has left to
+     * burn and fades out when the wreck is broken up or removed.
+     */
+    static void scorch(Vec3 point, float radius, @Nullable Entity owner)
+    {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null)
             return;
+        int lifetime = DamageParticles.SCORCH_TICKS;
+        if (owner instanceof Driveable driveable)
+        {
+            int wreckLifetime = ModCommonConfig.driveableWreckLifetimeTicks();
+            if (wreckLifetime <= 0 || driveable.getConfigType() != null && driveable.getConfigType().isNoWreck())
+                return;
+            lifetime = Math.max(1, wreckLifetime - Math.max(0, driveable.getWreckAge()));
+        }
         for (int drop = 0; drop < SCORCH_SEARCH_BLOCKS; drop++)
         {
             double ground = DetachedPieces.groundBelow(level, point.subtract(0D, drop * 2D, 0D));
             if (Double.isFinite(ground))
             {
-                DamageParticles.scorchGround(point.x, ground, point.z, radius);
+                DamageParticles.scorchGround(point.x, ground, point.z, radius, lifetime, owner);
                 return;
             }
         }

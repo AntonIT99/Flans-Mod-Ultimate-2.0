@@ -21,9 +21,9 @@ public final class NpcWeaponOptions
                     true), GUN_SHOT_ANIMATION(true), GUN_RELOAD_ANIMATION(true), GUN_MELEE_ANIMATION(true), NATIVE_THROWABLES(true), GRADUAL_AIM(true), FIRE_WHEN_ALIGNED(true), TURRET_LOCKED(
                         false), PASSENGER_GUNS(true), TURRET_MUZZLES(true), ADVANCED_LEAD(true), HULL_FACES_TRAVEL(true), MISALIGNED_THROTTLE(true), RIDER_AT_SEAT(true), EYE_AT_MUZZLE(
                             true), ANIMATED_MODEL(true), DOORS_OPEN(false), GEAR_UP(false), WINGS_FOLDED(false), ENGINE_RUNNING(true), FULL_THROTTLE(false), MODEL_CULLING(true), PROGRESSIVE_SEARCH(
-                                true), ADAPTIVE_PATH_RANGE(true), STAY_ACTIVE(false), HULL_ASSISTS_AIM(true), DRIVING(true), DRIVE_REVERSE(
-                                    true), PATH_DEBUG(false), CONSUME_AMMO(false), PART_HITBOXES(true), PART_HEALTH(true), PART_EFFECTS(true), BROKEN_PARTS_PASS(true), PART_REPAIR(
-                                        true), HITBOX_OUTLINES(false), SOLID_HITBOXES(true), ARMOR_POTION_EFFECTS(true), MANNED_GUNS_FIRE(true), MELEE_DUAL_WIELD(false), DRIVE_DRIVEABLES(
+                                true), ADAPTIVE_PATH_RANGE(true), STAY_ACTIVE(false), HULL_ASSISTS_AIM(true), DRIVING(true), DRIVE_REVERSE(true), PATH_DEBUG(false), CONSUME_AMMO(false), PART_HITBOXES(
+                                    true), PART_HEALTH(true), PART_EFFECTS(true), PART_REPAIR(true), HITBOX_OUTLINES(false), SOLID_HITBOXES(true), ARMOR_POTION_EFFECTS(true), MANNED_GUNS_FIRE(
+                                        true), MELEE_DUAL_WIELD(false), DRIVE_DRIVEABLES(
                                             true), RETURN_HOME_TELEPORT(true), ADVANCED_SEARCH_INTERVALS(false), STAGGER_NEAR_SEARCH(false), DRIVER_GUNS(true), MUZZLE_FLASHES(true),
         /** Flan ammunition in the projectile slot is only fired by a held gun or model that takes it, as ammunition from the inventory always is. */
         FITTING_SLOT_AMMO(false),
@@ -120,7 +120,9 @@ public final class NpcWeaponOptions
         /** A soldier places carried deployable guns and mans free deployable or AA emplacements during combat. */
         MAN_EMPLACEMENTS(true),
         /** Allied players may deploy from a vehicle spawner into this NPC's seat in a real Flan driveable. */
-        PLAYER_SEAT_DEPLOYMENT(true);
+        PLAYER_SEAT_DEPLOYMENT(true),
+        /** Occasionally crouches or crawls when holding a firing position or approaching nearby cover. */
+        TACTICAL_POSTURES(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

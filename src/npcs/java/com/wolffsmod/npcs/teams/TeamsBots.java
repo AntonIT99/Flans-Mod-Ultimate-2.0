@@ -9,6 +9,7 @@ import com.flansmodultimate.api.teams.ITeamsSpawnProvider;
 import com.flansmodultimate.api.teams.TeamsCapturePoint;
 import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcAirCombat;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
 import com.wolffsmod.npcs.tactics.NpcCombatIntent;
@@ -26,6 +27,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -132,6 +134,13 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         return BotBattles.of(npc).flatMap(battle -> BotCommander.order(server, battle, npc));
     }
 
+    /** A mission uses reported positions only; the aircraft acquires a live target itself once it can see one. */
+    public static Optional<NpcAirCombat.Mission> airMission(EntityNPCInterface npc)
+    {
+        Optional<BotCommander.Order> order = orderFor(npc).filter(found -> found.role().flies());
+        return order.map(found -> BotAirMissions.assign(npc, found.spot(), found.kind() == SquadTask.Kind.PATROL));
+    }
+
     /** Whether this battle allows soldiers to deploy and man placed guns; ordinary NPCs keep their own setting. */
     public static boolean mayManEmplacements(EntityNPCInterface npc)
     {
@@ -161,7 +170,11 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
                 return;
             int side = BotBattles.slotOf(battle, observer).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1);
             if (side >= 0 && battle.getGround().areEnemies(observer, enemy))
-                battle.getIntelligence().report(side, enemy.getUUID(), enemy.position(), BotTargeting.armoured(battle, enemy), observer.level().getGameTime());
+            {
+                boolean air = NpcAirCombat.airborne(enemy);
+                boolean intercept = air && enemy instanceof Mob mob && mob.getTarget() != null && battle.getGround().sideOf(mob.getTarget()) == side;
+                battle.getIntelligence().report(side, enemy.getUUID(), enemy.position(), BotTargeting.armoured(battle, enemy), observer.level().getGameTime(), air, intercept);
+            }
         });
     }
 
@@ -175,6 +188,26 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     public static Optional<Boolean> coveringFire(EntityNPCInterface npc, long now)
     {
         return combatSquad(npc).map(entry -> entry.squad().getCombat().decisions().covers(BotSquadCombat.snapshot(npc, now), entry.members(npc, now), now));
+    }
+
+    /** Leadership orders are cached by the commander; reading them never samples combat or starts a path search. */
+    public static Optional<Vec3> squadWithdrawal(EntityNPCInterface npc)
+    {
+        return combatSquad(npc).filter(entry -> entry.squad().getOrder() == null && entry.squad().getTask() != null)
+            .map(entry -> entry.squad().getTactics().order(entry.squad().getTask(), npc.getUUID())).filter(SquadTactics.Directive::retreat).map(SquadTactics.Directive::spot);
+    }
+
+    /** Only a squad leader can request rerouting, and repeated reports have a squad-local cooldown. */
+    static void reportSquadRouteFailure(EntityNPCInterface npc, long now)
+    {
+        combatSquad(npc).filter(entry -> entry.squad().getOrder() == null).ifPresent(entry -> entry.squad().getTactics().blocked(npc.getUUID(), now));
+    }
+
+    /** The team's explicit or equipment-derived class role, including overrides changed during a round. */
+    public static Optional<BotSettings.ClassRole> classRole(EntityNPCInterface npc)
+    {
+        return BotBattles.of(npc)
+            .flatMap(battle -> BotBattles.slotOf(battle, npc).filter(slot -> !slot.isVehicle()).map(slot -> BotRoles.of(battle.getSettings().team(slot.getTeam()), slot.getRole())));
     }
 
     /** Whether another member of this squad already occupies or has reserved the candidate cover. */

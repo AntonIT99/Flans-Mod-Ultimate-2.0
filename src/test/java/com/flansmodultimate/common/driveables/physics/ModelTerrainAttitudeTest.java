@@ -80,6 +80,60 @@ class ModelTerrainAttitudeTest
     }
 
     @Test
+    void liftPutsTheWheelsOnTheGroundBelowTheEntity()
+    {
+        Harness harness = new Harness(0D, 0D);
+        harness.groundHeight = -0.75D;
+        TerrainAttitude current = harness.settle(0F, 1D);
+        assertEquals(-0.75F, current.lift(), 0.01F);
+        assertEquals(0F, current.pitch(), 0.01F);
+    }
+
+    @Test
+    void supportAtOnlyOneEndEasesLevelInsteadOfFreezing()
+    {
+        Harness harness = new Harness(0D, 0D);
+        harness.rearMissing = true;
+        TerrainAttitude current = new TerrainAttitude(-10F, 0F);
+        for (int tick = 0; tick < 100; tick++)
+            current = harness.sample(current, 0F, 1D);
+        assertEquals(0F, current.pitch(), 0.01F);
+    }
+
+    @Test
+    void buriedWheelsStillFindTheTopOfAStep()
+    {
+        Harness harness = new Harness(0D, 0D);
+        harness.groundHeight = 1.3D;
+        // Above the old step + 0.1 buried-wheel cutoff, still within the downward probe.
+        assertTrue(harness.sample(TerrainAttitude.LEVEL, 0F, 1D).lift() > 0F);
+    }
+
+    @Test
+    void bodyContactWithoutAnyWheelSupportEasesLevel()
+    {
+        Harness harness = new Harness(0D, 0D);
+        when(harness.entity.onGround()).thenReturn(true);
+        doReturn(BlockHitResult.miss(Vec3.ZERO, Direction.UP, BlockPos.ZERO)).when(harness.level).clip(any());
+        TerrainAttitude current = new TerrainAttitude(-10F, 8F, -0.5F);
+        for (int tick = 0; tick < 100; tick++)
+            current = harness.sample(current, 0F, 1D);
+        assertEquals(0F, current.pitch(), 0.01F);
+        assertEquals(0F, current.bank(), 0.01F);
+        assertEquals(0F, current.lift(), 0.01F);
+    }
+
+    @Test
+    void movingVehiclesProbeAheadWithoutChangingTheSlope()
+    {
+        Harness harness = new Harness(0D, 0.2D);
+        when(harness.entity.getDeltaMovement()).thenReturn(new Vec3(0D, 0D, 0.5D));
+        TerrainAttitude settled = harness.settle(0F, 1D);
+        assertEquals(-Math.toDegrees(Math.atan(0.2D)), settled.pitch(), 0.03D);
+        assertEquals(0.1F, settled.lift(), 0.01F);
+    }
+
+    @Test
     void rollPermissionAndDefinitionsWithoutWheelsAreRespected()
     {
         Harness harness = new Harness(0.2D, 0.1D);
@@ -99,9 +153,12 @@ class ModelTerrainAttitudeTest
         private final VehicleType type = mock(VehicleType.class);
         private final double lateralSlope;
         private double longitudinalSlope;
+        private double groundHeight;
+        private boolean rearMissing;
 
         private Harness(double lateral, double longitudinal)
         {
+            when(entity.getDeltaMovement()).thenReturn(Vec3.ZERO);
             lateralSlope = lateral;
             longitudinalSlope = longitudinal;
             when(entity.level()).thenReturn(level);
@@ -116,8 +173,9 @@ class ModelTerrainAttitudeTest
                 ClipContext ray = call.getArgument(0);
                 Vec3 start = ray.getFrom();
                 Vec3 end = ray.getTo();
-                Vec3 surface = new Vec3(start.x, lateralSlope * start.x + longitudinalSlope * start.z, start.z);
-                if (surface.y > start.y || surface.y < end.y)
+                Vec3 surface = new Vec3(start.x, groundHeight + lateralSlope * start.x + longitudinalSlope * start.z, start.z);
+                // At yaw 0 the nose points to +Z.
+                if (rearMissing && start.z < 0D || surface.y > start.y || surface.y < end.y)
                     return BlockHitResult.miss(end, Direction.UP, BlockPos.containing(end));
                 return new BlockHitResult(surface, Direction.UP, BlockPos.containing(surface), false);
             });
@@ -130,8 +188,8 @@ class ModelTerrainAttitudeTest
 
         private TerrainAttitude sample(TerrainAttitude current, float yaw, double scale)
         {
-            return FlansEntityTypes.sampleTerrainAttitude(entity, type,
-                point -> point.zRot((float) Math.toRadians(current.bank())).xRot((float) Math.toRadians(current.pitch())).scale(scale).yRot((float) Math.toRadians(180F - yaw)), scale, current);
+            return FlansEntityTypes.sampleTerrainAttitude(entity, type, point -> point.zRot((float) Math.toRadians(current.bank())).xRot((float) Math.toRadians(current.pitch())).scale(scale)
+                .yRot((float) Math.toRadians(180F - yaw)).add(0D, current.lift(), 0D), scale, current);
         }
 
         private TerrainAttitude settle(float yaw, double scale)

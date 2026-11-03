@@ -322,7 +322,8 @@ public final class CrewGunners
         EntityNPCInterface vehicle = context.vehicle();
         // Staying on its target spares the gun turning away mid-burst.
         boolean adaptive = NpcEquipment.enabled(vehicle, Feature.ADAPTIVE_VEHICLE_COMBAT);
-        if (last != null && bears(context, mount, origin, last) && useful(context, mount, origin, last, ammo, round) && (!adaptive || NpcVehicleCombat.threatRank(vehicle, last) == 0))
+        if (last != null && bears(context, mount, origin, last) && useful(context, mount, origin, last, ammo, round) && (!adaptive || NpcVehicleCombat.threatRank(vehicle, last) == 0)
+            && (!NpcAirCombat.active(vehicle) || NpcAirCombat.airborne(last)))
             return last;
         List<LivingEntity> candidates = candidates(context, mount, origin, last);
         candidates.sort(targetOrder(vehicle, ammo, last, adaptive));
@@ -364,7 +365,8 @@ public final class CrewGunners
     private static Comparator<LivingEntity> targetOrder(EntityNPCInterface vehicle, ItemStack ammo, @Nullable LivingEntity last, boolean adaptive)
     {
         double penetration = FlansProjectiles.getArmorPerformance(ammo, 0).map(AmmunitionArmor::penetrationMm).orElse(0D);
-        return Comparator.<LivingEntity>comparingInt(candidate -> adaptive ? NpcVehicleCombat.threatRank(vehicle, candidate) : 0)
+        return Comparator.<LivingEntity>comparingInt(candidate -> adaptive && NpcAirCombat.active(vehicle) && !NpcAirCombat.airborne(candidate) ? 1 : 0)
+            .thenComparingInt(candidate -> adaptive ? NpcVehicleCombat.threatRank(vehicle, candidate) : 0)
             .thenComparingInt(candidate -> adaptive && NpcVehicleThreats.groundVehicle(candidate) != (penetration >= 40D) ? 1 : 0)
             .thenComparingDouble(candidate -> vehicle.distanceToSqr(candidate) * (candidate == last ? 0.8D : 1D));
     }
