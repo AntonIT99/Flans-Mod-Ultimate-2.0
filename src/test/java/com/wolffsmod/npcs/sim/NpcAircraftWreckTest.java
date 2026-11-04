@@ -74,13 +74,18 @@ class NpcAircraftWreckTest
             }
             assertTrue(position.get().y < 72D, "The wreck must fall several blocks instead of hovering at its death position");
             assertTrue(motion.get().y < 0D);
-            assertEquals("NORMAL", controller.state(npc));
-            assertFalse(controller.holdsFire());
+            // An aircraft flight type comes down as an airframe, holding its fire; Normal keeps the plain gravity drop.
+            boolean airframe = flight != Flight.NORMAL;
+            assertEquals(airframe ? "CRASHING" : "NORMAL", controller.state(npc));
+            assertEquals(airframe, controller.holdsFire());
+            assertEquals(airframe, controller.isCrashing());
             // A dimension with gravity disabled still keeps a stationary wreck suspended.
             physics.when(() -> FlansModApi.getGravityFactor(level)).thenReturn(0D);
             motion.set(Vec3.ZERO);
-            controller.tick(npc);
-            assertEquals(Vec3.ZERO, motion.get());
+            NpcFlight suspended = new NpcFlight();
+            suspended.tick(npc);
+            suspended.tick(npc);
+            assertEquals(0D, motion.get().length(), 1.0E-9D);
         }
     }
 

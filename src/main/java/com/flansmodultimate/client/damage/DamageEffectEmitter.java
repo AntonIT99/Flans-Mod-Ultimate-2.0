@@ -47,6 +47,10 @@ final class DamageEffectEmitter
     private static final float WRECK_SMOKE_SIZE = 0.85F;
     /** Ages up to which a fresh wreck creaks as it settles. */
     private static final int CREAK_TICKS = 400;
+    /** Speed in blocks per tick above which a burning aircraft lays a smoke trail seen from afar. */
+    private static final double FLIGHT_TRAIL_SPEED = 0.4D;
+    /** How badly an aircraft has to burn or smoke before its trail shows from afar. */
+    private static final float FLIGHT_TRAIL_THRESHOLD = 0.3F;
 
     /** Everything one source's parts share for one tick. */
     // One tick's shared state, which is as wide as the effects it feeds.
@@ -79,6 +83,48 @@ final class DamageEffectEmitter
             emitPart(tick, part);
         if (tick.wreck())
             emitWreck(tick);
+        if (source.damageClass().flies() && tick.speed() > FLIGHT_TRAIL_SPEED)
+            emitFlightTrail(tick);
+    }
+
+    /**
+     * A burning or badly smoking aircraft in flight lays a long black trail. It is drawn as landmark smoke, so it reads
+     * from as far as a wreck's column does, where the close-in smoke of its parts has long since faded out: a stricken
+     * aircraft going down can be followed across the sky.
+     */
+    private static void emitFlightTrail(Tick tick)
+    {
+        DamageEffectSource source = tick.source();
+        float strength = 0F;
+        for (DriveablePart part : source.parts())
+            strength = Math.max(strength, trailStrength(source, part));
+        if (tick.wreck())
+            strength = Math.max(strength, Math.max(tick.wreckFire(), tick.wreckSmoke() * 0.8F));
+        if (strength < FLIGHT_TRAIL_THRESHOLD)
+            return;
+        RandomSource random = tick.random();
+        // About a puff every two blocks flown, so the trail stays unbroken at any speed without flooding the particle budget.
+        int count = DamageParticles.count(Math.min(tick.speed() * 0.6D * strength * Math.max(0.35D, tick.density()), 4D), random);
+        Entity entity = source.entity();
+        Vec3 origin = entity.position().add(0D, entity.getBbHeight() * 0.5D, 0D);
+        Vec3 wind = tick.wind();
+        for (int i = 0; i < count; i++)
+        {
+            Vec3 at = origin.subtract(tick.motion().scale(random.nextDouble()));
+            DamageParticles.puff(strength >= 0.8F ? DamageParticles.COLUMN_SMOKE : DamageParticles.BLACK_SMOKE, at, wind.x * 0.5D, 0.01D, wind.z * 0.5D,
+                (1.1F + random.nextFloat() * 0.8F) * (0.6F + 0.4F * strength), 160 + random.nextInt(80), true);
+        }
+    }
+
+    private static float trailStrength(DamageEffectSource source, DriveablePart part)
+    {
+        PartDamageKind kind = source.type().getPartDamageKind(part.getType());
+        if (!kind.smokes() || !source.isDrawn(part))
+            return 0F;
+        if (part.isOnFire())
+            return 1F;
+        float fraction = part.getMaxHealth() > 0F ? part.getHealth() / part.getMaxHealth() : 1F;
+        return DamageVisualCurves.damage(fraction) * (kind.burns() ? 0.8F : 0.5F);
     }
 
     private static void emitPart(Tick tick, DriveablePart part)

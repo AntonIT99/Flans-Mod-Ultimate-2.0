@@ -11,6 +11,19 @@ public final class HelicopterPhysics
     /** Keep the legacy helicopter's gravity and half-collective hover convention. */
     public static final double GRAVITY = 0.05D;
     private static final double ROTOR_POWER_EFFICIENCY = 0.7D;
+    /** Blocks a tick of air flowing up through the disc that keeps an unpowered rotor at full speed. */
+    static final double AUTOROTATION_INFLOW = 0.45D;
+    /** Share of the airspeed along the disc that also drives a windmilling rotor. */
+    static final double FORWARD_INFLOW_SHARE = 0.25D;
+    /** Rotor speed a tick that the inflow adds at most, and that friction takes away without it. */
+    static final float WINDMILL_SPOOL_UP = 0.03F;
+    static final float WINDMILL_SPOOL_DOWN = 0.01F;
+    /** Rotor speed a tick a full collective spends of the rotor's stored energy, as in a flare. */
+    static final float FLARE_DRAIN = 0.025F;
+    /** Fastest a windmilling rotor turns, a little above its governed speed with the collective down. */
+    static final float MAX_WINDMILL_SPEED = 1.05F;
+    /** Drag of a windmilling disc on the descent, which settles at about the inflow that keeps it turning. */
+    static final double DISC_DRAG = 0.25D;
 
     private HelicopterPhysics()
     {}
@@ -67,6 +80,46 @@ public final class HelicopterPhysics
         return demand * rpm * rpm * Mth.clamp(finite(intactFraction), 0F, 1F);
     }
 
+    /**
+     * The rotor speed of an unpowered rotor in autorotation. Air rising through the disc as the helicopter comes down
+     * keeps the rotor turning without the engine; raising the collective spends that stored energy on lift, which is
+     * how a pilot cushions the touchdown with a flare, but holding it up too long lets the rotor slow and the lift go.
+     *
+     * @param rotorSpeed
+     *            the rotor speed last tick, as a share of its governed speed
+     * @param descent
+     *            blocks a tick the helicopter comes down, along its mast
+     * @param airspeedAlongDisc
+     *            blocks a tick the air flows across the disc
+     * @param collective
+     *            the collective lever from 0 to 1
+     * @return the rotor speed this tick
+     */
+    public static float autorotate(float rotorSpeed, double descent, double airspeedAlongDisc, float collective)
+    {
+        float speed = Mth.clamp(finite(rotorSpeed), 0F, MAX_WINDMILL_SPEED);
+        double inflow = Math.max(0D, finite(descent)) + FORWARD_INFLOW_SHARE * Math.max(0D, finite(airspeedAlongDisc));
+        float target = (float) Mth.clamp(inflow / AUTOROTATION_INFLOW, 0D, MAX_WINDMILL_SPEED);
+        speed = speed < target ? Math.min(target, speed + WINDMILL_SPOOL_UP) : Math.max(target, speed - WINDMILL_SPOOL_DOWN);
+        float lever = Mth.clamp(finite(collective), 0F, 1F);
+        return Math.max(0F, speed - FLARE_DRAIN * lever * lever * speed);
+    }
+
+    /**
+     * Slows the descent of a helicopter whose rotor windmills: the disc meets the rising air like a parachute,
+     * harder the faster it turns.
+     *
+     * @return the velocity with the disc's drag applied to its descent
+     */
+    public static Vec3 autorotationDrag(Vec3 velocity, float rotorSpeed)
+    {
+        if (velocity.y >= 0D)
+            return velocity;
+        double rpm = Mth.clamp(finite(rotorSpeed), 0F, MAX_WINDMILL_SPEED);
+        double brake = Math.min(-velocity.y, DISC_DRAG * rpm * rpm * velocity.y * velocity.y);
+        return new Vec3(velocity.x, velocity.y + brake, velocity.z);
+    }
+
     /** Match the planes' default speed-linear response across the whole throttle range. */
     public static double horizontalSpeedFraction(float throttle)
     {
@@ -79,6 +132,7 @@ public final class HelicopterPhysics
         return step(velocity, up, performance, collective, rotorSpeed, intactFraction, 1D, 1D);
     }
 
+    @SuppressWarnings("java:S107") // Pure physics step: every input is a separate scalar of the simulation
     public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance, float collective, float rotorSpeed, float intactFraction, double gravityFactor, double dragFactor)
     {
         double gravity = ModPhysics.gravity(GRAVITY, gravityFactor);
@@ -133,5 +187,10 @@ public final class HelicopterPhysics
     private static float finite(float value)
     {
         return Float.isFinite(value) ? value : 0F;
+    }
+
+    private static double finite(double value)
+    {
+        return Double.isFinite(value) ? value : 0D;
     }
 }

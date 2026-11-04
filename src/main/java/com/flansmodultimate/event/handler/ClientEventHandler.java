@@ -157,6 +157,7 @@ public final class ClientEventHandler
         }
         applyVehicleScreenShake(event);
         applyGunScreenShake(event);
+        applyAircraftTremor(event);
         applyCombatScreenEffects(event);
     }
 
@@ -194,6 +195,21 @@ public final class ClientEventHandler
             event.setPitch(Mth.clamp(event.getPitch() + pitch, -89.9F, 89.9F));
     }
 
+    /** Shakes the view of the pilot of a damaged aircraft, harder the worse the damage. */
+    private static void applyAircraftTremor(ViewportEvent.ComputeCameraAngles event)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null || !config.vehicleScreenShake)
+            return;
+        float partialTick = (float) event.getPartialTick();
+        float pitch = AircraftCockpit.tremorPitch(partialTick);
+        float roll = AircraftCockpit.tremorRoll(partialTick);
+        if (pitch == 0F && roll == 0F)
+            return;
+        event.setPitch(Mth.clamp(event.getPitch() + pitch, -89.9F, 89.9F));
+        event.setRoll(event.getRoll() + roll);
+    }
+
     /** Adds the camera kick of a nearby firing driveable on top of whatever angles the view already has. */
     private static void applyVehicleScreenShake(ViewportEvent.ComputeCameraAngles event)
     {
@@ -228,6 +244,7 @@ public final class ClientEventHandler
         ModClient.tick();
         ParticleHelper.tick();
         DriveableDamageEffects.tickClient();
+        AircraftCockpit.tick();
         DistantHorizonsClient.tick();
     }
 

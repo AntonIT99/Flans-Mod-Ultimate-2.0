@@ -40,6 +40,8 @@ public class PacketDriveableCrashFireball implements IClientPacket
     private int driveableId = -1;
     private Vec3 position;
     private float radius;
+    /** Whether it went into water, which throws up a splash and steam instead of a fireball. */
+    private boolean water;
 
     public PacketDriveableCrashFireball(Vec3 position, float radius)
     {
@@ -53,6 +55,12 @@ public class PacketDriveableCrashFireball implements IClientPacket
         this.driveableId = driveableId;
     }
 
+    public PacketDriveableCrashFireball(int driveableId, Vec3 position, float radius, boolean water)
+    {
+        this(driveableId, position, radius);
+        this.water = water;
+    }
+
     @Override
     public void encodeInto(PacketBuffer data)
     {
@@ -61,6 +69,7 @@ public class PacketDriveableCrashFireball implements IClientPacket
         data.writeDouble(position.y);
         data.writeDouble(position.z);
         data.writeFloat(radius);
+        data.writeBoolean(water);
     }
 
     @Override
@@ -69,6 +78,7 @@ public class PacketDriveableCrashFireball implements IClientPacket
         driveableId = data.readVarInt();
         position = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         radius = data.readFloat();
+        water = data.readBoolean();
     }
 
     @Override
@@ -78,6 +88,12 @@ public class PacketDriveableCrashFireball implements IClientPacket
             return;
         float size = Math.min(radius, MAX_RADIUS);
         RandomSource random = level.random;
+        ClientHooks.SOUND.playDistantBlast(position, size);
+        if (water)
+        {
+            ditch(random, size);
+            return;
+        }
         ClientHooks.RENDER.waterImpact(position, size);
         spawn(FlanParticles.FM_TANK_DEATH, position, Vec3.ZERO, Math.min(2F, size * 0.25F));
         // The ground where it went in stays burnt.
@@ -107,6 +123,21 @@ public class PacketDriveableCrashFireball implements IClientPacket
 
         for (int i = 0; i < emitters; i++)
             spawn(FlanParticles.FM_FLARE, offset(random, size * 0.35F), scatter(random, size * 0.08F, size * 0.12F), 1F);
+    }
+
+    /** An aircraft going into the water: a column of spray, steam where the hot engine went under, and floating wreckage. */
+    private void ditch(RandomSource random, float size)
+    {
+        ClientHooks.RENDER.waterImpact(position, size * 1.6F);
+        int plumes = Mth.clamp(Mth.ceil(size * 2F), 4, 24);
+        for (int i = 0; i < plumes; i++)
+            spawn(FlanParticles.FM_WATER, offset(random, size * 0.4F), scatter(random, size * 0.03F, size * 0.12F), 1F);
+        int steam = Math.min(MAX_SMOKE, plumes * 3);
+        for (int i = 0; i < steam; i++)
+            spawn(FlanParticles.CLOUD, offset(random, size * 0.5F), scatter(random, size * 0.01F, size * 0.04F), 1F);
+        int debris = Math.min(MAX_DEBRIS, plumes * 2);
+        for (int i = 0; i < debris; i++)
+            spawn(FlanParticles.FM_DEBRIS_1, offset(random, size * 0.3F), scatter(random, size * 0.1F, size * 0.1F), 1F);
     }
 
     private Vec3 offset(RandomSource random, float spread)

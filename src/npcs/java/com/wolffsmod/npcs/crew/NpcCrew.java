@@ -616,6 +616,17 @@ public final class NpcCrew
 
     // The vehicle's end
 
+    /**
+     * Gets the crew out of a crippled aircraft going down, while there is still height to jump, when its settings have the
+     * crew bail out of a vehicle that is destroyed. Those who stay ride it in.
+     */
+    public static void abandonFalling(EntityNPCInterface vehicle)
+    {
+        if (vehicle.level().isClientSide || NpcCrewSettings.of(vehicle).getDestroyed() != NpcCrewSettings.Destroyed.BAIL_OUT)
+            return;
+        crew(vehicle).stream().filter(member -> member.isAlive() && !member.isKilled()).forEach(member -> bailOut(vehicle, member, false));
+    }
+
     /** Deals with the crew of a vehicle that has just been destroyed, as its settings say. Runs as it dies. */
     public static void destroyed(EntityNPCInterface vehicle)
     {

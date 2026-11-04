@@ -53,6 +53,8 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 
 ## Vehicles, Aircraft & Mechas
 
+* NPC aircraft that lose a wing, their tail, rotor or airframe, or are killed in the air, no longer drop like a stone: they come down as Flan's aircraft do, spiralling, spinning or diving with smoke trailing, holding fire, and go in with a fireball or a splash; crews set to bail out jump while there is height, and NPC pilots of Flan aircraft bail out as soon as their aircraft is crippled past flying
+
 * NPC bomb release predictions follow the projectile's collision, drag, gravity and movement order, including impact within a tick, and reject falls that never reach the target height; NPC pilots of Flan vehicles apply only a quarter of the normal difficulty penalty to bomb leading
 
 * NPC mecha drivers use swords at melee reach, cycle semi-automatic weapons and complete bursts, jump before getting stuck, use rocket packs for higher routes and mine effective obstacles under server breaking rules; mecha-model NPCs display both arm tools, select swords by reach and damage, inherit carried fall-protection, repair and lighting addons, apply protected landing damage and use authored stomp timing

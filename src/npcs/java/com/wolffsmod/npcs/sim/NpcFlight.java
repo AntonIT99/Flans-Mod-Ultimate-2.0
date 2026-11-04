@@ -2,7 +2,13 @@ package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.AircraftDamage;
+import com.flansmodultimate.api.driveables.AircraftMode;
+import com.flansmodultimate.api.driveables.CrashMode;
+import com.flansmodultimate.api.driveables.CrashMotion;
+import com.flansmodultimate.api.driveables.DriveableAttitude;
 import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.FlansAircraftCrashes;
 import com.flansmodultimate.api.driveables.FlightPerformance;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
@@ -20,8 +26,10 @@ import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
@@ -117,6 +125,13 @@ public final class NpcFlight
     /** Least and most a model's control rates scale the default pitch and roll rates by. */
     private static final double MIN_AUTHORITY = 0.25D;
     private static final double MAX_AUTHORITY = 3D;
+    /** Longest an aircraft may take to come down, in ticks, before it is written off where it is. */
+    static final int MAX_CRASH_TICKS = 1200;
+    /** Share of a windmilling rotor's lift a dead helicopter keeps on its way down, as a driveable's wreck does. */
+    private static final float WRECK_ROTOR_LIFT = 0.3F;
+    /** Least size of the fireball an aircraft going in makes, in blocks, and its size against the aircraft's width. */
+    private static final float MIN_CRASH_RADIUS = 3F;
+    private static final float CRASH_RADIUS_PER_WIDTH = 1.5F;
 
     private int sampledAt = Integer.MIN_VALUE;
     /** Height of the highest terrain under and ahead of the aircraft. */
@@ -161,6 +176,13 @@ public final class NpcFlight
     private double tightestCircle;
     @Getter
     private double circle;
+    /** Motion of the aircraft coming down, crippled or dead, as a driveable comes down; null while it flies. */
+    @Nullable
+    private CrashMotion crash;
+    /** Ticks the aircraft has been coming down. */
+    private int crashTicks;
+    /** Whether it has already come down this life, so that a wreck thrown back into the air is not brought down twice. */
+    private boolean crashed;
 
     /** @return how the NPC flies: as its flight type says, Automatic resolved by its model; Normal unless it moves by flying */
     public static Flight type(EntityNPCInterface npc)
@@ -230,15 +252,97 @@ public final class NpcFlight
         circle = 0D;
     }
 
-    /** @return whether the aircraft is too low to attack and climbing back */
+    /** @return whether the aircraft is too low to attack and climbing back, or coming down */
     public boolean holdsFire()
     {
-        return flying && (!attackAllowed || extending);
+        return crash != null || flying && (!attackAllowed || extending);
+    }
+
+    /** @return whether the aircraft is coming down, crippled or dead */
+    public boolean isCrashing()
+    {
+        return crash != null;
+    }
+
+    /**
+     * Brings a crippled aircraft down rather than letting it die where it was hit: from here it comes down as an airframe,
+     * as a driveable does, its nose into the wind, spiralling over a lost wing or spinning without its tail, until it
+     * strikes the ground. Server side.
+     *
+     * @return whether it is coming down, and so lives until it strikes; false when it cannot fall, standing on the ground,
+     *         not flying, or with realistic aircraft damage off, and should die where it is
+     */
+    public boolean bringDown(EntityNPCInterface npc)
+    {
+        if (crash != null)
+            return true;
+        if (crashed || !FlansAircraftCrashes.realisticDamageEnabled() || npc.ais.movementType != 1 || type(npc) == Flight.NORMAL || npc.onGround() || npc.isInWater())
+            return false;
+        Vec3 heading = Vec3.directionFromRotation(pitch, yaw);
+        // A plane carries on at the speed it flew, along its nose; a helicopter with whatever it was drifting by.
+        Vec3 velocity = airspeed > 0D ? heading.scale(airspeed) : npc.getDeltaMovement();
+        crash = CrashMotion.of(velocity);
+        crashTicks = 0;
+        stopNavigating(npc);
+        return true;
+    }
+
+    /** One tick of the aircraft coming down: the shared fall, then the impact once it strikes something. */
+    private void comeDown(EntityNPCInterface npc, Flight type)
+    {
+        AircraftMode mode = type == Flight.HELICOPTER ? AircraftMode.ROTORCRAFT : AircraftMode.FIXED_WING;
+        AircraftDamage damage = damageOf(npc);
+        CrashMode falling = FlansAircraftCrashes.wreckMode(damage, mode);
+        float lift = FlansAircraftCrashes.fallLift(damage, mode) * (mode == AircraftMode.ROTORCRAFT ? WRECK_ROTOR_LIFT : 1F);
+        DriveableAttitude attitude = DriveableAttitude.of(yaw, -pitch, bank);
+        double gravity = 0.08D * FlansModApi.getGravityFactor(npc.level());
+        boolean mirrored = (npc.getId() & 1) != 0;
+        crash = FlansAircraftCrashes.fall(crash, attitude, falling, lift, gravity, mirrored);
+        attitude = FlansAircraftCrashes.rotate(attitude, crash.rotation());
+        yaw = attitude.heading();
+        pitch = -attitude.pitch();
+        bank = attitude.roll();
+        npc.setDeltaMovement(crash.velocity());
+        stopNavigating(npc);
+        npc.setYRot(yaw);
+        npc.setYBodyRot(yaw);
+        if (++crashTicks > MAX_CRASH_TICKS || npc.onGround() || npc.horizontalCollision || npc.isInWater())
+            strike(npc);
+    }
+
+    /** @return what is left of the parts that keep the aircraft in the air; whole for an NPC without a part body */
+    private static AircraftDamage damageOf(EntityNPCInterface npc)
+    {
+        if (!(npc instanceof NpcVehicleStateHolder))
+            return AircraftDamage.INTACT;
+        return NpcVehicleState.of(npc).getParts().body().map(body -> NpcPartEffects.aircraftDamage(body.getParts())).orElse(AircraftDamage.INTACT);
+    }
+
+    /** Gives up whatever path the NPC was following, so that its own movement does not fight the fall. */
+    private static void stopNavigating(EntityNPCInterface npc)
+    {
+        PathNavigation navigation = npc.getNavigation();
+        if (navigation != null)
+            navigation.stop();
+    }
+
+    /** The aircraft goes in: a fireball, or a splash in water, and it is lost, if it was not already. */
+    private void strike(EntityNPCInterface npc)
+    {
+        crash = null;
+        crashed = true;
+        if (npc.level() instanceof ServerLevel server)
+            FlansAircraftCrashes.crash(server, npc.position(), Math.max(MIN_CRASH_RADIUS, npc.getBbWidth() * CRASH_RADIUS_PER_WIDTH), npc.isInWater());
+        npc.setDeltaMovement(npc.getDeltaMovement().multiply(0.3D, 0D, 0.3D));
+        if (!npc.isKilled() && npc.getHealth() > 0F)
+            npc.setHealth(0F);
     }
 
     /** @return one word for what the aircraft is doing, for the movement debug log */
     public String state(EntityNPCInterface npc)
     {
+        if (crash != null)
+            return "CRASHING";
         if (!flying)
             return "NORMAL";
         if (!attackAllowed)
@@ -259,10 +363,26 @@ public final class NpcFlight
         return NpcTactics.of(npc) == Tactic.ORBIT && !passing ? "ORBIT" : "ATTACK_RUN";
     }
 
+    /** @return whether the aircraft is coming down as a crashing airframe, which then flies this tick instead of its pilot */
+    private boolean tickCrash(EntityNPCInterface npc, Flight type)
+    {
+        if (!npc.isKilled() && npc.getHealth() > 0F && crash == null)
+            crashed = false;
+        // An aircraft killed in the air, its core shot through, comes down as an airframe too.
+        if (npc.isKilled() && crash == null)
+            bringDown(npc);
+        if (crash == null)
+            return false;
+        comeDown(npc, type);
+        return true;
+    }
+
     /** Runs once per tick after the NPC has moved. */
     public void tick(EntityNPCInterface npc)
     {
         Flight type = type(npc);
+        if (tickCrash(npc, type))
+            return;
         // Custom NPCs' flying travel keeps running after death, but never applies gravity itself.
         // Even the Normal flight setting must let a destroyed aircraft model fall.
         if (npc.isKilled() && npc.ais.movementType == 1 && (type != Flight.NORMAL || automatic(model(npc)) != Flight.NORMAL))

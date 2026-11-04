@@ -37,9 +37,30 @@ public final class PlaneCrashDamage
     private static final double EPICENTRE_HEALTH_LOSS = 2D;
     /** At this much relative structural loss the airframe is written off outright. */
     private static final float CATASTROPHIC_HEALTH_LOSS = 1F;
+    /** Blocks a tick below which a belly slide no longer scrapes anything off. */
+    public static final double BELLY_SLIDE_SPEED = 0.2D;
+    /** Share of the core's health a belly slide scrapes off a tick at one block a tick. */
+    private static final double BELLY_SCRAPE = 0.002D;
+    /** Speed a belly sliding on the ground keeps each tick: far less than on wheels, so it stops within its length. */
+    public static final double BELLY_FRICTION_RETENTION = 0.94D;
 
     private PlaneCrashDamage()
     {}
+
+    /**
+     * A belly landing: an aircraft down on the ground without its gear, which has to slide to a stop on its fuselage.
+     * A gentle one is survivable, as on a real airfield, but every tick it slides scrapes a little off the airframe.
+     *
+     * @param slideSpeed
+     *            blocks a tick the aircraft slides along the ground
+     * @return the share of the core's maximum health scraped off this tick
+     */
+    public static float bellyScrape(double slideSpeed, float fallDamageFactor)
+    {
+        if (!Double.isFinite(slideSpeed) || slideSpeed <= BELLY_SLIDE_SPEED || fallDamageFactor <= 0F)
+            return 0F;
+        return (float) (BELLY_SCRAPE * slideSpeed * fallDamageFactor);
+    }
 
     /**
      * @param impactSpeed

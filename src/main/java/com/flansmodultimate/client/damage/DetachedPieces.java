@@ -62,6 +62,17 @@ public final class DetachedPieces
     private static final int SETTLE_TICKS = 40;
     private static final int MIN_LIFETIME = 300;
     private static final int LIFETIME_SPREAD = 120;
+    /** How thin a piece has to be against its span, and how wide, to fall like a plate: a wing, a tailplane, a blade. */
+    private static final double PLATE_THINNESS = 0.3D;
+    private static final double PLATE_SPAN = 1.5D;
+    /** Velocity a falling plate keeps each tick across and along the vertical: it sails, and falls slowly. */
+    private static final double PLATE_HORIZONTAL_DRAG = 0.97D;
+    private static final double PLATE_VERTICAL_DRAG = 0.9D;
+    /** How hard and how fast a falling plate swings from side to side, as a falling leaf does. */
+    private static final double FLUTTER_SWAY = 0.035D;
+    private static final double FLUTTER_RATE = 0.22D;
+    /** Least spin, in radians a tick, a falling plate autorotates about its span with. */
+    private static final float PLATE_SPIN = 0.2F;
 
     /** How each entity's model was last drawn. */
     private static final Map<Entity, Capture> CAPTURES = new WeakHashMap<>();
@@ -102,6 +113,10 @@ public final class DetachedPieces
         private int lifetime;
         private boolean burning;
         private boolean resting;
+        /** Whether the piece is a thin plate that sails and flutters down rather than falling like a lump. */
+        private boolean flutters;
+        private Vec3 flutterDirection = Vec3.ZERO;
+        private double flutterPhase;
     }
 
     /**
@@ -175,12 +190,46 @@ public final class DetachedPieces
             piece.spinAxis.set(0F, 1F, 0F);
         piece.spinAxis.normalize();
         piece.spin = spin;
+        shapeAsPlate(piece, corners, pivot, random);
         piece.lifetime = MIN_LIFETIME + random.nextInt(LIFETIME_SPREAD);
         piece.burning = burning;
         if (entity.level() instanceof ClientLevel level)
             liftFromGround(level, piece);
         PIECES.add(piece);
         return true;
+    }
+
+    /**
+     * A piece much thinner than it is wide, such as a wing, a tailplane or a rotor blade, is a plate: it autorotates
+     * about its span and sails down swinging from side to side, as a falling leaf does, instead of dropping like a lump.
+     */
+    private static void shapeAsPlate(Piece piece, List<Vec3> corners, Vec3 pivot, RandomSource random)
+    {
+        if (corners.size() < 2)
+            return;
+        AABB bounds = new AABB(pivot, pivot);
+        for (Vec3 corner : corners)
+            bounds = bounds.minmax(new AABB(corner, corner));
+        double thinnest = Math.min(bounds.getXsize(), Math.min(bounds.getYsize(), bounds.getZsize()));
+        double widest = Math.max(bounds.getXsize(), Math.max(bounds.getYsize(), bounds.getZsize()));
+        if (widest < PLATE_SPAN || thinnest > widest * PLATE_THINNESS)
+            return;
+        piece.flutters = true;
+        // It turns about its span, the longer of its horizontal extents, and swings across it.
+        boolean alongX = bounds.getXsize() >= bounds.getZsize();
+        piece.spinAxis = alongX ? new Vector3f(1F, 0F, 0F) : new Vector3f(0F, 0F, 1F);
+        piece.flutterDirection = alongX ? new Vec3(0D, 0D, 1D) : new Vec3(1D, 0D, 0D);
+        piece.spin = Math.copySign(Math.max(Math.abs(piece.spin), PLATE_SPIN), random.nextBoolean() ? 1F : -1F);
+        piece.flutterPhase = random.nextDouble() * Math.PI * 2D;
+    }
+
+    /** A plate falling: slowly, sailing on the air and swinging from side to side. */
+    private static Vec3 flutter(Piece piece)
+    {
+        double sway = Math.sin(piece.age * FLUTTER_RATE + piece.flutterPhase) * FLUTTER_SWAY;
+        Vec3 velocity = piece.velocity;
+        return new Vec3((velocity.x + piece.flutterDirection.x * sway) * PLATE_HORIZONTAL_DRAG, (velocity.y - GRAVITY) * PLATE_VERTICAL_DRAG,
+            (velocity.z + piece.flutterDirection.z * sway) * PLATE_HORIZONTAL_DRAG);
     }
 
     /** Recover a part box that already intersected the floor while it was attached to the vehicle. */
@@ -255,7 +304,7 @@ public final class DetachedPieces
             return;
         piece.resting = false;
         boolean water = level.getFluidState(BlockPos.containing(centre)).is(FluidTags.WATER);
-        Vec3 velocity = piece.velocity.add(0D, water ? -GRAVITY * 0.2D : -GRAVITY, 0D).scale(water ? 0.8D : AIR_DRAG);
+        Vec3 velocity = fallVelocity(piece, water);
         Vec3 next = piece.offset.add(velocity);
         // A wall turns the piece back rather than letting it through.
         if (insideSolid(level, worldPivot(piece, new Vec3(next.x, piece.offset.y, next.z))) && !insideSolid(level, worldPivot(piece, piece.offset)))
@@ -281,6 +330,15 @@ public final class DetachedPieces
         }
         piece.offset = next;
         piece.velocity = velocity;
+    }
+
+    private static Vec3 fallVelocity(Piece piece, boolean water)
+    {
+        if (water)
+            return piece.velocity.add(0D, -GRAVITY * 0.2D, 0D).scale(0.8D);
+        if (piece.flutters)
+            return flutter(piece);
+        return piece.velocity.add(0D, -GRAVITY, 0D).scale(AIR_DRAG);
     }
 
     private static boolean isSupported(Piece piece, Vec3 pivot, PieceGrounding.Surface surface)

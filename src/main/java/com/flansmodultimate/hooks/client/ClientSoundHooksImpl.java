@@ -36,4 +36,10 @@ public class ClientSoundHooksImpl implements IClientSoundHooks
     {
         SoundHelper.cancelSound(instanceUUID);
     }
+
+    @Override
+    public void playDistantBlast(Vec3 position, float loudness)
+    {
+        SoundHelper.playDistantBlast(position, loudness);
+    }
 }

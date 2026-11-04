@@ -324,7 +324,8 @@ public final class NpcDrivers
     /** Whether a driveable has so few hit points left that it is about to be lost. */
     private static boolean failing(Entity driveable)
     {
-        return FlansEntityTypes.getHealthShare(driveable).orElse(1D) < BAIL_OUT_HEALTH;
+        // An aircraft that has lost a wing, its tail or its rotor is lost however many hit points it has left.
+        return FlansEntityTypes.getHealthShare(driveable).orElse(1D) < BAIL_OUT_HEALTH || FlansAircraftCrashes.crashMode(driveable).map(CrashMode::falling).orElse(false);
     }
 
     // Boarding

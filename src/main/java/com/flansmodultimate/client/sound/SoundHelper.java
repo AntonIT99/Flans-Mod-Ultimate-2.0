@@ -19,7 +19,9 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -36,6 +38,11 @@ public final class SoundHelper
 
     /** Looping sounds attached to an entity, keyed by entity id and channel name. */
     private static final Map<String, EntitySoundInstance> loopingEntitySounds = new HashMap<>();
+
+    /** Blocks sound covers in a tick, about 343 metres a second. */
+    private static final double SOUND_BLOCKS_PER_TICK = 17D;
+    /** Least distance in blocks a blast carries, however small. */
+    private static final float MIN_BLAST_RANGE = 64F;
 
     private static final class PendingSound
     {
@@ -193,6 +200,29 @@ public final class SoundHelper
 
             Minecraft.getInstance().getSoundManager().play(soundInstance);
         });
+    }
+
+    /**
+     * Plays a large blast where the listener hears it: as late as sound takes to cover the distance, so a far-off
+     * crash is seen before it is heard, and deeper the further away it is, as distance takes the high notes out first.
+     *
+     * @param loudness
+     *            the size of the blast in blocks, which sets how far it carries
+     */
+    public static void playDistantBlast(Vec3 position, float loudness)
+    {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || !Float.isFinite(loudness) || loudness <= 0F)
+            return;
+        float range = Math.max(MIN_BLAST_RANGE, loudness * 16F);
+        double distance = minecraft.player.getEyePosition().distanceTo(position);
+        if (distance > range)
+            return;
+        RandomSource random = RandomSource.create();
+        float pitch = Mth.clamp(1F - (float) (distance / range) * 0.45F, 0.5F, 1F) * (0.9F + random.nextFloat() * 0.15F);
+        SoundInstance blast = new SimpleSoundInstance(SoundEvents.GENERIC_EXPLODE.getLocation(), SoundSource.BLOCKS, getVolumeFromRange(range, false), pitch, random, false, 0,
+            SoundInstance.Attenuation.LINEAR, position.x, position.y, position.z, false);
+        minecraft.getSoundManager().playDelayed(blast, (int) (distance / SOUND_BLOCKS_PER_TICK));
     }
 
     public static void cancelSound(UUID instanceUUID)

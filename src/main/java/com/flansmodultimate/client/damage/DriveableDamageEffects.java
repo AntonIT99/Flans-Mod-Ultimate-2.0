@@ -72,7 +72,9 @@ public final class DriveableDamageEffects
         {
             VehicleAmbientEffects.tick(source);
             DamageEffectEmitter.tick(source);
+            AircraftDistressEffects.tick(source);
         }
+        CrashSlideEffects.tick(driveable);
         if (driveable.isWreck())
             keepFireSound(driveable);
     }
@@ -186,6 +188,7 @@ public final class DriveableDamageEffects
     /** Forgets every effect in play, as when leaving a world. */
     public static void clear()
     {
+        AircraftDistressEffects.clear();
         WATCHED.clear();
         DETACHED.clear();
         FIRE_SOUNDS.clear();
@@ -213,6 +216,7 @@ public final class DriveableDamageEffects
         {
             VehicleAmbientEffects.tick(source);
             DamageEffectEmitter.tick(source);
+            AircraftDistressEffects.tick(source);
         }
         List<EnumDriveablePart> lost = new ArrayList<>();
         for (DriveablePart part : source.parts())

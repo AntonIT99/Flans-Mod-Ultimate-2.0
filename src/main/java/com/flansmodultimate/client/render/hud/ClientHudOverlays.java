@@ -111,6 +111,7 @@ public final class ClientHudOverlays
     {
         registrar.aboveCameraOverlays("scope", SCOPE);
         registrar.aboveCameraOverlays("armor", ARMOR);
+        registrar.aboveCameraOverlays("aircraft_oil", (g, partialTick, sw, sh) -> AircraftCockpit.renderOil(g, sw, sh));
         registrar.aboveCameraOverlays("wounded_flash", WOUNDED_FLASH);
         registrar.aboveCameraOverlays("near_miss_suppression", SuppressionOverlay::render);
         registrar.aboveCameraOverlays("flash_bang", FLASH_BANG);
@@ -1189,6 +1190,7 @@ public final class ClientHudOverlays
             g.drawString(font, Component.translatable(airBrakeOn ? "hud.flansmodultimate.driveable.air_brake.on" : "hud.flansmodultimate.driveable.air_brake.off"), leftX, y,
                 airBrakeOn ? HUD_GOLD : HUD_WHITE, false);
         }
+        AircraftCockpit.renderWarnings(driveable, g, font, leftX, y + LEGACY_HUD_LINE_HEIGHT, LEGACY_HUD_LINE_HEIGHT);
 
         boolean isVehicle = driveable instanceof Vehicle;
         boolean isPlane = driveable instanceof Plane;

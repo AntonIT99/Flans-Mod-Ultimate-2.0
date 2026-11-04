@@ -283,6 +283,7 @@ public final class ModCommonConfig
     private static final ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
+    private static final Supplier<Boolean> ENABLE_REALISTIC_AIRCRAFT_DAMAGE;
     private static final Supplier<Double> AIR_BRAKE_EFFECTIVENESS;
     private static final Supplier<Double> AIR_BRAKE_ASSIST_DECELERATION;
     private static final Supplier<Double> AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH;
@@ -629,6 +630,10 @@ public final class ModCommonConfig
         ENABLE_AIRCRAFT_ROLL_SELF_LEVELING = builder.comment("Enable the weak airborne roll force that slowly returns planes, helicopters and VTOL hover mode toward horizontal.",
             "Keyboard or mouse roll input overrides it immediately. Fixed-wing airflow, rotor authority, damage and available",
             "real-world lifting-surface characteristics still determine its strength when enabled.").define("enableAircraftRollSelfLeveling", true);
+        ENABLE_REALISTIC_AIRCRAFT_DAMAGE = builder.comment("Enable progressive aircraft damage and realistic crashes, for driveables and NPC aircraft alike.",
+            "Worn wings lose lift and pull to one side, a shot-up tail answers slowly, hit engines lose power, holed wing tanks leak fuel,",
+            "helicopters can autorotate after an engine failure, gear-up landings slide on the belly, and crippled or dead aircraft",
+            "dive, spiral or spin down as an airframe instead of tumbling. Off restores the previous all-or-nothing behaviour.").define("enableRealisticAircraftDamage", true);
         AIR_BRAKE_EFFECTIVENESS = builder.comment("Multiplier on physical air-brake drag in both flight models; 0 disables the physical contribution.")
             .defineInRange("airBrakeEffectiveness", 1D, 0D, 100D);
         AIR_BRAKE_ASSIST_DECELERATION = builder.comment("Minimum additional air-brake deceleration in m/s squared at or above the assist reference speed.",
@@ -808,7 +813,8 @@ public final class ModCommonConfig
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
-            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(), AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get());
+            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(), AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get(),
+            ENABLE_REALISTIC_AIRCRAFT_DAMAGE.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -939,6 +945,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.forceLegacyVehiclePhysics();
+    }
+
+    /** Whether aircraft damage is progressive and crippled or dead aircraft come down as airframes. */
+    public static boolean realisticAircraftDamageEnabled()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.enableRealisticAircraftDamage();
     }
 
     /** Whether aircraft receive the weak server-authoritative roll restoring moment. */

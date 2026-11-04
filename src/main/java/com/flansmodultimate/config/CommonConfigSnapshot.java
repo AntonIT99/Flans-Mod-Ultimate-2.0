@@ -175,10 +175,11 @@ public record CommonConfigSnapshot(
     double explosionParticleRange,
     double airBrakeEffectiveness,
     double airBrakeAssistDeceleration,
-    double airBrakeAssistReferenceSpeedKmh
+    double airBrakeAssistReferenceSpeedKmh,
+    boolean enableRealisticAircraftDamage
 )
 {
-    public static final int CURRENT_VERSION = 52;
+    public static final int CURRENT_VERSION = 53;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -361,6 +362,7 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.airBrakeEffectiveness);
         buf.writeDouble(s.airBrakeAssistDeceleration);
         buf.writeDouble(s.airBrakeAssistReferenceSpeedKmh);
+        buf.writeBoolean(s.enableRealisticAircraftDamage);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -534,7 +536,8 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
-            buf.readDouble()
+            buf.readDouble(),
+            buf.readBoolean()
         );
     }
 

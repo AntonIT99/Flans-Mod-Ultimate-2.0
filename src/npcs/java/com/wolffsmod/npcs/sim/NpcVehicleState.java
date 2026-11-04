@@ -696,7 +696,8 @@ public final class NpcVehicleState
             return;
         }
         NpcTuning.Flight type = current.kind() == FlanModelKind.PLANE ? NpcFlight.type(npc) : NpcTuning.Flight.NORMAL;
-        if (type == NpcTuning.Flight.PLANE)
+        // An aircraft coming down, helicopters included, is drawn at the attitude its fall gives it.
+        if (type == NpcTuning.Flight.PLANE || flight.isCrashing())
         {
             attitudePitch = flight.getPitch();
             attitudeBank = flight.getBank();
