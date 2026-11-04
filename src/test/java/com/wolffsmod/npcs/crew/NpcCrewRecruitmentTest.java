@@ -139,6 +139,16 @@ class NpcCrewRecruitmentTest
             states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
             models.when(() -> com.wolffsmod.npcs.sim.NpcModels.flan(vehicle)).thenReturn(model);
             assertTrue(NpcCrew.hiddenAboard(crew));
+            for (Entity rider : List.of(mock(EntityNPCInterface.class), mock(net.minecraft.world.entity.player.Player.class)))
+            {
+                when(rider.getVehicle()).thenReturn(vehicle);
+                when(vehicle.getPassengers()).thenReturn(List.of(rider));
+                assertTrue(NpcCrew.hiddenAboard(rider));
+                type.getSeat(1).setInvisiblePassenger(false);
+                assertFalse(NpcCrew.hiddenAboard(rider));
+                type.getSeat(1).setInvisiblePassenger(true);
+            }
+            when(vehicle.getPassengers()).thenReturn(List.of(crew));
             type.getSeat(1).setInvisiblePassenger(false);
             assertFalse(NpcCrew.hiddenAboard(crew));
             settings.setSeatVisible(1, false);
@@ -147,6 +157,27 @@ class NpcCrewRecruitmentTest
             assertFalse(NpcCrew.hiddenAboard(crew));
             verify(crew, never()).setInvisible(anyBoolean());
         }
+    }
+
+    @Test
+    void npcsOnRealDriveablesUseTheSameSeatVisibilityRule()
+    {
+        EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        var seat = mock(com.flansmodultimate.common.entity.Seat.class);
+        var driveable = mock(com.flansmodultimate.common.entity.Driveable.class);
+        var type = new com.flansmodultimate.common.types.VehicleType();
+        type.load(new com.flansmodultimate.common.types.TypeFile("visibility", com.flansmodultimate.common.types.EnumType.VEHICLE,
+            new com.flansmodultimate.content.ContentPack("test", java.nio.file.Path.of("build", "test-packs", "crew-visibility")),
+            List.of("Driver 0 0 0", "Passenger 1 0 0 0 core", "SetPassengerInvisible 1 true")));
+        when(npc.getVehicle()).thenReturn(seat);
+        when(seat.getDriveable()).thenReturn(driveable);
+        when(seat.getSeatInfo()).thenReturn(type.getSeat(1));
+        when(driveable.getConfigType()).thenReturn(type);
+        assertTrue(com.flansmodultimate.common.entity.Driveable.isRiderHiddenByDriveable(npc));
+        type.getSeat(1).setInvisiblePassenger(false);
+        assertFalse(com.flansmodultimate.common.entity.Driveable.isRiderHiddenByDriveable(npc));
+        when(npc.getVehicle()).thenReturn(null);
+        assertFalse(com.flansmodultimate.common.entity.Driveable.isRiderHiddenByDriveable(npc));
     }
 
     private static NpcCrew.Seat seat(int index)

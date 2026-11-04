@@ -1,5 +1,7 @@
 # Flan's Ultimate 2: NPC Vehicles & Soldiers 2.2.0
 
+* Ordinary NPC and player riders of NPC vehicles also inherit per-seat hiding from the content definition, with equipment and name tags hidden alongside the rider
+
 * Crews inherit per-seat `invisiblePassenger` / `SetPassengerInvisible` definitions, soldiers benefit from compatible worn reload pouches, and vehicle models play ammunition-specific armor impact sounds
 
 * Vehicle NPC crews inherit content-pack door-dependent occupant visibility, using the model doors option and preserving explicitly hidden seats
