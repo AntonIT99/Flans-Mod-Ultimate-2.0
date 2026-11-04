@@ -1158,6 +1158,14 @@ public final class ClientHudOverlays
             }
         }
 
+        if (driveable.getConfigType().getOverheatLimit() > 0)
+        {
+            int heatPercent = (int) Math.min(100L, 100L * driveable.getWeaponHeat() / driveable.getConfigType().getOverheatLimit());
+            Component heatText = driveable.isWeaponOverheated() ? Component.translatable("hud.flansmodultimate.driveable.overheated")
+                : Component.translatable("hud.flansmodultimate.driveable.heat", heatPercent);
+            g.drawString(font, heatText, leftX, y, driveable.isWeaponOverheated() ? 0xFF5555 : HUD_WHITE, false);
+            y += LEGACY_HUD_LINE_HEIGHT;
+        }
         int throttlePercent = DriveableControlPhysics.throttlePercent(driveable.getThrottle());
         double speed = ModClientConfig.get().driveableSpeedUnit.convert(driveable.getDeltaMovement().length() * 20D);
         Component throttleText = driveable.isEngineActive()

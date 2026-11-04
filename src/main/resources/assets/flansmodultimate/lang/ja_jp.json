@@ -292,6 +292,8 @@
   "hud.flansmodultimate.driveable.gear.down": "降着装置を下げる",
   "hud.flansmodultimate.driveable.gear.up": "降着装置を上げる",
   "hud.flansmodultimate.driveable.health": "耐久値: %s%%",
+  "hud.flansmodultimate.driveable.heat": "武器の熱量: %s%%",
+  "hud.flansmodultimate.driveable.overheated": "武器が過熱",
   "hud.flansmodultimate.driveable.pitch": "ピッチ: %s°",
   "hud.flansmodultimate.driveable.roll": "ロール: %s°",
   "hud.flansmodultimate.driveable.smoke.deploying": "煙幕: 展開中",

@@ -292,6 +292,8 @@
   "hud.flansmodultimate.driveable.gear.down": "착륙 장치 내림",
   "hud.flansmodultimate.driveable.gear.up": "착륙 장치 올림",
   "hud.flansmodultimate.driveable.health": "내구도: %s%%",
+  "hud.flansmodultimate.driveable.heat": "무기 열: %s%%",
+  "hud.flansmodultimate.driveable.overheated": "무기 과열",
   "hud.flansmodultimate.driveable.pitch": "피치: %s°",
   "hud.flansmodultimate.driveable.roll": "롤: %s°",
   "hud.flansmodultimate.driveable.smoke.deploying": "연막: 전개 중",

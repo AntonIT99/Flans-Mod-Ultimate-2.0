@@ -154,6 +154,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected String distantShootSoundPrimary = StringUtils.EMPTY;
     protected String distantShootSoundSecondary = StringUtils.EMPTY;
     protected int distantSoundRange = 200;
+    /** Zero disables weapon overheating for legacy packs that do not opt in. */
+    protected int overheatLimit;
+    protected int overheatPenalty = 75;
+    protected int coolingBonus = 1;
+    protected String overheatSound = StringUtils.EMPTY;
     /** Legacy generic and weapon-type sounds used when a bank has no explicit modern sound. */
     protected String shootSound = StringUtils.EMPTY;
     protected String shellSound = StringUtils.EMPTY;
@@ -942,6 +947,10 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         exitSound = readSound("ExitSound", exitSound, file);
         backSound = readSound("BackSound", backSound, file);
         shootSound = readSound("ShootSound", shootSound, file);
+        overheatLimit = Math.max(0, readValue("OverheatLimit", overheatLimit, file));
+        overheatPenalty = Math.max(0, readValue("OverheatPenalty", overheatPenalty, file));
+        coolingBonus = Math.max(0, readValue("CoolingBonus", coolingBonus, file));
+        overheatSound = readSound("OverheatSound", overheatSound, file);
         distantShootSoundPrimary = aliasSound(distantShootSoundPrimary, file, "farSound", "DistantSoundPrimary");
         distantShootSoundSecondary = readSound("DistantSoundSecondary", distantShootSoundSecondary, file);
         distantSoundRange = readValue("DistantSoundRange", distantSoundRange, file);

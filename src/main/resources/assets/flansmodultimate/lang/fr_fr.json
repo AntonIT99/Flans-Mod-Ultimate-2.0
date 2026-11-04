@@ -292,6 +292,8 @@
   "hud.flansmodultimate.driveable.gear.down": "Train sorti",
   "hud.flansmodultimate.driveable.gear.up": "Train rentré",
   "hud.flansmodultimate.driveable.health": "Santé : %s%%",
+  "hud.flansmodultimate.driveable.heat": "Chaleur des armes : %s%%",
+  "hud.flansmodultimate.driveable.overheated": "Arme en surchauffe",
   "hud.flansmodultimate.driveable.pitch": "Tangage : %s°",
   "hud.flansmodultimate.driveable.roll": "Roulis : %s°",
   "hud.flansmodultimate.driveable.smoke.deploying": "Fumée : déploiement",

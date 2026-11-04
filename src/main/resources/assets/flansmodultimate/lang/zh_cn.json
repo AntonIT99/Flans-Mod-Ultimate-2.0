@@ -292,6 +292,8 @@
   "hud.flansmodultimate.driveable.gear.down": "起落架放下",
   "hud.flansmodultimate.driveable.gear.up": "起落架收起",
   "hud.flansmodultimate.driveable.health": "耐久：%s%%",
+  "hud.flansmodultimate.driveable.heat": "武器热量：%s%%",
+  "hud.flansmodultimate.driveable.overheated": "武器过热",
   "hud.flansmodultimate.driveable.pitch": "俯仰：%s°",
   "hud.flansmodultimate.driveable.roll": "滚转：%s°",
   "hud.flansmodultimate.driveable.smoke.deploying": "烟幕：部署中",

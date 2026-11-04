@@ -148,6 +148,10 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final int FLAG_AIR_BRAKE = 1 << 8;
     protected static final int FLAG_REPAIR = 1 << 9;
 
+    protected static final EntityDataAccessor<Integer> DATA_WEAPON_HEAT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Boolean> DATA_WEAPON_OVERHEATED = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.BOOLEAN);
+    private final VehicleWeaponHeat weaponHeat = new VehicleWeaponHeat();
+
     protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_YAW = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
     protected static final EntityDataAccessor<Float> DATA_PITCH = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
@@ -1077,6 +1081,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         data.define(DATA_FLIGHT_ROLL, 0F);
         data.define(DATA_MOUSE_CONTROL, false);
         data.define(DATA_RECOIL_PROGRESS, 0F);
+        data.define(DATA_WEAPON_HEAT, 0);
+        data.define(DATA_WEAPON_OVERHEATED, false);
         data.define(DATA_IT1_DOOR_ANGLE, 0F);
         data.define(DATA_PREV_IT1_DOOR_ANGLE, 0F);
         data.define(DATA_IT1_ARM_ANGLE, 0F);
@@ -1487,6 +1493,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return;
         }
 
+        weaponHeat.tick(type.getOverheatLimit(), type.getCoolingBonus());
+        publishWeaponHeat();
         expireInput();
 
         int previousPrimaryShootDelay = ShotCooldown.displayTicks(primaryShootDelay);
@@ -1898,7 +1906,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected boolean canFireWeaponBank(boolean secondary)
     {
-        if (ticksRepairing > 0 || !epicShipWeaponsAllowed())
+        if (configType != null && weaponHeat.locked(configType.getOverheatLimit()) || ticksRepairing > 0 || !epicShipWeaponsAllowed())
             return false;
         if (configType == null || !configType.isWorksUnderWater() && isUnderWater())
             return false;
@@ -2682,6 +2690,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
         if (!fired.isEmpty())
         {
+            recordWeaponHeat(fired.size());
             playBankEffects(secondary, fired);
             DriveableType.ScreenShake shake = type.screenShake(secondary);
             if (shake != null)
@@ -3235,6 +3244,30 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return this instanceof Plane ? -pitch : pitch;
     }
 
+    public int getWeaponHeat()
+    {
+        return entityData.get(DATA_WEAPON_HEAT);
+    }
+
+    public boolean isWeaponOverheated()
+    {
+        return entityData.get(DATA_WEAPON_OVERHEATED);
+    }
+
+    private void publishWeaponHeat()
+    {
+        entityData.set(DATA_WEAPON_HEAT, weaponHeat.getHeat());
+        entityData.set(DATA_WEAPON_OVERHEATED, weaponHeat.locked(initializedType().getOverheatLimit()));
+    }
+
+    private void recordWeaponHeat(int rounds)
+    {
+        DriveableType type = initializedType();
+        if (weaponHeat.fired(rounds, type.getOverheatLimit(), type.getOverheatPenalty()) && StringUtils.isNotBlank(type.getOverheatSound()))
+            PacketPlaySound.sendSoundPacket(this, 15D, type.getOverheatSound(), false);
+        publishWeaponHeat();
+    }
+
     protected void playBankEffects(boolean secondary, List<FiredMuzzle> fired)
     {
         DriveableType type = initializedType();
@@ -3429,7 +3462,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
     private boolean firePassengerGun(Seat seat, SeatInfo info, GunType gun, int index)
     {
-        if (ticksRepairing > 0 || !epicShipWeaponsAllowed())
+        if (configType != null && weaponHeat.locked(configType.getOverheatLimit()) || ticksRepairing > 0 || !epicShipWeaponsAllowed())
             return false;
         DriveableData data = initializedData();
         int ammoSlot = info.getGunnerID();
@@ -3468,6 +3501,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
         PacketHandler.sendToAllAround(new PacketDriveablePassengerFired(getId(), index, barrel), position(), 128D, level().dimension());
+        recordWeaponHeat(1);
         reloadPassengerGun(index, gun, ammo);
         return true;
     }

@@ -292,6 +292,8 @@
   "hud.flansmodultimate.driveable.gear.down": "Tren abajo",
   "hud.flansmodultimate.driveable.gear.up": "Tren arriba",
   "hud.flansmodultimate.driveable.health": "Salud: %s%%",
+  "hud.flansmodultimate.driveable.heat": "Calor del arma: %s%%",
+  "hud.flansmodultimate.driveable.overheated": "Arma sobrecalentada",
   "hud.flansmodultimate.driveable.pitch": "Cabeceo: %s°",
   "hud.flansmodultimate.driveable.roll": "Alabeo: %s°",
   "hud.flansmodultimate.driveable.smoke.deploying": "Humo: desplegando",

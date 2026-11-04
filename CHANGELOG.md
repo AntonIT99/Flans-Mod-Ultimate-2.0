@@ -4,6 +4,8 @@
 
 ## Highlights
 
+* Driveable weapons support opt-in shared overheating (`OverheatLimit`, `OverheatPenalty`, `CoolingBonus`, `OverheatSound`), with server-enforced lockouts, cooling and a heat HUD for drivers
+
 * Guns support optional `EquipSound` on weapon switches; driveable weapon banks support `DistantSoundPrimary`, `DistantSoundSecondary` and `DistantSoundRange` (including legacy `farSound` and `farSoundRange` aliases)
 
 * Modern Warfare aircraft in the Classic and Manus packs use wider rear camera views where needed; both F-22 models gain dense afterburner exhaust from 0.65 throttle that follows aircraft motion

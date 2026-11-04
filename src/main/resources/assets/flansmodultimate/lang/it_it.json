@@ -292,6 +292,8 @@
   "hud.flansmodultimate.driveable.gear.down": "Carrello abbassato",
   "hud.flansmodultimate.driveable.gear.up": "Carrello alzato",
   "hud.flansmodultimate.driveable.health": "Salute: %s%%",
+  "hud.flansmodultimate.driveable.heat": "Calore arma: %s%%",
+  "hud.flansmodultimate.driveable.overheated": "Arma surriscaldata",
   "hud.flansmodultimate.driveable.pitch": "Beccheggio: %s°",
   "hud.flansmodultimate.driveable.roll": "Rollio: %s°",
   "hud.flansmodultimate.driveable.smoke.deploying": "Fumo: dispiegamento",

@@ -292,6 +292,8 @@
   "hud.flansmodultimate.driveable.gear.down": "Trem de pouso baixado",
   "hud.flansmodultimate.driveable.gear.up": "Trem de pouso recolhido",
   "hud.flansmodultimate.driveable.health": "Vida: %s%%",
+  "hud.flansmodultimate.driveable.heat": "Calor da arma: %s%%",
+  "hud.flansmodultimate.driveable.overheated": "Arma superaquecida",
   "hud.flansmodultimate.driveable.pitch": "Arfagem: %s°",
   "hud.flansmodultimate.driveable.roll": "Rolagem: %s°",
   "hud.flansmodultimate.driveable.smoke.deploying": "Fumaça: lançando",

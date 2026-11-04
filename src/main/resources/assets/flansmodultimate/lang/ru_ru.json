@@ -292,6 +292,8 @@
   "hud.flansmodultimate.driveable.gear.down": "Шасси выпущено",
   "hud.flansmodultimate.driveable.gear.up": "Шасси убрано",
   "hud.flansmodultimate.driveable.health": "Прочность: %s%%",
+  "hud.flansmodultimate.driveable.heat": "Нагрев оружия: %s%%",
+  "hud.flansmodultimate.driveable.overheated": "Оружие перегрето",
   "hud.flansmodultimate.driveable.pitch": "Тангаж: %s°",
   "hud.flansmodultimate.driveable.roll": "Крен: %s°",
   "hud.flansmodultimate.driveable.smoke.deploying": "Дым: постановка",
