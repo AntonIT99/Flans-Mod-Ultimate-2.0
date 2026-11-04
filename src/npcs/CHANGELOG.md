@@ -51,6 +51,8 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 
 ## Vehicles, Aircraft & Mechas
 
+* NPC bomb release predictions follow the projectile's collision, drag, gravity and movement order, including impact within a tick, and reject falls that never reach the target height; NPC pilots of Flan vehicles apply only a quarter of the normal difficulty penalty to bomb leading
+
 * NPC mecha drivers use swords at melee reach, cycle semi-automatic weapons and complete bursts, jump before getting stuck, use rocket packs for higher routes and mine effective obstacles under server breaking rules; mecha-model NPCs display both arm tools, select swords by reach and damage, inherit carried fall-protection, repair and lighting addons, apply protected landing damage and use authored stomp timing
 
 * Human limits now reach every weapon an NPC fires from a vehicle. Reaction time, aim settling, first-shot aim error and `Lead share` applied only to handheld weapons and a vehicle NPC's main weapon group; its second group, its crewed and unmanned seat guns and the weapons of a real Flan driveable an NPC drives all fired instantly and perfectly whatever the NPC's skill level. A driveable lays its weapons as well as the NPC at its wheel can aim them, and rounds it fires at a player now answer to that NPC's `Player damage` and `Never kill players`

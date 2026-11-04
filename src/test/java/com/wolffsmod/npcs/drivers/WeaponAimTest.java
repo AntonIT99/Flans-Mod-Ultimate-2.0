@@ -46,11 +46,63 @@ class WeaponAimTest
     @Test
     void aDroppedBombKeepsTheVelocityItLeftWithAndFallsByItsGravity()
     {
-        // From 40 blocks up it falls 0.05 more each tick: 41 ticks bring it down, 41 blocks on at a block a tick.
-        Vec3 impact = WeaponAim.impact(new Vec3(0D, 40D, 0D), new Vec3(1D, 0D, 0D), 0.05D, 1D, 0D);
-        assertEquals(41D, impact.x, 1.0E-6D);
-        assertTrue(impact.y <= 0D);
+        // After 39 force-and-move steps it is at y=1, falling at 1.95 blocks/tick. The next trace hits the ground.
+        WeaponAim.Fall fall = WeaponAim.fall(new Vec3(0D, 40D, 0D), new Vec3(1D, 0D, 0D), 0.05D, 1D, 0D);
+        assertTrue(fall.landed());
+        assertEquals(39D + 1D / 1.95D, fall.ticks(), 1.0E-6D);
+        assertEquals(fall.ticks(), fall.impact().x, 1.0E-6D);
+        assertEquals(0D, fall.impact().y, 1.0E-6D);
         // Drag shortens how far it carries.
-        assertTrue(WeaponAim.impact(new Vec3(0D, 40D, 0D), new Vec3(1D, 0D, 0D), 0.05D, 0.98D, 0D).x < 41D);
+        assertTrue(WeaponAim.impact(new Vec3(0D, 40D, 0D), new Vec3(1D, 0D, 0D), 0.05D, 0.98D, 0D).x < fall.impact().x);
+    }
+
+    @Test
+    void collisionUsesIncomingVelocityButMovementUsesDragAndGravity()
+    {
+        // Two actual Bullet moves: (1, 8.5, -2), then (1.5, 6.75, -3).
+        // Its next incoming trace is (0.5, -1.75, -1), meeting y=6 at 3/7 of that trace.
+        WeaponAim.Fall fall = WeaponAim.fall(new Vec3(0D, 10D, 0D), new Vec3(2D, -1D, -4D), 1D, 0.5D, 6D);
+        assertTrue(fall.landed());
+        assertEquals(2D + 3D / 7D, fall.ticks(), 1.0E-9D);
+        assertEquals(1.5D + 0.5D * 3D / 7D, fall.impact().x, 1.0E-9D);
+        assertEquals(6D, fall.impact().y, 1.0E-9D);
+        assertEquals(-3D - 3D / 7D, fall.impact().z, 1.0E-9D);
+    }
+
+    @Test
+    void aBombAlreadyDescendingCanHitDuringItsFirstTrace()
+    {
+        WeaponAim.Fall fall = WeaponAim.fall(new Vec3(10D, 2D, 20D), new Vec3(8D, -4D, -6D), 1D, 0.5D, 0D);
+        assertTrue(fall.landed());
+        assertEquals(0.5D, fall.ticks());
+        assertEquals(new Vec3(14D, 0D, 17D), fall.impact());
+    }
+
+    @Test
+    void aClimbingCarrierDelaysImpactUntilTheBombFallsBackDown()
+    {
+        // With gravity=1 and no drag, y runs 4, 6, 7, 7, 6, 4, 1; the next trace hits one third of the way through.
+        WeaponAim.Fall fall = WeaponAim.fall(new Vec3(0D, 4D, 0D), new Vec3(2D, 3D, 0D), 1D, 1D, 0D);
+        assertTrue(fall.landed());
+        assertEquals(6D + 1D / 3D, fall.ticks(), 1.0E-9D);
+        assertEquals(2D * fall.ticks(), fall.impact().x, 1.0E-9D);
+    }
+
+    @Test
+    void aPredictionThatNeverReachesTheGroundIsNotAnImpact()
+    {
+        WeaponAim.Fall fall = WeaponAim.fall(new Vec3(0D, 40D, 0D), new Vec3(1D, 0D, 0D), 0D, 1D, 0D);
+        assertFalse(fall.landed());
+        assertEquals(400D, fall.ticks());
+    }
+
+    @Test
+    void bombLeadingRetainsOnlyAQuarterOfTheDifficultyPenalty()
+    {
+        assertEquals(1F, WeaponAim.bombLeadShare(1F));
+        assertEquals(0.925F, WeaponAim.bombLeadShare(0.7F), 1.0E-6F);
+        assertEquals(0.875F, WeaponAim.bombLeadShare(0.5F));
+        assertEquals(0.825F, WeaponAim.bombLeadShare(0.3F), 1.0E-6F);
+        assertEquals(0.75F, WeaponAim.bombLeadShare(0F));
     }
 }

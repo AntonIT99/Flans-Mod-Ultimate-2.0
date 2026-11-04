@@ -578,6 +578,8 @@ public final class NpcDriver
         if (origin.isEmpty() || ballistics.isEmpty())
             return null;
         WeaponAim.Fall fall = WeaponAim.fall(origin.get(), aircraft.getDeltaMovement(), ballistics.get().gravity(), ballistics.get().drag(), target.getY());
+        if (!fall.landed())
+            return null;
         Vec3 lead = bombLead(npc, target);
         Vec3 meeting = target.position().add(lead.x * fall.ticks(), 0D, lead.z * fall.ticks());
         double standoff = NpcBlastSafety.standoff(npc, blastReach(secondary));
@@ -1007,7 +1009,7 @@ public final class NpcDriver
         if (!options.enabled(Feature.LEAD_TARGET))
             return Vec3.ZERO;
         Vec3 run = options.enabled(Feature.ADVANCED_LEAD) ? motion.velocity() : target.getDeltaMovement();
-        return run.scale(NpcSkill.leadShare(npc));
+        return run.scale(WeaponAim.bombLeadShare(NpcSkill.leadShare(npc)));
     }
 
     /**
@@ -1022,7 +1024,7 @@ public final class NpcDriver
             return false;
         WeaponAim.Fall fall = WeaponAim.fall(origin, velocity, ballistics.gravity(), ballistics.drag(), target.getY());
         Vec3 meeting = target.position().add(lead.x * fall.ticks(), 0D, lead.z * fall.ticks());
-        return horizontal(fall.impact(), meeting) <= BOMB_RADIUS;
+        return fall.landed() && horizontal(fall.impact(), meeting) <= BOMB_RADIUS;
     }
 
     /**

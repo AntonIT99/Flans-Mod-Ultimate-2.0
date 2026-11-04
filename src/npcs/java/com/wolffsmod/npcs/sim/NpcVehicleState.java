@@ -1142,7 +1142,7 @@ public final class NpcVehicleState
             return new BombDrop(meeting, false);
         double x = fall.impact().x - meeting.x;
         double z = fall.impact().z - meeting.z;
-        return new BombDrop(meeting, x * x + z * z <= BOMB_RADIUS * BOMB_RADIUS);
+        return new BombDrop(meeting, fall.landed() && x * x + z * z <= BOMB_RADIUS * BOMB_RADIUS);
     }
 
     /** The point of a target a shot is aimed at: the middle of a large body, the chest of a smaller one. */
