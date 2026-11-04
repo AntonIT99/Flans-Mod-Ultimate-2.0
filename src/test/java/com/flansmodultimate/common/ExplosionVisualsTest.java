@@ -72,7 +72,7 @@ class ExplosionVisualsTest
     void bombSmokeRisesOverSecondsAndDoesNotKeepBurning()
     {
         float bomb = radius(125F);
-        assertEquals(73, ExplosionVisuals.cloudRiseTicks(bomb), 1, "a bomb column should climb in under four seconds");
+        assertEquals(43, ExplosionVisuals.cloudRiseTicks(bomb), 1, "a bomb column should climb in about two seconds");
         assertEquals(43.755F, ExplosionVisuals.fireballStemHeight(bomb), 0.05F);
         assertEquals(8.751F, ExplosionVisuals.stagedSizingRadius(bomb), 0.01F);
         assertEquals(0F, ExplosionVisuals.hotStemShare(false));
@@ -120,7 +120,7 @@ class ExplosionVisualsTest
         assertTrue(ExplosionVisuals.fireballDurationTicks(radius) <= 200);
         assertTrue(ExplosionVisuals.fireballCount(radius) <= 16);
         assertTrue(ExplosionVisuals.cloudHeight(radius) <= 96F);
-        assertTrue(ExplosionVisuals.cloudRiseTicks(radius) <= 240);
+        assertTrue(ExplosionVisuals.cloudRiseTicks(radius) <= 80);
         assertTrue(ExplosionVisuals.dustSkirtWaves(radius) * ExplosionVisuals.dustSkirtPuffsPerWave(radius) <= 144);
         assertTrue(ExplosionVisuals.mushroomCapPuffs(radius) <= 48);
     }

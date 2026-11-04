@@ -34,6 +34,7 @@ public class BlastPuffParticle extends TextureSheetParticle
 
     private final Look look;
     private final float baseSize;
+    private int fadeInTicks;
     /** Turn per tick; a puff lying on the ground keeps still. */
     protected float spin;
 
@@ -146,15 +147,37 @@ public class BlastPuffParticle extends TextureSheetParticle
         updateLook();
     }
 
+    /** Softens the arrival of staged smoke without delaying flashes or other existing effects. */
+    public void fadeIn(int ticks)
+    {
+        fadeInTicks = Math.max(0, ticks);
+        updateLook();
+    }
+
+    @Override
+    public void render(@NotNull VertexConsumer buffer, Camera camera, float partialTick)
+    {
+        if (fadeInTicks > 0)
+            updateLook(Math.max(0F, age - 1F + partialTick));
+        super.render(buffer, camera, partialTick);
+    }
+
     private void updateLook()
     {
-        float t = Mth.clamp(age / (float) lifetime, 0F, 1F);
+        updateLook(age);
+    }
+
+    private void updateLook(float visualAge)
+    {
+        float t = Mth.clamp(visualAge / lifetime, 0F, 1F);
         // Cools quickly and then lingers, the way a fireball goes from orange to smoke.
         float cooling = 1F - (1F - t) * (1F - t);
         float fade = 1F - t * t;
 
         quadSize = baseSize * (1F + look.growth() * Mth.sqrt(t));
-        alpha = look.alpha() * fade;
+        float arrival = fadeInTicks == 0 ? 1F : Mth.clamp(visualAge / fadeInTicks, 0F, 1F);
+        arrival = arrival * arrival * (3F - 2F * arrival);
+        alpha = look.alpha() * fade * arrival;
 
         float r = Mth.lerp(cooling, look.startR(), look.endR());
         float g = Mth.lerp(cooling, look.startG(), look.endG());

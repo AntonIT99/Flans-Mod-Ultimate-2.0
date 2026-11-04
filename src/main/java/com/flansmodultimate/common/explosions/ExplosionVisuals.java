@@ -120,7 +120,7 @@ public final class ExplosionVisuals
     /** The column climbs in a few seconds, then keeps billowing as its puffs drift up. */
     public static int cloudRiseTicks(float radius)
     {
-        return Mth.clamp(Mth.ceil(20F + cloudHeight(radius) * 1.2F), 20, 120);
+        return Mth.clamp(Mth.ceil(12F + cloudHeight(radius) * 0.7F), 16, 80);
     }
 
     public static float intensity(float craterRadius)
