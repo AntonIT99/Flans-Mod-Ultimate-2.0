@@ -58,16 +58,16 @@ public final class NpcAirCombat
 
     public static boolean aircraft(Entity entity)
     {
-        Entity platform = entity.getRootVehicle();
+        Entity platform = com.wolffsmod.npcs.tactics.NpcVehicleThreats.platform(entity);
         if (platform instanceof EntityNPCInterface npc)
             // Target-goal constructors ask for ranges before Custom NPCs installs the AI data.
             return npc.ais != null && NpcFlight.type(npc) != NpcTuning.Flight.NORMAL;
-        return FlansEntityTypes.getDriveableType(platform).filter(type -> type.getDriveableKind() == DriveableKind.PLANE && !type.isShip()).isPresent();
+        return platform != null && FlansEntityTypes.getDriveableType(platform).filter(type -> type.getDriveableKind() == DriveableKind.PLANE && !type.isShip()).isPresent();
     }
 
     public static boolean airborne(Entity entity)
     {
-        return aircraft(entity) && NpcBombTargets.airborne(entity.getRootVehicle());
+        return aircraft(entity) && NpcBombTargets.airborne(com.wolffsmod.npcs.tactics.NpcVehicleThreats.platform(entity));
     }
 
     public static boolean active(EntityNPCInterface npc)
@@ -105,7 +105,7 @@ public final class NpcAirCombat
     public int rank(EntityNPCInterface npc, LivingEntity candidate)
     {
         boolean air = airborne(candidate);
-        boolean threat = air && candidate instanceof Mob mob && mob.getTarget() != null && NpcDrivers.ally(npc, mob.getTarget());
+        boolean threat = air && (TeamsBots.reportedAirThreat(npc, candidate) || candidate instanceof Mob mob && mob.getTarget() != null && NpcDrivers.ally(npc, mob.getTarget()));
         return rank(role(npc), air, threat, npc.distanceToSqr(candidate) <= Mth.square(interceptionReach(npc)));
     }
 

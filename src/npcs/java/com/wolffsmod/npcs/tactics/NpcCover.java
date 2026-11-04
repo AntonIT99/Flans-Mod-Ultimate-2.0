@@ -99,6 +99,7 @@ public final class NpcCover
         private final Vec3 origin;
         private final List<Vec3> sources;
         private final int radius;
+        private final boolean overhead;
         @Nullable
         private final NpcCombatIntent intent;
         private final long started;
@@ -108,20 +109,21 @@ public final class NpcCover
         private int validated;
         private boolean sorted;
 
-        private SafeSearch(EntityNPCInterface npc, List<Vec3> sources, int radius, @Nullable NpcCombatIntent intent)
+        private SafeSearch(EntityNPCInterface npc, List<Vec3> sources, int radius, @Nullable NpcCombatIntent intent, boolean overhead)
         {
             origin = npc.position();
             this.sources = List.copyOf(sources);
             this.radius = radius;
+            this.overhead = overhead;
             this.intent = intent;
             started = npc.level().getGameTime();
         }
 
-        private boolean matches(EntityNPCInterface npc, List<Vec3> current, int reach, @Nullable NpcCombatIntent order)
+        private boolean matches(EntityNPCInterface npc, List<Vec3> current, int reach, @Nullable NpcCombatIntent order, boolean roof)
         {
             boolean sameOrder = Objects.equals(intent, order) || intent != null && order != null && intent.ordered() == order.ordered() && intent.arrival() == order.arrival()
                 && intent.radius() == order.radius() && intent.destination().distanceToSqr(order.destination()) <= 4D && intent.centre().distanceToSqr(order.centre()) <= 4D;
-            return radius == reach && sameOrder && origin.distanceToSqr(npc.position()) <= 4D && sameSources(sources, current);
+            return radius == reach && overhead == roof && sameOrder && origin.distanceToSqr(npc.position()) <= 4D && sameSources(sources, current);
         }
 
         private Result<List<BlockPos>> step(EntityNPCInterface npc, List<Vec3> current)
@@ -158,7 +160,7 @@ public final class NpcCover
                 BlockPos point = sample(npc, origin, sample, radius);
                 if (point != null)
                 {
-                    if (!slice.reserve(sources.size() * 4))
+                    if (!slice.reserve(sources.size() * 4 + (overhead ? 1 : 0)))
                         return false;
                     consider(npc, allies, point);
                 }
@@ -173,6 +175,8 @@ public final class NpcCover
             if (!hidden(npc, sources, stand))
                 return;
             double score = stand.distanceToSqr(origin) + spacing(npc, allies, stand);
+            if (overhead && sheltered(npc, stand))
+                score -= 256D;
             if (intent != null)
                 score -= 12D * intent.progress(origin, stand);
             if (!hidden(npc, sources, origin.lerp(stand, 0.5D)))
@@ -249,15 +253,27 @@ public final class NpcCover
     /** Scores progress toward an order before taking the shortlist, rather than discarding forward cover afterward. */
     public static Result<List<BlockPos>> safePositions(EntityNPCInterface npc, List<Vec3> sources, int radius, @Nullable NpcCombatIntent intent)
     {
+        return safePositions(npc, sources, radius, intent, false);
+    }
+
+    /** Air attacks favour a nearby roof as well as concealment from the observed approach corridor. */
+    public static Result<List<BlockPos>> safePositions(EntityNPCInterface npc, List<Vec3> sources, int radius, @Nullable NpcCombatIntent intent, boolean overhead)
+    {
         if (sources.isEmpty())
             return new Result<>(true, List.of());
         Searches searches = NpcTacticState.of(npc).getCoverSearches();
-        if (searches.safe == null || !searches.safe.matches(npc, sources, radius, intent))
-            searches.safe = new SafeSearch(npc, sources, radius, intent);
+        if (searches.safe == null || !searches.safe.matches(npc, sources, radius, intent, overhead))
+            searches.safe = new SafeSearch(npc, sources, radius, intent, overhead);
         Result<List<BlockPos>> result = searches.safe.step(npc, sources);
         if (result.complete())
             searches.safe = null;
         return result;
+    }
+
+    public static boolean sheltered(EntityNPCInterface npc, Vec3 stand)
+    {
+        Vec3 eyes = stand.add(0D, npc.getEyeHeight(), 0D);
+        return !NpcSight.clear(npc.level(), eyes, eyes.add(0D, 12D, 0D), 0, npc);
     }
 
     /** Cover must protect both chest and head from every known firing position, including another attacker. */

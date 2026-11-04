@@ -86,6 +86,17 @@ class BotCommanderIntelligenceTest
 
             TeamsBots.reportContact(observer, enemy);
             assertEquals(160D, battle.getIntelligence().contacts(0, 640L).get(0).position().x, "fresh incoming fire can report an unseen shooter");
+            try (var air = mockStatic(com.wolffsmod.npcs.tactics.NpcInfantryAirDefense.class))
+            {
+                air.when(() -> com.wolffsmod.npcs.tactics.NpcInfantryAirDefense.airborne(enemy)).thenReturn(true);
+                TeamsBots.reportAirAttack(observer, enemy);
+                assertTrue(battle.getIntelligence().contacts(0, 640L).get(0).intercept(), "actual attacks request interception without a Mob target field");
+                when(level.getEntity(enemyId)).thenReturn(enemy);
+                assertNull(TeamsBots.airDefenseTarget(observer, null, 160D, candidate -> true), "AA cannot fire at an unseen reported aircraft");
+                when(sensing.hasLineOfSight(enemy)).thenReturn(true);
+                assertSame(enemy, TeamsBots.airDefenseTarget(observer, null, 160D, candidate -> true));
+                assertNull(TeamsBots.airDefenseTarget(observer, null, 160D, candidate -> false), "a reported aircraft still has to be inside the mount's usable firing arc");
+            }
             battle.getIntelligence().clear();
             when(ground.dimension()).thenReturn(Level.OVERWORLD);
             when(level.dimension()).thenReturn(Level.NETHER);

@@ -153,6 +153,17 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     /** Shares a fresh sighting or incoming-fire report with the observer's side, never following a hidden contact. */
     public static void reportContact(EntityNPCInterface observer, LivingEntity enemy)
     {
+        reportContact(observer, enemy, false);
+    }
+
+    /** Confirmed incoming fire or a visible attack approach calls for interception, including a player-piloted aircraft. */
+    public static void reportAirAttack(EntityNPCInterface observer, LivingEntity enemy)
+    {
+        reportContact(observer, enemy, true);
+    }
+
+    private static void reportContact(EntityNPCInterface observer, LivingEntity enemy, boolean airAttack)
+    {
         if (observer.level().isClientSide || enemy.level() != observer.level())
             return;
         BotBattles.of(observer).ifPresent(battle ->
@@ -162,11 +173,45 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
             int side = BotBattles.slotOf(battle, observer).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1);
             if (side >= 0 && battle.getGround().areEnemies(observer, enemy))
             {
-                boolean air = NpcAirCombat.airborne(enemy);
-                boolean intercept = air && enemy instanceof Mob mob && mob.getTarget() != null && battle.getGround().sideOf(mob.getTarget()) == side;
+                boolean air = NpcInfantryAirDefense.airborne(enemy);
+                boolean intercept = air && (airAttack || enemy instanceof Mob mob && mob.getTarget() != null && battle.getGround().sideOf(mob.getTarget()) == side);
                 battle.getIntelligence().report(side, enemy.getUUID(), enemy.position(), BotTargeting.armoured(battle, enemy), observer.level().getGameTime(), air, intercept);
             }
         });
+    }
+
+    public static boolean reportedAirThreat(EntityNPCInterface observer, LivingEntity enemy)
+    {
+        return BotBattles.of(observer).map(battle ->
+        {
+            int side = BotBattles.slotOf(battle, observer).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1);
+            return battle.getIntelligence().intercept(side, enemy.getUUID(), observer.level().getGameTime());
+        }).orElse(false);
+    }
+
+    /** A report prompts a local sight check, never a shot at a hidden contact or a chase outside the mount's firing arc. */
+    @Nullable
+    public static LivingEntity airDefenseTarget(EntityNPCInterface observer, @Nullable LivingEntity current, double range, java.util.function.Predicate<LivingEntity> usable)
+    {
+        if (!(observer.level() instanceof ServerLevel level))
+            return current;
+        if (current != null && current.isAlive() && observer.distanceToSqr(current) <= range * range && reportedAirThreat(observer, current)
+            && observer.getSensing().hasLineOfSight(current) && usable.test(current))
+            return current;
+        return BotBattles.of(observer).map(battle ->
+        {
+            int side = BotBattles.slotOf(battle, observer).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1);
+            for (BotIntelligence.Contact contact : battle.getIntelligence().contacts(side, level.getGameTime()))
+            {
+                if (!contact.intercept() || !contact.airborne())
+                    continue;
+                Entity entity = level.getEntity(contact.enemy());
+                if (entity instanceof LivingEntity enemy && enemy.isAlive() && observer.distanceToSqr(enemy) <= range * range && battle.getGround().areEnemies(observer, enemy)
+                    && observer.getSensing().hasLineOfSight(enemy) && usable.test(enemy))
+                    return enemy;
+            }
+            return current;
+        }).orElse(current);
     }
 
     /** A battle order or ordinary NPC duty retained by the shared infantry combat movement. Server thread. */

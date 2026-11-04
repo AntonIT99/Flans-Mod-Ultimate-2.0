@@ -39,6 +39,7 @@ public final class NpcSafetyGoal extends Goal
     @Nullable
     private Vec3 ordered;
     private boolean arrived;
+    private boolean airDefense;
 
     public NpcSafetyGoal(EntityNPCInterface npc)
     {
@@ -174,7 +175,10 @@ public final class NpcSafetyGoal extends Goal
         if (state.getAnchor() == null)
             state.setAnchor(npc.position());
         LivingEntity target = npc.getTarget();
+        NpcInfantryAirDefense.observe(npc);
         if (retreatToRefuge() || keepClearOfBlast(target))
+            return;
+        if (defendFromAir(now))
             return;
         if (TeamsBots.movesUnderFire(npc))
         {
@@ -183,6 +187,13 @@ public final class NpcSafetyGoal extends Goal
             state.setAdvanceIntent(null);
             return;
         }
+        if (holdAgainstAircraft(target))
+            return;
+        planFight(target, now);
+    }
+
+    private void planFight(LivingEntity target, long now)
+    {
         Situation fight = situation(target, now);
         if (fight == null)
         {
@@ -201,6 +212,98 @@ public final class NpcSafetyGoal extends Goal
         state.setCover(null);
         if (!flank(target, fight, now) && !spread(target))
             state.clear();
+    }
+
+    private boolean holdAgainstAircraft(LivingEntity target)
+    {
+        if (!NpcInfantryAirDefense.holdsPosition(npc, target))
+            return false;
+        state.setAdvanceIntent(null);
+        NpcCombatIntent assigned = NpcCombatAdvance.assigned(npc);
+        Vec3 point = assigned != null && !assigned.reached(npc.position()) && !NpcSuppression.isPinned(npc) ? assigned.step(npc.position(), 8D) : npc.position();
+        if (!NpcCombatMovement.permits(npc, point))
+            point = npc.position();
+        state.setCover(null);
+        order(point.distanceToSqr(npc.position()) > 1D ? Action.ADVANCE : Action.FIRE, point, 20L);
+        return true;
+    }
+
+    /** Temporarily interrupts objective travel too, but keeps the firing target and the underlying order intact. */
+    private boolean defendFromAir(long now)
+    {
+        NpcInfantryAirDefense.Memory air = state.getAirDefense();
+        if (!NpcEquipment.enabled(npc, Feature.TACTICAL_COVER) || !air.active(now))
+        {
+            if (airDefense)
+            {
+                airDefense = false;
+                TeamsBots.releaseCover(npc);
+                state.clear();
+                state.setCoverReadyAt(0L);
+            }
+            return false;
+        }
+        beginAirDefense();
+        state.setAdvanceIntent(null);
+        state.setCover(null);
+        if (state.active(now) && state.getAction() == Action.HIDE && state.getDestination() != null && NpcCover.hidden(npc, air.getSources(), state.getDestination()))
+        {
+            state.setUntil(air.getUntil());
+            return true;
+        }
+        if (NpcCover.sheltered(npc, npc.position()) && NpcCover.hidden(npc, air.getSources(), npc.position()))
+        {
+            order(Action.HIDE, npc.position(), air.getUntil() - now);
+            return true;
+        }
+        if (now >= state.getCoverReadyAt() && seekAirCover(air, now))
+            return true;
+        disperseFromAir(air, now);
+        return true;
+    }
+
+    private void disperseFromAir(NpcInfantryAirDefense.Memory air, long now)
+    {
+        if (state.active(now) && state.getAction() == Action.SPREAD)
+            return;
+        Vec3 side = air.getEscapeDirection();
+        // Vary nearby soldiers' escape distances rather than sending a squad to one identical point.
+        if (side.lengthSqr() < 0.01D)
+            side = new Vec3((npc.getId() & 1) == 0 ? 1D : -1D, 0D, 0D);
+        if (!moveAside(Action.SPREAD, side, 6D + Math.floorMod(npc.getId(), 3) * 2D))
+            order(Action.FIRE, npc.position(), 20L);
+    }
+
+    private void beginAirDefense()
+    {
+        if (!airDefense)
+        {
+            state.clear();
+            state.setCoverReadyAt(0L);
+            airDefense = true;
+        }
+    }
+
+    private boolean seekAirCover(NpcInfantryAirDefense.Memory air, long now)
+    {
+        NpcCover.Result<List<BlockPos>> result = NpcCover.safePositions(npc, air.getSources(), NpcTuning.of(npc).get(Value.COVER_RADIUS), null, true);
+        if (!result.complete())
+        {
+            state.setNextSearch(now + 1L);
+            order(Action.FIRE, npc.position(), 20L);
+            return true;
+        }
+        state.setCoverReadyAt(now + 20L);
+        unreachable.entrySet().removeIf(entry -> entry.getValue() <= now);
+        alternatives = Objects.requireNonNull(result.value()).stream().filter(point -> !unreachable.containsKey(point)).toList();
+        alternative = 0;
+        for (BlockPos stand : alternatives)
+            if (TeamsBots.claimCover(npc, stand, now))
+            {
+                order(Action.HIDE, Vec3.atBottomCenterOf(stand), air.getUntil() - now);
+                return true;
+            }
+        return false;
     }
 
     private boolean evade(long now)

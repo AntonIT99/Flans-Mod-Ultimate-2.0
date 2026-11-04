@@ -48,4 +48,24 @@ class BotAirMissionsTest
     {
         return new BotIntelligence.Contact(UUID.randomUUID(), position, false, 0L, airborne, intercept);
     }
+
+    @Test
+    void routineSightingsPreserveAnAttackWarningButCannotExtendItOrTrackItsMovement()
+    {
+        BotIntelligence intelligence = new BotIntelligence();
+        UUID enemy = UUID.randomUUID();
+        Vec3 attack = new Vec3(40D, 30D, 0D);
+        intelligence.report(0, enemy, attack, false, 10L, true, true);
+        Vec3 sighting = new Vec3(20D, 30D, 0D);
+        intelligence.report(0, enemy, sighting, false, 20L, true, false);
+        assertTrue(intelligence.contacts(0, 50L).get(0).intercept());
+        assertEquals(sighting, intelligence.contacts(0, 50L).get(0).position());
+        assertFalse(intelligence.contacts(0, 110L).get(0).intercept());
+        assertEquals(sighting, intelligence.contacts(0, 110L).get(0).position());
+        intelligence.report(0, enemy, attack, false, 111L, true, true);
+        assertTrue(intelligence.contacts(0, 112L).get(0).intercept());
+        intelligence.report(0, enemy, attack, false, 113L, false, false);
+        assertFalse(intelligence.contacts(0, 114L).get(0).intercept(), "landing clears the interception request");
+        assertTrue(intelligence.contacts(1, 114L).isEmpty());
+    }
 }

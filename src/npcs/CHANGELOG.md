@@ -19,6 +19,8 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 
 ## Soldiers
 
+* Infantry keep their ground orders instead of chasing airborne enemies, reserve fire for plausible weapon engagements, seek overhead cover or spread sideways during observed air attacks, stay sheltered briefly after a pass, and report attacking aircraft for friendly fighter and AA interception, including player-piloted aircraft
+
 * Teams soldiers automatically reserve and crew real Flan driveables for squad travel, keep objective orders while driving, and unload transport passengers safely near their task; Vehicles > Real vehicles and `teams ai round <round> driverealvehicles|gunrealvehicles|riderealvehicles on|off` separately control driving, gunners and passengers (all on by default); `/teams ai board` uses the same ownership and crew rules, and dismount orders prevent immediate reboarding
 
 * `Drive Driveables` now defaults to on for soldiers; allied players requesting an occupied seat by right click or the change-seat key take priority over NPCs in real vehicles, NPC vehicle crews, deployable guns and AA guns, with NPCs moving to a free seat or getting out; default-on `Player seat deployment` also permits vehicle-spawner deployment into allied NPC seats in real vehicles and AA guns, configurable per NPC or through `teams ai round <round> playerseatdeployment on|off`

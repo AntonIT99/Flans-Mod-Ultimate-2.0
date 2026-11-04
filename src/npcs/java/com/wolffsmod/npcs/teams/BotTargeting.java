@@ -10,6 +10,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponChoice;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.sim.TacticKind;
 import com.wolffsmod.npcs.tactics.NpcVehicleThreats;
+import com.wolffsmod.npcs.tactics.NpcInfantryAirDefense;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -35,11 +36,20 @@ final class BotTargeting
     {
         if (NpcAirCombat.active(npc))
             return NpcAirCombat.of(npc).rank(npc, candidate);
+        if (TacticKind.of(npc) == TacticKind.AA_GUN && NpcInfantryAirDefense.airborne(candidate))
+            return TeamsBots.reportedAirThreat(npc, candidate) ? -2 : -1;
+        if (NpcInfantryAirDefense.holdsPosition(npc, candidate) && NpcEquipment.enabled(npc, Feature.SUITED_TARGETS))
+            return NpcInfantryAirDefense.canEngage(npc, candidate) ? LATER : 3;
         if (NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) && NpcVehicleThreats.groundVehicle(npc))
             return NpcVehicleCombat.threatRank(npc, candidate);
         if (NpcEquipment.enabled(npc, Feature.SUITED_TARGETS) && NpcVehicleThreats.groundVehicle(candidate)
             && NpcWeaponChoice.effectiveness(npc, candidate) == NpcWeaponChoice.Effectiveness.INEFFECTIVE)
             return 2;
+        return groundRank(npc, candidate);
+    }
+
+    private static int groundRank(EntityNPCInterface npc, LivingEntity candidate)
+    {
         Optional<BotBattle> current = BotBattles.of(npc);
         if (current.isEmpty())
         {

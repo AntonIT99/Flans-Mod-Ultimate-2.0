@@ -39,6 +39,7 @@ public final class NpcThreats implements ISuppressionListener
         if (!(target instanceof EntityNPCInterface npc) || shooter == null || npc.isKilled() || !valid(npc, shooter) || !NpcDrivers.hostile(npc, shooter))
             return;
         long now = npc.level().getGameTime();
+        NpcInfantryAirDefense.attacked(npc, shooter);
         if (remembersThreats(npc))
         {
             remember(npc, shooter, now);
@@ -54,6 +55,7 @@ public final class NpcThreats implements ISuppressionListener
         if (npc.isKilled() || !valid(npc, attacker))
             return;
         long now = npc.level().getGameTime();
+        NpcInfantryAirDefense.attacked(npc, attacker);
         if (remembersThreats(npc))
             remember(npc, attacker, now);
         alert(npc, attacker, now);

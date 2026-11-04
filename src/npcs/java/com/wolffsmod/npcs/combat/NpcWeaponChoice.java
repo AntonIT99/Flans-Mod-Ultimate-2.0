@@ -7,6 +7,7 @@ import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.tactics.NpcInfantryAirDefense;
 import com.wolffsmod.npcs.tactics.NpcVehicleThreats;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -127,6 +128,8 @@ public final class NpcWeaponChoice
     {
         if (unusable(npc, weapon))
             return -1D;
+        if (NpcInfantryAirDefense.holdsFire(npc, target, weapon))
+            return 0D;
         ItemStack ammunition = ammunition(npc, weapon);
         Optional<EquippedWeaponProperties> properties = FlansEquipment.getWeaponProperties(weapon, ammunition);
         if (properties.isEmpty())

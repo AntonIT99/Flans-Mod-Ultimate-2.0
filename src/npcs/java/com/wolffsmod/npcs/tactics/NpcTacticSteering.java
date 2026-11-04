@@ -45,6 +45,11 @@ public final class NpcTacticSteering
         LivingEntity target = npc.getTarget();
         if (target == null)
             return;
+        if (NpcInfantryAirDefense.holdsPosition(npc, target))
+        {
+            npc.getNavigation().stop();
+            return;
+        }
         long now = npc.level().getGameTime();
         NpcTacticState memory = NpcTacticState.of(npc);
         memory.prepare(tactic, target.getId(), now, (npc.getId() & 1) == 0 ? 1 : -1);

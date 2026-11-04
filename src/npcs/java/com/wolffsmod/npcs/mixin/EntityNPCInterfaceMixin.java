@@ -65,6 +65,7 @@ import java.util.*;
  * and it selects the ranged variant of Custom NPCs' tactic. The entity carries what its tactic remembers. An NPC wearing an AA
  * gun, vehicle or plane model strikes nothing in melee; a mecha requires a sword addon, synchronized for its model to draw.</li>
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
+ * <li>Infantry hold unsuitable ranged fire against airborne targets.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
  * <li>Infantry roles coordinate assault, melee and skirmishing; temporary crouch/crawl postures synchronize through the native animation data with matching dimensions and speed.</li>
@@ -900,7 +901,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         // A throw being wound up beside the NPC's other attacks holds them meanwhile.
         // A bot that has only just seen its target has not reacted yet.
         if (NpcRepairs.active(npc) || wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc)
-            || NpcCrew.holdsFire(npc) || NpcThrowGoal.throwing(npc) || NpcSkill.holdsFire(npc, target))
+            || NpcCrew.holdsFire(npc) || NpcThrowGoal.throwing(npc) || NpcSkill.holdsFire(npc, target) || NpcInfantryAirDefense.holdsFire(npc, target))
         {
             callback.cancel();
             return;

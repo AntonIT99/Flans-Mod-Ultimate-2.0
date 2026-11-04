@@ -161,6 +161,15 @@ public final class NpcEmplacementGoal extends Goal
             return;
         emplacement.reloadEmplacement(npc, () -> NpcAmmunition.takeEmplacementAmmo(npc, type), !NpcEquipment.enabled(npc, Feature.CONSUME_AMMO));
         LivingEntity target = npc.getTarget();
+        if ((npc.tickCount + npc.getId()) % 20 == 0)
+        {
+            LivingEntity air = TeamsBots.airDefenseTarget(npc, target, FIRE_RANGE, candidate -> usable(emplacement, candidate));
+            if (air != null && air != target)
+            {
+                npc.setTarget(air);
+                target = air;
+            }
+        }
         if (target == null || !usable(emplacement, target))
         {
             idle++;

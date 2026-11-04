@@ -343,6 +343,16 @@ public final class NpcVehicleState
 
     // Tick
 
+    private void updateAirDefenseTarget(EntityNPCInterface npc, Layout current)
+    {
+    if (current.kind() == FlanModelKind.AA_GUN && (npc.tickCount + npc.getId()) % 20 == 0)
+    {
+        LivingEntity target = com.wolffsmod.npcs.teams.TeamsBots.airDefenseTarget(npc, npc.getTarget(), NpcTargetSearch.range(npc), enemy -> true);
+        if (target != npc.getTarget())
+            npc.setTarget(target);
+    }
+    }
+
     /** Runs once per tick on either side, after the NPC has moved. */
     public void tick(EntityNPCInterface npc)
     {
@@ -369,7 +379,10 @@ public final class NpcVehicleState
         if (npc.level().isClientSide)
             clientTick(held);
         else
+        {
+            updateAirDefenseTarget(npc, current);
             serverTick(npc, current, options, held);
+        }
         measure(npc);
         if (!npc.level().isClientSide && (current.kind() == FlanModelKind.VEHICLE || current.kind() == FlanModelKind.MECHA))
             NpcRunOver.tick(npc, current.model(), groundSpeed, options);
