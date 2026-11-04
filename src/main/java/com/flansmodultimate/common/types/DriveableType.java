@@ -570,6 +570,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readSeatVectorLines("RotatedPassengerOffset", file, SeatInfo::setRotatedOffset, true);
         readSeatVectorLines("PassengerAimSpeed", file, SeatInfo::setAimingSpeed, false);
         readSeatVectorLines("GunOrigin", file, SeatInfo::setGunOrigin, true);
+        readSeatBooleanLines("invisiblePassenger", file, SeatInfo::setInvisiblePassenger);
+        readSeatBooleanLines("SetPassengerInvisible", file, SeatInfo::setInvisiblePassenger);
         readSeatBooleanLines("PassengerLegacyAiming", file, SeatInfo::setLegacyAiming);
         readSeatBooleanLines("PassengerYawBeforePitch", file, SeatInfo::setYawBeforePitch);
         readSeatBooleanLines("PassengerLatePitch", file, SeatInfo::setLatePitch);
@@ -1658,6 +1660,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public boolean hidesOccupants(boolean doorsOpen)
     {
         return setPlayerInvisible || (doorsOpen ? setPlayerInvisibleOnDoorOpen : setPlayerInvisibleOnDoorClose);
+    }
+
+    public boolean hidesOccupants(boolean doorsOpen, int seatIndex)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        return hidesOccupants(doorsOpen) || seat != null && seat.isInvisiblePassenger();
     }
 
     public String shootSound(boolean secondaryWeapon)

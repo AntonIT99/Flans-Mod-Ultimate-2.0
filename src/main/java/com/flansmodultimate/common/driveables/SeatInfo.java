@@ -48,6 +48,8 @@ public final class SeatInfo
     @Setter
     private boolean legacyAiming;
     @Setter
+    private boolean invisiblePassenger;
+    @Setter
     private boolean yawBeforePitch;
     @Setter
     private boolean traverseSounds;

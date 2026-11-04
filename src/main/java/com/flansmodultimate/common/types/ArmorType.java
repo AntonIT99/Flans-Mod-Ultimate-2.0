@@ -22,6 +22,19 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 @NoArgsConstructor
 public class ArmorType extends InfoType
 {
+    @Getter
+    protected float reloadMultiplier = 1F;
+    @Getter
+    protected boolean hasPouch;
+    @Getter
+    protected boolean hasOldGunPouch;
+    @Getter
+    protected boolean hasBowPouch;
+    @Getter
+    protected boolean hasGunPouch;
+    @Getter
+    protected boolean hasHeavyPouch;
+
     public static final float ARMOR_POINT_FACTOR = 25.0F;
     /** Penetration resistance of a bare head. Also the default for a helmet that declares no value. */
     public static final float UNARMORED_HELMET_PENETRATION_RESISTANCE = 1.0F;
@@ -118,6 +131,16 @@ public class ArmorType extends InfoType
     protected void read(TypeFile file)
     {
         super.read(file);
+        reloadMultiplier = readValue("pouchMultiplier", reloadMultiplier, file);
+        reloadMultiplier = readValue("reloadMultiplier", reloadMultiplier, file);
+        if (!Float.isFinite(reloadMultiplier) || reloadMultiplier <= 0F)
+            reloadMultiplier = 1F;
+        hasPouch = readValue("hasPouch", hasPouch, file);
+        hasPouch = readValue("hasMagPouch", hasPouch, file);
+        hasOldGunPouch = readValue("hasOldGunPouch", hasOldGunPouch, file);
+        hasBowPouch = readValue("hasBowPouch", hasBowPouch, file);
+        hasGunPouch = readValue("hasGunPouch", hasGunPouch, file);
+        hasHeavyPouch = readValue("hasHeavyPouch", hasHeavyPouch, file);
         rawArmorItemType = readValue("Type", rawArmorItemType, file);
         textureName = readResource("ArmourTexture", textureName, file);
         textureName = readResource("ArmorTexture", textureName, file);

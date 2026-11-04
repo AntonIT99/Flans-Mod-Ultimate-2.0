@@ -6,7 +6,11 @@ Audited `run/flan` and `src/main` using the current `ContentManager`, `EnumType`
 
 Recipe-grid rows and the four armor-recipe body rows following `AddArmour`/`AddArmor` were treated as data, not parameters. Obvious delimiter, truncated-comment, numeric-only, array-literal, and pasted-code fragments were also excluded from findings. Case was normalized exactly as `TypeFile` does. Inherited readers, `GunAnimationConfig`, `AmmoOverrides`, `VehicleArmorSpecReader`, `RealWorldSpecReader`, category injection, and direct `TypeFile` lookups were checked.
 
-Result: **309 UNPARSED**, **0 PARSED_UNUSED**, and **0 UNCERTAIN** distinct `(type, parameter)` pairs.
+Remaining recorded findings: **282 UNPARSED**, **0 PARSED_UNUSED**, and **0 UNCERTAIN** distinct `(type, parameter)` pairs.
+
+Refresh on 2026-11-04: removed 12 confirmed active entries (depth-charge controls, HEAT, melee/shield/mode-switch sounds, and vehicle/plane overheating controls) after tracing current parsers and consumers. Removed three orphan summary rows (`BULLET / Skin`, `GUN / DamageVsVehicles`, `VEHICLE / TurretRotationSpeed`) that had no detailed finding/evidence; these are not reclassified as active. The corpus totals above describe the original installed-pack audit; this is a targeted correction, not a fresh exhaustive audit. The external TaP Redemption installation inspected for feature suggestions is a separate corpus and is not included in those totals. Unreviewed findings still need confirmation against current code before implementation decisions.
+
+Implemented follow-up (2026-11-04): removed 12 further active findings for armor reload pouches and their `OldGun` / `RepeatingGun` matching flags, per-seat occupant visibility, and ammunition armor-impact sounds. The supported legacy iron-sight correction parameters were not findings in the original corpus. Current entry count is reconciled with the summary table; this does not revalidate the other entries.
 
 ## Unparsed parameters
 
@@ -50,30 +54,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### ARMOR / hasBowPouch — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/armorFiles/MEME jap yoroi late.txt; 1 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/ArmorType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### ARMOR / hasOldGunPouch — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip; run/flan/TaP Northern Aggression Pack.zip!/armorFiles/BODY CSA Butternut Uniform.txt; run/flan/TaP Northern Aggression Pack.zip!/armorFiles/BODY CSA Grey Overcoat Uniform.txt; run/flan/TaP Northern Aggression Pack.zip!/armorFiles/BODY CSA Grey Uniform.txt; 7 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/ArmorType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### ARMOR / hasPouch — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/armorFiles/MEME byzan cataphract.txt; run/flan/Tyrants And Plebeians OHIO.zip!/armorFiles/MEME hussar armor.txt; run/flan/Tyrants And Plebeians OHIO.zip!/armorFiles/MEME mamluk lamellar.txt; 7 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/ArmorType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### ARMOR / headArmor — UNPARSED
 
 Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/armorFiles/HEAD Civilian Felt Hat - Black.txt; run/flan/TaP Northern Aggression Pack.zip!/armorFiles/HEAD Civilian Straw Hat.txt; run/flan/TaP Northern Aggression Pack.zip!/armorFiles/HEAD CSA Butternut Forage Cap.txt; 66 occurrence(s)`
@@ -106,14 +86,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### ARMOR / reloadMultiplier — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/armorFiles/BODY CSA Butternut Uniform.txt; run/flan/TaP Northern Aggression Pack.zip!/armorFiles/BODY CSA Grey Overcoat Uniform.txt; run/flan/TaP Northern Aggression Pack.zip!/armorFiles/BODY CSA Grey Uniform.txt; 15 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/ArmorType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### ATTACHMENT / AddNode — UNPARSED
 
 Observed: `TaP Northern Aggression Pack.zip; run/flan/TaP Northern Aggression Pack.zip!/attachments/musketbayonet.txt; 17 occurrence(s)`
@@ -134,14 +106,6 @@ Confidence: HIGH
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/attachments/ExperimentalBayonet.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/attachments/Suppressor.txt; 2 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/AttachmentType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### BULLET / activationDepth — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/NS 12cmShellASW.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/NS 21inchTorpMarkIX.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/NS 21inchTorpMarkVIII.txt; 17 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
@@ -250,14 +214,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### BULLET / depthCharge — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/NS 12cmShellASW.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/NS Aerial Depth Charge 40m.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/NS Aerial Depth Charge.txt; 10 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### BULLET / Descriptions — UNPARSED
 
 Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/SAR AK-47 Ammo Tracer.txt; 1 occurrence(s)`
@@ -306,14 +262,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### BULLET / HEAT — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/ATGM HS293.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/BO 100 of 50kg.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/BO 1000 of 250kg copy.txt; 64 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### BULLET / HHitSound — UNPARSED
 
 Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/TSA 600mm normal.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/TSA 600mm raiding.txt; 2 occurrence(s)`
@@ -341,14 +289,6 @@ Confidence: HIGH
 ### BULLET / LockOnToVehicle — UNPARSED
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/AIM120Rocket.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/L_FliegerhammerRocketsMk2.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/L_improvedStingerAmmo.txt; 18 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### BULLET / minorPenSound — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/bullets/TS 39mm Williams.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/AA 28mmAmmoHET.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/AA 28mmAmmoHETQuad.txt; 297 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -386,14 +326,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### BULLET / overPenSound — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/bullets/TS 39mm Williams.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/AA 28mmAmmoHET.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/AA 28mmAmmoHETQuad.txt; 297 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### BULLET / papaDrill — UNPARSED
 
 Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/TSA 81mm Mortar.txt; 1 occurrence(s)`
@@ -413,22 +345,6 @@ Confidence: HIGH
 ### BULLET / penDecay — UNPARSED
 
 Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/bullets/NS Heavy Ram.txt; run/flan/TaP Northern Aggression Pack.zip!/bullets/NS Light Ram.txt; run/flan/TaP Northern Aggression Pack.zip!/bullets/TS 13Inch Mortar Shell.txt; 342 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### BULLET / penetrateSound — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/bullets/TS 39mm Williams.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/AA 28mmAmmoHET.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/AA 28mmAmmoHETQuad.txt; 297 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### BULLET / ricochetSound — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/bullets/TS 39mm Williams.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/AA 28mmAmmoHET.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/AA 28mmAmmoHETQuad.txt; 297 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -730,14 +646,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### GUN / MeleeHitSound — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/guns/ac arkansas dagger.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/ac artillery sword.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/ac M1840.txt; 8 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### GUN / meleeLeft — UNPARSED
 
 Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/guns/ac arkansas dagger.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/ac artillery sword.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/ac M1840.txt; 8 occurrence(s)`
@@ -810,25 +718,9 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### GUN / ModeSwitchSound — UNPARSED
-
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/guns/DebugM16.txt; 1 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### GUN / muzzleParticleHave — UNPARSED
 
 Observed: `TaP Northern Aggression Pack.zip; run/flan/TaP Northern Aggression Pack.zip!/guns/BR Henry 1860.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/BR SharpsRifle.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/HG 1851.txt; 12 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### GUN / OldGun — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip; run/flan/TaP Northern Aggression Pack.zip!/guns/SR Enfield 1853.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/SR Spencer Carbine.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/SR Springfield 1842.txt; 5 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -885,14 +777,6 @@ Confidence: HIGH
 ### GUN / recoilElevator — UNPARSED
 
 Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/guns/BR Henry 1860.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/BR SharpsRifle.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/SR Enfield 1853.txt; 48 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### GUN / RepeatingGun — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip; run/flan/TaP Northern Aggression Pack.zip!/guns/BR Henry 1860.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/HG 1851.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/HG LeMat Revolver.txt; 5 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -973,14 +857,6 @@ Confidence: HIGH
 ### GUN / SecondarySpread — UNPARSED
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/guns/DebugM16.txt; 1 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### GUN / ShieldHitSound — UNPARSED
-
-Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/guns/ac arkansas dagger.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/ac artillery sword.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/ac M1840.txt; 8 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -1290,14 +1166,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### VEHICLE / coolingBonus — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A 39M Csaba.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A M45Quad.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A Panhard 178.txt; 11 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### VEHICLE / damageVsCrew — UNPARSED
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/NAV_Reshadiye.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/NAV_Salami.txt; run/flan/TaP Northern Aggression Pack.zip!/vehicles/T1S Eh Sex.txt; 131 occurrence(s)`
@@ -1546,14 +1414,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### VEHICLE / invisiblePassenger — UNPARSED
-
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/TNK_ForestedAbrams.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A SdKfz222.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0L M3A1 Stuart.txt; 115 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### VEHICLE / isExplosionWhenDestroyedRadius — UNPARSED
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/MNT_BL15inchMk1.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/NAV_TillmanVFullScale.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/SP_BarrackBusterBattery.txt; 200 occurrence(s)`
@@ -1645,22 +1505,6 @@ Confidence: HIGH
 ### VEHICLE / NumWheels — UNPARSED
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Roman Pack.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk19Mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk28mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAM_Mk13GMLS.txt; 211 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### VEHICLE / overheatLimit — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A 39M Csaba.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A M45Quad.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A Panhard 178.txt; 11 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### VEHICLE / overheatPenalty — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A 39M Csaba.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A M45Quad.txt; run/flan/Tyrants And Plebeians OHIO.zip!/vehicles/T0A Panhard 178.txt; 11 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -1986,14 +1830,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### PLANE / coolingBonus — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F D.520.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F Hurricane Mk2c.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F Hurricane Mk2d.txt; 128 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/PlaneType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### PLANE / cruiseSpeed — UNPARSED
 
 Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F Chaika.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F CR32.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F Hurricane Mk2c.txt; 61 occurrence(s)`
@@ -2098,14 +1934,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### PLANE / invisiblePassenger — UNPARSED
-
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/planes/AH1ZViper.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0p5T B10.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0p5T B18A.txt; 20 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/PlaneType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### PLANE / isExplosionWhenDestroyedRadius — UNPARSED
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/planes/KirovRedAlert.txt; 1 occurrence(s)`
@@ -2197,22 +2025,6 @@ Confidence: HIGH
 ### PLANE / NumWheels — UNPARSED
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/planes/AH1ZViper.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/planes/FusoAirServiceA6MZero.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/planes/genericPlane.txt; 198 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/PlaneType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### PLANE / overheatLimit — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F D.520.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F Hurricane Mk2c.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F Hurricane Mk2d.txt; 128 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/PlaneType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### PLANE / overheatPenalty — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F D.520.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F Hurricane Mk2c.txt; run/flan/Tyrants And Plebeians OHIO.zip!/planes/T0F Hurricane Mk2d.txt; 128 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/PlaneType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -2467,18 +2279,13 @@ Confidence: HIGH
 | ARMOR | `bodyArmor` | UNPARSED | 2 | 80 | HIGH |
 | ARMOR | `faceArmor` | UNPARSED | 1 | 13 | HIGH |
 | ARMOR | `FeatherFalling` | UNPARSED | 1 | 1 | HIGH |
-| ARMOR | `hasBowPouch` | UNPARSED | 1 | 1 | HIGH |
-| ARMOR | `hasOldGunPouch` | UNPARSED | 1 | 7 | HIGH |
-| ARMOR | `hasPouch` | UNPARSED | 1 | 7 | HIGH |
 | ARMOR | `headArmor` | UNPARSED | 2 | 66 | HIGH |
 | ARMOR | `ItemID` | UNPARSED | 7 | 461 | HIGH |
 | ARMOR | `legArmor` | UNPARSED | 1 | 18 | HIGH |
 | ARMOR | `neckArmor` | UNPARSED | 1 | 12 | HIGH |
-| ARMOR | `reloadMultiplier` | UNPARSED | 2 | 15 | HIGH |
 | ATTACHMENT | `AddNode` | UNPARSED | 1 | 17 | HIGH |
 | ATTACHMENT | `bayonet` | UNPARSED | 1 | 1 | HIGH |
 | ATTACHMENT | `ItemID` | UNPARSED | 1 | 2 | HIGH |
-| BULLET | `activationDepth` | UNPARSED | 1 | 17 | HIGH |
 | BULLET | `angelOfDeath` | UNPARSED | 2 | 2 | HIGH |
 | BULLET | `armorPen` | UNPARSED | 3 | 396 | HIGH |
 | BULLET | `barelyPenPenalty` | UNPARSED | 2 | 176 | HIGH |
@@ -2492,33 +2299,26 @@ Confidence: HIGH
 | BULLET | `ciwsBullet` | UNPARSED | 1 | 25 | HIGH |
 | BULLET | `DamagaVsPlanes` | UNPARSED | 1 | 3 | HIGH |
 | BULLET | `DamageVsEntities` | UNPARSED | 1 | 13 | HIGH |
-| BULLET | `depthCharge` | UNPARSED | 1 | 10 | HIGH |
 | BULLET | `Descriptions` | UNPARSED | 1 | 1 | HIGH |
 | BULLET | `dynamicBodyArmorPen` | UNPARSED | 2 | 144 | HIGH |
 | BULLET | `dynamicBulletDelay` | UNPARSED | 2 | 147 | HIGH |
 | BULLET | `dynamicDamage` | UNPARSED | 2 | 147 | HIGH |
 | BULLET | `gasmaskable` | UNPARSED | 2 | 2 | HIGH |
 | BULLET | `HasLightTrue` | UNPARSED | 1 | 1 | HIGH |
-| BULLET | `HEAT` | UNPARSED | 1 | 64 | HIGH |
 | BULLET | `HHitSound` | UNPARSED | 1 | 2 | HIGH |
 | BULLET | `ItemID` | UNPARSED | 4 | 613 | HIGH |
 | BULLET | `LockOnFuse` | UNPARSED | 1 | 4 | HIGH |
 | BULLET | `LockOnToVehicle` | UNPARSED | 2 | 18 | HIGH |
-| BULLET | `minorPenSound` | UNPARSED | 2 | 297 | HIGH |
 | BULLET | `missileRadarVisible` | UNPARSED | 1 | 1 | HIGH |
 | BULLET | `modernTorpedo` | UNPARSED | 1 | 3 | HIGH |
 | BULLET | `navalMine` | UNPARSED | 1 | 2 | HIGH |
 | BULLET | `nonPenPenalty` | UNPARSED | 2 | 175 | HIGH |
-| BULLET | `overPenSound` | UNPARSED | 2 | 297 | HIGH |
 | BULLET | `papaDrill` | UNPARSED | 1 | 1 | HIGH |
 | BULLET | `Parachute` | UNPARSED | 1 | 2 | HIGH |
 | BULLET | `penDecay` | UNPARSED | 2 | 342 | HIGH |
-| BULLET | `penetrateSound` | UNPARSED | 2 | 297 | HIGH |
-| BULLET | `ricochetSound` | UNPARSED | 2 | 297 | HIGH |
 | BULLET | `RoundsPerItem1` | UNPARSED | 2 | 2 | HIGH |
 | BULLET | `scoutBullet` | UNPARSED | 1 | 5 | HIGH |
 | BULLET | `shrapnelAngel` | UNPARSED | 1 | 3 | HIGH |
-| BULLET | `Skin` | UNPARSED | 1 | 1 | HIGH |
 | BULLET | `Skin44_W44Bullet_Tracer_White` | UNPARSED | 1 | 3 | HIGH |
 | BULLET | `smokeDelay` | UNPARSED | 2 | 2 | HIGH |
 | BULLET | `smokeParticleCount` | UNPARSED | 2 | 2 | HIGH |
@@ -2541,7 +2341,6 @@ Confidence: HIGH
 | GUN | `AddUpNode` | UNPARSED | 2 | 60 | HIGH |
 | GUN | `CanHipFireWhileSprinting` | UNPARSED | 2 | 19 | HIGH |
 | GUN | `CanLockOnAngle` | UNPARSED | 1 | 2 | HIGH |
-| GUN | `DamageVsVehicles` | UNPARSED | 1 | 2 | HIGH |
 | GUN | `DeployableModel` | UNPARSED | 2 | 5 | HIGH |
 | GUN | `dillElevator` | UNPARSED | 2 | 46 | HIGH |
 | GUN | `dillZoomModifier` | UNPARSED | 2 | 46 | HIGH |
@@ -2554,7 +2353,6 @@ Confidence: HIGH
 | GUN | `Load` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `LoadSecondaryIntoGun` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `LockOnToVehicle` | UNPARSED | 1 | 2 | HIGH |
-| GUN | `MeleeHitSound` | UNPARSED | 2 | 8 | HIGH |
 | GUN | `meleeLeft` | UNPARSED | 2 | 8 | HIGH |
 | GUN | `MeleeLeftDamagePoint` | UNPARSED | 2 | 40 | HIGH |
 | GUN | `MeleeLeftTime` | UNPARSED | 2 | 8 | HIGH |
@@ -2564,9 +2362,7 @@ Confidence: HIGH
 | GUN | `meleeUp` | UNPARSED | 2 | 4 | HIGH |
 | GUN | `MeleeUpDamagePoint` | UNPARSED | 2 | 40 | HIGH |
 | GUN | `MeleeUpTime` | UNPARSED | 2 | 8 | HIGH |
-| GUN | `ModeSwitchSound` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `muzzleParticleHave` | UNPARSED | 1 | 12 | HIGH |
-| GUN | `OldGun` | UNPARSED | 1 | 5 | HIGH |
 | GUN | `Painjob` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `RandamRecoil` | UNPARSED | 1 | 3 | HIGH |
 | GUN | `RandamRecoilRange` | UNPARSED | 1 | 3 | HIGH |
@@ -2574,7 +2370,6 @@ Confidence: HIGH
 | GUN | `RandomRecoilYaw` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `RechargeRecipe` | UNPARSED | 1 | 2 | HIGH |
 | GUN | `recoilElevator` | UNPARSED | 2 | 48 | HIGH |
-| GUN | `RepeatingGun` | UNPARSED | 1 | 5 | HIGH |
 | GUN | `RPM` | UNPARSED | 1 | 39 | HIGH |
 | GUN | `SecondaryAmmo` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `SecondaryDamage` | UNPARSED | 1 | 1 | HIGH |
@@ -2585,7 +2380,6 @@ Confidence: HIGH
 | GUN | `SecondaryShootDelay` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `SecondaryShootSound` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `SecondarySpread` | UNPARSED | 1 | 1 | HIGH |
-| GUN | `ShieldHitSound` | UNPARSED | 2 | 8 | HIGH |
 | GUN | `shootMelee` | UNPARSED | 2 | 8 | HIGH |
 | GUN | `sidearm` | UNPARSED | 2 | 25 | HIGH |
 | GUN | `spear` | UNPARSED | 3 | 12 | HIGH |
@@ -2620,7 +2414,6 @@ Confidence: HIGH
 | PLANE | `carrierLandable` | UNPARSED | 1 | 35 | HIGH |
 | PLANE | `centralControl` | UNPARSED | 1 | 44 | HIGH |
 | PLANE | `climbRate` | UNPARSED | 1 | 15 | HIGH |
-| PLANE | `coolingBonus` | UNPARSED | 1 | 128 | HIGH |
 | PLANE | `cruiseSpeed` | UNPARSED | 1 | 61 | HIGH |
 | PLANE | `ff` | UNPARSED | 1 | 1 | HIGH |
 | PLANE | `flightCeiling` | UNPARSED | 1 | 176 | HIGH |
@@ -2634,7 +2427,6 @@ Confidence: HIGH
 | PLANE | `heliGuiSeat` | UNPARSED | 2 | 42 | HIGH |
 | PLANE | `helipadLandable` | UNPARSED | 2 | 14 | HIGH |
 | PLANE | `invincible` | UNPARSED | 1 | 8 | HIGH |
-| PLANE | `invisiblePassenger` | UNPARSED | 2 | 20 | HIGH |
 | PLANE | `isExplosionWhenDestroyedRadius` | UNPARSED | 1 | 1 | HIGH |
 | PLANE | `ItemID` | UNPARSED | 2 | 43 | HIGH |
 | PLANE | `kamikazeBonus` | UNPARSED | 1 | 1 | HIGH |
@@ -2647,8 +2439,6 @@ Confidence: HIGH
 | PLANE | `muzzleVelocity` | UNPARSED | 1 | 5 | HIGH |
 | PLANE | `needsGear` | UNPARSED | 1 | 37 | HIGH |
 | PLANE | `NumWheels` | UNPARSED | 2 | 198 | HIGH |
-| PLANE | `overheatLimit` | UNPARSED | 1 | 128 | HIGH |
-| PLANE | `overheatPenalty` | UNPARSED | 1 | 128 | HIGH |
 | PLANE | `parasitePlane` | UNPARSED | 1 | 2 | HIGH |
 | PLANE | `passengerZoom` | UNPARSED | 2 | 9 | HIGH |
 | PLANE | `planeCoaxSecondary` | UNPARSED | 1 | 2 | HIGH |
@@ -2694,7 +2484,6 @@ Confidence: HIGH
 | VEHICLE | `carrier` | UNPARSED | 1 | 68 | HIGH |
 | VEHICLE | `centralControl` | UNPARSED | 1 | 140 | HIGH |
 | VEHICLE | `ClutchSteer` | UNPARSED | 1 | 2 | HIGH |
-| VEHICLE | `coolingBonus` | UNPARSED | 1 | 11 | HIGH |
 | VEHICLE | `damageVsCrew` | UNPARSED | 3 | 131 | HIGH |
 | VEHICLE | `Death` | UNPARSED | 2 | 74 | HIGH |
 | VEHICLE | `DebrisParticleCount` | UNPARSED | 1 | 2 | HIGH |
@@ -2726,7 +2515,6 @@ Confidence: HIGH
 | VEHICLE | `helipad` | UNPARSED | 2 | 113 | HIGH |
 | VEHICLE | `hijackablePilot` | UNPARSED | 1 | 4 | HIGH |
 | VEHICLE | `invincible` | UNPARSED | 3 | 279 | HIGH |
-| VEHICLE | `invisiblePassenger` | UNPARSED | 2 | 115 | HIGH |
 | VEHICLE | `isExplosionWhenDestroyedRadius` | UNPARSED | 3 | 200 | HIGH |
 | VEHICLE | `ItemID` | UNPARSED | 4 | 308 | HIGH |
 | VEHICLE | `labjacFuel` | UNPARSED | 1 | 3 | HIGH |
@@ -2739,8 +2527,6 @@ Confidence: HIGH
 | VEHICLE | `nightScope` | UNPARSED | 2 | 99 | HIGH |
 | VEHICLE | `nuclearDeath` | UNPARSED | 1 | 2 | HIGH |
 | VEHICLE | `NumWheels` | UNPARSED | 5 | 211 | HIGH |
-| VEHICLE | `overheatLimit` | UNPARSED | 1 | 11 | HIGH |
-| VEHICLE | `overheatPenalty` | UNPARSED | 1 | 11 | HIGH |
 | VEHICLE | `oxygen` | UNPARSED | 2 | 23 | HIGH |
 | VEHICLE | `PassengerHurtable` | UNPARSED | 1 | 2 | HIGH |
 | VEHICLE | `passengerZoom` | UNPARSED | 2 | 4 | HIGH |
@@ -2765,7 +2551,6 @@ Confidence: HIGH
 | VEHICLE | `SurfaceSpeed` | UNPARSED | 3 | 25 | HIGH |
 | VEHICLE | `terrainPenalty` | UNPARSED | 2 | 29 | HIGH |
 | VEHICLE | `transport` | UNPARSED | 2 | 23 | HIGH |
-| VEHICLE | `TurretRotationSpeed` | UNPARSED | 2 | 2 | HIGH |
 | VEHICLE | `unlimitedOxygen` | UNPARSED | 2 | 2 | HIGH |
 | VEHICLE | `walterCalculator` | UNPARSED | 1 | 12 | HIGH |
 | VEHICLE | `walterMortar` | UNPARSED | 1 | 5 | HIGH |

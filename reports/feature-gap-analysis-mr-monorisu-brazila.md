@@ -94,8 +94,8 @@ Reference: `R/common/guns/BulletType` (`ricochetSound`, `distantRicochetSound`, 
 Shells hitting armour play distinct sounds for a ricochet, a minor penetration, a full penetration and an over-penetration. An over-penetrating round does reduced damage (`overPenPenalty`), and penetration falls off with flight time (`penDecay`).
 
 Target checked: `T/common/guns/ShootingHelper` (bounce/ricochet branch at line 349), `T/common/types/BulletType` (`PenetrationAt100m`, `PenetrationDecay`, `HEAT`)
-**Present:** projectiles can bounce or ricochet, and penetration decays with distance.
-**Missing:** per-outcome hit sounds, the damage penalty for over-penetration, and time-based penetration decay.
+**Present (verified 2026-11-04):** projectiles can bounce or ricochet, penetration decays with distance, and `ricochetSound` / `minorPenSound` / `penetrateSound` / `overPenSound` select feedback from the current armor result for real driveables and NPC model bodies. `bounceSoundRange` controls ricochet reach.
+**Missing:** distant ricochet audio, the damage penalty for over-penetration, and time-based penetration decay. Audio does not change penetration or damage; blocked hits above 90% of the requirement use minor feedback and successful hits above 3x use over-penetration feedback.
 
 ### Motion-sensor grenades — UNCERTAIN
 
@@ -196,7 +196,7 @@ Reference: `GunType` (`Heavy`, `sidearm`, `OldGun`, `RepeatingGun`, `labigunLimi
 Players may carry only a limited number of guns per class (heavy, sidearm, old). Armour pouches raise those limits, and tiers drive the gun economy.
 
 Target checked: `T/common/item/GunItem`, `T/common/types/GunType`, `ArmorType`
-Missing: carry-limit enforcement, pouches and the tier field.
+Missing: carry-limit enforcement, pouch-based carrying allowances and the tier field. Reload-duration pouch effects are now implemented separately.
 
 ### Ammunition evolution — MISSING
 
@@ -243,13 +243,14 @@ Wounds make players bleed, and medical tools stop the bleeding or heal.
 Target checked: `T/common/types/ToolType`, `T/common/types/GrenadeType.HealAmount`
 Missing: the bleeding state and the medical tool classes.
 
-### Armour weapon mounts, pouches and attributes — MISSING
+### Armour weapon mounts, pouches and attributes — PARTIAL
 
 Reference: `ArmourType` (`hasTopMount`, `hasFrontMount`, `topMount*`, `frontMount*`, `pouchMultiplier`, `reloadMultiplier`, `gasmaskable`/`smokeProtectable`)
 Armour can show stowed guns, speed up reloads and protect against gas or smoke.
 
 Target checked: `T/common/types/ArmorType`
-Missing: weapon mounts, the reload multiplier and gas or smoke protection.
+**Present (verified 2026-11-04):** `reloadMultiplier` / `pouchMultiplier`, general and weapon-specific pouch flags, applied to player and NPC held-gun reloads. The fastest matching worn pouch wins without stacking, instead of relying on armor-slot order.
+Missing: weapon mounts and gas or smoke protection.
 
 ---
 
@@ -271,14 +272,6 @@ When a `turretWeak`/`weakSpot` hitbox is destroyed while the turret or core stil
 Target checked: `T/common/driveables/EnumDriveablePart` (`TURRET_WEAK`, `TURRET_WEAK_2`, `WEAK_SPOT`…`WEAK_SPOT_3`)
 **Present:** the weak-spot part names parse as damageable parts.
 **Missing:** the cook-off sequence (killing the driver, timed turret or core burn-down, effects), plus `WeakspotCookTime` and `fancyAmmoRackCookoff`.
-
-### Vehicle weapon overheating — MISSING
-
-Reference: `R/common/driveables/EntityDriveable` (line 2198; `overheatLimit`, `overheatPenalty`, `overheatSound`, `coolingBonus`)
-Sustained fire builds heat. Past the limit the gun is locked out for a penalty time.
-
-Target checked: `T/common/entity/Driveable`
-Missing: weapon heat.
 
 ### Radar, stealth and target designation — MISSING
 
@@ -369,14 +362,14 @@ Target checked: `T/common/entity/Plane` (`SpinWithoutTail`, `PlaneCrashDamage`),
 **Present:** spin without a tail, and the crash explosion and fire.
 **Missing:** the crash smoke and fire threshold, spin strength, slower crash descent, tail-rotor hiding, and crash sounds.
 
-### Distant and situational vehicle audio — MISSING
+### Distant and situational vehicle audio — PARTIAL
 
 Reference: `DriveableType` (`farSound`, `farSoundRange`, `DistantSoundPrimary`/`Secondary`, `DistantFlareSound*`, `TracksSound*`, `StukaSound*`, `sonicBoomSound`, `loudCannon`, `LegacyEngineSounds`), `VehicleType` (`DriftSound*`), `ShootableType` (`DistantDetonateSound*`), `R/client/CustomSoundLoop`
 Vehicles play distant-fire and distant-detonation sounds, track and drift loops, Stuka dive sirens and sonic booms, with custom sound ranges.
 
 Target checked: `T/common/types/GunType` (distant gun sounds for infantry and deployed guns)
-**Note:** distant gun sounds exist for guns only.
-Missing: distant sounds for driveable weapons and detonations, and track, drift, dive-siren and sonic-boom audio.
+**Present (verified 2026-11-04):** infantry and deployed-gun distant sounds, plus driveable-bank `DistantSoundPrimary` / `DistantSoundSecondary`, `DistantSoundRange`, and `farSound` / `farSoundRange` aliases.
+Missing: distant detonation audio, and track, drift, dive-siren and sonic-boom audio.
 
 ### Door-state passenger visibility — PARTIAL
 
@@ -384,8 +377,9 @@ Reference: `DriveableType` (`SetPlayerInvisibleOnDoorClose`/`Open`, `SetPassenge
 Whether occupants are visible depends on whether the doors are open, and the driver can be made invincible.
 
 Target checked: `T/common/types/DriveableType` (`SetPlayerInvisible`)
-**Present:** an unconditional invisibility flag.
-**Missing:** visibility tied to door state, and the driver-invincible flag.
+**Present (verified 2026-11-04):** unconditional hiding and `SetPlayerInvisibleOnDoorOpen` / `SetPlayerInvisibleOnDoorClose`, shared with NPC vehicle crews through the API and their model door state.
+Per-seat `invisiblePassenger` / `SetPassengerInvisible` definition support is also present and inherited by NPC vehicle crews; explicit NPC hidden-seat choices remain additional hiding rules.
+**Missing:** the driver-invincible flag.
 
 ### Seat weapon groups and passenger particles — UNCERTAIN
 
@@ -584,10 +578,9 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Armour | Per-zone armour and penetration | MISSING | HIGH |
 | Armour | Reserve plates and energy shields | MISSING | HIGH |
 | Armour | Bleeding and field medicine | MISSING | HIGH |
-| Armour | Weapon mounts, pouches and attributes | MISSING | HIGH |
+| Armour | Weapon mounts, pouches and attributes | PARTIAL | HIGH |
 | Vehicles | Destroyed-vehicle wrecks | MISSING | HIGH |
 | Vehicles | Ammo-rack and weak-spot cook-off | PARTIAL | HIGH |
-| Vehicles | Weapon overheating | MISSING | HIGH |
 | Vehicles | Radar, stealth and designation | MISSING | HIGH |
 | Vehicles | APS and CIWS | MISSING | HIGH |
 | Vehicles | Remote drones and quadcopters | MISSING | HIGH |
@@ -599,7 +592,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Vehicles | Afterburner | MISSING | HIGH |
 | Vehicles | Altitude performance and flight tuning | MISSING | MEDIUM |
 | Vehicles | Helicopter and aircraft crash presentation | PARTIAL | HIGH |
-| Vehicles | Distant and situational vehicle audio | MISSING | HIGH |
+| Vehicles | Distant and situational vehicle audio | PARTIAL | HIGH |
 | Vehicles | Door-state passenger visibility | PARTIAL | HIGH |
 | Vehicles | Vehicle smoke and turret grenades | MISSING | HIGH |
 | Mechas | Mecha morale | MISSING | HIGH |
@@ -706,3 +699,9 @@ These findings were removed from the active gap sections and summary table after
 - **Flan's Horizons versus Distant Horizons.** The two have equivalent aims through different mechanisms. Whether server-authoritative terrain distribution matters for this project is a product decision.
 - **HFR bundle.** It is intentionally not audited.
 - **Key-extraction blind spots.** Discovery relied on `split[0]` keys plus a sweep of client and network classes. Reference behaviour that is hard-coded, with no key, packet or class, could be missing from this list. The likeliest places are `R/common/driveables/EntityDriveable` (more than 5,000 lines), `EntityPlane` and `EntityBullet`.
+
+## Targeted refresh (2026-11-04)
+
+Vehicle weapon overheating is implemented: opt-in `OverheatLimit`, `OverheatPenalty`, `CoolingBonus`, `OverheatSound`, shared mounted-weapon heat, server-enforced cooling and lockouts, and synchronized driver HUD feedback. Main-mod commit `55168e36d`. Door-dependent occupant visibility is implemented in `5130026f8`; gun equip and distant bank sounds in `3ca23865e`. These are targeted corrections; other older findings have not all been re-audited.
+
+Compatibility follow-up (2026-11-04): gun `IronSightOffset` (raw legacy render translation) and `IronSightPitch` (aim-blended rotation) now affect first-person rendering only. Pouch, seat, and armor-audio findings above reflect their implementation, not a full re-audit of the remaining reference features.

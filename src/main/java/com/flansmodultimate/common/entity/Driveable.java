@@ -3860,21 +3860,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             if (seat != null)
                 currentRiders.addAll(seat.getPassengers());
         }
-        if (configType.hidesOccupants(isDoorOpen()))
+        for (Entity rider : currentRiders)
         {
-            for (Entity rider : currentRiders)
+            if (isRiderHiddenByDriveable(rider) && !rider.isInvisible())
             {
-                if (!rider.isInvisible())
-                {
-                    ridersHiddenByDriveable.put(rider.getUUID(), rider);
-                    rider.setInvisible(true);
-                }
+                ridersHiddenByDriveable.put(rider.getUUID(), rider);
+                rider.setInvisible(true);
             }
         }
         ridersHiddenByDriveable.entrySet().removeIf(entry ->
         {
             Entity rider = entry.getValue();
-            if (configType.hidesOccupants(isDoorOpen()) && currentRiders.contains(rider) && rider.isAlive())
+            if (isRiderHiddenByDriveable(rider) && currentRiders.contains(rider) && rider.isAlive())
                 return false;
             if (!rider.isRemoved())
                 rider.setInvisible(false);
@@ -3892,7 +3889,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (driveable == null)
             return false;
         DriveableType type = driveable.getConfigType();
-        return type != null && type.hidesOccupants(driveable.isDoorOpen());
+        int seatIndex = vehicle instanceof Seat seat && seat.getSeatInfo() != null ? seat.getSeatInfo().getId() : 0;
+        return type != null && type.hidesOccupants(driveable.isDoorOpen(), seatIndex);
     }
 
     protected void restoreRiderVisibility()
@@ -4991,6 +4989,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(normalizedHealth, projectileMass, selectedFixedDamage, muzzleVelocity, armorHit,
             p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired() && !resolvedDamage.penetration().penetrated();
+        ArmourImpactSounds.send(level(), hit.getHitPosition(), bulletType, resolvedDamage.penetration());
         ArmorImpactHandler.dispatch(shot, this, hit.getPart().getShortName(), hit.getFacing().outwardNormal(), armourBlocked);
         Vec3 impactNormal = modelLocalDirectionToWorld(
             DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(armorHit.virtualNormal()), hit.getPart(), getTurretYaw(), getTurretPitch()));

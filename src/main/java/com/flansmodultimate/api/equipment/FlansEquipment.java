@@ -374,6 +374,18 @@ public final class FlansEquipment
         return EquipmentSupport.loadedRoundIndex(weapon);
     }
 
+    /**
+     * Returns the reload-duration multiplier of the fastest matching worn pouch, or one without a match.
+     * Read on the holder's level thread, on either side; does not change equipment or timers.
+     * @param holder living wearer of the armor
+     * @param weapon held gun whose authored weapon-kind flags choose compatible pouches
+     * @return positive duration multiplier; matching pouches do not stack
+     */
+    public static float getReloadTimeMultiplier(LivingEntity holder, ItemStack weapon)
+    {
+        return com.flansmodultimate.common.guns.ReloadPouchSupport.multiplier(holder, weapon);
+    }
+
     /** Plays the native empty/secondary reload sound on the logical server thread. */
     public static void playReloadSound(LivingEntity holder, ItemStack weapon)
     {

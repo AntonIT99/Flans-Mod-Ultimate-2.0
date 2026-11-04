@@ -321,7 +321,7 @@ public class GunItemHandler
             return false;
         UUID reloadSoundUUID = UUID.randomUUID();
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
-        float reloadTime = item.getActualReloadTime(gunStack, level.registryAccess(), otherHand);
+        float reloadTime = item.getActualReloadTime(gunStack, level.registryAccess(), otherHand, player);
 
         // The first reload after respawning into a running teams round is instant, so players are not defenceless on spawn
         boolean instantRespawnReload = !data.isReloadedAfterRespawn() && TeamsManager.getInstance().isRoundRunning();

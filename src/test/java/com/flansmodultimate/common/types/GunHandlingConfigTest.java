@@ -56,6 +56,19 @@ class GunHandlingConfigTest
         assertTrue(gun("EquipSound draw_weapon").getEquipSound().endsWith("draw_weapon"));
     }
 
+    @Test
+    void legacySightCorrectionsUseRawRenderUnitsAndRejectNonfiniteValues()
+    {
+        GunType type = gun("IronSightOffset 0.01 -0.0075 0.2", "IronSightPitch 0.65");
+        assertEquals(0.01F, type.getIronSightOffset().x);
+        assertEquals(-0.0075F, type.getIronSightOffset().y);
+        assertEquals(0.2F, type.getIronSightOffset().z);
+        assertEquals(0.65F, type.getIronSightPitch());
+        assertEquals(0F, gun("IronSightPitch NaN").getIronSightPitch());
+        assertEquals(0F, gun("IronSightOffset Infinity 0 0").getIronSightOffset().x);
+        assertEquals(0F, gun().getIronSightPitch());
+    }
+
     private static GunType gun(String... lines)
     {
         GunType type = new GunType();

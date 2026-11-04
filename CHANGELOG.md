@@ -4,6 +4,11 @@
 
 ## Highlights
 
+* Legacy packs can hide individual occupants with `invisiblePassenger <seat> <true|false>` or `SetPassengerInvisible`, including NPC vehicle crews
+* Guns support first-person `IronSightOffset` and `IronSightPitch` corrections without changing projectile aim
+* Armor pouches support `reloadMultiplier` / `pouchMultiplier` and general or weapon-specific pouch flags for players and NPCs; the fastest matching worn pouch applies without stacking
+* Ammunition supports `ricochetSound`, `minorPenSound`, `penetrateSound` and `overPenSound` for resolved armor hits on driveables and NPC vehicle models, with `bounceSoundRange` for ricochets
+
 * Driveable weapons support opt-in shared overheating (`OverheatLimit`, `OverheatPenalty`, `CoolingBonus`, `OverheatSound`), with server-enforced lockouts, cooling and a heat HUD for drivers
 
 * Guns support optional `EquipSound` on weapon switches; driveable weapon banks support `DistantSoundPrimary`, `DistantSoundSecondary` and `DistantSoundRange` (including legacy `farSound` and `farSoundRange` aliases)

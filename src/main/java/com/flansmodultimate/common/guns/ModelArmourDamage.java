@@ -39,7 +39,7 @@ public final class ModelArmourDamage
      * @param shapedCharge
      *            whether the damage is that of a shaped-charge jet, whose blast then spares what the jet went through
      */
-    public record Result(float damage, boolean blocked, float remainingPower, boolean shapedCharge, ResolvedArmorHit armour)
+    public record Result(float damage, boolean blocked, float remainingPower, boolean shapedCharge, ResolvedArmorHit armour, com.flansmodultimate.common.guns.penetration.PenetrationResult penetration)
     {}
 
     /** @return the resolved hit, or empty when the entity does not stand in for an armoured driveable */
@@ -89,7 +89,7 @@ public final class ModelArmourDamage
         float resistance = Math.max(1F, partResistance);
         // Explosive warheads act at the first surface, and a stopped round goes no further.
         float remaining = heat || bulletType.isHesh() || blocked ? 0F : Math.max(0F, previousPower - resistance);
-        return new Result(blocked ? 0F : resolved.damage(), blocked, remaining, resolved.shapedCharge(), armour);
+        return new Result(blocked ? 0F : resolved.damage(), blocked, remaining, resolved.shapedCharge(), armour, resolved.penetration());
     }
 
     /**

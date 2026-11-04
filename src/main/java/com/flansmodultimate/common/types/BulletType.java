@@ -78,6 +78,16 @@ public class BulletType extends ShootableType
 
     @Getter
     protected String hitSound;
+    @Getter
+    protected String ricochetSound = "";
+    @Getter
+    protected String minorPenSound = "";
+    @Getter
+    protected String penetrateSound = "";
+    @Getter
+    protected String overPenSound = "";
+    @Getter
+    protected float bounceSoundRange = 25F;
     /** Null keeps the generic fly-by; an empty string explicitly disables it. */
     @Getter @Nullable
     protected String flyBySound;
@@ -254,6 +264,17 @@ public class BulletType extends ShootableType
         return ModCommonConfig.packSoundRange(hitSoundRange, ModCommonConfig.get().bulletHitSoundRange());
     }
 
+    private void readArmourImpactSounds(TypeFile file)
+    {
+        ricochetSound = readSound("ricochetSound", ricochetSound, file);
+        minorPenSound = readSound("minorPenSound", minorPenSound, file);
+        penetrateSound = readSound("penetrateSound", penetrateSound, file);
+        overPenSound = readSound("overPenSound", overPenSound, file);
+        bounceSoundRange = readValue("bounceSoundRange", bounceSoundRange, file);
+        if (!Float.isFinite(bounceSoundRange) || bounceSoundRange < 0F)
+            bounceSoundRange = 25F;
+    }
+
     @Override
     protected void read(TypeFile file)
     {
@@ -277,6 +298,7 @@ public class BulletType extends ShootableType
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);
         setEntitiesOnFire = readValue("SetEntitiesOnFire", setEntitiesOnFire, file);
+        readArmourImpactSounds(file);
         hitSoundEnable = readValue("HitSoundEnable", hitSoundEnable, file);
         entityHitSoundEnable = readValue("EntityHitSoundEnable", entityHitSoundEnable, file);
         // Many content packs have a HitSound line with no parameter for no hit sound -> don't consider it a syntax error

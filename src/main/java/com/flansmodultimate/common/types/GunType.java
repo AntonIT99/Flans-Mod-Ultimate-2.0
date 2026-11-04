@@ -479,6 +479,18 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /** Sound played once when switching to this weapon. */
     @Getter
     protected String equipSound;
+    @Getter
+    protected Vector3f ironSightOffset = new Vector3f();
+    @Getter
+    protected float ironSightPitch;
+    @Getter
+    protected boolean bow;
+    @Getter
+    protected boolean oldGun;
+    @Getter
+    protected boolean repeatingGun;
+    @Getter
+    protected boolean heavy;
 
     /** The sound to play while holding the weapon in the hand. */
     @Getter
@@ -937,6 +949,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         clickSoundOnEmptyRepeated = readSound("EmptyClickSoundRepeated", clickSoundOnEmptyRepeated, file);
         modeSwitchSound = readSound("ModeSwitchSound", modeSwitchSound, file);
         equipSound = readSound("EquipSound", equipSound, file);
+        ironSightOffset = readVector("IronSightOffset", ironSightOffset, file);
+        if (!Float.isFinite(ironSightOffset.x) || !Float.isFinite(ironSightOffset.y) || !Float.isFinite(ironSightOffset.z))
+            ironSightOffset = new Vector3f();
+        ironSightPitch = readValue("IronSightPitch", ironSightPitch, file);
+        if (!Float.isFinite(ironSightPitch))
+            ironSightPitch = 0F;
+        bow = readValue("Bow", bow, file);
+        oldGun = readValue("OldGun", oldGun, file);
+        repeatingGun = readValue("RepeatingGun", repeatingGun, file);
+        heavy = readValue("Heavy", heavy, file);
         idleSound = readSound("IdleSound", idleSound, file);
         toggleOnSound = readSound("ToggleOnSound", toggleOnSound, file);
         toggleOffSound = readSound("ToggleOffSound", toggleOffSound, file);

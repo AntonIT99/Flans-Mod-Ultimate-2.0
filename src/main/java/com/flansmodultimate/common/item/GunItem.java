@@ -738,12 +738,20 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
 
     public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand)
     {
+        return getActualReloadTime(gunStack, registries, otherHand, null);
+    }
+
+    /** Worn pouch modifiers are applied before the single-round reload/cadence rule. */
+    public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand, @Nullable LivingEntity holder)
+    {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
         boolean tactical = getBulletItemStackList(gunStack, registries).stream()
             .anyMatch(ammo -> GunHandlingTiming.tacticalReload(true, maxAmmo, ShootableItem.getMaxRounds(ammo), configType.getTacticalReloadTime()));
         float baseTime = configType.getReloadTime(gunStack, tactical);
         float reloadTime = (maxAmmo <= 1) ? baseTime : (baseTime / maxAmmo) * getReloadCount(gunStack, registries);
         reloadTime = EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
+        if (holder != null)
+            reloadTime *= com.flansmodultimate.common.guns.ReloadPouchSupport.multiplier(holder, gunStack);
         // A gun holding a single round reloads after every shot, so the shorter of its
         // reload and its cadence sets the gap between shots (see GunHandlingTiming.reloadWait).
         if (reloadTime > 0F && maxAmmo <= 1 && !configType.getAmmoTypes().isEmpty() && configType.getAmmoTypes().stream().allMatch(ammo -> ammo.getRoundsPerItem() <= 1))

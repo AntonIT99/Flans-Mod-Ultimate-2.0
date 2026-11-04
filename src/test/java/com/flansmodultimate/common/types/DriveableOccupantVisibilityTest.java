@@ -12,6 +12,21 @@ import static org.junit.jupiter.api.Assertions.*;
 class DriveableOccupantVisibilityTest
 {
     @Test
+    void seatAliasesHideOnlyTheAuthoredSeatAndCombineWithDoorRules()
+    {
+        VehicleType type = new VehicleType();
+        type.read(new TypeFile("seats", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "visibility")),
+            List.of("Driver 0 0 0", "Passenger 1 0 0 0 core", "Passenger 2 0 0 0 core", "invisiblePassenger 1 true", "SetPassengerInvisible 2 false", "SetPassengerInvisible 999 true")));
+        assertFalse(FlansEntityTypes.hidesOccupants(type, false, 0));
+        assertTrue(FlansEntityTypes.hidesOccupants(type, false, 1));
+        assertTrue(FlansEntityTypes.hidesOccupants(type, true, 1));
+        assertFalse(FlansEntityTypes.hidesOccupants(type, false, 2));
+        type.setPlayerInvisibleOnDoorClose = true;
+        assertTrue(FlansEntityTypes.hidesOccupants(type, false, 2));
+        assertFalse(FlansEntityTypes.hidesOccupants(type, true, 2));
+    }
+
+    @Test
     void doorRulesFollowBothStatesAndUnconditionalHidingWins()
     {
         for (boolean always : List.of(false, true))

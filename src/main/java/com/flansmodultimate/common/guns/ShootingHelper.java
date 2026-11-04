@@ -322,6 +322,7 @@ public final class ShootingHelper
         Vec3 normal = partHit == null
             ? ModelArmourDamage.worldDirection(entity, result.armour().virtualNormal())
             : partHit.getBody().armourDirectionToWorld(partHit.getPart(), result.armour().virtualNormal());
+        ArmourImpactSounds.send(level, hit, shot.getBulletType(), result.penetration());
         ArmourImpactEffects.send(level, hit, shootingMotion, normal, shot.getProjectileMass(), result.armour(), result.blocked());
     }
 

@@ -72,6 +72,18 @@ public final class FlansEntityTypes
         return type instanceof DriveableType driveable && driveable.hidesOccupants(doorsOpen);
     }
 
+    /**
+     * Tests unconditional, door-dependent and per-seat occupant hiding after content loading, on either side.
+     * @param type loaded content definition
+     * @param doorsOpen current door state
+     * @param seatIndex seat number from the definition, zero for the driver
+     * @return whether that seat's entire occupant should be hidden; false for non-driveables
+     */
+    public static boolean hidesOccupants(IContentType type, boolean doorsOpen, int seatIndex)
+    {
+        return type instanceof DriveableType driveable && driveable.hidesOccupants(doorsOpen, seatIndex);
+    }
+
     private FlansEntityTypes()
     {}
 

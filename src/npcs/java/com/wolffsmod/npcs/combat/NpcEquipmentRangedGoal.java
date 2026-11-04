@@ -353,7 +353,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         if (hand.reloading <= 0)
         {
-            hand.reloading = Math.max(1, (int) Math.ceil(flan.get().reloadTime()));
+            hand.reloading = Math.max(1, (int) Math.ceil(flan.get().reloadTime() * FlansEquipment.getReloadTimeMultiplier(npc, weapon)));
             NpcReloadFeedback.reload(npc, hand.side, hand.reloading);
             NpcTacticState.of(npc).reloading(npc.level().getGameTime(), hand.reloading);
         }

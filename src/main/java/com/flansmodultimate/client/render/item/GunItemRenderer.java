@@ -263,6 +263,10 @@ public final class GunItemRenderer
         float aimOffsetScale = aimProgress * model.getType().getModelScale() / 16F;
         poseStack.translate(aimOffset.x * aimOffsetScale, aimOffset.y * aimOffsetScale, aimOffset.z * aimOffsetScale);
 
+        com.flansmod.common.vector.Vector3f sightOffset = model.getType().getIronSightOffset();
+        poseStack.translate(sightOffset.x, sightOffset.y, sightOffset.z);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(model.getType().getIronSightPitch() * aimProgress));
+
         renderWeaponSwitchMovement(animations, poseStack);
         if (model.getType().isSecondarySwitchMovement())
         {

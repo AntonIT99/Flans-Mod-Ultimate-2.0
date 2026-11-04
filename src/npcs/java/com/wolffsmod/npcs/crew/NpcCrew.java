@@ -275,7 +275,7 @@ public final class NpcCrew
                 return false;
             var options = ((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions();
             boolean doorsOpen = options.enabled(Feature.ANIMATED_MODEL) && options.enabled(Feature.DOORS_OPEN);
-            return com.flansmodultimate.api.entity.FlansEntityTypes.hidesOccupants(model.getInfoType(), doorsOpen);
+            return com.flansmodultimate.api.entity.FlansEntityTypes.hidesOccupants(model.getInfoType(), doorsOpen, mount.seat());
         })).orElse(false);
     }
 
