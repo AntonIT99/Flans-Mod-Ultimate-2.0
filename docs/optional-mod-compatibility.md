@@ -16,6 +16,51 @@ it does not certify every external mod release, shader pack or combination of mo
 | BuildCraft Community Edition | Fluid support | Fluid support | Generic fluid-container refuelling includes default registry patterns for BuildCraft oil and fuel families. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/buildcraft-community-edition), [source](https://github.com/BCCE-team/BuildCraft) |
 | Just Enough Items (JEI) | Yes; 15.20+ | Yes | Shows vehicle assembly and gun-box purchase requirements, engines and crafting stations; custom crafting screen titles open the corresponding JEI category. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/jei), [source](https://github.com/mezz/JustEnoughItems) |
 
+## Assessed as compatible without integration
+
+These mods have no dedicated integration code in Flan's Mod Ultimate, but the
+project has assessed them as safe to run together on the listed branches.
+
+| External mod | Forge 1.20.1 | NeoForge 1.21.1 | Notes | Project links |
+| --- | --- | --- | --- | --- |
+| ServerCore | Yes | Yes | Default settings need no changes. If you turn on activation range, exclude Flan's entities (see below). | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/servercore), [source](https://github.com/Wesley1808/ServerCore) |
+| ImmediatelyFast | Yes | Yes | No direct interaction with Flan's rendering found. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/immediatelyfast), [source](https://github.com/RaphiMC/ImmediatelyFast) |
+| Radium Reforged | Yes | — | Forge port of Lithium. No direct interaction found. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/radium-reforged) |
+| Lithium | — | Yes | No direct interaction found. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/lithium), [source](https://github.com/CaffeineMC/lithium) |
+| More Culling Reforged | Yes | — | Forge port of More Culling. No direct interaction found. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/more-culling-reforged) |
+| More Culling | — | Yes | No direct interaction found. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/moreculling), [source](https://github.com/FxMorin/MoreCulling) |
+| ModernFix | Yes | Yes | No direct interaction found. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/modernfix), [source](https://github.com/embeddedt/ModernFix) |
+| FerriteCore | Yes | Yes | No direct interaction found. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ferritecore), [source](https://github.com/malte0811/FerriteCore) |
+| Redirected | Yes | Yes | No direct interaction found. | [CurseForge](https://www.curseforge.com/minecraft/mc-mods/redirected) |
+
+### ServerCore activation range
+
+ServerCore's activation range is off by default. When it is on, entities far
+from every player only tick occasionally, so bullets and grenades can stall in
+flight, and unattended driveables, AA guns and AI mechas can stutter or stop. To
+avoid this, add Flan's entity types to `excluded-entity-types` in
+`config/servercore/optimizations.yml`:
+
+```yaml
+excluded-entity-types:
+  - flansmodultimate:bullet
+  - flansmodultimate:grenade
+  - flansmodultimate:thrown_gun
+  - flansmodultimate:deployed_gun
+  - flansmodultimate:aa_gun
+  - flansmodultimate:plane
+  - flansmodultimate:vehicle
+  - flansmodultimate:mecha
+  - flansmodultimate:driveable_seat
+  - flansmodultimate:driveable_wheel
+  - flansmodultimate:flybyplane
+  - flansmodultimate:aimecha
+```
+
+Keep ServerCore's own default entries in the list as well. If you use the Custom NPCs
+module, consider excluding `customnpcs:customnpc` too. Dynamic view distance may
+shorten how far players see distant vehicles and aircraft while the server is under load.
+
 ## Rendering and installation
 
 Embeddium and Sodium are alternative renderers. The entries above indicate which
