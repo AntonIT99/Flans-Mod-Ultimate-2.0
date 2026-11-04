@@ -1,5 +1,7 @@
 # Flan's Mod Ultimate 2.2
 
+* Driveable occupants can be hidden according to door state using `SetPlayerInvisibleOnDoorOpen` and `SetPlayerInvisibleOnDoorClose`
+
 ## Highlights
 
 * Guns support optional `EquipSound` on weapon switches; driveable weapon banks support `DistantSoundPrimary`, `DistantSoundSecondary` and `DistantSoundRange` (including legacy `farSound` and `farSoundRange` aliases)

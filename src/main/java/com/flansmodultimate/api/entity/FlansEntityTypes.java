@@ -60,6 +60,18 @@ public final class FlansEntityTypes
             MechaEquipmentSupport.landing(entity, mecha, force, descent);
     }
 
+    /**
+     * Tests whether a definition hides all occupants at the supplied door state.
+     * @param type loaded content definition
+     * @param doorsOpen whether its doors are open
+     * @return whether occupants, including equipment, should be hidden; false for non-driveables
+     * May be called on either side after content loading.
+     */
+    public static boolean hidesOccupants(IContentType type, boolean doorsOpen)
+    {
+        return type instanceof DriveableType driveable && driveable.hidesOccupants(doorsOpen);
+    }
+
     private FlansEntityTypes()
     {}
 

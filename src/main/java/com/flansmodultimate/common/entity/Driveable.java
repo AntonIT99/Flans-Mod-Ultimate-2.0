@@ -3826,7 +3826,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             if (seat != null)
                 currentRiders.addAll(seat.getPassengers());
         }
-        if (configType.isSetPlayerInvisible())
+        if (configType.hidesOccupants(isDoorOpen()))
         {
             for (Entity rider : currentRiders)
             {
@@ -3840,7 +3840,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         ridersHiddenByDriveable.entrySet().removeIf(entry ->
         {
             Entity rider = entry.getValue();
-            if (configType.isSetPlayerInvisible() && currentRiders.contains(rider) && rider.isAlive())
+            if (configType.hidesOccupants(isDoorOpen()) && currentRiders.contains(rider) && rider.isAlive())
                 return false;
             if (!rider.isRemoved())
                 rider.setInvisible(false);
@@ -3858,7 +3858,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (driveable == null)
             return false;
         DriveableType type = driveable.getConfigType();
-        return type != null && type.isSetPlayerInvisible();
+        return type != null && type.hidesOccupants(driveable.isDoorOpen());
     }
 
     protected void restoreRiderVisibility()

@@ -266,7 +266,17 @@ public final class NpcCrew
     /** Rendering policy only: hidden crew remain aboard and become visible again as soon as they leave their seat. */
     public static boolean hiddenAboard(Entity entity)
     {
-        return vehicleOf(entity).flatMap(vehicle -> seatOf(vehicle, entity).map(mount -> !NpcCrewSettings.of(vehicle).isSeatVisible(mount.seat()))).orElse(false);
+        return vehicleOf(entity).flatMap(vehicle -> seatOf(vehicle, entity).map(mount ->
+        {
+            var model = com.wolffsmod.npcs.sim.NpcModels.flan(vehicle);
+            if (!NpcCrewSettings.of(vehicle).isSeatVisible(mount.seat()))
+                return true;
+            if (model == null)
+                return false;
+            var options = ((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions();
+            boolean doorsOpen = options.enabled(Feature.ANIMATED_MODEL) && options.enabled(Feature.DOORS_OPEN);
+            return com.flansmodultimate.api.entity.FlansEntityTypes.hidesOccupants(model.getInfoType(), doorsOpen);
+        })).orElse(false);
     }
 
     /**

@@ -387,6 +387,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean fixedSecondaryFire;
     protected Vector3f secondaryFireAngle = new Vector3f();
     protected boolean setPlayerInvisible;
+    protected boolean setPlayerInvisibleOnDoorOpen;
+    protected boolean setPlayerInvisibleOnDoorClose;
     protected float maxThrottleInWater = 0.5F;
     protected int maxDepth = 3;
     protected final List<Vector3f> leftTrackPoints = new ArrayList<>();
@@ -788,6 +790,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readLegacyWeaponPosition("BarrelPosition", EnumDriveablePart.TURRET, EnumWeaponType.SHELL, file);
 
         setPlayerInvisible = readValue("SetPlayerInvisible", setPlayerInvisible, file);
+        setPlayerInvisibleOnDoorOpen = readValue("SetPlayerInvisibleOnDoorOpen", setPlayerInvisibleOnDoorOpen, file);
+        setPlayerInvisibleOnDoorClose = readValue("SetPlayerInvisibleOnDoorClose", setPlayerInvisibleOnDoorClose, file);
         it1 = readValue("IT1", it1, file);
         fixedPrimaryFire = readValue("FixedPrimary", fixedPrimaryFire, file);
         fixedSecondaryFire = readValue("FixedSecondary", fixedSecondaryFire, file);
@@ -1640,6 +1644,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
         }
         return null;
+    }
+
+    public boolean hidesOccupants(boolean doorsOpen)
+    {
+        return setPlayerInvisible || (doorsOpen ? setPlayerInvisibleOnDoorOpen : setPlayerInvisibleOnDoorClose);
     }
 
     public String shootSound(boolean secondaryWeapon)

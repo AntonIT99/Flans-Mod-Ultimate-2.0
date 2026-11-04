@@ -1,5 +1,7 @@
 # Flan's Ultimate 2: NPC Vehicles & Soldiers 2.2.0
 
+* Vehicle NPC crews inherit content-pack door-dependent occupant visibility, using the model doors option and preserving explicitly hidden seats
+
 First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPCs.
 
 * NPC versions now use the main mod's major.minor compatibility line with an independent NPC patch revision; incompatible main-mod lines are rejected
