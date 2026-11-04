@@ -594,7 +594,9 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         data.updateHeldGuns(player);
         ensureGunTags(gunStack);
 
-        if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
+        if (configType.isBayonetMode(gunStack))
+            handleBayonetMode(level, player, data, gunStack, hand);
+        else if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
         {
             EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand, level.registryAccess());
             if (decision == EnumFireDecision.RELOAD)
@@ -621,6 +623,17 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
 
         if (soundDelay > 0)
             soundDelay--;
+    }
+
+    private void handleBayonetMode(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
+    {
+        if (data.isShooting(hand))
+        {
+            data.setShooting(hand, false);
+            PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
+        }
+        if (data.isShootKeyPressed(hand) && !data.isReloading(hand) && !data.isSecondaryModeSwitching(hand))
+            gunItemHandler.doBayonetAttack(level, player, data, gunStack, hand);
     }
 
     private void ensureGunTags(ItemStack stack)

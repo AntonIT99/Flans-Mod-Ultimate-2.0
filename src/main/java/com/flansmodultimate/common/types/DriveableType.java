@@ -214,8 +214,19 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean filterAmmunition;
     protected boolean worksUnderWater;
 
-    public record ShootParticle(String name, float x, float y, float z)
-    {}
+    public record ShootParticle(String name, float x, float y, float z, float forward, float up)
+    {
+        public ShootParticle
+        {
+            if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z) || !Float.isFinite(forward) || !Float.isFinite(up))
+                throw new IllegalArgumentException("Non-finite shooting particle");
+        }
+
+        public ShootParticle(String name, float x, float y, float z)
+        {
+            this(name, x, y, z, 0F, 0F);
+        }
+    }
     protected final List<ShootParticle> shootParticlesPrimary = new ArrayList<>();
     protected final List<ShootParticle> shootParticlesSecondary = new ArrayList<>();
     private final Map<Integer, List<ShootParticle>> shootParticlesPassenger = new HashMap<>();
@@ -572,6 +583,19 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readSeatVectorLines("GunOrigin", file, SeatInfo::setGunOrigin, true);
         readSeatBooleanLines("invisiblePassenger", file, SeatInfo::setInvisiblePassenger);
         readSeatBooleanLines("SetPassengerInvisible", file, SeatInfo::setInvisiblePassenger);
+        readSeatIntLines("barrels", file, (seat, count) -> seat.setAuthoredBarrels(Math.max(1, Math.min(64, count))));
+        readSeatIntLines("SeatGuns", file, (seat, count) -> seat.setAuthoredBarrels(Math.max(1, Math.min(64, count))));
+        readSeatBooleanLines("PassengerHasParticles", file, SeatInfo::setPassengerHasParticles);
+        for (String key : List.of("barrelSpread", "SeatGunSpread"))
+            forEachLine(key, file, 2, values ->
+            {
+                SeatInfo seat = getSeat(Integer.parseInt(values[0]));
+                float value = Float.parseFloat(values[1]);
+                if (seat != null && Float.isFinite(value))
+                {
+                    seat.setBarrelSpread(value);
+                }
+            });
         readSeatBooleanLines("PassengerLegacyAiming", file, SeatInfo::setLegacyAiming);
         readSeatBooleanLines("PassengerYawBeforePitch", file, SeatInfo::setYawBeforePitch);
         readSeatBooleanLines("PassengerLatePitch", file, SeatInfo::setLatePitch);
@@ -772,7 +796,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         bulletSpread = readValue("BulletSpread", bulletSpread, file);
         rangingGun = readValue("RangingGun", rangingGun, file);
         recoilTime = Math.max(0F, readValue("RecoilTime", recoilTime, file));
-        fancyScreenShake = readValue("FancyScreenShake", fancyScreenShake, file);
+        float legacyRecoil = Math.max(0F, Math.min(599F, readValue("cannonRecoil", 0F, file)));
+        if (!Float.isFinite(legacyRecoil))
+            legacyRecoil = 0F;
+        fancyScreenShake = readValue("FancyScreenShake", legacyRecoil > 0F || fancyScreenShake, file);
+        fancyScreenShakePrimaryIntensity = legacyRecoil > 0F ? legacyRecoil : fancyScreenShakePrimaryIntensity;
         coaxRecoil = readValue("CoaxRecoil", coaxRecoil, file);
         fancyScreenShakePrimaryIntensity = Math.max(0F, readValue("FancyScreenShakePrimaryIntensity", fancyScreenShakePrimaryIntensity, file));
         fancyScreenShakePrimaryDuration = Math.max(0F, readValue("FancyScreenShakePrimaryDuration", fancyScreenShakePrimaryDuration, file));
@@ -791,6 +819,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             if (seat > 0 && getSeat(seat) != null)
                 shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>())
                     .add(new ShootParticle(values[1], Float.parseFloat(values[2]), Float.parseFloat(values[3]), Float.parseFloat(values[4])));
+        });
+        forEachLine("PassengerShootParticles", file, 7, values ->
+        {
+            int seat = Integer.parseInt(values[0]);
+            if (seat > 0 && getSeat(seat) != null && getSeat(seat).isPassengerHasParticles())
+                shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>()).add(new ShootParticle(values[1],
+                    Float.parseFloat(values[4]), Float.parseFloat(values[5]), Float.parseFloat(values[6]), Float.parseFloat(values[2]), Float.parseFloat(values[3])));
         });
         readLegacyGuns(file);
         readLegacyWeaponPosition("BombPosition", EnumDriveablePart.CORE, EnumWeaponType.BOMB, file);
@@ -1429,7 +1464,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public boolean applyMeasuredGunOrigin(int seatIndex, Vector3f modelPixels)
     {
         SeatInfo seat = getSeat(seatIndex);
-        if (seat == null || seat.getGunType() == null)
+        if (seat == null || seat.getGunType() == null || seat.getAuthoredBarrels() > 0)
             return false;
         seat.setGunOrigin(new Vector3f(modelPixels.x / 16F, modelPixels.y / 16F, modelPixels.z / 16F));
         return true;

@@ -4,6 +4,14 @@
 
 ## Highlights
 
+* Passenger weapons support authored `barrels` / `SeatGuns`, `barrelSpread` / `SeatGunSpread`, and offset `PassengerShootParticles` gated by `PassengerHasParticles`, including NPC vehicle crews
+* `PassengerZoom` enables passenger optics unless scope support is explicitly disabled; configured per-sight zooms retain priority
+* Legacy `cannonRecoil` enables main-gun camera kick, with explicit `FancyScreenShake` settings taking priority
+* Grip attachments support toggleable `Bayonet` mode and `BayonetMeleeTime`, using the gun's existing stabbing animation and the grip's secondary damage projectile without consuming cartridges
+* Ammunition supports server-steered `ProportionalNavigation` and `ProNavGain`, retaining missile speed and existing seeker and turn limits
+* Aircraft support speed-triggered `StukaSound` sirens with `StukaSpeed` in mph, `StukaSoundLength` and `StukaSoundRange`
+* Addon muzzle particles can carry an optional model-space position offset through `WeaponMuzzle.Particle`, retaining the existing two-argument constructor
+
 * Ammunition `DynamicHitSoundEnable` adds material-specific block impacts alongside authored `HitSound`; an explicit false disables material feedback while unconfigured packs retain the existing fallback
 * Healing tools with `HealStrength` apply regeneration using `HealAmount` as duration in ticks and `HealStrength` as amplifier; tools without it keep instant healing, and repair amounts are unchanged
 * Grenade `RandomDirection` selects server-side scatter direction, roll and speed for debris/effect launches; grenade roll is synchronized on spawn and saved with the entity

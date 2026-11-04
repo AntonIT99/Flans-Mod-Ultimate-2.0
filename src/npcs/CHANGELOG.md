@@ -1,5 +1,7 @@
 # Flan's Ultimate 2: NPC Vehicles & Soldiers 2.2.0
 
+* Vehicle crew weapons honor authored passenger barrel counts and spacing, and legacy passenger muzzle particles retain their offsets and velocities while aiming
+
 * Ordinary NPC and player riders of NPC vehicles also inherit per-seat hiding from the content definition, with equipment and name tags hidden alongside the rider
 
 * Crews inherit per-seat `invisiblePassenger` / `SetPassengerInvisible` definitions, soldiers benefit from compatible worn reload pouches, and vehicle models play ammunition-specific armor impact sounds

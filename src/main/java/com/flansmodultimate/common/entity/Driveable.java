@@ -3352,7 +3352,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         {
             Vec3 localDirection = configuredModelLocal(new Vec3(particle.x(), particle.y(), particle.z()));
             Vec3 direction = modelLocalDirectionToWorld(rotateTurretLocalDirection(localDirection, seat.getHullAimYaw(), localAimPitch(seat.getAimPitch())));
-            ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, 1F);
+            Vec3 localOffset = configuredModelLocal(new Vec3(particle.forward(), particle.up(), 0D));
+            Vec3 position = origin.add(modelLocalDirectionToWorld(rotateTurretLocalDirection(localOffset, seat.getHullAimYaw(), localAimPitch(seat.getAimPitch()))));
+            ClientHooks.RENDER.spawnParticle(particle.name(), position.x, position.y, position.z, direction.x, direction.y, direction.z, 1F);
         }
     }
 
@@ -3580,6 +3582,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         Vec3 muzzle = gunOriginModelLocal(info.getGunOrigin(barrel));
         Vec3 pivot = passengerGunPivotLocal(seat.getSeatIndex());
+        if (info.getAuthoredBarrels() > 0)
+            pivot = gunOriginModelLocal(info.getGunOrigin());
         if (pivot == null)
             return modelLocalToWorld(muzzle);
 

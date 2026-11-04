@@ -52,9 +52,10 @@ public class ClientGunHooksImpl implements IClientGunHooks
     public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
     {
         PlayerData data = PlayerData.getInstance(player);
-        data.doMelee(player, gunItem.getConfigType().getMeleeTime(), gunItem.getConfigType());
+        if (!gunItem.getConfigType().isBayonetMode(player.getItemInHand(hand)))
+            data.doMelee(player, gunItem.getConfigType().getMeleeTime(player.getItemInHand(hand)), gunItem.getConfigType());
         GunAnimations anim = ModClient.getGunAnimations(player, hand);
-        anim.doMelee(gunItem.getConfigType().getMeleeTime());
+        anim.doMelee(gunItem.getConfigType().getMeleeTime(player.getItemInHand(hand)));
     }
 
     @Override
@@ -109,7 +110,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
     public void animateRemoteMelee(LivingEntity holder, InteractionHand hand)
     {
         if (holder.getItemInHand(hand).getItem() instanceof GunItem gunItem)
-            ModClient.getGunAnimations(holder, hand).doMelee(gunItem.getConfigType().getMeleeTime());
+            ModClient.getGunAnimations(holder, hand).doMelee(gunItem.getConfigType().getMeleeTime(holder.getItemInHand(hand)));
     }
 
     /** Starts one shot of the gun's model animation: pump, hammer, casing and muzzle flash. */

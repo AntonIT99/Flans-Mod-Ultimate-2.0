@@ -88,6 +88,10 @@ public class AttachmentType extends PaintableType implements IScope
     /** This variable controls whether the underbarrel is enabled */
     protected boolean secondaryFire;
     @Getter
+    protected boolean bayonet;
+    @Getter
+    protected int bayonetMeleeTime = 10;
+    @Getter
     protected boolean renderOnlyOnMode;
     /** The list of bullet types that can be used in the secondary mode */
     @Getter
@@ -184,6 +188,8 @@ public class AttachmentType extends PaintableType implements IScope
         toggleSound = readSound("ModeSwitchSound", toggleSound, file);
 
         // Multipliers
+        bayonet = readValue("Bayonet", bayonet, file);
+        bayonetMeleeTime = Math.max(1, Math.min(1200, readValue("BayonetMeleeTime", bayonetMeleeTime, file)));
         meleeDamageMultiplier = readValue("MeleeDamageMultiplier", meleeDamageMultiplier, file);
         damageMultiplier = readValue("DamageMultiplier", damageMultiplier, file);
         spreadMultiplier = readValue("SpreadMultiplier", spreadMultiplier, file);

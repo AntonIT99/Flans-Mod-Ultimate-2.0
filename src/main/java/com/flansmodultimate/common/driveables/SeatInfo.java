@@ -69,6 +69,13 @@ public final class SeatInfo
      * Empty for a gun with one barrel.
      */
     private List<Vector3f> gunBarrels = List.of();
+    @Setter
+    private int authoredBarrels;
+    @Setter
+    private float barrelSpread = 2F;
+    @Setter
+    private boolean passengerHasParticles;
+
     /**
      * Where the seat gun turns round as it aims, in blocks in the same frame as {@link #gunOrigin}, measured off the model
      * while the content loads; null when it was not measured.
@@ -150,12 +157,17 @@ public final class SeatInfo
     /** How many barrels this seat's gun fires from in turn, at least one. */
     public int getGunBarrelCount()
     {
-        return Math.max(1, gunBarrels.size());
+        return authoredBarrels > 0 ? authoredBarrels : Math.max(1, gunBarrels.size());
     }
 
     /** The rest-pose muzzle, in blocks, of one barrel of this seat's gun: {@link #gunOrigin} for a single gun. */
     public Vector3f getGunOrigin(int barrel)
     {
+        if (authoredBarrels > 0)
+        {
+            float side = authoredBarrels <= 1 ? 0F : (Math.floorMod(barrel, authoredBarrels) - (authoredBarrels - 1F) / 2F) * barrelSpread;
+            return new Vector3f(gunOrigin.x, gunOrigin.y, gunOrigin.z + side);
+        }
         return ShootPoint.plusBarrel(gunOrigin, gunBarrels, barrel);
     }
 

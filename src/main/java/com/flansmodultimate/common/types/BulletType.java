@@ -151,6 +151,10 @@ public class BulletType extends ShootableType
     @Getter
     protected float lockOnForce = 1F;
     @Getter
+    protected boolean proportionalNavigation;
+    @Getter
+    protected float proNavGain = 3.5F;
+    @Getter
     protected String trailTexture = StringUtils.EMPTY;
     @Getter
     protected int maxDegreeOfMissile = 20;
@@ -285,6 +289,15 @@ public class BulletType extends ShootableType
             bounceSoundRange = 25F;
     }
 
+    private void readProportionalNavigation(TypeFile file)
+    {
+        proportionalNavigation = readValue("ProportionalNavigation", proportionalNavigation, file);
+        proNavGain = readValue("ProNavGain", proNavGain, file);
+        if (!Float.isFinite(proNavGain))
+            proNavGain = 3.5F;
+        proNavGain = Math.max(0F, Math.min(10F, proNavGain));
+    }
+
     @Override
     protected void read(TypeFile file)
     {
@@ -378,6 +391,7 @@ public class BulletType extends ShootableType
         lockOnToLivings = readValue("LockOnToLivings", lockOnToLivings, file);
 
         maxLockOnAngle = readValue("MaxLockOnAngle", maxLockOnAngle, file);
+        readProportionalNavigation(file);
         lockOnForce = readValue("LockOnForce", lockOnForce, file);
         lockOnForce = readValue("TurningForce", lockOnForce, file);
         maxDegreeOfMissile = readValue("MaxDegreeOfLockOnMissile", maxDegreeOfMissile, file);

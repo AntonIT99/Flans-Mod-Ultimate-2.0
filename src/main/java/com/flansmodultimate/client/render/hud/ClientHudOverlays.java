@@ -701,9 +701,10 @@ public final class ClientHudOverlays
         for (InteractionHand hand : InteractionHand.values())
         {
             ItemStack stack = player.getItemInHand(hand);
-            if (stack.isEmpty() || !(stack.getItem() instanceof GunItem gunItem))
+            if (!isAmmoHudGun(stack))
                 continue;
 
+            GunItem gunItem = (GunItem) stack.getItem();
             GunType gunType = gunItem.getConfigType();
 
             EnumFireMode currentMode = gunType.getFireMode(stack);
@@ -797,6 +798,11 @@ public final class ClientHudOverlays
         }
     }
 
+    private static boolean isAmmoHudGun(ItemStack stack)
+    {
+        return !stack.isEmpty() && stack.getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isBayonetMode(stack);
+    }
+
     private static void renderLegacyPlayerAmmo(GuiGraphics g, int sw, int sh, EnumAmmoHudLayout layout)
     {
         Minecraft mc = Minecraft.getInstance();
@@ -817,6 +823,8 @@ public final class ClientHudOverlays
     private static void renderLegacyAmmoHand(GuiGraphics g, Font font, ItemStack gunStack, GunItem gunItem, InteractionHand hand, EnumAmmoHudLayout layout, int sw, int sh)
     {
         GunType gunType = gunItem.getConfigType();
+        if (gunType.isBayonetMode(gunStack))
+            return;
         EnumAmmoHudLayout.Placement placement = layout.placement(hand);
         int x = 0;
 

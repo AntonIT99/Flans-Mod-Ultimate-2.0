@@ -2130,10 +2130,29 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         ItemStackData.update(stack, tag -> tag.putBoolean(GunItem.NBT_SECONDARY_FIRE, mode));
     }
 
+    public boolean isBayonetMode(ItemStack stack)
+    {
+        AttachmentType grip = getGrip(stack);
+        return grip != null && grip.isBayonet() && getSecondaryFire(stack);
+    }
+
+    public Optional<ShootableType> getBayonetAmmo(ItemStack stack)
+    {
+        AttachmentType grip = getGrip(stack);
+        if (grip == null || !grip.isBayonet())
+            return Optional.empty();
+        return ShootableType.findDefaultAmmo(ShootableType.findAmmoTypes(new LinkedHashSet<>(grip.getSecondaryAmmo()), grip.getContentPack()), grip.getContentPack());
+    }
+
+    public int getMeleeTime(ItemStack stack)
+    {
+        return isBayonetMode(stack) ? getGrip(stack).getBayonetMeleeTime() : meleeTime;
+    }
+
     public boolean canToggleSecondaryFire(ItemStack stack)
     {
         AttachmentType grip = getGrip(stack);
-        return grip != null && grip.secondaryFire;
+        return grip != null && (grip.secondaryFire || grip.isBayonet());
     }
 
     @Nullable

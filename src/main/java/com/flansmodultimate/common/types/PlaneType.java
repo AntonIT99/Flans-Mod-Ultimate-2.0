@@ -21,6 +21,11 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class PlaneType extends DriveableType
 {
+    protected String stukaSound = "";
+    protected int stukaSoundLength = 1;
+    protected int stukaSoundRange = 50;
+    protected float stukaSpeed = 9000F;
+
     @Override
     public DriveableKind getDriveableKind()
     {
@@ -159,6 +164,10 @@ public class PlaneType extends DriveableType
     protected void read(TypeFile file)
     {
         super.read(file);
+        stukaSound = readSound("StukaSound", stukaSound, file);
+        stukaSoundLength = Math.max(1, readValue("StukaSoundLength", stukaSoundLength, file));
+        stukaSoundRange = Math.max(0, readValue("StukaSoundRange", stukaSoundRange, file));
+        stukaSpeed = Math.max(0F, readValue("StukaSpeed", stukaSpeed, file));
         mode = EnumPlaneMode.parse(readValue("Mode", mode.name(), file));
         newFlightControl = readValue("NewFlightControl", newFlightControl, file);
         turnLeftModifier = readOptionalValue("TurnLeftSpeed", turnLeftModifier, file);
