@@ -103,6 +103,9 @@ public class BulletType extends ShootableType
     @Getter
     protected boolean hitSoundEnable;
     @Getter
+    protected boolean dynamicHitSoundEnable;
+    private boolean dynamicHitSoundConfigured;
+    @Getter
     protected boolean entityHitSoundEnable;
 
     @Getter
@@ -260,6 +263,12 @@ public class BulletType extends ShootableType
     @Getter
     protected int alternateTrailParticleCount = 10;
 
+    /** Unconfigured packs retain the old material fallback; an explicit flag controls the extra layer. */
+    public boolean usesMaterialImpactSounds()
+    {
+        return dynamicHitSoundConfigured ? dynamicHitSoundEnable : StringUtils.isBlank(hitSound);
+    }
+
     public float getHitSoundRange()
     {
         return ModCommonConfig.packSoundRange(hitSoundRange, ModCommonConfig.get().bulletHitSoundRange());
@@ -305,6 +314,8 @@ public class BulletType extends ShootableType
         setEntitiesOnFire = readValue("SetEntitiesOnFire", setEntitiesOnFire, file);
         readArmourImpactSounds(file);
         hitSoundEnable = readValue("HitSoundEnable", hitSoundEnable, file);
+        dynamicHitSoundConfigured = file.hasConfigLine("DynamicHitSoundEnable");
+        dynamicHitSoundEnable = readValue("DynamicHitSoundEnable", false, file);
         entityHitSoundEnable = readValue("EntityHitSoundEnable", entityHitSoundEnable, file);
         // Many content packs have a HitSound line with no parameter for no hit sound -> don't consider it a syntax error
         if (hasValueForConfigField("HitSound", file))

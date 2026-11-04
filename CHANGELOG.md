@@ -4,6 +4,10 @@
 
 ## Highlights
 
+* Ammunition `DynamicHitSoundEnable` adds material-specific block impacts alongside authored `HitSound`; an explicit false disables material feedback while unconfigured packs retain the existing fallback
+* Healing tools with `HealStrength` apply regeneration using `HealAmount` as duration in ticks and `HealStrength` as amplifier; tools without it keep instant healing, and repair amounts are unchanged
+* Grenade `RandomDirection` selects server-side scatter direction, roll and speed for debris/effect launches; grenade roll is synchronized on spawn and saved with the entity
+
 * Gun `RPM` is accepted as a fallback alias of `RoundsPerMin`; category-provided `RoundsPerMin` retains priority over pack `RPM`
 * Content definitions accept `Descriptions` as an alias of `Description`, with the canonical spelling taking priority
 * Gun `ActionEndSound` plays once when the native bolt or pump closes, with separate server-validated sound allowances for accepted shots and reloads

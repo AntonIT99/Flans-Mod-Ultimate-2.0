@@ -235,13 +235,14 @@ Armour carries reserve plates that absorb damage first. Shields recharge after a
 Target checked: `T/common/types/ArmorType`, `T/common/types/MechaItemType` (mecha force field only)
 Missing: player armour plates and player energy shields.
 
-### Bleeding and field medicine — MISSING
+### Bleeding and field medicine — PARTIAL
 
 Reference: `R/common/tools/ToolType` (`bandAid`, `superBandAid`, `surgery`, `transfusion`, `needle`, `HealStrength`), `ShootableType.bleedMultiplier`, `R/common/network/PacketVaccine`, `CommandTeams bleeding`
 Wounds make players bleed, and medical tools stop the bleeding or heal.
 
 Target checked: `T/common/types/ToolType`, `T/common/types/GrenadeType.HealAmount`
-Missing: the bleeding state and the medical tool classes.
+**Present (verified 2026-11-04):** native healing tools honor an authored `HealStrength` as regeneration amplifier and `HealAmount` as duration in ticks, preserving instant healing when the strength field is absent.
+Missing: the bleeding state and the bleeding-specific medical tool classes.
 
 ### Armour weapon mounts, pouches and attributes — PARTIAL
 
@@ -578,7 +579,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Weapons | Muzzle and chamber smoke models | PARTIAL | MEDIUM |
 | Armour | Per-zone armour and penetration | MISSING | HIGH |
 | Armour | Reserve plates and energy shields | MISSING | HIGH |
-| Armour | Bleeding and field medicine | MISSING | HIGH |
+| Armour | Bleeding and field medicine | PARTIAL | HIGH |
 | Armour | Weapon mounts, pouches and attributes | PARTIAL | HIGH |
 | Vehicles | Destroyed-vehicle wrecks | MISSING | HIGH |
 | Vehicles | Ammo-rack and weak-spot cook-off | PARTIAL | HIGH |
@@ -708,3 +709,5 @@ Vehicle weapon overheating is implemented: opt-in `OverheatLimit`, `OverheatPena
 Compatibility follow-up (2026-11-04): gun `IronSightOffset` (raw legacy render translation) and `IronSightPitch` (aim-blended rotation) now affect first-person rendering only. Pouch, seat, and armor-audio findings above reflect their implementation, not a full re-audit of the remaining reference features.
 
 Additional rate/audio compatibility (2026-11-04): gun `RPM` aliases canonical/category `RoundsPerMin` at lower priority, `Descriptions` aliases `Description`, and native player bolt/pump closing supports optional `ActionEndSound` with server-validated per-shot/reload permissions. This is a timing adaptation to native animations, not glTF clip playback.
+
+Impact/scatter follow-up (2026-11-04): ammunition `DynamicHitSoundEnable` can layer material feedback with the authored hit sound, with explicit false and unset fallback handled separately. Grenade `RandomDirection` chooses the fork-style scatter direction and speed on the server; spawn and saved orientation now include roll. Shared impact metadata carries both sound layers for native NPC equipment.

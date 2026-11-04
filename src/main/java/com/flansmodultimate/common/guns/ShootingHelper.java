@@ -416,23 +416,22 @@ public final class ShootingHelper
         ModUtils.destroyBlock((ServerLevel) level, pos, causingEntity, false);
     }
 
-    private static void playImpactSound(Level level, BlockPos pos, BlockState state, BulletType type)
+    static void playImpactSound(Level level, BlockPos pos, BlockState state, BulletType type)
     {
         if (level.isClientSide || !type.isHitSoundEnable())
             return;
 
-        String hitToUse = resolveImpactSound(level, pos, state, state.getBlock(), type).orElse(null);
-        if (hitToUse == null)
-            return;
-
-        PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), hitToUse, true, null);
+        String authored = type.getHitSound();
+        if (StringUtils.isNotBlank(authored))
+            PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), authored, true, null);
+        if (type.usesMaterialImpactSounds())
+            resolveMaterialImpactSound(level, pos, state).filter(sound -> !sound.equals(authored)).ifPresent(sound ->
+                PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), sound, true, null));
     }
 
-    private static Optional<String> resolveImpactSound(Level level, BlockPos pos, BlockState state, Block block, BulletType type)
+    private static Optional<String> resolveMaterialImpactSound(Level level, BlockPos pos, BlockState state)
     {
-        if (StringUtils.isNotBlank(type.getHitSound()))
-            return Optional.of(type.getHitSound());
-
+        Block block = state.getBlock();
         // special-case certain blocks if you want
         if (block == Blocks.BRICKS)
             return Optional.of(FlansModSounds.SOUND_IMPACT_BRICKS);

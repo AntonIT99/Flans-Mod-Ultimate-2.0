@@ -21,6 +21,9 @@ public class ToolType extends InfoType
     /** The amount to heal per use (one use per click) */
     @Getter
     protected int healAmount;
+    /** Negative means legacy instant healing; otherwise HealAmount is regeneration duration in ticks. */
+    @Getter
+    protected int healStrength = -1;
     /** The amount of uses the tool has. 0 means infinite */
     @Getter
     protected int toolLife;
@@ -56,6 +59,7 @@ public class ToolType extends InfoType
         healDriveables = readValue("RepairVehicles", healDriveables, file);
         healAmount = readValue("HealAmount", healAmount, file);
         healAmount = readValue("RepairAmount", healAmount, file);
+        healStrength = file.hasConfigLine("HealStrength") ? Math.max(0, Math.min(255, readValue("HealStrength", 0, file))) : -1;
         toolLife = readValue("ToolLife", toolLife, file);
         toolLife = readValue("ToolUes", toolLife, file);
         toolLife = readValue("ToolUses", toolLife, file);

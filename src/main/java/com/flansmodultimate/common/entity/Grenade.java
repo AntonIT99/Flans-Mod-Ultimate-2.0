@@ -58,6 +58,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     public static final String NBT_THROWER = "thrower_uuid";
     public static final String NBT_PITCH = "rotation_pitch";
     public static final String NBT_YAW = "rotation_yaw";
+    public static final String NBT_ROLL = "rotation_roll";
     public static final String NBT_USES = "supply_uses_remaining";
     public static final String NBT_SUPPORT = "placed_support";
 
@@ -155,16 +156,27 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         this.configType = grenadeType;
         numUsesRemaining = grenadeType.getNumUses();
 
-        // Set the grenade to be facing the way the Pitch and Yaw variables define
-        axes.setAngles(rotationYaw + 90F, grenadeType.isSpinWhenThrown() ? rotationPitch : 0F, 0F);
-        rotationYaw = grenadeType.isSpinWhenThrown() ? rotationYaw + 90F : 0F;
+        float launchScale = 1F;
+        if (grenadeType.isRandomDirection() && !level.isClientSide)
+        {
+            var launch = com.flansmodultimate.common.guns.RandomGrenadeLaunch.sample(random);
+            axes.setAngles(launch.yaw(), launch.pitch(), launch.roll());
+            rotationYaw = axes.getYaw();
+            rotationPitch = axes.getPitch();
+            launchScale = launch.speedScale();
+        }
+        else
+        {
+            axes.setAngles(rotationYaw + 90F, grenadeType.isSpinWhenThrown() ? rotationPitch : 0F, 0F);
+            rotationYaw = grenadeType.isSpinWhenThrown() ? rotationYaw + 90F : 0F;
+        }
         setXRot(rotationPitch);
         setYRot(rotationYaw);
         xRotO = rotationPitch;
         yRotO = rotationYaw;
 
         // Give the grenade velocity in the direction the player is looking
-        float speed = 0.5F * grenadeType.getThrowSpeed();
+        float speed = 0.5F * grenadeType.getThrowSpeed() * launchScale;
         setDeltaMovement(axes.getXAxis().x * speed, axes.getXAxis().y * speed, axes.getXAxis().z * speed);
         if (grenadeType.isSpinWhenThrown())
             angularVelocity = new Vec3(0, 0, 10);
@@ -254,6 +266,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         buf.writeInt(Optional.ofNullable(thrower).map(Entity::getId).orElse(0));
         buf.writeFloat(axes.getYaw());
         buf.writeFloat(axes.getPitch());
+        buf.writeFloat(axes.getRoll());
     }
 
     @Override
@@ -265,6 +278,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             int throwerId = buf.readInt();
             float yaw = buf.readFloat();
             float pitch = buf.readFloat();
+            float roll = buf.readFloat();
 
             if (InfoType.getInfoType(shortname) instanceof GrenadeType gType)
                 configType = gType;
@@ -286,7 +300,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             setRot(yaw, pitch);
             yRotO = yaw;
             xRotO = pitch;
-            axes.setAngles(yaw, pitch, 0F);
+            axes.setAngles(yaw, pitch, roll);
 
             if (entityData.get(DATA_STATIONARY_PLACEMENT))
                 angularVelocity = Vec3.ZERO;
@@ -329,7 +343,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             setXRot(pitch);
             yRotO = yaw;
             xRotO = pitch;
-            axes.setAngles(yaw, pitch, 0f);
+            axes.setAngles(yaw, pitch, tag.getFloat(NBT_ROLL));
         }
         else
         {
@@ -352,6 +366,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             tag.putLong(NBT_SUPPORT, stuckPos.asLong());
         tag.putFloat(NBT_YAW, axes.getYaw());
         tag.putFloat(NBT_PITCH, axes.getPitch());
+        tag.putFloat(NBT_ROLL, axes.getRoll());
     }
 
     @Override

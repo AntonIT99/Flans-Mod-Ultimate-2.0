@@ -6,7 +6,7 @@ Audited `run/flan` and `src/main` using the current `ContentManager`, `EnumType`
 
 Recipe-grid rows and the four armor-recipe body rows following `AddArmour`/`AddArmor` were treated as data, not parameters. Obvious delimiter, truncated-comment, numeric-only, array-literal, and pasted-code fragments were also excluded from findings. Case was normalized exactly as `TypeFile` does. Inherited readers, `GunAnimationConfig`, `AmmoOverrides`, `VehicleArmorSpecReader`, `RealWorldSpecReader`, category injection, and direct `TypeFile` lookups were checked.
 
-Remaining recorded findings: **276 UNPARSED**, **0 PARSED_UNUSED**, and **0 UNCERTAIN** distinct `(type, parameter)` pairs.
+Remaining recorded findings: **275 UNPARSED**, **0 PARSED_UNUSED**, and **0 UNCERTAIN** distinct `(type, parameter)` pairs.
 
 Refresh on 2026-11-04: removed 12 confirmed active entries (depth-charge controls, HEAT, melee/shield/mode-switch sounds, and vehicle/plane overheating controls) after tracing current parsers and consumers. Removed three orphan summary rows (`BULLET / Skin`, `GUN / DamageVsVehicles`, `VEHICLE / TurretRotationSpeed`) that had no detailed finding/evidence; these are not reclassified as active. The corpus totals above describe the original installed-pack audit; this is a targeted correction, not a fresh exhaustive audit. The external TaP Redemption installation inspected for feature suggestions is a separate corpus and is not included in those totals. Unreviewed findings still need confirmation against current code before implementation decisions.
 
@@ -15,6 +15,8 @@ Implemented follow-up (2026-11-04): removed 12 further active findings for armor
 Legacy speed/handling follow-up (2026-11-04): removed four active alias findings (`BULLET / speedMultiplier`, `BULLET / LockOnToVehicle`, `GUN / CanLockOnAngle`, `GUN / LockOnToVehicle`). The ammunition multiplier applies only to fallback velocity; explicit bullet speed fields and ammunition-specific weapon speed overrides bypass it. `AimTimeConstant` and `RunPosTime` now have client presentation consumers; neither was an entry in the original audit corpus.
 
 Rate/description/audio follow-up (2026-11-04): `GUN / RPM` and plural `Descriptions` findings are removed now that their shared parser paths are active. Canonical `RoundsPerMin`, including category-injected values, wins over `RPM`. `ActionEndSound` and distant detonation audio now have native consumers; they were not entries in this original audit corpus.
+
+Impact/medical/scatter follow-up (2026-11-04): `TOOL / HealStrength` is removed now that native tool use supports opt-in regeneration strength and duration. `DynamicHitSoundEnable` and grenade `RandomDirection` also have native consumers; neither was a finding in the original installed-pack corpus. Material impact metadata preserves the authored layer for NPC equipment consumers, and scattered grenade velocity/orientation are server-selected and synchronized.
 
 ## Unparsed parameters
 
@@ -894,14 +896,6 @@ Confidence: HIGH
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/parts/12CylinderEngine.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/parts/12gaugeBirdshotShellBox.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/parts/12gaugeHuntingShellBox.txt; 90 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/PartType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### TOOL / HealStrength — UNPARSED
-
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/OBAMACARE.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/Vodka.txt; run/flan/Tyrants And Plebeians OHIO.zip!/tools/MWMedkit.txt; 3 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/ToolType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
@@ -2406,7 +2400,6 @@ Confidence: HIGH
 | PLANE | `swapInitialWing` | UNPARSED | 1 | 9 | HIGH |
 | PLANE | `transport` | UNPARSED | 1 | 1 | HIGH |
 | PLANE | `urnFuelPenalty` | UNPARSED | 1 | 2 | HIGH |
-| TOOL | `HealStrength` | UNPARSED | 2 | 3 | HIGH |
 | TOOL | `ItemID` | UNPARSED | 3 | 10 | HIGH |
 | TOOL | `KnockbackModifier` | UNPARSED | 1 | 1 | HIGH |
 | TOOL | `MoveSpeedModifier` | UNPARSED | 1 | 1 | HIGH |
