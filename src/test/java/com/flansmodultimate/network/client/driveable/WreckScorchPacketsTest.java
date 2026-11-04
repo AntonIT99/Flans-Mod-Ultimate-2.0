@@ -16,8 +16,9 @@ class WreckScorchPacketsTest
     void crashAndImpactPacketsPreserveTheWreckIdentityAndEffectData()
     {
         Vec3 position = new Vec3(123.5D, 70D, -40.25D);
-        roundTrip(new PacketDriveableCrashFireball(381, position, 6F), new PacketDriveableCrashFireball(), position, 6F, null);
-        roundTrip(new PacketDriveableImpact(381, position, 4F, 0.8F), new PacketDriveableImpact(), position, 4F, 0.8F);
+        roundTrip(new PacketDriveableCrashFireball(381, position, 6F), new PacketDriveableCrashFireball(), position, 6F, null, false);
+        roundTrip(new PacketDriveableCrashFireball(381, position, 6F, true), new PacketDriveableCrashFireball(), position, 6F, null, true);
+        roundTrip(new PacketDriveableImpact(381, position, 4F, 0.8F), new PacketDriveableImpact(), position, 4F, 0.8F, null);
     }
 
     @Test
@@ -27,7 +28,7 @@ class WreckScorchPacketsTest
         assertTrue(PacketHandler.clientPacketTypes().contains(PacketDriveableImpact.class));
     }
 
-    private static void roundTrip(IClientPacket original, IClientPacket decoded, Vec3 position, float radius, Float severity)
+    private static void roundTrip(IClientPacket original, IClientPacket decoded, Vec3 position, float radius, Float severity, Boolean water)
     {
         PacketBuffer buffer = new PacketBuffer(TestPacketBuffers.buffer());
         try
@@ -44,6 +45,8 @@ class WreckScorchPacketsTest
             assertEquals(radius, buffer.readFloat());
             if (severity != null)
                 assertEquals(severity.floatValue(), buffer.readFloat());
+            if (water != null)
+                assertEquals(water, buffer.readBoolean());
             assertEquals(0, buffer.readableBytes());
         }
         finally
