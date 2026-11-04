@@ -6,7 +6,7 @@
 
 * Air brakes use configurable physical effectiveness and low-speed assistance (`airBrakeEffectiveness`, `airBrakeAssistDeceleration`, `airBrakeAssistReferenceSpeedKmh`) in both flight models, with per-aircraft `AirBrakeStrengthMultiplier` and no fixed air-brake deceleration ceiling
 
-* Destroyed AA guns leave unusable, charred wrecks with a modest fire and smoke effect, using `driveableWreckLifetime`; destroyed guns and their ammunition do not drop
+* Damaged AA guns can be repaired with vehicle repair tools, including their cooldown, durability costs, crosshair health HUD and repair progress display; destroyed AA guns leave unusable, charred wrecks with a modest fire and smoke effect, using `driveableWreckLifetime`, and cannot be repaired; destroyed guns and their ammunition do not drop
 
 * Cross-pack specialist classes: national WW2 flamethrowers, a Soviet NKVD officer and German support roles including Wolff MG34/MG42 gunners, modern attachment loadouts, survivor rescue and supply roles, and Zombie weapons for modern SWAT and Criminal teams
 * Player classes can use repeatable `AddToTeam <packId>:<teamShortName>` lines to extend another pack's teams without a reverse dependency

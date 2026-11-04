@@ -9,6 +9,7 @@ import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.driveables.physics.EpicShipPhysics;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.*;
@@ -163,6 +164,8 @@ public final class FlansRepairs
                 return driveable.repairFromTool(player, amount);
             return driveable.repairNearestPart(actor.getEyePosition(), amount);
         }
+        if (target instanceof AAGun aaGun)
+            return aaGun.repairFromTool(amount);
         return target instanceof IFlanRepairTarget repairable && repairable.flansmodultimateRepair(actor.getEyePosition(), amount);
     }
 
@@ -174,21 +177,21 @@ public final class FlansRepairs
             return false;
         if (target instanceof IFlanRepairTarget repairable)
             return repairable.flansmodultimatePartBody().filter(PartBody.class::isInstance).map(PartBody.class::cast).map(body -> body.repairDistanceSqr(origin) <= distance * distance).orElse(false);
-        return target instanceof Driveable && target.getBoundingBox().distanceToSqr(origin) <= distance * distance;
+        return (target instanceof Driveable || target instanceof AAGun) && target.getBoundingBox().distanceToSqr(origin) <= distance * distance;
     }
 
-    /** Chooses the first real driveable or part-body surface intersected by a world-space tool ray, including destroyed parts. Either side. */
+    /** Chooses the first driveable, AA gun hull or part-body surface intersected by a world-space tool ray, including destroyed parts. Either side. */
     public static Optional<Entity> toolTarget(Player player, Vec3 start, Vec3 end)
     {
         return player.level()
-            .getEntities(player, new net.minecraft.world.phys.AABB(start, end).inflate(64D), entity -> (entity instanceof IFlanRepairTarget || entity instanceof Driveable) && entity.isAlive())
+            .getEntities(player, new net.minecraft.world.phys.AABB(start, end).inflate(64D), entity -> (entity instanceof IFlanRepairTarget || entity instanceof Driveable || entity instanceof AAGun) && entity.isAlive())
             .stream().flatMap(entity -> toolHits(entity, start, end.subtract(start))).min(Comparator.comparingDouble(ToolHit::fraction)).map(ToolHit::entity);
     }
 
-    /** Where a world-space tool ray first meets one driveable or part-body target, including destroyed parts, or empty when it misses. Either side. */
+    /** Where a world-space tool ray first meets a driveable, AA gun hull or part-body target, including destroyed parts, or empty when it misses. Either side. */
     public static Optional<Vec3> toolHitPoint(Entity target, Vec3 start, Vec3 end)
     {
-        if (!(target instanceof IFlanRepairTarget || target instanceof Driveable))
+        if (!(target instanceof IFlanRepairTarget || target instanceof Driveable || target instanceof AAGun))
             return Optional.empty();
         Vec3 motion = end.subtract(start);
         return toolHits(target, start, motion).min(Comparator.comparingDouble(ToolHit::fraction)).map(hit -> start.add(motion.scale(hit.fraction())));
@@ -198,6 +201,14 @@ public final class FlansRepairs
     {
         if (entity instanceof Driveable driveable)
             return driveable.attackFromBullet(origin, motion, true).stream().map(hit -> new ToolHit(entity, hit.getIntersectTime()));
+        if (entity instanceof AAGun aaGun)
+        {
+            Vec3 point = aaGun.clipCollisionBox(origin, origin.add(motion), 0D);
+            if (point == null)
+                return java.util.stream.Stream.empty();
+            float fraction = motion.lengthSqr() <= 1.0E-8D ? 0F : (float) (origin.distanceTo(point) / motion.length());
+            return java.util.stream.Stream.of(new ToolHit(entity, fraction));
+        }
         return ((IFlanRepairTarget) entity).flansmodultimatePartBody().stream().filter(PartBody.class::isInstance).map(PartBody.class::cast)
             .flatMap(body -> body.trace(entity, origin, motion, true).stream()).map(hit -> new ToolHit(entity, hit.getIntersectTime()));
     }

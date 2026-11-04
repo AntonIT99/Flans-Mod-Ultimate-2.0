@@ -5,6 +5,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.IEmplacement;
 import com.flansmodultimate.common.FlanEntityPermissions;
+import com.flansmodultimate.common.driveables.DriveableRepairRules;
 import com.flansmodultimate.common.driveables.collision.AAGunCollisionHelper;
 import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
 import com.flansmodultimate.common.driveables.visual.AAGunVisual;
@@ -12,6 +13,7 @@ import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.entity.geometry.AAGunTraverse;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.*;
@@ -296,6 +298,17 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     public void setHealth(int value)
     {
         entityData.set(DATA_HEALTH, value);
+    }
+
+    /** Repairs a surviving mounting on the server, with the same per-use health cap as driveables. */
+    public boolean repairFromTool(int amount)
+    {
+        AAGunType type = getConfigType();
+        if (level().isClientSide || !isAlive() || type == null || amount <= 0 || getHealth() <= 0 || getHealth() >= type.getHealth())
+            return false;
+        int restored = Math.min(type.getHealth() - getHealth(), (int) DriveableRepairRules.toolAmount(type.getHealth(), amount));
+        setHealth(getHealth() + restored);
+        return restored > 0;
     }
 
     public Component getCurrentAmmoName()
@@ -674,7 +687,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
     {
         AAGunType type = getConfigType();
-        if (type == null || isWreck())
+        if (type == null || isWreck() || ToolItem.isRepairTool(player.getItemInHand(hand)))
             return InteractionResult.PASS;
 
         Level level = level();
