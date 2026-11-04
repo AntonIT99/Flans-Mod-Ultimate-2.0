@@ -185,6 +185,10 @@ public final class TeamsManager
     private boolean overrideHunger = true;
     @Getter @Setter
     private boolean regeneration = true;
+    @Getter
+    private int playerRegenSeconds = 5;
+    @Getter
+    private int botRegenSeconds = 5;
     /** Seconds a player who takes the field cannot be hurt, ending early when they attack; 0 turns it off. */
     @Getter
     private int spawnProtectionSeconds = DEFAULT_SPAWN_PROTECTION_SECONDS;
@@ -617,6 +621,16 @@ public final class TeamsManager
     public boolean setMapImage(String id, @Nullable String image)
     {
         return afterMapChange(getMap(id).map(map -> map.setDeployImage(image)).orElse(false));
+    }
+
+    public void setPlayerRegenSeconds(int seconds)
+    {
+        playerRegenSeconds = Math.max(0, seconds);
+    }
+
+    public void setBotRegenSeconds(int seconds)
+    {
+        botRegenSeconds = Math.max(0, seconds);
     }
 
     public void setPlayerHealth(int health)
@@ -2638,6 +2652,8 @@ public final class TeamsManager
             vehiclesNeedFuel = tag.getBoolean(NBT_FUEL);
         vehiclesCanZoom = tag.contains(NBT_VEHICLES_CAN_ZOOM) && tag.getBoolean(NBT_VEHICLES_CAN_ZOOM);
         regeneration = !tag.contains(NBT_REGENERATION) || tag.getBoolean(NBT_REGENERATION);
+        setPlayerRegenSeconds(tag.contains("playerRegenSeconds") ? tag.getInt("playerRegenSeconds") : 5);
+        setBotRegenSeconds(tag.contains("botRegenSeconds") ? tag.getInt("botRegenSeconds") : 5);
         spawnProtectionSeconds = tag.contains(NBT_SPAWN_PROTECTION) ? Mth.clamp(tag.getInt(NBT_SPAWN_PROTECTION), 0, MAX_SPAWN_PROTECTION_SECONDS) : DEFAULT_SPAWN_PROTECTION_SECONDS;
         if (tag.contains(NBT_OVERRIDE_HUNGER))
             overrideHunger = tag.getBoolean(NBT_OVERRIDE_HUNGER);
@@ -2763,6 +2779,8 @@ public final class TeamsManager
         tag.putBoolean(NBT_VEHICLES_CAN_ZOOM, vehiclesCanZoom);
         tag.putBoolean(NBT_OVERRIDE_HUNGER, overrideHunger);
         tag.putBoolean(NBT_REGENERATION, regeneration);
+        tag.putInt("playerRegenSeconds", playerRegenSeconds);
+        tag.putInt("botRegenSeconds", botRegenSeconds);
         tag.putInt(NBT_SPAWN_PROTECTION, spawnProtectionSeconds);
         tag.putBoolean(NBT_BREAK_VEHICLES, survivalCanBreakVehicles);
         tag.putBoolean(NBT_PLACE_VEHICLES, survivalCanPlaceVehicles);

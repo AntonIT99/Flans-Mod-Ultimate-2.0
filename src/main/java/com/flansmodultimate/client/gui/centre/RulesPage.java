@@ -230,12 +230,12 @@ final class RulesPage extends TeamsPage
         toggle(view, tr(RULE + "bodyPartDamageModifiers"), rules.getBoolean("bodyPartDamageModifiers"), left, top, width, tr(RULE + "bodyPartDamageModifiers.tip"),
             enabled -> run(view, "teams bodyPartDamageModifiers", enabled));
         int row = 1;
-        for (String rule : List.of("playerHealth", "botHealth"))
+        for (String rule : List.of("playerHealth", "botHealth", "playerRegenSeconds", "botRegenSeconds"))
         {
             int x = left + width - 100;
             int y = top + row++ * ROW;
             view.addField(rule, x, y, 56, Integer.toString(rules.getInt(rule)), tr(RULE + rule)).setTooltip(Tooltip.create(tr(RULE + rule + ".tip")));
-            button(view, tr("set"), x + 60, y, 40, () -> number(view, rule, 0, TeamsManager.MAX_HEALTH_OVERRIDE, tr(RULE + rule)).ifPresent(health -> run(view, TEAMS, rule, health)));
+            button(view, tr("set"), x + 60, y, 40, () -> number(view, rule, 0, rule.endsWith("Health") ? TeamsManager.MAX_HEALTH_OVERRIDE : Integer.MAX_VALUE, tr(RULE + rule)).ifPresent(health -> run(view, TEAMS, rule, health)));
         }
     }
 
@@ -329,9 +329,9 @@ final class RulesPage extends TeamsPage
             }
             case HEALTH -> {
                 int row = 1;
-                for (String rule : List.of("playerHealth", "botHealth"))
+                for (String rule : List.of("playerHealth", "botHealth", "playerRegenSeconds", "botRegenSeconds"))
                     label(view, graphics, tr(RULE + rule), left + 2, rowsTop + row++ * ROW + 5, width - 104, CentreStyle.TEXT);
-                paragraph(view, graphics, tr("health.help"), left + 2, rowsTop + 3 * ROW + GAP, width - 4, CentreStyle.MUTED);
+                paragraph(view, graphics, tr("health.help"), left + 2, rowsTop + 5 * ROW + GAP, width - 4, CentreStyle.MUTED);
             }
             case PROTECTION -> {
                 Viewport port = viewport(view);

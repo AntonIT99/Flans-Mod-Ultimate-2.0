@@ -32,7 +32,7 @@ final class TeamsRulePresets implements ISettingsPresets
         Map.entry("vehiclesCanZoom", TeamsManager::setVehiclesCanZoom), Map.entry("movieProp", TeamsManager::setMovieProp), Map.entry("bloodEffects", TeamsManager::setBloodEffects));
     private static final Map<String, ObjIntConsumer<TeamsManager>> NUMBERS = Map.of("playerHealth", TeamsManager::setPlayerHealth, "botHealth", TeamsManager::setBotHealth, "spawnProtection",
         TeamsManager::setSpawnProtectionSeconds, "mgLife", TeamsManager::setMgLife, "planeLife", TeamsManager::setPlaneLife, "vehicleLife", TeamsManager::setVehicleLife, "mechaLife",
-        TeamsManager::setMechaLife, "aaLife", TeamsManager::setAaLife);
+        TeamsManager::setMechaLife, "aaLife", TeamsManager::setAaLife, "playerRegenSeconds", TeamsManager::setPlayerRegenSeconds, "botRegenSeconds", TeamsManager::setBotRegenSeconds);
     private final Supplier<TeamsManager> managerSource;
 
     TeamsRulePresets()

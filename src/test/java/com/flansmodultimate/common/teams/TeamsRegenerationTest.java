@@ -35,6 +35,8 @@ class TeamsRegenerationTest
             managers.when(TeamsManager::getInstance).thenReturn(manager);
             when(manager.isRoundRunning()).thenReturn(true);
             when(manager.isRegeneration()).thenReturn(true);
+            when(manager.getPlayerRegenSeconds()).thenReturn(5);
+            when(manager.getBotRegenSeconds()).thenReturn(5);
             Player player = player();
             for (int tick = 1; tick <= 100; tick++)
             {
@@ -72,6 +74,8 @@ class TeamsRegenerationTest
             managers.when(TeamsManager::getInstance).thenReturn(manager);
             when(manager.isRoundRunning()).thenReturn(true);
             when(manager.isRegeneration()).thenReturn(true);
+            when(manager.getPlayerRegenSeconds()).thenReturn(5);
+            when(manager.getBotRegenSeconds()).thenReturn(5);
             Player player = player();
             player.getFoodData().setFoodLevel(17);
             TeamsRegeneration.tick(player);
@@ -91,6 +95,8 @@ class TeamsRegenerationTest
             managers.when(TeamsManager::getInstance).thenReturn(manager);
             when(manager.isRoundRunning()).thenReturn(true);
             when(manager.isRegeneration()).thenReturn(true);
+            when(manager.getPlayerRegenSeconds()).thenReturn(5);
+            when(manager.getBotRegenSeconds()).thenReturn(5);
             LivingEntity soldier = mock(LivingEntity.class, withSettings().extraInterfaces(IFlanDamageModel.class));
             ServerLevel world = level();
             when(soldier.level()).thenReturn(world);
@@ -106,6 +112,49 @@ class TeamsRegenerationTest
             IContentType vehicle = mock(IContentType.class);
             when(model.flansmodultimateDamageModel()).thenReturn(Optional.of(vehicle));
             assertFalse(TeamsRegeneration.applies(soldier));
+        }
+    }
+
+    @Test
+    void playerAndBotIntervalsAreIndependentAndZeroDisablesEachGroup()
+    {
+        try (var managers = mockStatic(TeamsManager.class); var combatants = mockStatic(TeamsCombatants.class))
+        {
+            TeamsManager manager = mock(TeamsManager.class);
+            managers.when(TeamsManager::getInstance).thenReturn(manager);
+            when(manager.isRoundRunning()).thenReturn(true);
+            when(manager.isRegeneration()).thenReturn(true);
+            when(manager.getPlayerRegenSeconds()).thenReturn(2);
+            when(manager.getBotRegenSeconds()).thenReturn(3);
+            Player player = player();
+            LivingEntity bot = mock(LivingEntity.class);
+            ServerLevel world = level();
+            when(bot.level()).thenReturn(world);
+            when(bot.isAlive()).thenReturn(true);
+            when(bot.getHealth()).thenReturn(10F);
+            when(bot.getMaxHealth()).thenReturn(20F);
+            Team team = mock(Team.class);
+            combatants.when(() -> TeamsCombatants.getCombatantTeam(manager, bot)).thenReturn(team);
+            player.tickCount = 40;
+            bot.tickCount = 40;
+            TeamsRegeneration.tick(player);
+            TeamsRegeneration.tick(bot);
+            verify(player).heal(1F);
+            verify(bot, never()).heal(anyFloat());
+            player.tickCount = 60;
+            bot.tickCount = 60;
+            TeamsRegeneration.tick(player);
+            TeamsRegeneration.tick(bot);
+            verify(player, times(1)).heal(1F);
+            verify(bot).heal(1F);
+            when(manager.getPlayerRegenSeconds()).thenReturn(0);
+            when(manager.getBotRegenSeconds()).thenReturn(0);
+            player.tickCount = 120;
+            bot.tickCount = 120;
+            TeamsRegeneration.tick(player);
+            TeamsRegeneration.tick(bot);
+            verify(player, times(1)).heal(1F);
+            verify(bot, times(1)).heal(1F);
         }
     }
 

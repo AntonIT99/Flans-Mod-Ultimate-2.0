@@ -52,6 +52,9 @@ class TeamsCommandTest
     {
         assertRuns("teams regeneration true");
         assertRuns("teams regeneration false");
+        assertRuns("teams playerRegenSeconds 2");
+        assertRuns("teams botRegenSeconds 0");
+        assertTrue(parse("teams playerRegenSeconds -1").getReader().canRead());
         assertRuns("teams stop");
         assertRuns("teams admin stop");
     }

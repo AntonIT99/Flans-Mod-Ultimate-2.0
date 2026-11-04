@@ -249,6 +249,8 @@ public final class TeamsSection
         tag.putBoolean("bodyPartDamageModifiers", manager.isBodyPartDamageModifiers());
         tag.putInt("playerHealth", manager.getPlayerHealth());
         tag.putInt("botHealth", manager.getBotHealth());
+        tag.putInt("playerRegenSeconds", manager.getPlayerRegenSeconds());
+        tag.putInt("botRegenSeconds", manager.getBotRegenSeconds());
         tag.putBoolean("explosions", manager.isExplosionsBreakBlocks());
         tag.putBoolean("canBreakGlass", manager.isCanBreakGlass());
         tag.putBoolean("canBreakGuns", manager.isCanBreakGuns());

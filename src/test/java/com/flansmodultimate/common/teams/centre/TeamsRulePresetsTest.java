@@ -50,6 +50,8 @@ class TeamsRulePresetsTest
         CompoundTag original = presets.capture("");
         manager.setSeaLevelOverride(100);
         manager.setBotHealth(84);
+        manager.setPlayerRegenSeconds(2);
+        manager.setBotRegenSeconds(0);
         presets.apply(PresetFiles.decode(SettingsPresets.TEAMS, PresetFiles.encode(SettingsPresets.TEAMS, "test", original)).data(), "");
         assertEquals(original, presets.capture(""));
         CompoundTag invalid = original.copy();
