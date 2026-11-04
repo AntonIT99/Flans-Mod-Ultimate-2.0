@@ -4,6 +4,10 @@
 
 ## Highlights
 
+* Legacy `speedMultiplier` aliases `BulletSpeedMultiplier` for ammunition fallback speed; declared bullet `MuzzleVelocity` / `BulletSpeed`, belt-round velocities and ammunition-specific weapon speed overrides now bypass the ammunition multiplier
+* Guns accept `CanLockOnAngle` and guns and bullets accept singular `LockOnToVehicle` as aliases; existing canonical spellings take precedence when both are present
+* Gun `AimTimeConstant` controls aiming transition smoothing, and authored `RunPosTime` controls smooth entry into and recovery from the sprint pose; zero timing switches instantly and unset fields preserve existing behavior
+
 * Legacy packs can hide individual occupants with `invisiblePassenger <seat> <true|false>` or `SetPassengerInvisible`, including NPC vehicle crews
 * Guns support first-person `IronSightOffset` and `IronSightPitch` corrections without changing projectile aim
 * Armor pouches support `reloadMultiplier` / `pouchMultiplier` and general or weapon-specific pouch flags for players and NPCs; the fastest matching worn pouch applies without stacking

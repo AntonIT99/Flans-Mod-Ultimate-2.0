@@ -298,7 +298,10 @@ public final class GunItemRenderer
 
     private static void renderSprintingMovement(ModelGun model, GunAnimations animations, boolean sprinting, PoseStack poseStack)
     {
-        if (sprinting && animations.getStanceTimer() == 0 && ModClientConfig.get().enableWeaponSprintStance)
+        boolean timed = model.getType().getRunPosTime() >= 0F;
+        float timedProgress = Mth.lerp(ClientPlatform.partialTick(), animations.getLastSprintTransitionProgress(), animations.getSprintTransitionProgress());
+        boolean visible = timed ? timedProgress > 0F && model.isFancyStance() : sprinting && animations.getStanceTimer() == 0;
+        if (visible && ModClientConfig.get().enableWeaponSprintStance)
         {
             if (animations.getRunningStanceAnimationProgress() == 0F)
                 animations.setRunningStanceAnimationProgress(1F);
@@ -310,6 +313,8 @@ public final class GunItemRenderer
             float progress = (animations.getRunningStanceAnimationProgress() + frameTime) / animations.getRunningStanceAnimationLength();
             if (animations.getRunningStanceAnimationProgress() == animations.getRunningStanceAnimationLength())
                 progress = 1;
+            if (timed)
+                progress = timedProgress;
 
             Vector3f translateToUse = VEC3_SPRINT_DEFAULT_TRANSLATE;
             Vector3f rotationToUse = VEC3_SPRINT_DEFAULT_ROTATION;

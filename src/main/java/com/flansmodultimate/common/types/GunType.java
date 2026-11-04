@@ -484,6 +484,11 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected float ironSightPitch;
     @Getter
+    protected float aimTimeConstant = 0.66F;
+    /** Negative means use the original model sprint animation. Zero switches instantly. */
+    @Getter
+    protected float runPosTime = -1F;
+    @Getter
     protected boolean bow;
     @Getter
     protected boolean oldGun;
@@ -855,8 +860,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         resolvedAmmo.set(null);
 
         // Lock on settings
+        canLockOnAngle = readValue("CanLockOnAngle", canLockOnAngle, file);
         canLockOnAngle = readValue("CanLockAngle", canLockOnAngle, file);
         lockOnToDriveables = readValue("LockOnToDriveables", lockOnToDriveables, file);
+        lockOnToVehicles = readValue("LockOnToVehicle", lockOnToVehicles, file);
         lockOnToVehicles = readValue("LockOnToVehicles", lockOnToVehicles, file);
         lockOnToPlanes = readValue("LockOnToPlanes", lockOnToPlanes, file);
         lockOnToMechas = readValue("LockOnToMechas", lockOnToMechas, file);
@@ -952,6 +959,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         ironSightOffset = readVector("IronSightOffset", ironSightOffset, file);
         if (!Float.isFinite(ironSightOffset.x) || !Float.isFinite(ironSightOffset.y) || !Float.isFinite(ironSightOffset.z))
             ironSightOffset = new Vector3f();
+        aimTimeConstant = readValue("AimTimeConstant", aimTimeConstant, file);
+        aimTimeConstant = Float.isFinite(aimTimeConstant) && aimTimeConstant >= 0F ? Math.min(0.95F, aimTimeConstant) : 0.66F;
+        runPosTime = readValue("RunPosTime", runPosTime, file);
+        runPosTime = Float.isFinite(runPosTime) && runPosTime >= 0F ? Math.min(1200F, runPosTime) : -1F;
         ironSightPitch = readValue("IronSightPitch", ironSightPitch, file);
         if (!Float.isFinite(ironSightPitch))
             ironSightPitch = 0F;

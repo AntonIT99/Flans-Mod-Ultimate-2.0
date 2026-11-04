@@ -83,6 +83,8 @@ public class GunAnimations
 
     /** Fancy stance / running animation stuff */
     protected float runningStanceAnimationProgress;
+    protected float sprintTransitionProgress;
+    protected float lastSprintTransitionProgress;
     protected float runningStanceAnimationLength = 4F;
     protected Vector3f sprintingStance;
     protected int stanceTimer;
@@ -102,6 +104,15 @@ public class GunAnimations
         {
             this.time = time;
         }
+    }
+
+    /** Client-tick pose state for an authored RunPosTime; rendering only interpolates it. */
+    public void updateSprintTransition(boolean sprinting, float ticks)
+    {
+        lastSprintTransitionProgress = sprintTransitionProgress;
+        sprintTransitionProgress = com.flansmodultimate.common.guns.GunHandlingTiming.sprintProgress(sprintTransitionProgress, sprinting, ticks);
+        if (ticks <= 0F)
+            lastSprintTransitionProgress = sprintTransitionProgress;
     }
 
     public void beginSecondaryModeSwitch(int ticks)

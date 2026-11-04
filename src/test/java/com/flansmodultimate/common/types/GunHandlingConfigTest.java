@@ -69,6 +69,29 @@ class GunHandlingConfigTest
         assertEquals(0F, gun().getIronSightPitch());
     }
 
+    @Test
+    void legacyLockAliasesAndTimingControlsHaveCompatibleDefaults()
+    {
+        GunType defaults = gun();
+        assertEquals(0.66F, defaults.getAimTimeConstant());
+        assertEquals(-1F, defaults.getRunPosTime());
+        GunType type = gun("CanLockOnAngle 60", "LockOnToVehicle true", "AimTimeConstant 0.5", "RunPosTime 6");
+        assertEquals(60, type.getCanLockOnAngle());
+        assertTrue(type.isLockOnToVehicles());
+        assertEquals(0.5F, type.getAimTimeConstant());
+        assertEquals(6F, type.getRunPosTime());
+        GunType canonical = gun("CanLockOnAngle 60", "CanLockAngle 30", "LockOnToVehicle true", "LockOnToVehicles false");
+        assertEquals(30, canonical.getCanLockOnAngle());
+        assertFalse(canonical.isLockOnToVehicles());
+        assertEquals(0.95F, gun("AimTimeConstant 2").getAimTimeConstant());
+        assertEquals(0.66F, gun("AimTimeConstant NaN").getAimTimeConstant());
+        assertEquals(-1F, gun("RunPosTime Infinity").getRunPosTime());
+        assertEquals(0F, gun("RunPosTime 0").getRunPosTime());
+        BulletType bullet = new BulletType();
+        bullet.load(file(EnumType.BULLET, "LockOnToVehicle true"));
+        assertTrue(bullet.isLockOnToVehicles());
+    }
+
     private static GunType gun(String... lines)
     {
         GunType type = new GunType();

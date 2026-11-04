@@ -61,6 +61,7 @@ public class BulletType extends ShootableType
     protected boolean hesh;
     @Getter
     protected float speedMultiplier = 1F;
+    private boolean explicitBulletSpeed;
     /** The number of flak particles to spawn upon exploding */
     @Getter
     protected int flak;
@@ -280,11 +281,15 @@ public class BulletType extends ShootableType
     {
         super.read(file);
 
+        explicitBulletSpeed = file.hasConfigLine("BulletSpeed") || file.hasConfigLine("MuzzleVelocity");
         bulletSpeed = readValue("BulletSpeed", bulletSpeed, file);
         float muzzleVelocity = readValue("MuzzleVelocity", 0F, file);
         if (muzzleVelocity > 0F)
             bulletSpeed = muzzleVelocity / 20F;
+        speedMultiplier = readValue("speedMultiplier", speedMultiplier, file);
         speedMultiplier = readValue("BulletSpeedMultiplier", speedMultiplier, file);
+        if (!Float.isFinite(speedMultiplier) || speedMultiplier <= 0F)
+            speedMultiplier = 1F;
         penetrationAt100m = readValue("PenetrationAt100m", penetrationAt100m, file);
         if (!Float.isFinite(penetrationAt100m) || penetrationAt100m < 0F)
         {
@@ -354,6 +359,7 @@ public class BulletType extends ShootableType
         trailTexture = ResourceUtils.sanitize(readValue("TrailTexture", trailTexture, file));
 
         lockOnToPlanes = lockOnToVehicles = lockOnToMechas = readValue("LockOnToDriveables", lockOnToVehicles, file);
+        lockOnToVehicles = readValue("LockOnToVehicle", lockOnToVehicles, file);
         lockOnToVehicles = readValue("LockOnToVehicles", lockOnToVehicles, file);
         lockOnToPlanes = readValue("LockOnToPlanes", lockOnToPlanes, file);
         lockOnToMechas = readValue("LockOnToMechas", lockOnToMechas, file);
@@ -555,7 +561,7 @@ public class BulletType extends ShootableType
         float speed = hasDifferentRounds() ? statsForShot(shotsFired).bulletSpeed : bulletSpeed;
 
         if (speed > 0F)
-            return applySpeedMultiplier(speed);
+            return speed;
         if (weaponBulletSpeedBlocksPerTick > 0F)
             return applySpeedMultiplier(weaponBulletSpeedBlocksPerTick);
 
@@ -564,7 +570,7 @@ public class BulletType extends ShootableType
 
     public float getBulletSpeed(boolean enforceDefaultFallback)
     {
-        float speed = applySpeedMultiplier(hasDifferentRounds() ? statsForShot(0).bulletSpeed : bulletSpeed);
+        float speed = hasDifferentRounds() ? statsForShot(0).bulletSpeed : bulletSpeed;
 
         if (enforceDefaultFallback && speed <= 0F)
             return applySpeedMultiplier(DEFAULT_BULLET_SPEED);
@@ -577,10 +583,10 @@ public class BulletType extends ShootableType
         return getBulletSpeed(false);
     }
 
-    /** Applies this ammunition's {@code BulletSpeedMultiplier} to an already resolved velocity. */
+    /** Applies the ammunition multiplier to fallback velocity only; explicit ammunition and override speeds bypass it. */
     public float applySpeedMultiplier(float speedBlocksPerTick)
     {
-        return speedMultiplier > 0F && speedMultiplier != 1F ? speedBlocksPerTick * speedMultiplier : speedBlocksPerTick;
+        return !explicitBulletSpeed && Float.isFinite(speedMultiplier) && speedMultiplier > 0F && speedMultiplier != 1F ? speedBlocksPerTick * speedMultiplier : speedBlocksPerTick;
     }
 
     @Override

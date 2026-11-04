@@ -18,6 +18,7 @@ import com.flansmodultimate.common.guns.GunSoundPermissions.Kind;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.gun.PacketGunScopedState;
 import com.flansmodultimate.platform.client.ArmPosePlatform;
@@ -398,6 +399,8 @@ public class ModClient
         updateGunAnimations();
         updateScopeState(mc, player);
         updateZoom();
+        updateSprintTransition(player, InteractionHand.MAIN_HAND);
+        updateSprintTransition(player, InteractionHand.OFF_HAND);
         playGunItemSounds(player, InteractionHand.MAIN_HAND);
         playGunItemSounds(player, InteractionHand.OFF_HAND);
         SoundHelper.tickClient();
@@ -860,10 +863,29 @@ public class ModClient
     private static void updateZoom()
     {
         lastZoomProgress = zoomProgress;
-        if (currentScope == null)
-            zoomProgress *= 0.66F;
-        else
-            zoomProgress = 1F - (1F - zoomProgress) * 0.66F;
+        Player player = Minecraft.getInstance().player;
+        ItemStack stack = player == null ? ItemStack.EMPTY : player.getItemInHand(scopeHand);
+        float constant = stack.getItem() instanceof GunItem gun ? gun.getConfigType().getAimTimeConstant() : 0.66F;
+        zoomProgress = com.flansmodultimate.common.guns.GunHandlingTiming.aimProgress(zoomProgress, currentScope != null, constant);
+        if (constant == 0F)
+            lastZoomProgress = zoomProgress;
+    }
+
+    private static void updateSprintTransition(Player player, InteractionHand hand)
+    {
+        ItemStack stack = player.getItemInHand(hand);
+        GunAnimations animations = getGunAnimations(player, hand);
+        if (!(stack.getItem() instanceof GunItem gun) || gun.getConfigType().getRunPosTime() < 0F)
+        {
+            animations.setSprintTransitionProgress(0F);
+            animations.setLastSprintTransitionProgress(0F);
+            return;
+        }
+        boolean fancy = ModelCache.getOrLoadTypeModel(gun.getConfigType()) instanceof ModelGun model && model.isFancyStance();
+        float zoom = hand == scopeHand ? zoomProgress : 0F;
+        boolean sprinting = player.isSprinting() && fancy && !animations.isReloading() && zoom < 0.1F
+            && animations.getStanceTimer() == 0 && ModClientConfig.get().enableWeaponSprintStance;
+        animations.updateSprintTransition(sprinting, gun.getConfigType().getRunPosTime());
     }
 
     private static void playGunItemSounds(Player player, InteractionHand hand)

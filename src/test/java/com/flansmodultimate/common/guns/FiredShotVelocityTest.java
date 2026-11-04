@@ -134,6 +134,38 @@ class FiredShotVelocityTest
 
     // ------------------------------------------------------------- fixtures
 
+    @Test
+    void ammunitionMultiplierOnlyScalesFallbackSpeeds()
+    {
+        VehicleType vehicle = vehicle("BulletSpeed 20");
+        for (String key : List.of("speedMultiplier", "BulletSpeedMultiplier"))
+        {
+            BulletType inherited = bullet("ShortName syntheticShell", key + " 0.25");
+            assertEquals(5F, shot(vehicle, inherited, 20F).getMuzzleVelocity());
+            assertEquals(BulletType.DEFAULT_BULLET_SPEED * 0.25F, shot(vehicle, inherited, 0F).getMuzzleVelocity());
+            assertEquals(0F, shot(vehicle, inherited, 0F).getMuzzleVelocity(false));
+            assertEquals(20F, shot(vehicle, bullet(key + " 0.25", "BulletSpeed 0"), 20F).getMuzzleVelocity());
+            BulletType velocity = bullet("ShortName syntheticShell", key + " 0.25", "MuzzleVelocity 800");
+            assertEquals(40F, shot(vehicle, velocity, 20F).getMuzzleVelocity());
+            assertEquals(40F, velocity.getBulletSpeed());
+            BulletType speed = bullet(key + " 0.25", "BulletSpeed 20");
+            assertEquals(20F, shot(vehicle, speed, 50F).getMuzzleVelocity());
+            BulletType belt = bullet(key + " 0.25", "RoundsPerItem 2", "AddRound AP 1 162 0 800 45", "AddRound HE 1 135 16 600 0");
+            assertEquals(40F, shot(vehicle, belt, 20F, 0).getMuzzleVelocity());
+            assertEquals(30F, shot(vehicle, belt, 20F, 1).getMuzzleVelocity());
+            VehicleType overriding = vehicle("AmmoMuzzleVelocity syntheticShell 900");
+            assertEquals(45F, shot(overriding, inherited, 20F).getMuzzleVelocity());
+            assertEquals(45F, shot(overriding, velocity, 20F).getMuzzleVelocity());
+        }
+    }
+
+    @Test
+    void invalidMultipliersCannotPoisonFallbackVelocity()
+    {
+        for (String value : List.of("NaN", "Infinity", "0", "-1"))
+            assertEquals(20F, shot(vehicle(), bullet("speedMultiplier " + value), 20F).getMuzzleVelocity());
+    }
+
     private static FiredShot shot(VehicleType vehicle, BulletType bulletType, float weaponSpeed)
     {
         return shot(vehicle, bulletType, weaponSpeed, 0);
