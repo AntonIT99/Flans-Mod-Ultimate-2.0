@@ -142,6 +142,8 @@ At the Paintjob Table or Gun Modification Table, left-click a paintjob to pay it
 
 Project wiki pages live on the [GitHub wiki](https://github.com/AntonIT99/Flans-Mod-Ultimate-2.0/wiki).
 
+See [Optional external mod compatibility](docs/optional-mod-compatibility.md) for supported integrations, Minecraft versions, features and project links.
+
 ## Upstream Projects, Attribution & License
 
 Flan's Mod Ultimate 2 is an unofficial and independently maintained
