@@ -416,6 +416,7 @@
   "options.flansmodultimate.distantContactUpdateInterval": "원거리 탈것 갱신 간격",
   "options.flansmodultimate.distantContactsEnabled": "원거리 탈것 전송",
   "options.flansmodultimate.distantExplosionMinRadius": "원거리 폭발 최소 반경",
+  "options.flansmodultimate.explosionParticleRange": "폭발 파티클 거리",
   "options.flansmodultimate.distantExplosionRange": "원거리 폭발 범위",
   "options.flansmodultimate.distantHorizonsContacts": "원거리 탈것",
   "options.flansmodultimate.distantHorizonsContacts.tooltip": "엔티티 렌더 거리 너머의 탈것을 원거리 지형 위에 단순화된 형태로 표시합니다. 서버가 허용하면 추적 범위 밖에서 서버가 알려 주는 탈것도 포함합니다.",

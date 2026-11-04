@@ -416,6 +416,7 @@
   "options.flansmodultimate.distantContactUpdateInterval": "遠方の乗り物の更新間隔",
   "options.flansmodultimate.distantContactsEnabled": "遠方の乗り物を送信",
   "options.flansmodultimate.distantExplosionMinRadius": "遠方の爆発の最小半径",
+  "options.flansmodultimate.explosionParticleRange": "爆発パーティクルの描画距離",
   "options.flansmodultimate.distantExplosionRange": "遠方の爆発の範囲",
   "options.flansmodultimate.distantHorizonsContacts": "遠方の乗り物",
   "options.flansmodultimate.distantHorizonsContacts.tooltip": "エンティティ描画距離の先にある乗り物を遠景地形上に簡略形状で表示します。サーバーが許可していれば、追跡範囲外からサーバーが通知するものも含みます。",

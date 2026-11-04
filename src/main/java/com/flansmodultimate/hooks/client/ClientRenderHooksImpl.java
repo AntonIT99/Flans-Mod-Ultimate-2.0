@@ -80,6 +80,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     }
 
     @Override
+    public void withLandmarkRange(double range, Runnable spawner)
+    {
+        ParticleHelper.withLandmarkRange(range, spawner);
+    }
+
+    @Override
     public void spawnTracerBeam(Vec3 start, Vec3 end, float red, float green, float blue, float alpha, float width)
     {
         TracerBeamParticle.spawn(start, end, red, green, blue, alpha, width);

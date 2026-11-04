@@ -49,6 +49,12 @@ public interface IClientRenderHooks
     @SuppressWarnings("java:S107")
     void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale);
 
+    /** Runs {@code spawner} with its particles drawn to {@code range} blocks, like a landmark. */
+    default void withLandmarkRange(double range, Runnable spawner)
+    {
+        spawner.run();
+    }
+
     /**
      * Draws a glowing tracer beam between two points that fades over a few ticks, from the Labjac Edition's
      * {@code TracerBeam}. Colours and alpha are fractions from 0 to 1; the width is the core half-width in blocks.

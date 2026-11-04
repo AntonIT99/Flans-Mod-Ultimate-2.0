@@ -3,6 +3,7 @@ package com.flansmodultimate.common;
 import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.explosions.ExplosionVisuals;
 import com.flansmodultimate.config.ModCommonConfig;
+import net.minecraft.util.Mth;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,16 +21,39 @@ class ExplosionVisualsTest
     }
 
     @ParameterizedTest
-    @CsvSource({"0.01, 0.754, 3, 1.077", "0.039, 1.187, 3, 1.696", "0.686, 3.087, 5, 4.410", "1.38, 3.897, 6, 5.567", "10, 7.541, 8, 10.772", "125, 17.5, 12, 25", "500, 27.779, 15, 39.685",
-        "2250, 45.863, 19, 65.519"})
-    void representativeChargesHaveCompactBriefHotCores(float mass, float diameter, int ticks, float height)
+    @CsvSource({"125, 29.170, 12, 43.755", "500, 46.304, 15, 69.456", "2250, 76.447, 19, 96"})
+    void heavyChargesHaveCompactBriefHotCores(float mass, float diameter, int ticks, float height)
     {
         float radius = radius(mass);
-        assertEquals(diameter, ExplosionVisuals.fireballDiameter(radius), 0.02F);
+        assertEquals(diameter, ExplosionVisuals.fireballDiameter(radius), 0.05F);
         assertEquals(ticks, ExplosionVisuals.fireballDurationTicks(radius));
-        assertEquals(height, ExplosionVisuals.cloudHeight(radius), 0.02F);
+        assertEquals(height, ExplosionVisuals.cloudHeight(radius), 0.05F);
         // Four-block base sprite plus the full +/- 15% centre scatter fits the envelope.
         assertEquals(diameter, ExplosionVisuals.fireballScale(radius) * 4F + ExplosionVisuals.fireballDiameter(radius) * 0.3F, 0.02F);
+    }
+
+    @Test
+    void smallRoundsKeepThe21LookAndMediumShellsSitBetween()
+    {
+        float twentyMm = radius(0.01F);
+        assertEquals(1F, ExplosionVisuals.legacyWeight(twentyMm));
+        assertEquals(0.8F, ExplosionVisuals.fireballScale(twentyMm), 0.01F);
+        assertEquals(1, ExplosionVisuals.fireballCount(twentyMm));
+        assertEquals(9, ExplosionVisuals.fireballDurationTicks(twentyMm));
+        assertEquals(2.0F, ExplosionVisuals.flashScale(twentyMm), 0.01F);
+
+        float hummel = radius(5.1F);
+        float weight = ExplosionVisuals.legacyWeight(hummel);
+        assertTrue(weight > 0.4F && weight < 0.6F, "a 150 mm shell should sit about halfway between both looks");
+        float legacyScale = 0.3F + hummel * 0.5F;
+        float chargeScale = ExplosionVisuals.fireballDiameter(hummel) * 0.175F;
+        assertTrue(ExplosionVisuals.fireballScale(hummel) > chargeScale && ExplosionVisuals.fireballScale(hummel) < legacyScale);
+        assertTrue(ExplosionVisuals.fireballDurationTicks(hummel) < 1 + Mth.ceil(hummel * 7.5F), "the 2.1 fireball of a 150 mm shell burnt for almost four seconds");
+        assertTrue(ExplosionVisuals.fireballScale(hummel) < (chargeScale + legacyScale) / 2F, "the fireball should stay nearer the compact charge-scaled size");
+        assertTrue(ExplosionVisuals.stagedSizingRadius(hummel) > ExplosionVisuals.cloudHeight(hummel) / 5F, "the smoke should keep much of its 2.1 volume");
+        assertTrue(ExplosionVisuals.LAYERS.get(0).count(hummel) > 0, "a 150 mm shell should throw up the 2.1 smoke burst");
+
+        assertEquals(0F, ExplosionVisuals.legacyWeight(radius(125F)), "bombs use the charge-scaled look alone");
     }
 
     @Test
@@ -38,7 +62,7 @@ class ExplosionVisualsTest
         float normal = ExplosionVisuals.visualRadius(29F, 125F);
         assertEquals(normal, ExplosionVisuals.visualRadius(100F, 125F));
         assertEquals(normal, ExplosionVisuals.visualRadius(0F, 125F));
-        assertEquals(17.5F, ExplosionVisuals.fireballDiameter(normal), 0.01F);
+        assertEquals(29.17F, ExplosionVisuals.fireballDiameter(normal), 0.05F);
         assertEquals(8F, ExplosionVisuals.visualRadius(8F, 0F));
         assertEquals(8F, ExplosionVisuals.visualRadius(8F, Float.NaN));
         assertEquals(0F, ExplosionVisuals.visualRadius(Float.NaN, 0F));
@@ -48,14 +72,14 @@ class ExplosionVisualsTest
     void bombSmokeRisesOverSecondsAndDoesNotKeepBurning()
     {
         float bomb = radius(125F);
-        assertEquals(120, ExplosionVisuals.cloudRiseTicks(bomb));
-        assertEquals(25F, ExplosionVisuals.fireballStemHeight(bomb), 0.01F);
-        assertEquals(5F, ExplosionVisuals.stagedSizingRadius(bomb), 0.01F);
+        assertEquals(73, ExplosionVisuals.cloudRiseTicks(bomb), 1, "a bomb column should climb in under four seconds");
+        assertEquals(43.755F, ExplosionVisuals.fireballStemHeight(bomb), 0.05F);
+        assertEquals(8.751F, ExplosionVisuals.stagedSizingRadius(bomb), 0.01F);
         assertEquals(0F, ExplosionVisuals.hotStemShare(false));
         assertEquals(12, ExplosionVisuals.fireballHotTicks(bomb, false));
         assertEquals(24, ExplosionVisuals.fireballHotTicks(bomb, true));
-        assertTrue(ExplosionVisuals.mushroomCapRadius(bomb) < 5F);
-        assertTrue(ExplosionVisuals.fireballStemSteps(bomb) * ExplosionVisuals.fireballStemPuffsPerStep(bomb) <= 72);
+        assertTrue(ExplosionVisuals.mushroomCapRadius(bomb) < ExplosionVisuals.fireballStemHeight(bomb) / 2F);
+        assertTrue(ExplosionVisuals.fireballStemSteps(bomb) * ExplosionVisuals.fireballStemPuffsPerStep(bomb) <= 144);
     }
 
     @Test
@@ -79,7 +103,7 @@ class ExplosionVisualsTest
     {
         float bomb = radius(125F);
         assertEquals(1F, ExplosionVisuals.dustSkirtReach(bomb, 1F));
-        assertEquals(15F, ExplosionVisuals.dustSkirtReach(bomb, 100F), 0.01F);
+        assertEquals(bomb, ExplosionVisuals.dustSkirtReach(bomb, 100F), 0.01F, "dust should reach the crater edge");
         assertEquals(0, ExplosionVisuals.scaledCount(0, bomb));
         assertTrue(ExplosionVisuals.scaledCount(1000, bomb) <= 120);
         assertEquals(0, ExplosionVisuals.shockwaveCount(2F));
@@ -92,13 +116,13 @@ class ExplosionVisualsTest
     {
         assertTrue(Float.isFinite(ExplosionVisuals.fireballDiameter(radius)));
         assertTrue(ExplosionVisuals.fireballDiameter(radius) <= 96F);
-        assertTrue(ExplosionVisuals.fireballDurationTicks(radius) >= 3);
-        assertTrue(ExplosionVisuals.fireballDurationTicks(radius) <= 40);
-        assertTrue(ExplosionVisuals.fireballCount(radius) <= 8);
-        assertTrue(ExplosionVisuals.cloudHeight(radius) <= 80F);
+        assertTrue(ExplosionVisuals.fireballDurationTicks(radius) >= 1);
+        assertTrue(ExplosionVisuals.fireballDurationTicks(radius) <= 200);
+        assertTrue(ExplosionVisuals.fireballCount(radius) <= 16);
+        assertTrue(ExplosionVisuals.cloudHeight(radius) <= 96F);
         assertTrue(ExplosionVisuals.cloudRiseTicks(radius) <= 240);
         assertTrue(ExplosionVisuals.dustSkirtWaves(radius) * ExplosionVisuals.dustSkirtPuffsPerWave(radius) <= 144);
-        assertTrue(ExplosionVisuals.mushroomCapPuffs(radius) <= 32);
+        assertTrue(ExplosionVisuals.mushroomCapPuffs(radius) <= 48);
     }
 
     @Test

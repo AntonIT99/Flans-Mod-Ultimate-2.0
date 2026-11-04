@@ -881,6 +881,7 @@
   "options.flansmodultimate.hdHitMarker": "HD Hit Marker",
   "options.flansmodultimate.headshotDamageModifier": "Headshot Damage Modifier",
   "options.flansmodultimate.heatCrewSpallDamage": "HEAT Crew Spall Damage",
+  "options.flansmodultimate.explosionParticleRange": "Explosion Particle Range",
   "options.flansmodultimate.heatDamageReference": "HEAT Damage Reference",
   "options.flansmodultimate.hideCrosshairForGuns": "Hide Crosshair For Guns",
   "options.flansmodultimate.hitMarkerAlpha": "Hit Marker Opacity",

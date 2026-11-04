@@ -416,6 +416,7 @@
   "options.flansmodultimate.distantContactUpdateInterval": "Intervallo di aggiornamento dei veicoli lontani",
   "options.flansmodultimate.distantContactsEnabled": "Invia veicoli lontani",
   "options.flansmodultimate.distantExplosionMinRadius": "Raggio min. delle esplosioni lontane",
+  "options.flansmodultimate.explosionParticleRange": "Portata particelle delle esplosioni",
   "options.flansmodultimate.distantExplosionRange": "Portata delle esplosioni lontane",
   "options.flansmodultimate.distantHorizonsContacts": "Veicoli lontani",
   "options.flansmodultimate.distantHorizonsContacts.tooltip": "Mostra i veicoli oltre la distanza di rendering delle entità come forme semplificate sul terreno lontano, compresi quelli che il server segnala oltre la portata di tracciamento, se lo consente.",

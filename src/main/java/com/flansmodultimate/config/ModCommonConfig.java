@@ -82,6 +82,7 @@ public final class ModCommonConfig
     public static final double DEFAULT_HEAT_DAMAGE_REFERENCE = 1100.0D;
     /** Damage dealt to each occupant of a part a HEAT jet has penetrated. Half a player's health. */
     public static final double DEFAULT_HEAT_CREW_SPALL_DAMAGE = 10.0D;
+    public static final double DEFAULT_EXPLOSION_PARTICLE_RANGE = 256.0D;
     /** Defaults of what is sent to players who draw far terrain with Distant Horizons. */
     public static final boolean DEFAULT_DISTANT_CONTACTS_ENABLED = true;
     public static final double DEFAULT_DISTANT_CONTACT_RANGE = 3072.0D;
@@ -301,6 +302,7 @@ public final class ModCommonConfig
     private static final Supplier<Double> MAX_BLAST_RADIUS;
     private static final Supplier<Double> HEAT_DAMAGE_REFERENCE;
     private static final Supplier<Double> HEAT_CREW_SPALL_DAMAGE;
+    private static final Supplier<Double> EXPLOSION_PARTICLE_RANGE;
 
     private static final Supplier<Boolean> DISTANT_CONTACTS_ENABLED;
     private static final Supplier<Double> DISTANT_CONTACT_RANGE;
@@ -705,6 +707,9 @@ public final class ModCommonConfig
             .defineInRange("heatDamageReference", DEFAULT_HEAT_DAMAGE_REFERENCE, 0D, 100000D);
         HEAT_CREW_SPALL_DAMAGE = builder.comment("Damage dealt to each occupant of a vehicle part that a HEAT jet penetrates, on vehicles using UseRealisticVehicleHealth.",
             "Scaled down like the vehicle damage when the jet barely penetrates. Set to 0 to disable crew spall.").defineInRange("heatCrewSpallDamage", DEFAULT_HEAT_CREW_SPALL_DAMAGE, 0D, 1000D);
+        EXPLOSION_PARTICLE_RANGE = builder.comment("Longest distance in blocks at which the fireball and smoke of heavy explosions such as bombs are drawn and sent to players.",
+            "Smaller explosions keep a shorter range that grows with their size. Clients scale it further with particleDistanceScale.")
+            .defineInRange("explosionParticleRange", DEFAULT_EXPLOSION_PARTICLE_RANGE, 128D, 1024D);
         builder.pop();
 
         builder.push("Distant Horizons Settings");
@@ -789,7 +794,7 @@ public final class ModCommonConfig
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
-            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get());
+            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1215,6 +1220,12 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null || config.enableKillMessages();
+    }
+
+    public static double explosionParticleRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_EXPLOSION_PARTICLE_RANGE : config.explosionParticleRange();
     }
 
     public static boolean showBotKillsInKillFeed()

@@ -881,6 +881,7 @@
   "options.flansmodultimate.hdHitMarker": "HD-Treffermarkierung",
   "options.flansmodultimate.headshotDamageModifier": "Schadensfaktor Kopftreffer",
   "options.flansmodultimate.heatCrewSpallDamage": "HEAT-Besatzungssplitterschaden",
+  "options.flansmodultimate.explosionParticleRange": "Reichweite der Explosionspartikel",
   "options.flansmodultimate.heatDamageReference": "HEAT-Referenzschaden",
   "options.flansmodultimate.hideCrosshairForGuns": "Fadenkreuz für Waffen ausblenden",
   "options.flansmodultimate.hitMarkerAlpha": "Treffermarkierung Deckkraft",

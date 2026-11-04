@@ -416,6 +416,7 @@
   "options.flansmodultimate.distantContactUpdateInterval": "Интервал обновления дальней техники",
   "options.flansmodultimate.distantContactsEnabled": "Отправлять дальнюю технику",
   "options.flansmodultimate.distantExplosionMinRadius": "Мин. радиус дальних взрывов",
+  "options.flansmodultimate.explosionParticleRange": "Дальность частиц взрывов",
   "options.flansmodultimate.distantExplosionRange": "Дальность дальних взрывов",
   "options.flansmodultimate.distantHorizonsContacts": "Дальняя техника",
   "options.flansmodultimate.distantHorizonsContacts.tooltip": "Показывать технику за дальностью прорисовки сущностей упрощёнными фигурами на дальнем ландшафте, включая ту, о которой сервер сообщает за пределами дальности отслеживания, если он это разрешает.",

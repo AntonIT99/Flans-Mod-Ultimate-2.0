@@ -54,6 +54,10 @@ public class PacketFlanExplosionParticles implements IClientPacket
     /** Keep the denser fragment spray fine-grained instead of firework-sized. */
     private static final float FRAG_SPARK_SCALE = 0.5F;
 
+    /** Blast radius at which 2.1 ejecta reach their largest size, and that size. */
+    private static final float LEGACY_MAX_SCALE_RADIUS = 60.0F;
+    private static final float LEGACY_MAX_PARTICLE_SCALE = 4.0F;
+
     /** How fast the smoke column climbs, per block of crater radius. Gravity arcs it over. */
     private static final float COLUMN_RISE_PER_RADIUS = 0.08F;
     /** How wide the foot of the column is, as a share of the crater radius. */
@@ -134,14 +138,23 @@ public class PacketFlanExplosionParticles implements IClientPacket
         float lifetimeScale = ExplosionVisuals.lifetimeScale(explosionRadius);
         boolean groundBurst = isGroundBurst(level, position);
 
-        spawnFlash();
-        spawnFireball(level);
+        // The flash, fireball and smoke of a heavy charge are what a bomber sees from far away, so
+        // they share the staged column's landmark range; ejecta and sparks keep the ordinary one.
+        double landmarkRange = ExplosionVisuals.landmarkRange(explosionRadius);
+        ClientHooks.RENDER.withLandmarkRange(landmarkRange, () ->
+        {
+            spawnFlash();
+            spawnFireball(level, lifetimeScale);
+        });
 
-        // Keep burning ejecta compact and short-lived; fragmentation has its own envelope cues.
+        // Heavy charges keep their burning ejecta compact and short-lived, since fragmentation has
+        // its own envelope cues; small rounds keep the livelier 2.1 sparks thrown across the blast.
+        float legacy = ExplosionVisuals.legacyWeight(explosionRadius);
         float diameter = ExplosionVisuals.fireballDiameter(explosionRadius);
-        float particleScale = Mth.clamp(diameter * 0.04F, 0.25F, 1.2F);
-        float ejectaSpeed = Math.min(1.5F, diameter * 0.04F);
-        spawn(level, FlanParticles.FM_FLARE, position, ExplosionVisuals.scaledCount(numSmoke, explosionRadius), ejectaSpeed, particleScale, lifetimeScale * 0.03F);
+        float legacyScale = 1.0F + Mth.clamp(blastRadius / LEGACY_MAX_SCALE_RADIUS, 0.0F, 1.0F) * (LEGACY_MAX_PARTICLE_SCALE - 1.0F);
+        float particleScale = Mth.lerp(legacy, Mth.clamp(diameter * 0.04F, 0.25F, 1.2F), legacyScale);
+        float ejectaSpeed = Mth.lerp(legacy, Math.min(1.5F, diameter * 0.04F), blastRadius * 0.12F);
+        spawn(level, FlanParticles.FM_FLARE, position, ExplosionVisuals.scaledCount(numSmoke, explosionRadius), ejectaSpeed, particleScale, lifetimeScale * Mth.lerp(legacy, 0.03F, 1F));
         spawn(level, FlanParticles.FM_DEBRIS_1, position, ExplosionVisuals.scaledCount(numDebris, explosionRadius), ejectaSpeed, particleScale, lifetimeScale);
 
         // The envelope cues go before the extra layers deliberately: they tell a player how far
@@ -149,9 +162,12 @@ public class PacketFlanExplosionParticles implements IClientPacket
         // budget it should be the decoration that thins out and not the information.
         spawnShockwave(level);
         spawnFragmentation(level, groundBurst);
-        for (ExplosionVisuals.Layer layer : ExplosionVisuals.LAYERS)
-            spawnLayer(level, layer, lifetimeScale, groundBurst);
-        spawnSmokeColumn(level);
+        ClientHooks.RENDER.withLandmarkRange(landmarkRange, () ->
+        {
+            for (ExplosionVisuals.Layer layer : ExplosionVisuals.LAYERS)
+                spawnLayer(level, layer, lifetimeScale, groundBurst);
+            spawnSmokeColumn(level);
+        });
 
         // The afterglow, dust skirt, fireball stem and mushroom cap play out over the following
         // ticks, so they draw on later ticks' particle budgets rather than competing with the above.
@@ -171,7 +187,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
             return;
 
         RandomSource random = level.random;
-        double spread = ExplosionVisuals.fireballDiameter(explosionRadius) * layer.spreadShare();
+        double spread = layer.spread(explosionRadius);
         double speed = ExplosionVisuals.fireballDiameter(explosionRadius) * layer.speedShare();
 
         for (int i = 0; i < count; i++)
@@ -257,14 +273,24 @@ public class PacketFlanExplosionParticles implements IClientPacket
     /**
      * One brief burst, with the scatter included in its diameter. Particle lifetimes are shortened
      * to the hot-phase budget rather than replenishing animated fire for several seconds.
-     * The staged smoke supplies the cooling cloud independently.
+     * The staged smoke supplies the cooling cloud independently. Small and medium rounds instead
+     * keep the 2.1 fireball, topped up for its whole duration as it cools from fire to grey puffs.
      */
-    private void spawnFireball(Level level)
+    private void spawnFireball(Level level, float lifetimeScale)
     {
         if (explosionRadius <= 0F)
             return;
-        float diameter = ExplosionVisuals.fireballDiameter(explosionRadius);
         int hotTicks = ExplosionVisuals.fireballHotTicks(explosionRadius, fiery);
+        if (ExplosionVisuals.legacyWeight(explosionRadius) > 0F)
+        {
+            float legacy = ExplosionVisuals.legacyWeight(explosionRadius);
+            ClientHooks.RENDER.spawnSustainedParticles(FlanParticles.FM_FIRE_EXPLOSION, FlanParticles.LARGE_EXPLODE, hotTicks, position.x, position.y, position.z,
+                ExplosionVisuals.fireballSpread(explosionRadius), explosionRadius * 0.02D * legacy, ExplosionVisuals.fireballScale(explosionRadius),
+                ExplosionVisuals.fireballCount(explosionRadius), ExplosionVisuals.fireballDurationTicks(explosionRadius), lifetimeScale);
+            return;
+        }
+
+        float diameter = ExplosionVisuals.fireballDiameter(explosionRadius);
         String particle = hotTicks > 0 ? FlanParticles.FM_FIRE_EXPLOSION : FlanParticles.LARGE_EXPLODE;
         int duration = hotTicks > 0 ? hotTicks : ExplosionVisuals.fireballDurationTicks(explosionRadius);
         // Fire sprites live 8-11 ticks; the grey vanilla puff lives 6-9. Bound the final puff's life.

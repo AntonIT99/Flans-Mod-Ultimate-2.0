@@ -416,6 +416,7 @@
   "options.flansmodultimate.distantContactUpdateInterval": "远处载具更新间隔",
   "options.flansmodultimate.distantContactsEnabled": "发送远处载具",
   "options.flansmodultimate.distantExplosionMinRadius": "远处爆炸最小半径",
+  "options.flansmodultimate.explosionParticleRange": "爆炸粒子范围",
   "options.flansmodultimate.distantExplosionRange": "远处爆炸范围",
   "options.flansmodultimate.distantHorizonsContacts": "远处载具",
   "options.flansmodultimate.distantHorizonsContacts.tooltip": "将实体渲染距离之外的载具以简化形状显示在远景地形上，包括服务器在追踪范围之外报告的载具（若服务器允许）。",

@@ -51,6 +51,28 @@ public final class ParticleHelper
     private static int particlesCreatedThisTick;
     private static ClientLevel emissionLevel;
     private static final Map<Entity, List<Particle>> OWNED_COLUMNS = new HashMap<>();
+    /** Natural range of the effect currently spawning inside {@link #withLandmarkRange}, or zero outside one. */
+    private static double landmarkRangeOverride;
+
+    /**
+     * Runs {@code spawner} with every particle it creates treated as part of a landmark drawn to
+     * {@code range}, so a heavy explosion's fireball and smoke are seen as far as its column. A
+     * range no longer than an ordinary particle's changes nothing. Client thread only.
+     */
+    @SuppressWarnings("java:S2696") // Scoped client-thread state, restored in finally.
+    public static void withLandmarkRange(double range, Runnable spawner)
+    {
+        double previous = landmarkRangeOverride;
+        landmarkRangeOverride = Math.max(previous, range);
+        try
+        {
+            spawner.run();
+        }
+        finally
+        {
+            landmarkRangeOverride = previous;
+        }
+    }
 
     /**
      * Spawns a sub-particle from inside another particle's tick, honouring this mod's particle
@@ -132,7 +154,8 @@ public final class ParticleHelper
 
         boolean landmark = normalized.equals(FlanParticles.FM_NU_FLASH) || normalized.equals(FlanParticles.FM_TANK_DEATH) || normalized.equals(FlanParticles.FM_SHIP_DEATH)
             || normalized.equals(FlanParticles.FM_NUKE);
-        if (!(landmark ? shouldSpawnLandmark(x, y, z, 320D) : shouldSpawn(x, y, z)))
+        double range = landmark ? Math.max(320D, landmarkRangeOverride) : landmarkRangeOverride;
+        if (!(range > DEFAULT_PARTICLE_RANGE ? shouldSpawnLandmark(x, y, z, range) : shouldSpawn(x, y, z)))
             return null;
 
         Optional<LegacyResourceRequest> legacyRequest = LegacyResourceRequest.parse(normalized, false);

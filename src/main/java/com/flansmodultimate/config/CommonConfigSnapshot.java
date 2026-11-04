@@ -170,10 +170,11 @@ public record CommonConfigSnapshot(
     int driveableWreckLifetime,
     double driveableMeleeDamageThreshold,
     boolean forceUncensoredContent,
-    boolean showBotKillsInKillFeed
+    boolean showBotKillsInKillFeed,
+    double explosionParticleRange
 )
 {
-    public static final int CURRENT_VERSION = 49;
+    public static final int CURRENT_VERSION = 50;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -351,6 +352,7 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.driveableMeleeDamageThreshold);
         buf.writeBoolean(s.forceUncensoredContent);
         buf.writeBoolean(s.showBotKillsInKillFeed);
+        buf.writeDouble(s.explosionParticleRange);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -519,7 +521,8 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readDouble(),
             buf.readBoolean(),
-            buf.readBoolean()
+            buf.readBoolean(),
+            buf.readDouble()
         );
     }
 

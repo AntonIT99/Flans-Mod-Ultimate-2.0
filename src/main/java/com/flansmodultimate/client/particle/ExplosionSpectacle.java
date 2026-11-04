@@ -217,7 +217,7 @@ public final class ExplosionSpectacle
             double inner = sizingRadius * 0.4D;
             double ring = Mth.lerp(progress, inner, skirtReach * 0.85D);
             double push = Math.max(0.05D, (skirtReach - ring) * 0.06D);
-            float size = sizingRadius * 0.15F * (1F + 0.4F * progress);
+            float size = sizingRadius * 0.2F * (1F + 0.4F * progress);
             int lifetime = Math.max(20, Math.round((35F + 45F * progress) * lifetimeScale));
 
             for (int i = 0; i < skirtPuffs; i++)
@@ -242,7 +242,7 @@ public final class ExplosionSpectacle
             float progress = (step + 1) / (float) stemSteps;
             double height = stemHeight * (1D - (1D - progress) * (1D - progress)) * (0.85D + random.nextDouble() * 0.15D);
             double width = sizingRadius * (0.4D + 0.5D * progress);
-            float size = sizingRadius * 0.16F * (1F + 0.3F * progress);
+            float size = sizingRadius * 0.26F * (1F + 0.3F * progress);
             int lifetime = Math.max(30, Math.round((70F + 70F * progress) * lifetimeScale));
             BlastPuffParticle.Look look = stemLook(progress);
 
@@ -285,7 +285,7 @@ public final class ExplosionSpectacle
         private void emitCapPart(ClientLevel level, RandomSource random, int count)
         {
             double top = position.y + stemHeight;
-            float size = sizingRadius * 0.2F;
+            float size = sizingRadius * 0.32F;
             int lifetime = Math.max(60, Math.round(150F * lifetimeScale));
 
             for (int i = 0; i < count; i++)
