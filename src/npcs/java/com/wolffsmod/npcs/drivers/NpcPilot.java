@@ -29,7 +29,9 @@ import java.util.*;
  * guns fixed to its hull bear on it, and lands once it has stayed idle for a while. Either
  * pulls up whenever the ground comes too close, and either keeps out of the reach of its own rounds: a plane breaks off
  * its run before they could catch it, and a rotorcraft draws off to the edge of their reach rather than hovering inside
- * it. One per NPC, kept by its {@link NpcDriver}. Server thread.
+ * it. Bombs are the exception: an aircraft bombing its target climbs above the reach of their blast instead, a plane flying
+ * level over the point it lets them go from and a rotorcraft hovering over it. One per NPC, kept by its {@link NpcDriver}.
+ * Server thread.
  */
 final class NpcPilot
 {
@@ -74,6 +76,8 @@ final class NpcPilot
     /** Degrees off its goal beyond which a plane on the ground turns before it rolls for take-off, and the throttle it taxis at. */
     private static final float TAXI_ANGLE = 30F;
     private static final float TAXI_THROTTLE = 0.35F;
+    /** Horizontal blocks from its release point within which a plane that has left it behind has flown over it. */
+    private static final double BOMB_PASS_DISTANCE = 24D;
 
     /** Fastest a rotorcraft flies to its goal, in blocks a tick, and how much faster per block it is still away. */
     private static final double ROTOR_SPEED = 0.5D;
@@ -111,6 +115,9 @@ final class NpcPilot
     private Settings settings = Settings.DEFAULTS;
     /** Blocks from its target within which the aircraft's own rounds would catch it, as read this tick. */
     private double standoff;
+    /** The bomb run the aircraft flies on its target, as read this tick; null while it drops nothing on it. */
+    @Nullable
+    private BombRun bombRun;
     private final PlaneLanding landing = new PlaneLanding();
     /** The speed a plane cruises at, learnt as it cruises; 0 until it has. */
     private double cruiseSpeed;
@@ -144,8 +151,20 @@ final class NpcPilot
     /** What a pilot does. */
     enum Phase
     {
-        PARKED, TAXI, TAKEOFF, CRUISE, CIRCLE, ATTACK, DIVE, EXTEND, PULL_UP, APPROACH, FINAL, FLARE, ROLLOUT, TRAVEL, HOVER, LANDING
+        PARKED, TAXI, TAKEOFF, CRUISE, CIRCLE, ATTACK, DIVE, BOMB_RUN, EXTEND, PULL_UP, APPROACH, FINAL, FLARE, ROLLOUT, TRAVEL, HOVER, LANDING
     }
+
+    /**
+     * A bomb run on the NPC's target.
+     *
+     * @param release
+     *            where across the ground a bomb let go now would have to leave the aircraft to come down on the target
+     * @param altitude
+     *            the lowest height the aircraft lets its bombs go from, above the reach of their blast; negative
+     *            infinity while it does not keep clear of its own blast
+     */
+    record BombRun(Vec3 release, double altitude)
+    {}
 
     /**
      * How an NPC wants its aircraft flown, from its Wolff's Mod settings.
@@ -231,6 +250,7 @@ final class NpcPilot
         lastCommand = null;
         settings = Settings.DEFAULTS;
         standoff = 0D;
+        bombRun = null;
     }
 
     /**
@@ -272,9 +292,11 @@ final class NpcPilot
      * @param standoff
      *            blocks from its target within which the aircraft's own rounds would catch it; 0 while it carries none
      *            that go off
+     * @param bombRun
+     *            the bomb run to fly on the target, or null while the aircraft drops nothing on it
      * @return the controls to hold, or none when the aircraft cannot be read
      */
-    Set<DriveControl> fly(EntityNPCInterface npc, Entity aircraft, AircraftMode mode, @Nullable Vec3 goal, double standoff)
+    Set<DriveControl> fly(EntityNPCInterface npc, Entity aircraft, AircraftMode mode, @Nullable Vec3 goal, double standoff, @Nullable BombRun bombRun)
     {
         DriveableAttitude attitude = FlansEntityTypes.getAttitude(aircraft).orElse(null);
         if (attitude == null)
@@ -295,7 +317,14 @@ final class NpcPilot
         Vec3 home = new Vec3(npc.getStartXPos(), npc.getStartYPos(), npc.getStartZPos());
         // Short of fuel, an aircraft gives up its target and its goal and heads home to land.
         LivingEntity target = !flight.lowOnFuel() && npc.getTarget() != null && npc.getTarget().isAlive() ? npc.getTarget() : null;
-        Vec3 destination = flight.lowOnFuel() ? home : standoffPoint(position, target, goal);
+        this.bombRun = target == null ? null : bombRun;
+        Vec3 destination;
+        if (flight.lowOnFuel())
+            destination = home;
+        else if (this.bombRun != null && mode == AircraftMode.ROTORCRAFT)
+            destination = this.bombRun.release();
+        else
+            destination = standoffPoint(position, target, goal);
         point = target != null ? target.getBoundingBox().getCenter() : destination;
         FlightControl.Command command = mode == AircraftMode.ROTORCRAFT ? rotor(flight, destination, target) : wings(level, flight, destination, target, home);
         rolling = flight.grounded() && command.throttle() > 0F;
@@ -409,6 +438,8 @@ final class NpcPilot
      */
     private Course attack(Level level, Flight flight, LivingEntity target)
     {
+        if (bombRun != null)
+            return bombRun(level, flight, target, bombRun);
         Vec3 aim = target.getBoundingBox().getCenter();
         double distance = horizontal(flight.position(), aim);
         long now = level.getGameTime();
@@ -435,6 +466,49 @@ final class NpcPilot
         phase = Phase.DIVE;
         float elevation = (float) Math.toDegrees(Math.atan2(aim.y - flight.position().y, Math.max(1.0E-3D, distance)));
         return new Course(bearing(flight.position(), aim), Mth.clamp(elevation, -MAX_DIVE, MAX_ATTACK_CLIMB));
+    }
+
+    /**
+     * A bomb run: rather than diving on its target, the plane flies level for the point its bombs leave it from, high enough
+     * above the target that their blast cannot reach it, flies on once it has passed over that point, and comes round for
+     * another run from far enough out to line up.
+     */
+    private Course bombRun(Level level, Flight flight, LivingEntity target, BombRun run)
+    {
+        double height = Math.max(flight.terrain() + settings.attackHeight(), run.altitude());
+        long now = level.getGameTime();
+        float heading = flight.attitude().heading();
+        if (extending && now >= extendUntil && horizontal(flight.position(), target.position()) > REENGAGE_DISTANCE)
+            extending = false;
+        if (!extending && overflown(flight.position(), heading, run.release(), BOMB_PASS_DISTANCE))
+        {
+            extending = true;
+            extendUntil = now + EXTEND_TICKS;
+            extendHeading = heading;
+        }
+        if (extending)
+        {
+            phase = Phase.EXTEND;
+            return new Course(extendHeading, holdHeight(flight, Math.max(height, flight.terrain() + settings.cruiseHeight())));
+        }
+        phase = Phase.BOMB_RUN;
+        point = run.release();
+        return new Course(bearing(flight.position(), run.release()), holdHeight(flight, height));
+    }
+
+    /**
+     * @param heading
+     *            degrees the plane flies toward
+     * @param within
+     *            horizontal blocks from the point within which the plane has to be
+     * @return whether the plane has the point behind it and is still close to it: it has just flown over it
+     */
+    static boolean overflown(Vec3 position, float heading, Vec3 point, double within)
+    {
+        Vec3 forward = Vec3.directionFromRotation(0F, heading);
+        double x = point.x - position.x;
+        double z = point.z - position.z;
+        return x * forward.x + z * forward.z < 0D && x * x + z * z < within * within;
     }
 
     /** Flies to a place at cruising height and circles there. */
@@ -495,11 +569,14 @@ final class NpcPilot
             float wantedHeading = bearing(flight.position(), goal);
             boolean onCourse = Math.abs(Mth.wrapDegrees(wantedHeading - heading)) < ROTOR_TURN_ANGLE;
             Tilt tilt = tilt(flight, onCourse ? Math.min(ROTOR_SPEED, distance * ROTOR_SPEED_PER_BLOCK) : 0D);
-            return new FlightControl.Command(tilt.pitch(), tilt.bank(), wantedHeading, collective(flight, false));
+            return new FlightControl.Command(tilt.pitch(), tilt.bank(), wantedHeading, collective(flight, false, bombAltitude(flight.terrain() + settings.hoverHeight())));
         }
         Tilt tilt = tilt(flight, 0D);
         if (target == null)
             return new FlightControl.Command(tilt.pitch(), tilt.bank(), heading, collective(flight, settling));
+        // Over the point its bombs leave it from, it holds still above their blast rather than nosing down at its target.
+        if (bombRun != null)
+            return new FlightControl.Command(tilt.pitch(), tilt.bank(), heading, collective(flight, false, bombAltitude(flight.terrain() + settings.hoverHeight())));
         // Hovering on its target, it points its nose at it for its guns. Against an aircraft it holds the altitude it fights
         // at as well, so that the shot its hull has to make stays within the little its nose comes up.
         Vec3 aim = target.getBoundingBox().getCenter();
@@ -560,6 +637,12 @@ final class NpcPilot
     {
         double hold = terrain + hoverHeight;
         return airborne ? Math.max(hold, targetY) : hold;
+    }
+
+    /** @return the height the rotorcraft flies at: that given, or the height its bomb run lets its bombs go from where that is higher */
+    private double bombAltitude(double hold)
+    {
+        return bombRun == null ? hold : Math.max(hold, bombRun.altitude());
     }
 
     /** @return the collective that climbs a rotorcraft to its hover height and holds it there, or lets it down to land */

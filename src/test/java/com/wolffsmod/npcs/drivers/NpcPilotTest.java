@@ -88,4 +88,15 @@ class NpcPilotTest
         assertTrue(settings.shortOfFuel(0.14D));
         assertFalse(settings.shortOfFuel(0.15D));
     }
+
+    @Test
+    void aPlaneOnABombRunHasFlownOverItsReleasePointOnceItIsCloseBehindIt()
+    {
+        // Heading 0 flies toward +z.
+        Vec3 position = new Vec3(0D, 80D, 0D);
+        assertFalse(NpcPilot.overflown(position, 0F, new Vec3(0D, 64D, 10D), 24D));
+        assertTrue(NpcPilot.overflown(position, 0F, new Vec3(0D, 64D, -10D), 24D));
+        // A point far behind is one it turned away from, not one it just passed over.
+        assertFalse(NpcPilot.overflown(position, 0F, new Vec3(0D, 64D, -100D), 24D));
+    }
 }

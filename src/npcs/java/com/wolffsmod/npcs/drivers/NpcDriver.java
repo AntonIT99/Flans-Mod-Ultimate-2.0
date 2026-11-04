@@ -83,6 +83,8 @@ public final class NpcDriver
     private static final int PASS_TICKS = 200;
     /** Blocks past the reach of its own rounds a driveable pulls back to, so that it does not stop on the edge of its own blast. */
     private static final double STANDOFF_MARGIN = 3D;
+    /** Blocks above the reach of their blast an aircraft climbs to before it lets its bombs go. */
+    private static final double BOMB_ALTITUDE_MARGIN = 4D;
 
     /** Driveables the NPC gave up on, with the game time from which it may try them again. */
     private final Map<UUID, Long> refused = new HashMap<>();
@@ -146,6 +148,9 @@ public final class NpcDriver
     private long weaponsAt = Long.MIN_VALUE;
     private double primaryBlast;
     private double secondaryBlast;
+    /** Whether each bank has bombs loaded, which fall away rather than being fired, as last read. */
+    private boolean primaryDrops;
+    private boolean secondaryDrops;
     /** Whether a bank that points along the hull, such as a ship's torpedo tubes, has a round left to fire. */
     private boolean bowWeapon;
     /** Blocks per tick the round of that bank makes, to lay the bow where it meets a moving target; NaN while that is not known. */
@@ -498,6 +503,8 @@ public final class NpcDriver
         weaponsAt = now;
         primaryBlast = seat.getDriverWeaponDetonation(false).map(NpcBlastSafety::reach).orElse(0D);
         secondaryBlast = seat.getDriverWeaponDetonation(true).map(NpcBlastSafety::reach).orElse(0D);
+        primaryDrops = seat.getDriverWeaponBallistics(false).map(WeaponBallistics::dropped).orElse(false);
+        secondaryDrops = seat.getDriverWeaponBallistics(true).map(WeaponBallistics::dropped).orElse(false);
         bowWeapon = bowWeapon(seat, false) || bowWeapon(seat, true);
         bowSpeed = bowSpeed(seat);
     }
@@ -533,6 +540,84 @@ public final class NpcDriver
     private double blastReach(boolean secondary)
     {
         return secondary ? secondaryBlast : primaryBlast;
+    }
+
+    /** @return whether the bank has bombs loaded */
+    private boolean drops(boolean secondary)
+    {
+        return secondary ? secondaryDrops : primaryDrops;
+    }
+
+    /**
+     * @return how far the furthest-reaching round the aircraft fires, rather than drops, reaches: what it has to keep its
+     *         distance from across the ground, since it keeps clear of its bombs by height instead
+     */
+    private double fireReach()
+    {
+        return Math.max(primaryDrops ? 0D : primaryBlast, secondaryDrops ? 0D : secondaryBlast);
+    }
+
+    /**
+     * The bomb run an aircraft flies on its target: on a target on the ground, either worth its bombs or the only kind
+     * of attack its weapons make, with the main bank's bombs where both banks carry them.
+     *
+     * @return the run, or null while it has no bombs for the target
+     */
+    @Nullable
+    private NpcPilot.BombRun bombRun(EntityNPCInterface npc, ISeat seat, Entity aircraft)
+    {
+        LivingEntity target = npc.getTarget();
+        if (target == null || !target.isAlive() || !primaryDrops && !secondaryDrops || NpcBombTargets.airborne(target.getRootVehicle()))
+            return null;
+        boolean secondary = !primaryDrops;
+        boolean guns = rangedBank(seat, false) && !primaryDrops || rangedBank(seat, true) && !secondaryDrops;
+        if (guns && !NpcBombTargets.worthBombing(target))
+            return null;
+        Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
+        Optional<WeaponBallistics> ballistics = seat.getDriverWeaponBallistics(secondary);
+        if (origin.isEmpty() || ballistics.isEmpty())
+            return null;
+        WeaponAim.Fall fall = WeaponAim.fall(origin.get(), aircraft.getDeltaMovement(), ballistics.get().gravity(), ballistics.get().drag(), target.getY());
+        Vec3 lead = bombLead(npc, target);
+        Vec3 meeting = target.position().add(lead.x * fall.ticks(), 0D, lead.z * fall.ticks());
+        double standoff = NpcBlastSafety.standoff(npc, blastReach(secondary));
+        return new NpcPilot.BombRun(releasePoint(origin.get(), fall.impact(), meeting), bombAltitude(target.getY(), standoff));
+    }
+
+    /**
+     * @param origin
+     *            where a bomb let go now leaves the aircraft
+     * @param impact
+     *            where it comes down
+     * @param meeting
+     *            where it has to come down to meet the target
+     * @return where across the ground the bomb has to leave the aircraft to come down there, at the height of the meeting
+     */
+    static Vec3 releasePoint(Vec3 origin, Vec3 impact, Vec3 meeting)
+    {
+        return new Vec3(meeting.x - (impact.x - origin.x), meeting.y, meeting.z - (impact.z - origin.z));
+    }
+
+    /**
+     * @param standoff
+     *            blocks from where they go off within which the aircraft's bombs would catch it; 0 while it does not keep
+     *            clear of their blast
+     * @return the lowest height above the target a bomb is let go from, clear of its blast; negative infinity without a standoff
+     */
+    static double bombAltitude(double targetY, double standoff)
+    {
+        return standoff > 0D ? targetY + standoff + BOMB_ALTITUDE_MARGIN : Double.NEGATIVE_INFINITY;
+    }
+
+    /**
+     * @param standoff
+     *            blocks from where they go off within which the aircraft's bombs would catch it
+     * @return whether a bomb let go from that height above its target would catch the aircraft: it flies on above where the
+     *         bomb comes down, so the height is how close it is to the blast
+     */
+    static boolean belowOwnBlast(double originY, double targetY, double standoff)
+    {
+        return standoff > 0D && originY - targetY < standoff;
     }
 
     /** Records that the NPC crews a driveable this tick, for the movement debug and to notice when it is thrown out. */
@@ -588,7 +673,7 @@ public final class NpcDriver
         long now = npc.level().getGameTime();
         begin(now);
         refreshWeapons(seat, now);
-        Set<DriveControl> controls = pilot.fly(npc, aircraft, mode, goal(npc), NpcBlastSafety.standoff(npc, blastReach()));
+        Set<DriveControl> controls = pilot.fly(npc, aircraft, mode, goal(npc), NpcBlastSafety.standoff(npc, fireReach()), bombRun(npc, seat, aircraft));
         report = new Report(pilot.getPhase().name().toLowerCase(Locale.ROOT), pilot.getPoint(), controls, pilot::describe);
         // An aircraft that cannot get off the ground, for want of fuel or of room, is given up.
         if (stuck(aircraft.position(), pilot.isRolling(), now) && ++recoveries > GIVE_UP)
@@ -895,11 +980,13 @@ public final class NpcDriver
         Vec3 line = aimPoint.subtract(origin.get());
         if (line.lengthSqr() > range * range)
             return false;
-        // What this bank has loaded would catch the driveable itself from here; it waits until the range has opened.
-        if (NpcBlastSafety.tooClose(npc, target, blastReach(secondary)))
-            return false;
         Optional<WeaponBallistics> ballistics = seat.getDriverWeaponBallistics(secondary);
-        if (ballistics.isPresent() && ballistics.get().dropped())
+        boolean dropped = ballistics.isPresent() && ballistics.get().dropped();
+        // What this bank has loaded would catch the driveable itself from here; it waits until the range has opened, or
+        // for a bomb, which the aircraft flies on above, until it is high enough above the target.
+        if (dropped ? belowOwnBlast(origin.get().y, target.getY(), NpcBlastSafety.standoff(npc, blastReach(secondary))) : NpcBlastSafety.tooClose(npc, target, blastReach(secondary)))
+            return false;
+        if (dropped)
             return bombsAway(origin.get(), driveable.getDeltaMovement(), ballistics.get(), target, bombLead(npc, target));
         if (direction.get().dot(launch(npc, seat, secondary, line)) < FIRE_CONE)
             return false;
@@ -1045,6 +1132,8 @@ public final class NpcDriver
         weaponsAt = Long.MIN_VALUE;
         primaryBlast = 0D;
         secondaryBlast = 0D;
+        primaryDrops = false;
+        secondaryDrops = false;
         angling.reset();
         bowWeapon = false;
         course = null;
