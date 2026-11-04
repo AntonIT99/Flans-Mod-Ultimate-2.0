@@ -6,13 +6,15 @@ Audited `run/flan` and `src/main` using the current `ContentManager`, `EnumType`
 
 Recipe-grid rows and the four armor-recipe body rows following `AddArmour`/`AddArmor` were treated as data, not parameters. Obvious delimiter, truncated-comment, numeric-only, array-literal, and pasted-code fragments were also excluded from findings. Case was normalized exactly as `TypeFile` does. Inherited readers, `GunAnimationConfig`, `AmmoOverrides`, `VehicleArmorSpecReader`, `RealWorldSpecReader`, category injection, and direct `TypeFile` lookups were checked.
 
-Remaining recorded findings: **278 UNPARSED**, **0 PARSED_UNUSED**, and **0 UNCERTAIN** distinct `(type, parameter)` pairs.
+Remaining recorded findings: **276 UNPARSED**, **0 PARSED_UNUSED**, and **0 UNCERTAIN** distinct `(type, parameter)` pairs.
 
 Refresh on 2026-11-04: removed 12 confirmed active entries (depth-charge controls, HEAT, melee/shield/mode-switch sounds, and vehicle/plane overheating controls) after tracing current parsers and consumers. Removed three orphan summary rows (`BULLET / Skin`, `GUN / DamageVsVehicles`, `VEHICLE / TurretRotationSpeed`) that had no detailed finding/evidence; these are not reclassified as active. The corpus totals above describe the original installed-pack audit; this is a targeted correction, not a fresh exhaustive audit. The external TaP Redemption installation inspected for feature suggestions is a separate corpus and is not included in those totals. Unreviewed findings still need confirmation against current code before implementation decisions.
 
 Implemented follow-up (2026-11-04): removed 12 further active findings for armor reload pouches and their `OldGun` / `RepeatingGun` matching flags, per-seat occupant visibility, and ammunition armor-impact sounds. The supported legacy iron-sight correction parameters were not findings in the original corpus. Current entry count is reconciled with the summary table; this does not revalidate the other entries.
 
 Legacy speed/handling follow-up (2026-11-04): removed four active alias findings (`BULLET / speedMultiplier`, `BULLET / LockOnToVehicle`, `GUN / CanLockOnAngle`, `GUN / LockOnToVehicle`). The ammunition multiplier applies only to fallback velocity; explicit bullet speed fields and ammunition-specific weapon speed overrides bypass it. `AimTimeConstant` and `RunPosTime` now have client presentation consumers; neither was an entry in the original audit corpus.
+
+Rate/description/audio follow-up (2026-11-04): `GUN / RPM` and plural `Descriptions` findings are removed now that their shared parser paths are active. Canonical `RoundsPerMin`, including category-injected values, wins over `RPM`. `ActionEndSound` and distant detonation audio now have native consumers; they were not entries in this original audit corpus.
 
 ## Unparsed parameters
 
@@ -211,14 +213,6 @@ Confidence: HIGH
 ### BULLET / DamageVsEntities — UNPARSED
 
 Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/GenericMGAmmo.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/MG2015Ammo.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/MG_BrenM5-200Rounds.txt; 13 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### BULLET / Descriptions — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/SAR AK-47 Ammo Tracer.txt; 1 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -747,14 +741,6 @@ Confidence: HIGH
 ### GUN / recoilElevator — UNPARSED
 
 Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/guns/BR Henry 1860.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/BR SharpsRifle.txt; run/flan/TaP Northern Aggression Pack.zip!/guns/SR Enfield 1853.txt; 48 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
-### GUN / RPM — UNPARSED
-
-Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/guns/AR AK47.txt; run/flan/Tyrants And Plebeians OHIO.zip!/guns/AR AVT-40.txt; run/flan/Tyrants And Plebeians OHIO.zip!/guns/AR BAR.txt; 39 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -2269,7 +2255,6 @@ Confidence: HIGH
 | BULLET | `ciwsBullet` | UNPARSED | 1 | 25 | HIGH |
 | BULLET | `DamagaVsPlanes` | UNPARSED | 1 | 3 | HIGH |
 | BULLET | `DamageVsEntities` | UNPARSED | 1 | 13 | HIGH |
-| BULLET | `Descriptions` | UNPARSED | 1 | 1 | HIGH |
 | BULLET | `dynamicBodyArmorPen` | UNPARSED | 2 | 144 | HIGH |
 | BULLET | `dynamicBulletDelay` | UNPARSED | 2 | 147 | HIGH |
 | BULLET | `dynamicDamage` | UNPARSED | 2 | 147 | HIGH |
@@ -2336,7 +2321,6 @@ Confidence: HIGH
 | GUN | `RandomRecoilYaw` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `RechargeRecipe` | UNPARSED | 1 | 2 | HIGH |
 | GUN | `recoilElevator` | UNPARSED | 2 | 48 | HIGH |
-| GUN | `RPM` | UNPARSED | 1 | 39 | HIGH |
 | GUN | `SecondaryAmmo` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `SecondaryDamage` | UNPARSED | 1 | 1 | HIGH |
 | GUN | `SecondaryMode` | UNPARSED | 1 | 1 | HIGH |

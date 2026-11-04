@@ -33,6 +33,8 @@ public class GunAnimations
     protected float lastPumped = -1F;
     /** Delayed Reload Animations : Doing the delayed animation */
     protected boolean pumping;
+    /** True for the client tick in which a pump/bolt cycle closes. */
+    protected boolean pumpFinished;
 
     /** Charge handle variables */
     protected int timeUntilCharge;
@@ -149,6 +151,7 @@ public class GunAnimations
 
     public void update()
     {
+        pumpFinished = false;
         secondarySwitchRemaining = Math.max(0, secondarySwitchRemaining - 1);
         // Assign values
         lastPumped = pumped;
@@ -218,7 +221,10 @@ public class GunAnimations
         {
             pumped += 2F / timeToPumpFor;
             if (pumped >= 0.999F)
+            {
                 pumping = false;
+                pumpFinished = true;
+            }
         }
         if (charging)
         {

@@ -369,7 +369,8 @@ Vehicles play distant-fire and distant-detonation sounds, track and drift loops,
 
 Target checked: `T/common/types/GunType` (distant gun sounds for infantry and deployed guns)
 **Present (verified 2026-11-04):** infantry and deployed-gun distant sounds, plus driveable-bank `DistantSoundPrimary` / `DistantSoundSecondary`, `DistantSoundRange`, and `farSound` / `farSoundRange` aliases.
-Missing: distant detonation audio, and track, drift, dive-siren and sonic-boom audio.
+**Present (additional verification 2026-11-04):** shootable `DistantDetonateSound` / `DistantDetonateSoundRange`, sent on the server to listeners beyond near explosion audio reach.
+Missing: track, drift, dive-siren and sonic-boom audio.
 
 ### Door-state passenger visibility — PARTIAL
 
@@ -705,3 +706,5 @@ These findings were removed from the active gap sections and summary table after
 Vehicle weapon overheating is implemented: opt-in `OverheatLimit`, `OverheatPenalty`, `CoolingBonus`, `OverheatSound`, shared mounted-weapon heat, server-enforced cooling and lockouts, and synchronized driver HUD feedback. Main-mod commit `55168e36d`. Door-dependent occupant visibility is implemented in `5130026f8`; gun equip and distant bank sounds in `3ca23865e`. These are targeted corrections; other older findings have not all been re-audited.
 
 Compatibility follow-up (2026-11-04): gun `IronSightOffset` (raw legacy render translation) and `IronSightPitch` (aim-blended rotation) now affect first-person rendering only. Pouch, seat, and armor-audio findings above reflect their implementation, not a full re-audit of the remaining reference features.
+
+Additional rate/audio compatibility (2026-11-04): gun `RPM` aliases canonical/category `RoundsPerMin` at lower priority, `Descriptions` aliases `Description`, and native player bolt/pump closing supports optional `ActionEndSound` with server-validated per-shot/reload permissions. This is a timing adaptation to native animations, not glTF clip playback.

@@ -43,6 +43,25 @@ class GunHandlingTimingTest
             assertEquals(1F, animations.getSprintTransitionProgress());
     }
 
+    @Test
+    void boltClosingIsReportedOnceAtTheEndOfTheCycle()
+    {
+        GunAnimations animations = new GunAnimations();
+        animations.setPumping(true);
+        animations.setTimeToPumpFor(4);
+        animations.setPumped(-1F);
+        for (int i = 0; i < 3; i++)
+        {
+            animations.update();
+            assertFalse(animations.isPumpFinished());
+        }
+        animations.update();
+        assertTrue(animations.isPumpFinished());
+        assertFalse(animations.isPumping());
+        animations.update();
+        assertFalse(animations.isPumpFinished());
+    }
+
     // Constant inputs deliberately exercise every eligibility/visibility branch.
     @SuppressWarnings("ConstantValue")
     @Test

@@ -645,6 +645,7 @@ public final class ShootingHelper
         }
 
         playDetonateSound(level, type, position, shootable);
+        DistantDetonationSounds.send(level, type, position, shootable);
         doExplosion(level, type, position, shootable, causingEntity);
         if (!(type instanceof GrenadeType grenade && grenade.isUseVanillaExplosion()))
             spreadFire(level, type, position, true);
@@ -679,6 +680,7 @@ public final class ShootingHelper
         if (level.isClientSide)
             return;
 
+        DistantDetonationSounds.send(level, type, position, shootable);
         doExplosion(level, type, position, shootable, causingEntity);
         spreadFire(level, type, position, false);
         spawnFlakParticles(level, type, position);

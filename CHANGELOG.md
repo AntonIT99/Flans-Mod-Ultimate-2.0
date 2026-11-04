@@ -4,6 +4,11 @@
 
 ## Highlights
 
+* Gun `RPM` is accepted as a fallback alias of `RoundsPerMin`; category-provided `RoundsPerMin` retains priority over pack `RPM`
+* Content definitions accept `Descriptions` as an alias of `Description`, with the canonical spelling taking priority
+* Gun `ActionEndSound` plays once when the native bolt or pump closes, with separate server-validated sound allowances for accepted shots and reloads
+* Bullets and grenades support `DistantDetonateSound` and `DistantDetonateSoundRange` (default 900 blocks), heard outside the near explosion sound range
+
 * Legacy `speedMultiplier` aliases `BulletSpeedMultiplier` for ammunition fallback speed; declared bullet `MuzzleVelocity` / `BulletSpeed`, belt-round velocities and ammunition-specific weapon speed overrides now bypass the ammunition multiplier
 * Guns accept `CanLockOnAngle` and guns and bullets accept singular `LockOnToVehicle` as aliases; existing canonical spellings take precedence when both are present
 * Gun `AimTimeConstant` controls aiming transition smoothing, and authored `RunPosTime` controls smooth entry into and recovery from the sprint pose; zero timing switches instantly and unset fields preserve existing behavior

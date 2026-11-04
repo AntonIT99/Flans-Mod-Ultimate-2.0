@@ -50,10 +50,15 @@ public class PacketRequestPlaySound implements IServerPacket
         ItemStack stack = player.getItemInHand(hand);
         if (!player.isAlive() || !(stack.getItem() instanceof GunItem gun))
             return;
-        String sound = kind == Kind.ACTION ? gun.getConfigType().getActionSound() : gun.getConfigType().getBulletInsert();
+        String sound = switch (kind)
+        {
+            case ACTION -> gun.getConfigType().getActionSound();
+            case INSERT -> gun.getConfigType().getBulletInsert();
+            case ACTION_END -> gun.getConfigType().getActionEndSound();
+        };
         if (StringUtils.isBlank(sound) || !PlayerData.getInstance(player).getGunSoundPermissions().take(hand, kind, stack, level.getGameTime()))
             return;
-        double range = kind == Kind.ACTION ? ModCommonConfig.get().gunActionSoundRange() : ModCommonConfig.get().reloadSoundRange();
+        double range = kind == Kind.INSERT ? ModCommonConfig.get().reloadSoundRange() : ModCommonConfig.get().gunActionSoundRange();
         PacketHandler.sendToAllExcept(level.dimension(), player.position(), range, player, new PacketPlaySound(player.position(), range, sound, false, false, player));
     }
 }

@@ -20,6 +20,29 @@ class GunSoundPermissionsTest
     }
 
     @Test
+    void closingHasItsOwnFinitePermissionAndCannotSpendInsertionCredits()
+    {
+        GunSoundPermissions permissions = new GunSoundPermissions();
+        ItemStack gun = new ItemStack(Items.STICK);
+        InteractionHand hand = InteractionHand.MAIN_HAND;
+        assertFalse(permissions.take(hand, Kind.ACTION_END, gun, 0));
+        permissions.shot(hand, gun, 1);
+        assertTrue(permissions.take(hand, Kind.ACTION, gun, 2));
+        assertTrue(permissions.take(hand, Kind.ACTION_END, gun, 3));
+        assertFalse(permissions.take(hand, Kind.ACTION_END, gun, 4));
+        permissions.reload(hand, gun, 5, 20F, 1);
+        assertTrue(permissions.take(hand, Kind.ACTION_END, gun, 26));
+        assertTrue(permissions.take(hand, Kind.INSERT, gun, 26));
+        permissions.shot(hand, gun, 30);
+        assertFalse(permissions.take(InteractionHand.OFF_HAND, Kind.ACTION_END, gun, 31));
+        assertFalse(permissions.take(hand, Kind.ACTION_END, gun.copy(), 31));
+        permissions.clear(hand);
+        assertFalse(permissions.take(hand, Kind.ACTION_END, gun, 31));
+        permissions.shot(hand, gun, 40);
+        assertFalse(permissions.take(hand, Kind.ACTION_END, gun, 1241));
+    }
+
+    @Test
     void onlyAcceptedActionsAuthorizeFiniteSoundsForTheSameHandAndStack()
     {
         GunSoundPermissions permissions = new GunSoundPermissions();

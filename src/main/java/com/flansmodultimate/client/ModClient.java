@@ -905,6 +905,9 @@ public class ModClient
             SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().gunActionSoundRange(), hand, Kind.ACTION);
         }
 
+        if (animations.isPumpFinished() && (modelGun.getBoltCycleDistance() != 0F || pump != null && modelGun.getPumpHandleDistance() != 0F))
+            SoundHelper.playSoundLocalAndBroadcast(type.getActionEndSound(), player.position(), ModCommonConfig.get().gunActionSoundRange(), hand, Kind.ACTION_END);
+
         EnumAnimationType anim = modelGun.getAnimationType();
         if (anim == EnumAnimationType.CUSTOMRIFLE || anim == EnumAnimationType.SHOTGUN || anim == EnumAnimationType.STRIKER || anim == EnumAnimationType.CUSTOMSHOTGUN
             || anim == EnumAnimationType.CUSTOMSTRIKER)

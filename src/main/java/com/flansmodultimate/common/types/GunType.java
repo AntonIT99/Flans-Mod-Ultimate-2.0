@@ -439,6 +439,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected String actionSound;
+    @Getter
+    protected String actionEndSound;
     /**
      * The sound to play upon shooting on last round
      */
@@ -807,6 +809,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
         // Fire Rate
         shootDelay = readValue("ShootDelay", shootDelay, file);
+        roundsPerMin = readValue("RPM", roundsPerMin, file);
         roundsPerMin = readValue("RoundsPerMin", roundsPerMin, file);
 
         // Accuracy
@@ -947,6 +950,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         shootSound = readSound("ShootSound", shootSound, file);
         bulletInsert = readSound("BulletInsertSound", bulletInsert, file);
         actionSound = readSound("ActionSound", actionSound, file);
+        actionEndSound = readSound("ActionEndSound", actionEndSound, file);
         lastShootSound = readSound("LastShootSound", lastShootSound, file);
         suppressedShootSound = readSound("SuppressedShootSound", suppressedShootSound, file);
         lastShootSoundSuppressed = readSound("LastSuppressedShootSound", lastShootSoundSuppressed, file);
