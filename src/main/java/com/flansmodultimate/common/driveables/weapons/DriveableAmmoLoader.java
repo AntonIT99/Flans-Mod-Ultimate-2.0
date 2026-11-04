@@ -138,7 +138,7 @@ public final class DriveableAmmoLoader
         return ammo;
     }
 
-    /** Every distinct default round needed by the driveable's installed weapons and banks. */
+    /** Every distinct default round needed by the driveable's installed weapons, plus every declared round of each ordnance bank's kind. */
     public static Set<ShootableType> defaultAmmo(DriveableType type, DriveableData data)
     {
         Set<ShootableType> ammo = new LinkedHashSet<>();
@@ -146,27 +146,27 @@ public final class DriveableAmmoLoader
         {
             GunType gunType = type.getGunTypeForAmmoSlot(slot);
             if (gunType != null)
-                gunType.getDefaultAmmo().ifPresent(ammo::add);
+                Optional.ofNullable(gunAmmo(type, gunType, null)).ifPresent(ammo::add);
         }
         if (type instanceof MechaType)
         {
             for (EnumMechaSlotType handSlot : List.of(EnumMechaSlotType.LEFT_TOOL, EnumMechaSlotType.RIGHT_TOOL))
             {
                 if (data.getMechaAddon(handSlot).getItem() instanceof GunItem gunItem)
-                    gunItem.getConfigType().getDefaultAmmo().ifPresent(ammo::add);
+                    Optional.ofNullable(gunAmmo(type, gunItem.getConfigType(), null)).ifPresent(ammo::add);
             }
         }
         if (data.getNumBombSlots() > 0)
         {
             ShootableType bombs = resolveBankAmmo(type, bankWeaponTypes(type.weaponType(false), type.weaponType(true), true));
             if (bombs != null)
-                ammo.add(bombs);
+                ammo.addAll(declaredMix(type, bombs));
         }
         if (data.getNumMissileSlots() > 0)
         {
             ShootableType missiles = resolveBankAmmo(type, bankWeaponTypes(type.weaponType(false), type.weaponType(true), false));
             if (missiles != null)
-                ammo.add(missiles);
+                ammo.addAll(declaredMix(type, missiles));
         }
         return ammo;
     }
@@ -208,10 +208,17 @@ public final class DriveableAmmoLoader
             .filter(Objects::nonNull).toList();
         for (GunType gun : guns)
         {
-            gun.getDefaultAmmo().ifPresent(ammo::add);
+            Optional.ofNullable(gunAmmo(type, gun, null)).ifPresent(ammo::add);
             ammo.addAll(gun.getAmmoTypes());
         }
-        return List.copyOf(ammo);
+        return ownPackFirst(type, ammo);
+    }
+
+    /** The rounds from the driveable's own content pack, in order, or all of them when the pack has none. */
+    private static List<ShootableType> ownPackFirst(DriveableType type, Collection<ShootableType> ammo)
+    {
+        List<ShootableType> ownPack = ammo.stream().filter(round -> samePack(type, round)).toList();
+        return ownPack.isEmpty() ? List.copyOf(ammo) : ownPack;
     }
 
     /** The declared ordnance of the bank's kinds, in definition order, or the single accept-all fallback. */
@@ -227,7 +234,7 @@ public final class DriveableAmmoLoader
             }
         }
         if (!ammo.isEmpty())
-            return List.copyOf(ammo);
+            return ownPackFirst(type, ammo);
         ShootableType fallback = resolveBankAmmo(type, candidates);
         return fallback == null ? List.of() : List.of(fallback);
     }
@@ -263,7 +270,7 @@ public final class DriveableAmmoLoader
 
         slotsByGun.forEach((gunType, slots) ->
         {
-            ShootableType ammoType = gunAmmo(gunType, requested);
+            ShootableType ammoType = gunAmmo(type, gunType, requested);
             if (ammoType == null)
             {
                 banks.add(problem(gunType.getName(), slots.size(), requested == null ? "no default ammunition" : requested.getName() + " does not fit this gun"));
@@ -278,14 +285,24 @@ public final class DriveableAmmoLoader
 
     /**
      * The gun decides what it accepts, exactly as it does in a player's hands, so a
-     * mounted launcher takes the same rounds either way.
+     * mounted launcher takes the same rounds either way. Without a requested round the
+     * gun's default is used when it comes from the driveable's own content pack; otherwise
+     * the gun's first round from that pack, and only failing that the default.
      */
     @Nullable
-    private static ShootableType gunAmmo(GunType gunType, @Nullable ShootableType requested)
+    private static ShootableType gunAmmo(DriveableType type, GunType gunType, @Nullable ShootableType requested)
     {
         if (requested != null)
             return gunType.getAmmoTypes().contains(requested) ? requested : null;
-        return gunType.getDefaultAmmo().orElse(null);
+        ShootableType fallback = gunType.getDefaultAmmo().orElse(null);
+        if (fallback == null || samePack(type, fallback))
+            return fallback;
+        return gunType.getAmmoTypes().stream().filter(ammo -> samePack(type, ammo)).findFirst().orElse(fallback);
+    }
+
+    private static boolean samePack(DriveableType type, ShootableType ammo)
+    {
+        return Objects.equals(ammo.getContentPack(), type.getContentPack());
     }
 
     private static void loadWeaponBank(DriveableType type, DriveableData data, @Nullable ShootableType requested, List<BankReport> banks, List<ItemStack> displaced, boolean bombBank)
@@ -307,7 +324,38 @@ public final class DriveableAmmoLoader
             banks.add(problem(label, size, requested == null ? "no " + label + " ammunition available" : requested.getName() + " is not " + label + " ammunition this driveable accepts"));
             return;
         }
-        banks.add(fill(data, label, slots, ammoType, requested != null, displaced));
+        List<ShootableType> mix = requested == null ? declaredMix(type, ammoType) : List.of(ammoType);
+        if (mix.size() <= 1 || slots.size() < 2)
+        {
+            banks.add(fill(data, label, slots, mix.get(0), requested != null, displaced));
+            return;
+        }
+        // A bank with several declared rounds of its kind gets a spread of them, so the crew can switch rounds
+        // straight away; the slots are dealt out in definition order, the default round first.
+        int kinds = Math.min(mix.size(), slots.size());
+        for (int kind = 0; kind < kinds; kind++)
+        {
+            List<Integer> share = new ArrayList<>();
+            for (int index = kind; index < slots.size(); index += kinds)
+                share.add(slots.get(index));
+            banks.add(fill(data, label, share, mix.get(kind), false, displaced));
+        }
+    }
+
+    /** The driveable's declared rounds of the same weapon type as the bank's default round, that one first. */
+    private static List<ShootableType> declaredMix(DriveableType type, ShootableType defaultRound)
+    {
+        if (!(defaultRound instanceof BulletType defaultBullet))
+            return List.of(defaultRound);
+        Set<ShootableType> mix = new LinkedHashSet<>();
+        mix.add(defaultRound);
+        for (BulletType declared : type.getAmmoTypes())
+        {
+            if (declared.getWeaponType() == defaultBullet.getWeaponType())
+                mix.add(declared);
+        }
+        // Rounds from the driveable's own content pack only, unless it declares none of this kind.
+        return ownPackFirst(type, mix);
     }
 
     /**
@@ -408,7 +456,7 @@ public final class DriveableAmmoLoader
             if (!(held.getItem() instanceof GunItem gunItem))
                 continue;
             String label = handSlot.name().toLowerCase(Locale.ROOT).replace('_', ' ') + " " + gunItem.getConfigType().getName();
-            ShootableType ammoType = gunAmmo(gunItem.getConfigType(), requested);
+            ShootableType ammoType = gunAmmo(type, gunItem.getConfigType(), requested);
             if (ammoType == null)
             {
                 banks.add(problem(label, 1, requested == null ? "no default ammunition" : requested.getName() + " does not fit this gun"));

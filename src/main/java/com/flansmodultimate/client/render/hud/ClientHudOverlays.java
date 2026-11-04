@@ -1246,6 +1246,8 @@ public final class ClientHudOverlays
         boolean canSwitchAmmo = atDriverControls
             && (EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(driveable.getConfigType().weaponType(false)) || EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(driveable.getConfigType().weaponType(true)));
         Component switchAmmoText = Component.translatable("hud.flansmodultimate.driveable.switch_ammo", KeyInputHandler.getPreferredAmmoKeyName());
+        Component nextAmmoName = canSwitchAmmo ? driveable.getNextAmmoName() : Component.empty();
+        Component nextAmmoText = nextAmmoName.getString().isEmpty() ? null : Component.translatable("hud.flansmodultimate.driveable.next_ammo", nextAmmoName);
         String idleSmokeKey = driveable.isCountermeasureReloading() ? "hud.flansmodultimate.driveable.smoke.reloading" : "hud.flansmodultimate.driveable.smoke.ready";
         Component smokeText = Component.translatable(driveable.isVarFlare() ? "hud.flansmodultimate.driveable.smoke.deploying" : idleSmokeKey);
         int idleSmokeColor = driveable.isCountermeasureReloading() ? HUD_GOLD : HUD_GREEN;
@@ -1259,6 +1261,8 @@ public final class ClientHudOverlays
         int rightWidth = maxWidth(font, yawText, pitchText, smokeText, ammoHeading, rollText, altitudeText, compassText);
         if (canSwitchAmmo)
             rightWidth = Math.max(rightWidth, font.width(switchAmmoText));
+        if (nextAmmoText != null)
+            rightWidth = Math.max(rightWidth, font.width(nextAmmoText));
         if (weaponArmingText != null)
             rightWidth = Math.max(rightWidth, font.width(weaponArmingText));
         for (OrdnanceLine line : ordnanceLines)
@@ -1290,6 +1294,8 @@ public final class ClientHudOverlays
                 g.drawString(font, ammoName, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_AMMO_GREEN, false);
         }
 
+        if (nextAmmoText != null)
+            g.drawString(font, nextAmmoText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_GOLD, false);
         if (canSwitchAmmo)
             g.drawString(font, switchAmmoText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine, HUD_WHITE, false);
 

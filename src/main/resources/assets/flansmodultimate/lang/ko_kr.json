@@ -301,6 +301,7 @@
   "hud.flansmodultimate.driveable.smoke.reloading": "연막: 재장전 중",
   "hud.flansmodultimate.driveable.speed": "속도: %s %s",
   "hud.flansmodultimate.driveable.switch_ammo": "탄약 변경: %s",
+  "hud.flansmodultimate.driveable.next_ammo": "다음 탄약: %s",
   "hud.flansmodultimate.driveable.throttle": "스로틀: %s%%",
   "hud.flansmodultimate.driveable.vertical_speed": "수직 속도: %s %s",
   "hud.flansmodultimate.driveable.weapon.disabled": "무기: 비활성화됨 [%s 키로 활성화]",

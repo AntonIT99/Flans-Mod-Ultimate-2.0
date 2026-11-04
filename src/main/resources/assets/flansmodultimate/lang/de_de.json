@@ -599,6 +599,7 @@
   "hud.flansmodultimate.driveable.smoke.reloading": "Rauch: lädt nach",
   "hud.flansmodultimate.driveable.speed": "Geschwindigkeit: %s %s",
   "hud.flansmodultimate.driveable.switch_ammo": "Munition wechseln: %s",
+  "hud.flansmodultimate.driveable.next_ammo": "Nächste Munition: %s",
   "hud.flansmodultimate.driveable.throttle": "Gas: %s%%",
   "hud.flansmodultimate.driveable.vertical_speed": "Vertikalgeschwindigkeit: %s %s",
   "hud.flansmodultimate.driveable.weapon.disabled": "Waffe: DEAKTIVIERT [%s zum Aktivieren]",

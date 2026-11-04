@@ -301,6 +301,7 @@
   "hud.flansmodultimate.driveable.smoke.reloading": "烟幕：装填中",
   "hud.flansmodultimate.driveable.speed": "速度：%s %s",
   "hud.flansmodultimate.driveable.switch_ammo": "切换弹药：%s",
+  "hud.flansmodultimate.driveable.next_ammo": "下一种弹药：%s",
   "hud.flansmodultimate.driveable.throttle": "油门：%s%%",
   "hud.flansmodultimate.driveable.vertical_speed": "垂直速度：%s %s",
   "hud.flansmodultimate.driveable.weapon.disabled": "武器：已禁用 [%s 启用]",

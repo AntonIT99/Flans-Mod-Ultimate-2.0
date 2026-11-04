@@ -2,10 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
-import com.flansmodultimate.api.driveables.CrashMode;
-import com.flansmodultimate.api.driveables.CrashMotion;
-import com.flansmodultimate.api.driveables.DriveableAttitude;
-import com.flansmodultimate.api.driveables.WeaponTriggerState;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
@@ -178,6 +175,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final EntityDataAccessor<Integer> DATA_PRIMARY_RELOAD_TICKS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Component> DATA_PRIMARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
     protected static final EntityDataAccessor<Component> DATA_SECONDARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
+    protected static final EntityDataAccessor<Component> DATA_NEXT_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
     protected static final EntityDataAccessor<Integer> DATA_SECONDARY_RELOAD_TICKS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     /** Rounds each bank has left before its next reload, and what a full magazine holds. */
     protected static final EntityDataAccessor<Integer> DATA_PRIMARY_MAGAZINE_LEFT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
@@ -327,6 +325,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      * feeds from its gun's own slot and has nothing to choose between.
      */
     protected final int[] loadedOrdnanceSlot = {-1, -1};
+    /** The round type each bank last chambered, so reloading after a shot keeps firing the same type while any is left. */
+    private final Item[] chamberedOrdnanceItem = new Item[2];
     /** Rounds each bank has put out since its last full reload, counted whether or not the item was consumed. */
     protected final int[] bankRoundsFired = {0, 0};
     /** The same count for each seat gun, so a gunner reloads on schedule in creative too. */
@@ -842,12 +842,35 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return entityData.get(DATA_SECONDARY_AMMO_NAME);
     }
 
+    /** The round the ammunition-switch key would load next, or empty when there is no other round to switch to. */
+    public Component getNextAmmoName()
+    {
+        return entityData.get(DATA_NEXT_AMMO_NAME);
+    }
+
+    private Component findNextAmmoName()
+    {
+        boolean secondary = switchableOrdnanceBank();
+        if (!isOrdnanceBank(secondary))
+            return Component.empty();
+        int slot = loadedOrdnanceSlot[secondary ? 1 : 0];
+        int next = nextOtherRoundSlot(secondary, slot);
+        return next < 0 ? Component.empty() : getWeaponSlot(ordnanceBankFor(initializedType().weaponType(secondary)), next).getHoverName();
+    }
+
+    /** The ordnance bank the ammunition-switch key works: the primary one, unless only the secondary bank fires ordnance. */
+    private boolean switchableOrdnanceBank()
+    {
+        return !isOrdnanceBank(false) && isOrdnanceBank(true);
+    }
+
     private void updateCurrentAmmoNames()
     {
         if (level().isClientSide || driveableData == null || !ammoNameCache.needsRefresh(driveableData, driveableData.getInventoryRevision(), loadedOrdnanceSlot[0], loadedOrdnanceSlot[1], tickCount))
             return;
         entityData.set(DATA_PRIMARY_AMMO_NAME, findCurrentAmmoName(false));
         entityData.set(DATA_SECONDARY_AMMO_NAME, findCurrentAmmoName(true));
+        entityData.set(DATA_NEXT_AMMO_NAME, findNextAmmoName());
     }
 
     private Component findCurrentAmmoName(boolean secondary)
@@ -1098,6 +1121,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         data.define(DATA_PRIMARY_RELOAD_TICKS, 0);
         data.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
         data.define(DATA_SECONDARY_AMMO_NAME, Component.empty());
+        data.define(DATA_NEXT_AMMO_NAME, Component.empty());
         data.define(DATA_SECONDARY_RELOAD_TICKS, 0);
         data.define(DATA_PRIMARY_MAGAZINE_LEFT, 0);
         data.define(DATA_PRIMARY_MAGAZINE_SIZE, 0);
@@ -2403,6 +2427,37 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return absolute >= 0 && absolute < weaponSlotLoadOrder.length ? weaponSlotLoadOrder[absolute] : 0;
     }
 
+    /**
+     * The round a bank reloads after a shot or an emptied slot: the round type it was firing, from its current slot while
+     * that holds any, otherwise from the slot of that type that went aboard first. Only once that type has run out does it
+     * move on to whatever went aboard first, so firing never changes the round the crew chose.
+     */
+    private int sameRoundSlot(boolean secondary)
+    {
+        int index = secondary ? 1 : 0;
+        Item round = chamberedOrdnanceItem[index];
+        if (round == null)
+            return oldestChamberableSlot(secondary);
+        AmmoBank bank = ordnanceBankFor(initializedType().weaponType(secondary));
+        int current = loadedOrdnanceSlot[index];
+        if (canChamber(secondary, current) && getWeaponSlot(bank, current).getItem() == round)
+            return current;
+        int best = -1;
+        int bestOrder = Integer.MAX_VALUE;
+        for (int slot = 0; slot < ordnanceSlotCount(bank); slot++)
+        {
+            if (!canChamber(secondary, slot) || getWeaponSlot(bank, slot).getItem() != round)
+                continue;
+            int order = loadOrderOf(bank, slot);
+            if (best < 0 || order > 0 && order < bestOrder)
+            {
+                best = slot;
+                bestOrder = order > 0 ? order : bestOrder;
+            }
+        }
+        return best >= 0 ? best : oldestChamberableSlot(secondary);
+    }
+
     /** The round this bank should chamber next: the one that went aboard first. */
     private int oldestChamberableSlot(boolean secondary)
     {
@@ -2425,18 +2480,24 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return best;
     }
 
-    /** The next round the crew can swap to, walking the magazine in slot order. */
-    private int nextChamberableSlot(boolean secondary, int from)
+    /**
+     * The next chamberable slot holding a different round from the one loaded, so switching ammunition
+     * never reloads the same shell type from another slot.
+     *
+     * @return the slot, or -1 when every other chamberable slot holds the loaded round
+     */
+    private int nextOtherRoundSlot(boolean secondary, int from)
     {
         AmmoBank bank = ordnanceBankFor(initializedType().weaponType(secondary));
         int count = ordnanceSlotCount(bank);
+        Item loaded = canChamber(secondary, from) ? getWeaponSlot(bank, from).getItem() : null;
         for (int step = 1; step <= count; step++)
         {
             int slot = Math.floorMod(from + step, count);
-            if (canChamber(secondary, slot))
+            if (slot != from && canChamber(secondary, slot) && getWeaponSlot(bank, slot).getItem() != loaded)
                 return slot;
         }
-        return from;
+        return -1;
     }
 
     /** Puts a round in the breech without charging anything for it. */
@@ -2445,6 +2506,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int index = secondary ? 1 : 0;
         loadedOrdnanceSlot[index] = slot;
         bankRoundsFired[index] = 0;
+        if (slot >= 0)
+            chamberedOrdnanceItem[index] = getWeaponSlot(ordnanceBankFor(initializedType().weaponType(secondary)), slot).getItem();
     }
 
     /**
@@ -2457,12 +2520,32 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     private void loadOrdnance(boolean secondary, int slot)
     {
+        loadOrdnance(secondary, slot, false);
+    }
+
+    /**
+     * @param restart
+     *            replace whatever reload is running with a fresh one for the new round, as a crew changing rounds
+     *            mid-reload does, instead of keeping the longer of the two
+     */
+    private void loadOrdnance(boolean secondary, int slot, boolean restart)
+    {
         DriveableType type = initializedType();
         chamberOrdnance(secondary, slot);
         if (slot < 0)
             return;
 
-        beginBankReload(secondary, type.reloadTime(secondary, magazineSize(getWeaponSlot(ordnanceBankFor(type.weaponType(secondary)), slot), type.reloadRounds(secondary))));
+        float reload = type.reloadTime(secondary, magazineSize(getWeaponSlot(ordnanceBankFor(type.weaponType(secondary)), slot), type.reloadRounds(secondary)));
+        if (restart)
+        {
+            int index = secondary ? 1 : 0;
+            bankReloadTicks[index] = 0F;
+            if (secondary)
+                setSecondaryShootDelay(0F);
+            else
+                setPrimaryShootDelay(0F);
+        }
+        beginBankReload(secondary, reload);
 
         String sound = type.reloadSound(secondary);
         if (StringUtils.isNotBlank(sound))
@@ -2477,7 +2560,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int index = secondary ? 1 : 0;
         if (canChamber(secondary, loadedOrdnanceSlot[index]))
             return;
-        int next = oldestChamberableSlot(secondary);
+        int next = sameRoundSlot(secondary);
         if (next < 0)
         {
             loadedOrdnanceSlot[index] = -1;
@@ -2527,11 +2610,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int size = magazineSize(chambered, type.reloadRounds(secondary));
         if (!magazineSpent(++bankRoundsFired[index], size, chambered))
             return;
-        loadOrdnance(secondary, oldestChamberableSlot(secondary));
+        loadOrdnance(secondary, sameRoundSlot(secondary));
     }
 
     /**
-     * Swaps the bank's chambered round for the next one in slot order.
+     * Swaps the bank's chambered round for the next different round type, in slot order.
      *
      * <p>
      * Swapping a shell means working one out of the breech and another in, so
@@ -2544,15 +2627,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         if (configType == null || driveableData == null || level().isClientSide)
             return;
-        boolean secondary = !isOrdnanceBank(false) && isOrdnanceBank(true);
+        boolean secondary = switchableOrdnanceBank();
         if (!isOrdnanceBank(secondary))
             return;
         int index = secondary ? 1 : 0;
-        int next = nextChamberableSlot(secondary, loadedOrdnanceSlot[index]);
-        if (next < 0 || next == loadedOrdnanceSlot[index])
+        int next = nextOtherRoundSlot(secondary, loadedOrdnanceSlot[index]);
+        if (next < 0)
             return;
         if (configType.weaponType(secondary) == EnumWeaponType.SHELL)
-            loadOrdnance(secondary, next);
+            loadOrdnance(secondary, next, true);
         else
             chamberOrdnance(secondary, next);
     }

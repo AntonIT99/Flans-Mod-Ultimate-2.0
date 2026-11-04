@@ -599,6 +599,7 @@
   "hud.flansmodultimate.driveable.smoke.reloading": "Smoke: Reloading",
   "hud.flansmodultimate.driveable.speed": "Speed: %s %s",
   "hud.flansmodultimate.driveable.switch_ammo": "Switch ammo: %s",
+  "hud.flansmodultimate.driveable.next_ammo": "Next round: %s",
   "hud.flansmodultimate.driveable.throttle": "Throttle: %s%%",
   "hud.flansmodultimate.driveable.vertical_speed": "Vertical Speed: %s %s",
   "hud.flansmodultimate.driveable.weapon.disabled": "Weapon: DISABLED [%s to activate]",

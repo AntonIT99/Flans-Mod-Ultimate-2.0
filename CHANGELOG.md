@@ -4,6 +4,8 @@
 
 ## Highlights
 
+* Driveable `FlashModel DefaultFlash` applies to `GUN` banks by default; `ShellMuzzleFlash true` also enables flashes for `SHELL` banks
+
 * Passenger weapons support authored `barrels` / `SeatGuns`, `barrelSpread` / `SeatGunSpread`, and offset `PassengerShootParticles` gated by `PassengerHasParticles`, including NPC vehicle crews
 * `PassengerZoom` enables passenger optics unless scope support is explicitly disabled; configured per-sight zooms retain priority
 * Legacy `cannonRecoil` enables main-gun camera kick, with explicit `FancyScreenShake` settings taking priority
@@ -130,8 +132,9 @@
 * Crippled and dead aircraft come down as airframes instead of tumbling: nose into the wind, spiralling over a lost wing, flat-spinning without a tail, spinning about the mast without a tail rotor or dropping without a rotor; one blown apart in the air may lose its tail or a wing as a separate piece
 * Going down: burning aircraft trail black smoke visible from up to 320 blocks, wing, tail and blade pieces flutter down like leaves, rotor strikes shed blade fragments, crashes into water throw up a spray column instead of a fireball, belly slides and sliding wrecks plough scorched furrows with dust and sparks, falling aircraft scream louder as they speed up, and crash booms arrive with a delay over distance
 * The pilot of a damaged aircraft sees blinking warnings on the HUD (fire, engine, fuel leak, wing, tail, rotor, autorotation, mayday) with an alarm, feels the airframe shake, and gets oil streaked across the view by a badly hit engine
+* Driveables that name mounted guns in `ShootPointPrimary` or `ShootPointSecondary` without a `Primary` or `Secondary` line fire those guns again, as in 1.7.10
 * Wheels and tracks throw up dust in the colour of the ground they run on, a helicopter hovering low blows a ring of dust, or of ripples over water, out from under itself, and ground vehicles smoke from their exhaust while under power; ships keep their bow spray and funnel smoke
-* The vehicle HUD shows the current ammunition-switch key below the ammunition display for drivers with shells, bombs or missiles
+* The vehicle HUD shows the current ammunition-switch key below the ammunition display for drivers with shells, bombs or missiles; the switch key always moves to a different round type and restarts the reload with it at once, even mid-reload, and the HUD shows the next round it would load; after a shot the bank reloads the same round type while any is left instead of switching on its own
 * Driveables with real-world engine data take their power only from that data, no longer multiplied by the installed engine's `EngineSpeed`, so the same vehicle category performs alike in every pack; induced drag now matches the playability-scaled lift, so aircraft such as the Ju 87 Stuka no longer stall out around 45 km/h on the runway or in slow flight
 
 * Armour hits on driveables and NPC vehicle models show outward sparks and metallic impacts when blocked, and tighter flashes, metal fragments and smoke when large shells penetrate, with effects scaled to projectile mass
@@ -159,7 +162,7 @@
 
 ## Weapons
 
-* `/rearm` and Teams vehicle spawning fill vehicle weapon ammunition slots to their item and inventory stack limits, including partially filled stacks
+* `/rearm` and Teams vehicle spawning fill vehicle weapon ammunition slots to their item and inventory stack limits, including partially filled stacks; shell, bomb and missile banks receive a mix of every declared round of the bank's kind instead of a single type, and Teams spare vehicle supplies and `/defaultammo` include every such round too; rounds come from the driveable's own content pack whenever it has any, including the vehicle ammunition issued to NPC crews
 
 * Full ammunition stacks now merge with freshly created ammunition after refilling or cycling to the next magazine; older full stacks are repaired when carried in a player inventory
 

@@ -29,6 +29,14 @@ class DriveableTypeShootDelayTest
     }
 
     @Test
+    void shellFlashRequiresExplicitOptIn()
+    {
+        assertFalse(read("Driver 0 0 0", "FlashModel DefaultFlash").isShellMuzzleFlash());
+        assertTrue(read("Driver 0 0 0", "ShellMuzzleFlash true").isShellMuzzleFlash());
+        assertFalse(read("Driver 0 0 0", "ShellMuzzleFlash false").isShellMuzzleFlash());
+    }
+
+    @Test
     void rateAboveTwelveHundredRoundsPerMinuteSurvivesAsAFraction()
     {
         VehicleType type = read("Driver 0 0 0", "Primary gun", "RoundsPerMinPrimary 3000");

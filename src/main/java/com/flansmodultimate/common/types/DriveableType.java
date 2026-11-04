@@ -133,6 +133,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected EnumWeaponType secondary = EnumWeaponType.NONE;
     /** Opt-in for the built-in three-frame flash on every fired gun or shell muzzle. */
     protected boolean defaultMuzzleFlash;
+    protected boolean shellMuzzleFlash;
     protected boolean alternatePrimary;
     protected boolean alternateSecondary;
     protected float shootDelayPrimary = -1F;
@@ -764,6 +765,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         primary = EnumWeaponType.parse(readOptionalValue("Primary", primary.name(), file), primary);
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);
         defaultMuzzleFlash = "DefaultFlash".equalsIgnoreCase(readValue("FlashModel", StringUtils.EMPTY, file));
+        shellMuzzleFlash = readValue("ShellMuzzleFlash", shellMuzzleFlash, file);
         damageMultiplierPrimary = readValue("DamageMultiplierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DamageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
@@ -830,6 +832,10 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readLegacyGuns(file);
         readLegacyWeaponPosition("BombPosition", EnumDriveablePart.CORE, EnumWeaponType.BOMB, file);
         readLegacyWeaponPosition("BarrelPosition", EnumDriveablePart.TURRET, EnumWeaponType.SHELL, file);
+        // 1.7.10 fires a bank's mounted guns whatever weapon type the bank declares, so a definition naming guns in
+        // ShootPointPrimary/Secondary without a Primary/Secondary line still fires them; treat such a bank as a gun bank.
+        primary = inferGunBank(primary, shootPointsPrimary);
+        secondary = inferGunBank(secondary, shootPointsSecondary);
 
         setPlayerInvisible = readValue("SetPlayerInvisible", setPlayerInvisible, file);
         setPlayerInvisibleOnDoorOpen = readValue("SetPlayerInvisibleOnDoorOpen", setPlayerInvisibleOnDoorOpen, file);
@@ -1871,6 +1877,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
+    }
+
+    static EnumWeaponType inferGunBank(EnumWeaponType declared, List<ShootPoint> points)
+    {
+        if (declared == EnumWeaponType.NONE && points.stream().anyMatch(point -> point.getRootPos() instanceof PilotGun))
+            return EnumWeaponType.GUN;
+        return declared;
     }
 
     private void readLegacyGuns(TypeFile file)
