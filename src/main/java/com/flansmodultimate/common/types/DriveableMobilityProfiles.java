@@ -4,11 +4,7 @@ import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.FlightPerformance;
 import com.flansmodultimate.api.driveables.MechaMobility;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
-import com.flansmodultimate.common.driveables.physics.HelicopterPhysics;
-import com.flansmodultimate.common.driveables.physics.MechaPhysics;
-import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
-import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
-import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.config.ModCommonConfig;
 
 import net.minecraft.util.Mth;
@@ -82,7 +78,7 @@ public final class DriveableMobilityProfiles
     {
         ResolvedVehiclePhysics physics = plane.getResolvedPhysics();
         RealWorldVehicleSpec spec = legacy ? RealWorldVehicleSpec.EMPTY : physics.source();
-        HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(spec, 1F, 0F, plane.getDrag(), ModCommonConfig.realisticSpeedScale(physics.category()));
+        HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(spec, 0F, plane.getDrag(), ModCommonConfig.realisticSpeedScale(physics.category()));
         boolean realistic = performance.terminalSpeed() > 0D;
         OptionalDouble climb = performance.climbSpeed() > 0D ? OptionalDouble.of(performance.climbSpeed()) : OptionalDouble.empty();
         return new Speeds(realistic ? performance.terminalSpeed() : legacyTopSpeed(plane), 0D, climb, realistic);

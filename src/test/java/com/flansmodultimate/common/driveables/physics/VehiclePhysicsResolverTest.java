@@ -200,14 +200,10 @@ class VehiclePhysicsResolverTest
     // ------------------------------------------------------ engine interaction
 
     @Test
-    void theInstalledEngineActsAsAMultiplierOnTheRealWorldBaseline()
+    void realisticPowerIsTheRealWorldBaselineRegardlessOfTheInstalledEngine()
     {
         ResolvedVehiclePhysics resolved = resolve(EnumVehicleCategory.GROUND, groundSpec(), WHEELED);
-        assertEquals(140_000D, resolved.effectivePowerWatts(1F), 1.0E-6D);
-        assertEquals(210_000D, resolved.effectivePowerWatts(1.5F), 1.0E-6D);
-        // A missing or nonsensical engine modifier falls back to neutral.
-        assertEquals(140_000D, resolved.effectivePowerWatts(0F), 1.0E-6D);
-        assertEquals(140_000D, resolved.effectivePowerWatts(Float.NaN), 1.0E-6D);
+        assertEquals(140_000D, resolved.effectivePowerWatts(), 1.0E-6D);
     }
 
     // ------------------------------------------------------ geometry fallbacks

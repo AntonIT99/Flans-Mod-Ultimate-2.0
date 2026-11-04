@@ -460,7 +460,7 @@ public class Vehicle extends Driveable implements VehicleVisual
         Vec3 lateral = horizontal.subtract(forward.scale(forwardSpeed));
 
         double terminal = physics.maxSpeedBlocksPerTick(speedScale);
-        double power = physics.effectivePowerWatts(getEngineSpeed());
+        double power = physics.effectivePowerWatts();
         // Demand against the direction still being travelled finds the gearbox
         // in neutral: the vehicle sheds its momentum before the opposite gear
         // engages, and that gear's clutch then takes up gradually.

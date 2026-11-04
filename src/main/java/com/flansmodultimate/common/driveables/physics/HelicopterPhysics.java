@@ -20,18 +20,18 @@ public final class HelicopterPhysics
 
     /**
      * Lift requires mass, shaft power and rotor geometry together. Speed and climb
-     * are independent drag calibrations. Missing groups retain the legacy thrust
-     * and Drag values; wing area is never mistaken for a rotor disc.
+     * are independent drag calibrations. The installed engine part does not scale the
+     * real-world lift. Missing groups retain the legacy thrust and Drag values;
+     * wing area is never mistaken for a rotor disc.
      */
-    public static Performance resolve(RealWorldVehicleSpec spec, float engineModifier, float legacyThrust, float legacyDrag, double speedScale)
+    public static Performance resolve(RealWorldVehicleSpec spec, float legacyThrust, float legacyDrag, double speedScale)
     {
         double maximumLift = GRAVITY + Math.max(0F, finite(legacyThrust)) * 0.5D;
-        double modifier = engineModifier > 0F && Float.isFinite(engineModifier) ? engineModifier : 1D;
         if (VehiclePhysicsUnits.isUsablePositive(spec.massKg()) && VehiclePhysicsUnits.isUsablePositive(spec.enginePowerKw()) && VehiclePhysicsUnits.isUsablePositive(spec.aircraft().rotorDiameterM()))
         {
             double radius = spec.aircraft().rotorDiameterM() * 0.5D;
             double area = Math.PI * radius * radius * spec.aircraft().effectiveRotorCount();
-            double power = spec.enginePowerKw() * VehiclePhysicsUnits.WATTS_PER_KILOWATT * modifier * ROTOR_POWER_EFFICIENCY;
+            double power = spec.enginePowerKw() * VehiclePhysicsUnits.WATTS_PER_KILOWATT * ROTOR_POWER_EFFICIENCY;
             // Ideal actuator-disc power: P = T^(3/2) / sqrt(2 rho A).
             double thrust = Math.pow(power * Math.sqrt(2D * VehiclePhysicsUnits.AIR_DENSITY * area), 2D / 3D);
             maximumLift = GRAVITY * Mth.clamp(thrust / (spec.massKg() * VehiclePhysicsUnits.STANDARD_GRAVITY), 0D, 2.5D);
@@ -39,7 +39,7 @@ public final class HelicopterPhysics
         else if (VehiclePhysicsUnits.isUsablePositive(spec.massKg()) && VehiclePhysicsUnits.isUsablePositive(spec.engineThrustKn()))
         {
             // Thrust-authored VTOL lift engines need no invented shaft power or disc.
-            double thrust = spec.engineThrustKn() * VehiclePhysicsUnits.NEWTONS_PER_KILONEWTON * modifier;
+            double thrust = spec.engineThrustKn() * VehiclePhysicsUnits.NEWTONS_PER_KILONEWTON;
             maximumLift = GRAVITY * Mth.clamp(thrust / (spec.massKg() * VehiclePhysicsUnits.STANDARD_GRAVITY), 0D, 2.5D);
         }
         double drag = LegacyPlanePhysics.drag(legacyDrag);

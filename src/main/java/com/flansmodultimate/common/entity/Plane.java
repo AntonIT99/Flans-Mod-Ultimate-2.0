@@ -865,9 +865,8 @@ public class Plane extends Driveable implements PlaneVisual
         double wingAirspeedBlocksPerTick = LegacyPlanePhysics.forwardAirspeed(current.x, current.y, current.z, forward.x, forward.y, forward.z);
         double wingAirspeedMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(wingAirspeedBlocksPerTick);
 
-        float engineModifier = getEngineSpeed();
-        double powerKw = physics.effectivePowerWatts(engineModifier) / VehiclePhysicsUnits.WATTS_PER_KILOWATT;
-        double thrustKn = physics.effectiveThrustKn(engineModifier);
+        double powerKw = physics.effectivePowerWatts() / VehiclePhysicsUnits.WATTS_PER_KILOWATT;
+        double thrustKn = physics.effectiveThrustKn();
         double propellerFraction = intactPropellerFraction(type.getPropellers());
         double referenceThrust = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, terminalMs, terminalMs);
         // The lever meters power at the default exponent of one; the config can
@@ -1052,7 +1051,7 @@ public class Plane extends Driveable implements PlaneVisual
         float thrust = LegacyPlanePhysics.thrust(1F, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater()) * 2F;
         ResolvedVehiclePhysics resolved = type.getResolvedPhysics();
         RealWorldVehicleSpec spec = ModCommonConfig.forceLegacyPlanePhysics() ? RealWorldVehicleSpec.EMPTY : resolved.source();
-        HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(spec, getEngineSpeed(), thrust, type.getDrag(), ModCommonConfig.realisticSpeedScale(resolved.category()));
+        HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(spec, thrust, type.getDrag(), ModCommonConfig.realisticSpeedScale(resolved.category()));
         applyHelicopterControls(type, rotorFraction, performance);
         return HelicopterPhysics.step(current, flightUpVector(), performance, throttle, rotorSpeed, rotorFraction, ModCommonConfig.gravityFactor(level()), ModCommonConfig.dragFactor(level()));
     }
@@ -1315,7 +1314,7 @@ public class Plane extends Driveable implements PlaneVisual
             target = Math.min(target, asternCap);
         }
 
-        double powerWatts = physics.effectivePowerWatts(getEngineSpeed());
+        double powerWatts = physics.effectivePowerWatts();
         double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(speed, powerWatts, physics.massKg(), terminal, EnumDriveType.MARINE.tractionFactor(),
             ModCommonConfig.dragFactor(level()));
         double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(speed, powerWatts, physics.massKg(), terminal, DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE),

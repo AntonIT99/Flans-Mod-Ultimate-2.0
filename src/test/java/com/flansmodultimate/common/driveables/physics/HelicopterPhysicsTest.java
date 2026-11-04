@@ -14,7 +14,7 @@ class HelicopterPhysicsTest
 
     private static HelicopterPhysics.Performance legacy()
     {
-        return HelicopterPhysics.resolve(RealWorldVehicleSpec.EMPTY, 1F, 0.08F, 1F, 1D);
+        return HelicopterPhysics.resolve(RealWorldVehicleSpec.EMPTY, 0.08F, 1F, 1D);
     }
 
     private static RealWorldVehicleSpec spec(float mass, float power, Float speed, Float climb, float diameter, int count)
@@ -60,7 +60,7 @@ class HelicopterPhysicsTest
     void pitchDirectionAndThrottleDetermineTranslation()
     {
         for (var performance : new HelicopterPhysics.Performance[] {legacy(),
-            HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, 8F, 12F, 1), 1F, 0.08F, 1F, 1D)})
+            HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, 8F, 12F, 1), 0.08F, 1F, 1D)})
         {
             Vec3 low = Vec3.ZERO;
             Vec3 high = Vec3.ZERO;
@@ -79,7 +79,7 @@ class HelicopterPhysicsTest
     @Test
     void loweringCollectiveReversesClimbPromptly()
     {
-        var performance = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, 8F, 12F, 1), 1F, 0.08F, 1F, 1D);
+        var performance = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, 8F, 12F, 1), 0.08F, 1F, 1D);
         Vec3 velocity = new Vec3(0D, performance.climbSpeed(), 0D);
         for (int tick = 0; tick < 20; tick++)
             velocity = HelicopterPhysics.step(velocity, UP, performance, 0.25F, 1F, 1F);
@@ -116,13 +116,11 @@ class HelicopterPhysicsTest
     @Test
     void rotorDiscPowerAndMassDetermineAvailableLift()
     {
-        var baseline = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, null, 12F, 1), 1F, 0.08F, 1F, 1D);
-        var heavy = HelicopterPhysics.resolve(spec(10000F, 1000F, 250F, null, 12F, 1), 1F, 0.08F, 1F, 1D);
-        var tandem = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, null, 12F, 2), 1F, 0.08F, 1F, 1D);
-        var upgrade = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, null, 12F, 1), 1.2F, 0.08F, 1F, 1D);
+        var baseline = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, null, 12F, 1), 0.08F, 1F, 1D);
+        var heavy = HelicopterPhysics.resolve(spec(10000F, 1000F, 250F, null, 12F, 1), 0.08F, 1F, 1D);
+        var tandem = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, null, 12F, 2), 0.08F, 1F, 1D);
         assertEquals(baseline.maximumLift() * 0.5D, heavy.maximumLift(), EPSILON);
         assertTrue(tandem.maximumLift() > baseline.maximumLift());
-        assertTrue(upgrade.maximumLift() > baseline.maximumLift());
         assertTrue(HelicopterPhysics.lift(heavy, 0.5F, 1F, 1F) < HelicopterPhysics.GRAVITY);
     }
 
@@ -130,12 +128,10 @@ class HelicopterPhysicsTest
     void thrustAuthoredVtolUsesLiftEngineThrustWithoutRotorGeometry()
     {
         var source = new RealWorldVehicleSpec(5000F, null, null, 75F, null, null, null);
-        var performance = HelicopterPhysics.resolve(source, 1F, 0.08F, 1F, 1D);
+        var performance = HelicopterPhysics.resolve(source, 0.08F, 1F, 1D);
         assertEquals(HelicopterPhysics.GRAVITY * 75000D / (5000D * VehiclePhysicsUnits.STANDARD_GRAVITY),
             performance.maximumLift(), EPSILON);
         assertEquals(0D, HelicopterPhysics.step(Vec3.ZERO, UP, performance, 0.5F, 1F, 1F).y, EPSILON);
-        var upgraded = HelicopterPhysics.resolve(source, 1.2F, 0.08F, 1F, 1D);
-        assertTrue(upgraded.maximumLift() > performance.maximumLift());
     }
 
     @Test
@@ -143,7 +139,7 @@ class HelicopterPhysicsTest
     {
         var incomplete = new RealWorldVehicleSpec(5000F, 250F, null, null,
             new RealWorldVehicleSpec.Aircraft(null, null, 8F, 12F, 1), null, null);
-        var performance = HelicopterPhysics.resolve(incomplete, 1F, 0.08F, 1F, 0.5D);
+        var performance = HelicopterPhysics.resolve(incomplete, 0.08F, 1F, 0.5D);
         assertEquals(legacy().maximumLift(), performance.maximumLift(), EPSILON);
         assertEquals(VehiclePhysicsUnits.kmhToBlocksPerTick(250D, 0.5D), performance.terminalSpeed(), EPSILON);
         assertEquals(0.2D, performance.climbSpeed(), EPSILON);
@@ -152,7 +148,7 @@ class HelicopterPhysicsTest
     @Test
     void publishedClimbAndLevelSpeedAreStableForceEquilibria()
     {
-        var performance = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, 8F, 12F, 1), 1F, 0.08F, 1F, 1D);
+        var performance = HelicopterPhysics.resolve(spec(5000F, 1000F, 250F, 8F, 12F, 1), 0.08F, 1F, 1D);
         Vec3 climbing = new Vec3(0D, performance.climbSpeed(), 0D);
         assertEquals(climbing.y, HelicopterPhysics.step(climbing, UP, performance, 1F, 1F, 1F).y, EPSILON);
         double upY = HelicopterPhysics.GRAVITY / performance.maximumLift();
