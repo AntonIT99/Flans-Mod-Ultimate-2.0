@@ -476,9 +476,11 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected String modeSwitchSound = FlansModSounds.SOUND_SWITCH_FIRING_MODE;
-    /**
-     * The sound to play while holding the weapon in the hand
-     */
+    /** Sound played once when switching to this weapon. */
+    @Getter
+    protected String equipSound;
+
+    /** The sound to play while holding the weapon in the hand. */
     @Getter
     protected String idleSound;
     /**
@@ -934,6 +936,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         clickSoundOnEmpty = readSound("EmptyClickSound", clickSoundOnEmpty, file);
         clickSoundOnEmptyRepeated = readSound("EmptyClickSoundRepeated", clickSoundOnEmptyRepeated, file);
         modeSwitchSound = readSound("ModeSwitchSound", modeSwitchSound, file);
+        equipSound = readSound("EquipSound", equipSound, file);
         idleSound = readSound("IdleSound", idleSound, file);
         toggleOnSound = readSound("ToggleOnSound", toggleOnSound, file);
         toggleOffSound = readSound("ToggleOffSound", toggleOffSound, file);

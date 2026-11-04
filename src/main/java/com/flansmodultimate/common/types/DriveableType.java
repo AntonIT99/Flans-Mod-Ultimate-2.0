@@ -151,6 +151,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected EnumFireMode modeSecondary = EnumFireMode.FULLAUTO;
     protected String shootSoundPrimary = StringUtils.EMPTY;
     protected String shootSoundSecondary = StringUtils.EMPTY;
+    protected String distantShootSoundPrimary = StringUtils.EMPTY;
+    protected String distantShootSoundSecondary = StringUtils.EMPTY;
+    protected int distantSoundRange = 200;
     /** Legacy generic and weapon-type sounds used when a bank has no explicit modern sound. */
     protected String shootSound = StringUtils.EMPTY;
     protected String shellSound = StringUtils.EMPTY;
@@ -935,6 +938,10 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         exitSound = readSound("ExitSound", exitSound, file);
         backSound = readSound("BackSound", backSound, file);
         shootSound = readSound("ShootSound", shootSound, file);
+        distantShootSoundPrimary = aliasSound(distantShootSoundPrimary, file, "farSound", "DistantSoundPrimary");
+        distantShootSoundSecondary = readSound("DistantSoundSecondary", distantShootSoundSecondary, file);
+        distantSoundRange = readValue("DistantSoundRange", distantSoundRange, file);
+        distantSoundRange = readValue("farSoundRange", distantSoundRange, file);
         shellSound = readSound("ShellSound", shellSound, file);
         bombSound = readSound("BombSound", bombSound, file);
         shootSoundPrimary = aliasSound(shootSoundPrimary, file, "ShootMainSound", "ShootSoundPrimary");

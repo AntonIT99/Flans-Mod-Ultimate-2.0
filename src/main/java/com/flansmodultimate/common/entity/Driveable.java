@@ -3238,6 +3238,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void playBankEffects(boolean secondary, List<FiredMuzzle> fired)
     {
         DriveableType type = initializedType();
+        String distantSound = secondary ? type.getDistantShootSoundSecondary() : type.getDistantShootSoundPrimary();
+        if (StringUtils.isNotBlank(distantSound) && type.getDistantSoundRange() > 0)
+            PacketPlaySound.sendSoundPacket(this, type.getDistantSoundRange(), distantSound, false);
         String sound = type.shootSound(secondary);
         double soundRange = ModCommonConfig.get().gunFireSoundRange();
         if (type.isReadWeaponsFromGunTypes() && isGunBank(secondary))

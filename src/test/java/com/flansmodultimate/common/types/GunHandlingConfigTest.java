@@ -10,6 +10,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GunHandlingConfigTest
 {
+    @org.junit.jupiter.api.BeforeAll
+    static void bootstrap() throws ReflectiveOperationException
+    {
+        com.flansmodultimate.platform.entity.EntityTestBootstrap.initialize();
+    }
+
     @Test
     void defaultsEnableMagazineTacticalReloadAndTimedSwitches()
     {
@@ -41,6 +47,13 @@ class GunHandlingConfigTest
         attachment.load(file(EnumType.ATTACHMENT, "RenderOnlyOnMode true"));
         assertTrue(attachment.isRenderOnlyOnMode());
         assertFalse(new AttachmentType().isRenderOnlyOnMode());
+    }
+
+    @Test
+    void equipSoundIsOptionalAndRegistersPackSound()
+    {
+        assertTrue(gun().getEquipSound() == null || gun().getEquipSound().isBlank());
+        assertTrue(gun("EquipSound draw_weapon").getEquipSound().endsWith("draw_weapon"));
     }
 
     private static GunType gun(String... lines)

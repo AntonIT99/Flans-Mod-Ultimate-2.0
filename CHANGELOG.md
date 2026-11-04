@@ -2,6 +2,8 @@
 
 ## Highlights
 
+* Guns support optional `EquipSound` on weapon switches; driveable weapon banks support `DistantSoundPrimary`, `DistantSoundSecondary` and `DistantSoundRange` (including legacy `farSound` and `farSoundRange` aliases)
+
 * Modern Warfare aircraft in the Classic and Manus packs use wider rear camera views where needed; both F-22 models gain dense afterburner exhaust from 0.65 throttle that follows aircraft motion
 
 * Air brakes use configurable physical effectiveness and low-speed assistance (`airBrakeEffectiveness`, `airBrakeAssistDeceleration`, `airBrakeAssistReferenceSpeedKmh`) in both flight models, with per-aircraft `AirBrakeStrengthMultiplier` and no fixed air-brake deceleration ceiling
