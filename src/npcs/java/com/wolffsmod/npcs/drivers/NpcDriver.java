@@ -481,6 +481,12 @@ public final class NpcDriver
         return seat.getDriveableType().map(IDriveableType::isShip).orElse(false);
     }
 
+    /** Whether the driveable fights from the air, whose speed does not throw off guns laid by flying it; a ship built on a plane does not. */
+    private static boolean aircraft(ISeat seat)
+    {
+        return seat.getDriveableType().filter(type -> !type.isShip()).map(type -> type.getDriveableKind() == DriveableKind.PLANE).orElse(false);
+    }
+
     /**
      * Reads what the driveable's weapons have loaded now and then, rather than every tick: finding the round scans the
      * driveable for it.
@@ -776,7 +782,7 @@ public final class NpcDriver
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
         // The driveable launches its own rounds along its barrels, so what the NPC's aim is worth has to go into how it lays
         // them: its own limits, and how steady the hull it rides is. Only the driveable's speed is known here, not its turn.
-        NpcSkill.AimError error = NpcSkill.layingError(npc, target).plus(NpcGunSteadiness.spread(npc, driveable.getDeltaMovement().horizontalDistance(), 0F, options(npc)));
+        NpcSkill.AimError error = NpcSkill.layingError(npc, target).plus(NpcGunSteadiness.spread(npc, driveable.getDeltaMovement().horizontalDistance(), 0F, options(npc), aircraft(seat)));
         Optional<Vec3> launch = origin.map(from -> error.apply(launch(npc, seat, aimedBank, aimPoint.subtract(from))));
         if (origin.isPresent() && launch.isPresent())
             seat.aimDriverWeapon(secondary, origin.get().add(launch.get().scale(aimPoint.distanceTo(origin.get()))));

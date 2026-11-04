@@ -32,6 +32,7 @@ public final class TeamsCapturePointEditScreen extends Screen
     private EditBox nameField;
     private EditBox radiusField;
     private EditBox heightField;
+    private Button symbolButton;
     private Button previousPage;
     private Button nextPage;
     private char selectedSymbol;
@@ -61,11 +62,9 @@ public final class TeamsCapturePointEditScreen extends Screen
         addRenderableWidget(nameField);
         setInitialFocus(nameField);
 
-        List<Character> symbols = new ArrayList<>();
-        for (char symbol = CapturePointBlockEntity.FIRST_SYMBOL; symbol <= CapturePointBlockEntity.LAST_SYMBOL; symbol++)
-            symbols.add(symbol);
-        addRenderableWidget(CycleButton.<Character>builder(symbol -> Component.literal(String.valueOf(symbol))).withValues(symbols).withInitialValue(selectedSymbol).displayOnlyValue().create(left + 6,
-            top + 40, 244, 20, Component.empty(), (button, symbol) -> selectedSymbol = symbol));
+        addRenderableWidget(Button.builder(Component.literal("<"), ignored -> selectSymbol(-1)).bounds(left + 6, top + 40, 20, 20).build());
+        symbolButton = addRenderableWidget(Button.builder(Component.literal(String.valueOf(selectedSymbol)), ignored -> { }).bounds(left + 28, top + 40, 200, 20).build());
+        addRenderableWidget(Button.builder(Component.literal(">"), ignored -> selectSymbol(1)).bounds(left + 230, top + 40, 20, 20).build());
         radiusField = new EditBox(font, left + 50, top + 65, 36, 16, Component.translatable("gui.flansmod.teams.capture_point.radius"));
         radiusField.setMaxLength(3);
         radiusField.setFilter(value -> value.chars().allMatch(Character::isDigit));
@@ -111,6 +110,14 @@ public final class TeamsCapturePointEditScreen extends Screen
             refreshButtons();
         }).bounds(left + 230, top + 121, 20, 20).build());
         refreshButtons();
+    }
+
+    private void selectSymbol(int direction)
+    {
+        int symbolCount = CapturePointBlockEntity.LAST_SYMBOL - CapturePointBlockEntity.FIRST_SYMBOL + 1;
+        int symbolIndex = selectedSymbol - CapturePointBlockEntity.FIRST_SYMBOL;
+        selectedSymbol = (char)(CapturePointBlockEntity.FIRST_SYMBOL + Math.floorMod(symbolIndex + direction, symbolCount));
+        symbolButton.setMessage(Component.literal(String.valueOf(selectedSymbol)));
     }
 
     private void selectMap(int slot)

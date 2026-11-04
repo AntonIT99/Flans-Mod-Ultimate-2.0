@@ -379,7 +379,7 @@ public final class NpcSafetyGoal extends Goal
         boolean visible = npc.getSensing().hasLineOfSight(danger);
         boolean vehicle = NpcVehicleThreats.groundVehicle(danger);
         // A vehicle that has shot itself dry has no fight left to win, whatever is in front of it, so it breaks contact too.
-        boolean spent = NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS) && NpcVehicleState.of(npc).isOutOfAmmunition(npc, ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions());
+        boolean spent = outOfAmmunition();
         boolean outmatched = spent
             || visible && vehicle && NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS) && NpcWeaponChoice.effectiveness(npc, danger) == NpcWeaponChoice.Effectiveness.INEFFECTIVE;
         boolean outranged = NpcEquipment.enabled(npc, Feature.OUTRANGED_COVER) && !threats.isEmpty() && !npc.isInRange(danger, NpcWeaponRange.firing(npc));
@@ -391,6 +391,12 @@ public final class NpcSafetyGoal extends Goal
             sources.add(NpcVehicleThreats.fireOrigin(danger));
         Vec3 position = visible || threats.isEmpty() ? danger.position() : threats.get(threats.size() - 1).position();
         return new Situation(position, visible, outmatched, outranged, outmatched || outranged || underFire, NpcTacticState.of(npc).isReloading(now), sources);
+    }
+
+    /** @return whether the NPC is a vehicle that has used up everything it could fire, and is allowed to give up the fight over it */
+    private boolean outOfAmmunition()
+    {
+        return npc instanceof NpcVehicleStateHolder && NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS) && NpcVehicleState.of(npc).isOutOfAmmunition(npc);
     }
 
     private boolean takeCover(@Nullable LivingEntity target, Situation fight, long now)

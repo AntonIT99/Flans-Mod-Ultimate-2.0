@@ -11,6 +11,7 @@ import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.sim.NpcModels;
+import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.ai.selector.NPCAttackSelector;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -64,6 +65,7 @@ class CrewGunnersTest
         options.set(Feature.FIRE_SOUNDS, false);
         options.set(Feature.SHOOT_PARTICLES, false);
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
+        when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
         NpcCrewSettings settings = new NpcCrewSettings();
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsCrew()).thenReturn(settings);
         assertFalse(NpcCrewSettings.of(vehicle).isPassengersFire());
@@ -136,6 +138,7 @@ class CrewGunnersTest
         options.set(Feature.FIRE_SOUNDS, false);
         options.set(Feature.SHOOT_PARTICLES, false);
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
+        when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
         Vec3 direction = new Vec3(0D, 0D, -1D);
         NpcVehicleState state = mock(NpcVehicleState.class, invocation -> invocation.getMethod().getReturnType() == Vec3.class ? direction : RETURNS_DEEP_STUBS.answer(invocation));
         when(state.turretAim()).thenReturn(MountAim.REST);
@@ -215,6 +218,7 @@ class CrewGunnersTest
         options.set(Feature.SHOOT_PARTICLES, false);
         options.set(Feature.RELOAD_SOUNDS, true);
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
+        when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
         Vec3 barrel = new Vec3(0D, 0D, -1D);
         NpcVehicleState state = mock(NpcVehicleState.class, invocation -> invocation.getMethod().getReturnType() == Vec3.class ? barrel : RETURNS_DEEP_STUBS.answer(invocation));
         when(state.turretAim()).thenReturn(MountAim.REST);
@@ -370,6 +374,7 @@ class CrewGunnersTest
         options.set(Feature.GUNNER_TARGETS, ownTargets);
         options.set(Feature.DEFENSIVE_GUNNERS, defensive);
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
+        when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
         NpcVehicleState state = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
         when(state.turretAim()).thenReturn(MountAim.REST);
         IContentType definition = mock(IContentType.class);

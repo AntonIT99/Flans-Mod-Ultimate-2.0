@@ -18,8 +18,7 @@ class PartBodyRepairsTest
     @Test
     void repairedBuoyancyRestoresNavalSpeedAndLostCompartmentsCanStillSinkTheShip()
     {
-        PartBody ship = new PartBody(null, Map.of(EnumDriveablePart.CORE, CollisionBox.inWorldUnits(1000F, -1F, 0F, -1F, 2F, 2F, 2F, 1F, 0F), EnumDriveablePart.BUOYANCY,
-            CollisionBox.inWorldUnits(6000F, -1F, 0F, -1F, 2F, 2F, 2F, 1F, 0F), EnumDriveablePart.BOW, CollisionBox.inWorldUnits(1000F, -1F, 0F, -1F, 2F, 2F, 2F, 1F, 0F)), Vec3.ZERO, Vec3.ZERO);
+        PartBody ship = ship();
         ship.damage("buoyancy", 3000F, false);
         Vec3 healthy = new Vec3(1D, 0D, 1D);
         assertEquals(0.5D, FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D, true).x, 1E-5D);
@@ -29,6 +28,42 @@ class PartBodyRepairsTest
         assertFalse(FlansRepairs.sunk(ship, 2D));
         assertTrue(FlansRepairs.sunk(ship, 16D));
         assertTrue(FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D, true).y < 0D);
+    }
+
+    @Test
+    void aHullThatIsNotAtSeaMakesOnlyAFractionOfItsWay()
+    {
+        PartBody ship = ship();
+        Vec3 healthy = new Vec3(1D, 0D, 1D);
+        assertEquals(1D, FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D, true).x, 1E-5D);
+        assertEquals(0.3D, FlansRepairs.navalVelocity(ship, Vec3.ZERO, healthy, 2D, false).x, 1E-5D, "a river or a pond holds it back as it holds a driveable ship back");
+    }
+
+    @Test
+    void theSamplesThatDecideWhetherAHullIsAtSeaReachWellPastIt()
+    {
+        // A single bucket of water under the hull is not a sea; water all round and well below it is.
+        assertFalse(FlansRepairs.atSea(Vec3.ZERO, point -> point.equals(Vec3.ZERO)));
+        assertTrue(FlansRepairs.atSea(Vec3.ZERO, point -> true));
+    }
+
+    @Test
+    void aFloodedHullTrimsAndHeelsAndLevelsOutOnceItsCompartmentsHold()
+    {
+        PartBody ship = ship();
+        assertEquals(0F, FlansRepairs.navalAttitude(ship, 0F, 0F).pitch(), 1E-5F, "a sound hull sits level");
+        ship.damage("bow", 1000F, false);
+        assertTrue(FlansRepairs.navalAttitude(ship, 0F, 0F).pitch() > 0F, "a flooded bow goes down");
+        // Trim builds up tick by tick rather than snapping over.
+        float first = FlansRepairs.navalAttitude(ship, 0F, 0F).pitch();
+        assertTrue(FlansRepairs.navalAttitude(ship, first, 0F).pitch() > first);
+        assertTrue(FlansRepairs.navalAttitude(ship(), 10F, 10F).roll() < 10F, "a sound hull rights itself");
+    }
+
+    private static PartBody ship()
+    {
+        return new PartBody(null, Map.of(EnumDriveablePart.CORE, CollisionBox.inWorldUnits(1000F, -1F, 0F, -1F, 2F, 2F, 2F, 1F, 0F), EnumDriveablePart.BUOYANCY,
+            CollisionBox.inWorldUnits(6000F, -1F, 0F, -1F, 2F, 2F, 2F, 1F, 0F), EnumDriveablePart.BOW, CollisionBox.inWorldUnits(1000F, -1F, 0F, -1F, 2F, 2F, 2F, 1F, 0F)), Vec3.ZERO, Vec3.ZERO);
     }
 
     @Test

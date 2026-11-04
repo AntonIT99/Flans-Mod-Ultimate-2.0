@@ -996,6 +996,7 @@ public final class NpcVehicleState
      * its human limits allow for. Laying the gun by it, rather than only the rounds that leave it, is what makes an NPC
      * that under-leads point where it believes its target will be.
      */
+    @SuppressWarnings("java:S107") // The shared aiming entry point of three callers, mocked by tests; the ballistics are plain numbers each of them already holds
     public Vec3 lead(EntityNPCInterface npc, Vec3 displacement, LivingEntity target, NpcWeaponOptions options, double speed, double gravity, double drag, boolean highArc)
     {
         Vec3 still = ProjectileAim.direction(displacement, Vec3.ZERO, speed, gravity, drag, highArc);
@@ -1013,9 +1014,9 @@ public final class NpcVehicleState
      *         the fight gains it nothing. Only a vehicle that really uses its ammunition up can run out; one that falls back
      *         on its default rounds never does. Looked at every so often, since it means building ammunition templates.
      */
-    public boolean isOutOfAmmunition(EntityNPCInterface npc, NpcWeaponOptions options)
+    public boolean isOutOfAmmunition(EntityNPCInterface npc)
     {
-        if (!active || !options.enabled(Feature.CONSUME_AMMO) || npc.level().isClientSide)
+        if (!active || !NpcEquipment.enabled(npc, Feature.CONSUME_AMMO) || npc.level().isClientSide)
             return false;
         if (npc.tickCount - dryAt < BALLISTICS_INTERVAL && npc.tickCount >= dryAt)
             return dry;

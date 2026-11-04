@@ -263,6 +263,38 @@ class DoctrineTest
     }
 
     @Test
+    void aShipAlreadyWithinReachOfTheObjectiveHoldsStationOffItAndShellsIt()
+    {
+        List<TeamsCapturePoint> points = List.of(point('A', 0D, -1, -1, false));
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, points, List.of(), List.of(), List.of(new Vec3(400D, 62D, 0D)), List.of());
+        SquadTask task = Doctrine.plan(field, List.of(squad(1, BotRole.NAVAL, 60D))).get(1);
+        assertEquals(SquadTask.Kind.OVERWATCH, task.kind(), "it stays in gun range rather than steaming back to a far patrol point");
+        assertTrue(task.target().x > points.get(0).position().x, "standing off on its own side of the objective");
+        assertTrue(task.target().distanceTo(points.get(0).position()) > 24D, "and far enough out to stay over its own water");
+    }
+
+    @Test
+    void aBatteredNavalSquadLeavesTheLineForThePatrolPointFarthestFromTheEnemy()
+    {
+        List<TeamsCapturePoint> points = List.of(point('A', 0D, -1, -1, false));
+        List<Vec3> navalPoints = List.of(new Vec3(40D, 62D, 0D), new Vec3(400D, 62D, 0D));
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, points, List.of(new Vec3(20D, 64D, 0D)), List.of(), navalPoints, List.of());
+        Doctrine.SquadView flooded = new Doctrine.SquadView(1, BotRole.NAVAL, SquadTemplate.Posture.BALANCED, new Vec3(60D, 64D, 0D), 3, false, null, 0.2D, 0D);
+        SquadTask task = Doctrine.plan(field, List.of(flooded)).get(1);
+        assertEquals(SquadTask.Kind.PATROL, task.kind());
+        assertEquals(400D, task.target().x, "away from the enemy rather than the nearest point");
+    }
+
+    @Test
+    void aNavalSquadIsGivenRoomForEveryHullInIt()
+    {
+        double small = Doctrine.navalRadius(squad(1, BotRole.NAVAL, 0D));
+        Doctrine.SquadView flotilla = new Doctrine.SquadView(2, BotRole.NAVAL, SquadTemplate.Posture.BALANCED, Vec3.ZERO, 8, false, null);
+        assertTrue(Doctrine.navalRadius(flotilla) > small, "more hulls need more water");
+        assertTrue(small >= 16D, "and one hull still gets a station of its own");
+    }
+
+    @Test
     void aSquadCarryingTheEnemyFlagTakesItHome()
     {
         List<Doctrine.FlagView> flags = List.of(new Doctrine.FlagView(US, US_FLAG, US_FLAG, true, -1), new Doctrine.FlagView(GERMANY, new Vec3(150D, 66D, 0D), GERMAN_FLAG, false, US));

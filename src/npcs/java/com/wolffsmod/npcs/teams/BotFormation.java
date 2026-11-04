@@ -19,7 +19,7 @@ public final class BotFormation
     private static final double FIRST_RING = 2D;
     private static final double RING_STEP = 1.5D;
     /** Hulls a ring around a station holds before the next ring is laid a spacing farther out. */
-    private static final double RING_HULLS = 6D;
+    private static final int RING_HULLS = 6;
 
     /**
      * @param index
@@ -64,7 +64,8 @@ public final class BotFormation
         if (astern.lengthSqr() < 1.0E-4D)
         {
             double angle = index * GOLDEN_ANGLE;
-            double distance = spacing * (1D + (index - 1) / RING_HULLS);
+            // Whole rings: the first so many hulls lie a spacing out, the next so many a spacing beyond them.
+            double distance = spacing * (1 + Math.floorDiv(index - 1, RING_HULLS));
             return target.add(Math.cos(angle) * distance, 0D, Math.sin(angle) * distance);
         }
         return target.subtract(astern.normalize().scale(spacing * index));

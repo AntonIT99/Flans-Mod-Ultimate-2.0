@@ -8,6 +8,9 @@ import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -58,13 +61,16 @@ public abstract class NpcNearestAttackableTargetGoalMixin<T extends LivingEntity
         return target != null;
     }
 
-    @Override
-    public boolean canContinueToUse()
+    /**
+     * Custom NPCs keeps a target of its own here, so this hooks its method rather than overriding it: the goal is given
+     * up only when contact with a submerged hull is lost, and everything else it does is left alone.
+     */
+    @Inject(method = {"canContinueToUse", "m_8045_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsBreakSubmergedContact(CallbackInfoReturnable<Boolean> callback)
     {
         LivingEntity held = mob.getTarget();
         if (mob instanceof EntityNPCInterface npc && held != null && !NpcSubmergedContact.holds(npc, held))
-            return false;
-        return super.canContinueToUse();
+            callback.setReturnValue(false);
     }
 
     @Override
