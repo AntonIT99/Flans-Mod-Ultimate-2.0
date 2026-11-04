@@ -253,6 +253,7 @@ public final class TeamsSection
         tag.putInt("botRegenSeconds", manager.getBotRegenSeconds());
         tag.putBoolean("explosions", manager.isExplosionsBreakBlocks());
         tag.putBoolean("canBreakGlass", manager.isCanBreakGlass());
+        tag.putBoolean("parachutesCanBeHit", com.flansmodultimate.config.ModCommonConfig.parachutesCanBeHit());
         tag.putBoolean("canBreakGuns", manager.isCanBreakGuns());
         tag.putBoolean("canBreakAAGuns", manager.isCanBreakAAGuns());
         tag.putBoolean("vehiclesBreakBlocks", manager.isDriveablesBreakBlocks());

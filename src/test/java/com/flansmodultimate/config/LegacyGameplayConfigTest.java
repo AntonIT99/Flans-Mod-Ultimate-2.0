@@ -57,6 +57,7 @@ class LegacyGameplayConfigTest
     @Test
     void commonConfigDeclaresTheLegacySettingsWithTheirDefaults()
     {
+        assertSetting(ModCommonConfig.configSpec, false, "General Settings", "parachutesCanBeHit");
         assertSetting(ModCommonConfig.configSpec, 20D, "General Settings", "maxPlayerHealth");
         assertSetting(ModCommonConfig.configSpec, true, "General Settings", "enableKillMessages");
         assertSetting(ModCommonConfig.configSpec, true, "General Settings", "showDistanceInKillMessage");

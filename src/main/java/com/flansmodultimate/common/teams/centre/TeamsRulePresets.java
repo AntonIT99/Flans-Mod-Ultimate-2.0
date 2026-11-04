@@ -23,6 +23,7 @@ final class TeamsRulePresets implements ISettingsPresets
     private static final String SEA_LEVEL = "seaLevel";
     private static final Map<String, BiConsumer<TeamsManager, Boolean>> SWITCHES = Map.ofEntries(Map.entry("restoreBlocks", TeamsManager::setRestoreBlocks),
         Map.entry("bodyPartDamageModifiers", TeamsManager::setBodyPartDamageModifiers), Map.entry("explosions", TeamsManager::setExplosionsBreakBlocks),
+        Map.entry("parachutesCanBeHit", (manager, enabled) -> com.flansmodultimate.config.ModCommonConfig.setParachutesCanBeHit(enabled)),
         Map.entry("canBreakGlass", TeamsManager::setCanBreakGlass), Map.entry("canBreakGuns", TeamsManager::setCanBreakGuns), Map.entry("canBreakAAGuns", TeamsManager::setCanBreakAAGuns),
         Map.entry("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks), Map.entry("survivalCanBreakVehicles", TeamsManager::setSurvivalCanBreakVehicles),
         Map.entry("survivalCanPlaceVehicles", TeamsManager::setSurvivalCanPlaceVehicles), Map.entry("forceAdventure", TeamsManager::setForceAdventureMode),

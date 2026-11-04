@@ -443,7 +443,7 @@ public final class TeamsCommand
         {
             context.getSource().sendSuccess(() -> Component.translatable("message.flansmodultimate.centre.help"), false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|bloodEffects|canBreakGuns|canBreakAAGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection|playerRegenSeconds|botRegenSeconds> <seconds>"),
+                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|bloodEffects|parachutesCanBeHit|canBreakGuns|canBreakAAGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection|playerRegenSeconds|botRegenSeconds> <seconds>"),
                 false);
             context.getSource()
                 .sendSuccess(() -> Component.literal("Rounds and server: /teams setRound <index>, /teams goToMap <index>, /teams ping, /teams bltss [<min> <divisor>], /teams motd <text>"), false);
@@ -481,6 +481,8 @@ public final class TeamsCommand
             .then(rule("shells", TeamsManager::setShellsEnabled, enabled -> "Shells are now " + (enabled ? ENABLED : DISABLED)))
             .then(rule("bullets", TeamsManager::setBulletsEnabled, enabled -> "Bullets are now " + (enabled ? ENABLED : DISABLED)))
             .then(rule("bulletsEnabled", TeamsManager::setBulletsEnabled, enabled -> "Bullets are now " + (enabled ? ENABLED : DISABLED)))
+            .then(rule("parachutesCanBeHit", (manager, enabled) -> com.flansmodultimate.config.ModCommonConfig.setParachutesCanBeHit(enabled),
+                enabled -> "Parachutes can be hit: " + enabled))
             .then(rule("canBreakGuns", TeamsManager::setCanBreakGuns, enabled -> "Deployed guns can " + (enabled ? "now" : NO_LONGER) + " be broken"))
             .then(rule("canBreakAAGuns", TeamsManager::setCanBreakAAGuns, enabled -> "AA guns can " + (enabled ? "now" : NO_LONGER) + " be broken"))
             .then(rule("canBreakGlass", TeamsManager::setCanBreakGlass, enabled -> "Glass and glowstone can " + (enabled ? "now" : NO_LONGER) + " be broken"))

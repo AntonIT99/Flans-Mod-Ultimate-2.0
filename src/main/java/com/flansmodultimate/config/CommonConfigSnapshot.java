@@ -21,6 +21,7 @@ public record CommonConfigSnapshot(
     boolean disableCrosshairForGuns,
     boolean disableCrosshairWhileScoped,
     boolean explosionsBreakBlocks,
+    boolean parachutesCanBeHit,
     boolean forceNewExplosionsBreakBlocks,
     boolean flanExplosionsDropBlocks,
     int bonusRegenAmount,
@@ -177,7 +178,7 @@ public record CommonConfigSnapshot(
     double airBrakeAssistReferenceSpeedKmh
 )
 {
-    public static final int CURRENT_VERSION = 51;
+    public static final int CURRENT_VERSION = 52;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -195,6 +196,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.disableCrosshairWhileScoped);
         buf.writeBoolean(s.explosionsBreakBlocks);
+        buf.writeBoolean(s.parachutesCanBeHit);
         buf.writeBoolean(s.forceNewExplosionsBreakBlocks);
         buf.writeBoolean(s.flanExplosionsDropBlocks);
         buf.writeVarInt(s.bonusRegenAmount);
@@ -375,6 +377,7 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readVarInt(),
 
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),

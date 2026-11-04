@@ -129,7 +129,7 @@
 
 * Supply bags retain their remaining uses across saves and spend a use only on delivered healing, effects or ammunition; mines respect their arming delay before applying trigger damage, and living vehicle models can participate in vehicle proximity fuses
 
-* Open parachutes carry their rider down to the ground instead of letting go a couple of blocks above it, and nearby explosions, including that of the aircraft a crew just bailed out of, no longer collapse a canopy in mid-air; a direct hit still does
+* Open parachutes carry their rider down to the ground instead of letting go a couple of blocks above it, and nearby explosions, including that of the aircraft a crew just bailed out of, no longer collapse a canopy in mid-air; direct hits only collapse parachutes when `parachutesCanBeHit` is enabled (default false), shared by players and NPCs and adjustable under Rules > Protection in the Teams command centre
 
 * Fixed a crash when an NPC reloads a gun without a configured reload sound
 * Fixed shots sometimes having no recoil or firing animation when shooting-state updates arrive between client ticks

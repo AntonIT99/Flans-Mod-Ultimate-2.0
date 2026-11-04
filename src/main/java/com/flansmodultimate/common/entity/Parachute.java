@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.entity.*;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.FlansLog;
@@ -25,7 +26,7 @@ import net.minecraft.world.phys.*;
 /**
  * An open parachute, which carries its rider down at a steady descent until it touches the ground. The entity rides at the
  * rider's own feet, so it lands when the rider would, and its canopy is drawn above both; a blast nearby leaves it be, as
- * it carries whoever just left a burning aircraft, but a hit collapses it.
+ * it carries whoever just left a burning aircraft, but an enabled direct hit collapses it.
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlanEntity<ToolType>
@@ -194,6 +195,8 @@ public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlan
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount)
     {
+        if (!ModCommonConfig.parachutesCanBeHit() || amount <= 0F)
+            return false;
         if (!level().isClientSide)
             discard();
         return true;
@@ -201,7 +204,7 @@ public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlan
 
     /**
      * A canopy is left alone by blasts: it is a wide box hanging over whoever just jumped from a burning aircraft or past a
-     * gun position, and the explosion of the aircraft itself would otherwise collapse it in mid-air. A hit still does.
+     * gun position, and the explosion of the aircraft itself would otherwise collapse it in mid-air. Direct hits can collapse it when enabled in the common config.
      */
     @Override
     public boolean ignoreExplosion()

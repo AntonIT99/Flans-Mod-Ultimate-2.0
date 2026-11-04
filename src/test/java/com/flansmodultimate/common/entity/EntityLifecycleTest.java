@@ -7,11 +7,14 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import com.flansmodultimate.util.ModUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -29,6 +32,23 @@ import static org.mockito.Mockito.*;
 
 class EntityLifecycleTest
 {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void parachuteHitsFollowTheSharedSetting(boolean enabled)
+    {
+        try (EntityTestWorld world = new EntityTestWorld())
+        {
+            when(ModCommonConfig.get().parachutesCanBeHit()).thenReturn(enabled);
+            Parachute parachute = new Parachute(EntityType.BOAT, world.level);
+            assertEquals(enabled, ModUtils.canEntityBeHitByBullets(parachute));
+            assertFalse(parachute.hurt(mock(net.minecraft.world.damagesource.DamageSource.class), 0F));
+            assertFalse(parachute.isRemoved());
+            assertEquals(enabled, parachute.hurt(mock(net.minecraft.world.damagesource.DamageSource.class), 1F));
+            assertEquals(enabled, parachute.isRemoved());
+            assertTrue(parachute.ignoreExplosion());
+        }
+    }
+
     private enum Kind
     {
         BULLET(Bullet::new), GRENADE(Grenade::new), SEAT(Seat::new), WHEEL(Wheel::new), VEHICLE(Vehicle::new), PLANE(Plane::new), MECHA(Mecha::new), AA_GUN(AAGun::new), DEPLOYED_GUN(
