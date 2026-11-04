@@ -6,6 +6,7 @@ ShortName WH40K_MG_MultiLaser_1A
 Icon Icon_WH40K_MG_MultiLaser_1A
 DeployedModel Manus_WH40K.MG.WH40K_MG_MultiLaser_1
 DeployedTexture Skin_WH40K_MG_MultiLaser_1A
+EjectCasings False
 
 // Recipe and Inventory
 Ammo WH40K_Ammo_MultiLaser_1

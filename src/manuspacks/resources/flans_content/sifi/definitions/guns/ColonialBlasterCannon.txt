@@ -7,6 +7,7 @@ Icon IconGunColonialBlasterCannon
 Colour 255 255 255
 DeployedModel manus_sifi.LaserCannon
 DeployedTexture SkinGunColonialBlasterCannon
+EjectCasings False
 
 // Recipe and Inventory
 Ammo AmmoPowerpackColonialBlasterCannon

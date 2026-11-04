@@ -6,6 +6,7 @@ ShortName nerfPraxis
 Icon Praxis
 Colour 255 255 255
 DeployedModel None
+EjectCasings False
 
 // Recipe
 DungeonLootChance 0

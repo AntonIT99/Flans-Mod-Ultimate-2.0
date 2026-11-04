@@ -6,6 +6,7 @@ ShortName WH40K_MG_LasCannon_2A
 Icon Icon_WH40K_MG_LasCannon_2A
 DeployedModel Manus_WH40K.MG.WH40K_MG_LasCannon_2
 DeployedTexture Skin_WH40K_MG_LasCannon_2A
+EjectCasings False
 
 // Recipe and Inventory
 Ammo WH40K_Ammo_LasCannon_2

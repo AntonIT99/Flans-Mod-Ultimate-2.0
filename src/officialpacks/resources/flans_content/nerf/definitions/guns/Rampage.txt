@@ -6,6 +6,7 @@ ShortName nerfRampage
 Icon Rampage
 Colour 255 255 255
 DeployedModel None
+EjectCasings False
 
 // Recipe
 DungeonLootChance 0

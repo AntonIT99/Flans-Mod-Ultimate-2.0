@@ -9,6 +9,7 @@ DeployedModel None
 Model ww2.Panzerschreck
 Texture panzerschreck
 ModelScale 0.32
+EjectCasings False
 
 // Ammunition
 Ammo panzerschreckAmmo

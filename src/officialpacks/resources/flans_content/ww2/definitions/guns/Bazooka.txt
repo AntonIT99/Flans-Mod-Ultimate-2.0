@@ -9,6 +9,7 @@ DeployedModel None
 Model ww2.Bazooka
 Texture bazooka
 ModelScale 0.32
+EjectCasings False
 
 // Ammunition
 Ammo bazookaAmmo

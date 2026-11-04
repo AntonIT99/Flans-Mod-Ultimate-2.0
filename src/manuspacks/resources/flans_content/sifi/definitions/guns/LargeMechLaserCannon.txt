@@ -7,6 +7,7 @@ Icon IconGunLargeMechLaserCannon
 Colour 255 255 255
 DeployedModel manus_sifi.LargeMechLaserCannon
 DeployedTexture SkinGunLargeMechLaserCannon
+EjectCasings False
 
 // Recipe and Inventory
 Ammo AmmoPowerpackLargeMechLaserCannon

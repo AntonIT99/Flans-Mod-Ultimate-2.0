@@ -12,6 +12,7 @@ Colour 255 255 255
 DeployedModel None
 FlashModel W44.W44MuzzleFlash
 FlashTexture Skin44_MuzzleFlash1
+EjectCasings False
 
 // Ammunition
 Ammo 44_PanzerschreckAmmo

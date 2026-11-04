@@ -671,6 +671,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /** Thermal imaging while looking through the gun's own scope, from the Labjac Edition's {@code HasThermalVision} */
     protected boolean thermalVision;
 
+    /** Whether shots eject spent casings, as an authored casing model or the default casing particle; off for caseless weapons */
+    @Getter
+    protected boolean ejectCasings = true;
     /**
      * For adding a bullet casing model to render
      */
@@ -1037,6 +1040,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         deployable = readValue("Deployable", deployable, file);
         deployableModelName = readValue("DeployedModel", deployableModelName, file);
         deployableTextureName = readResource("DeployedTexture", deployableTextureName, file);
+        ejectCasings = readValue("EjectCasings", ejectCasings, file);
         casingModelName = readValue("CasingModel", casingModelName, file);
         casingTextureName = readResource("CasingTexture", casingTextureName, file);
         flashModelName = readValue("FlashModel", flashModelName, file);

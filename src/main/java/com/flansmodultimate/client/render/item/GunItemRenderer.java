@@ -1106,7 +1106,7 @@ public final class GunItemRenderer
 
     private static void renderCasingEjection(ModelGun model, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
-        if (!ModClientConfig.get().showCasingEjections)
+        if (!ModClientConfig.get().showCasingEjections || model.getType() == null || !model.getType().isEjectCasings())
             return;
 
         ModelCasing casing = ModelCache.getOrLoadCasingModel(model.getType());
