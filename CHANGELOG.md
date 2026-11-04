@@ -112,6 +112,7 @@
 * Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards; detached parts such as tracks now check ground support across their shape, tip into a stable resting position and land correctly on stairs and slabs
 * Fixed animated tracks, driveable collisions against walls and ThrownGun gravity
 * Pointing a driveable repair tool (such as the blow torch) at a part of a driveable or Flan's NPC shows its remaining and total HP; debug mode shows it above the armor readout
+* Using a driveable repair tool on a vehicle repairs it instead of entering a seat, and repair tool tooltips show their repair amount and remaining uses
 
 ## Weapons
 

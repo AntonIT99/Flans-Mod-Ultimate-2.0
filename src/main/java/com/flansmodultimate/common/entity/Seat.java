@@ -2,11 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.DriveControl;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
-import com.flansmodultimate.api.driveables.ISeat;
-import com.flansmodultimate.api.driveables.WeaponTriggerState;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.equipment.MechaMeleeProperties;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
@@ -15,6 +11,7 @@ import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.optics.*;
 import com.flansmodultimate.common.driveables.visual.SeatVisual;
+import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
@@ -46,7 +43,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
-import java.util.OptionalDouble;
 
 /**
  * Lightweight mount proxy for a driveable seat.
@@ -653,7 +649,7 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     @NotNull
     public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
     {
-        if (driveable == null || !driveable.canPlayerAccess(player))
+        if (driveable == null || !driveable.canPlayerAccess(player) || ToolItem.isRepairTool(player.getItemInHand(hand)))
             return InteractionResult.PASS;
         if (!SeatOccupants.canEnter(this, player, false))
             return InteractionResult.sidedSuccess(level().isClientSide);

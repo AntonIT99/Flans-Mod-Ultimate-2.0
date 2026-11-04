@@ -5691,7 +5691,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         ItemStack held = player.getItemInHand(hand);
         if (held.getItem() instanceof ToolItem tool && tool.getConfigType().isKey())
             return InteractionResult.sidedSuccess(level().isClientSide || bindOrCheckKey(player, held));
-        if (isWreck())
+        if (isWreck() || ToolItem.isRepairTool(held))
             return InteractionResult.PASS;
         if (!canPlayerAccess(player) || player.isSpectator() || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
             return InteractionResult.PASS;
