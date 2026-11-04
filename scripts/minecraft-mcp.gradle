@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+
 import java.security.MessageDigest
 
 // Developer client tool: neither the downloaded jar nor Node dependencies ship.
@@ -51,6 +52,9 @@ def mcpDev = sourceSets.create('mcpDev') {
     compileClasspath += sourceSets.npcs.compileClasspath + sourceSets.npcs.output
     runtimeClasspath += sourceSets.npcs.runtimeClasspath
 }
+// IntelliJ launches MCP runs from this module, so it also needs main's runtime-only mods such as Custom NPCs.
+// Inherit the configuration rather than appending files: IntelliJ's Gradle import maps configurations reliably.
+configurations.named(mcpDev.runtimeClasspathConfigurationName) { extendsFrom configurations.runtimeClasspath }
 dependencies.add(mcpDev.compileOnlyConfigurationName, fg.deobf(mcpDependency))
 dependencies.add(mcpDev.annotationProcessorConfigurationName, "org.projectlombok:lombok:$version_lombok")
 
@@ -76,6 +80,8 @@ if (!project.hasProperty('withoutMinecraftMcp') && (mcpJar.get().asFile.isFile()
             property 'fmu.mcp.port', (name == 'client2' ? mcpTarget.secondPort + 100 : mcpTarget.port + 100).toString()
             property 'fmu.mcp.captureDir', layout.buildDirectory.dir('minecraft-mcp/captures').get().asFile.absolutePath
             mods.maybeCreate('flansmcpdev').source(mcpDev)
+            // IntelliJ takes the launch classpath from this module; only mcpDev carries the remapped MCP jar.
+            ideaModule "${project.name.replace('.', '_')}.mcpDev"
             if (project.hasProperty('mcpTestProfile'))
             {
                 workingDirectory file(name == 'client2' ? 'run/mcp-test-2' : 'run/mcp-test').absolutePath
