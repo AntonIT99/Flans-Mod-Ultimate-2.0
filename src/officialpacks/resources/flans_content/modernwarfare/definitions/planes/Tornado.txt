@@ -82,7 +82,7 @@ BulletDetection 10
 UseRealisticVehicleHealth true
 
 // Seats and geometry
-CameraDistance 15.0
+CameraDistance 20.0
 WheelPosition 0 -92 -12 -15
 WheelPosition 1 -92 -12 15
 WheelPosition 2 12 -9 0

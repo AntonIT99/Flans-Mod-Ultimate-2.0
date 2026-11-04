@@ -5541,6 +5541,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 origin = modelLocalToWorld(localOrigin);
                 direction = modelLocalDirectionToWorld(localVelocity);
             }
+            // Carry the exhaust with the aircraft so fast flight does not separate it into isolated puffs.
+            if (FlanParticles.FM_AFTERBURN.equals(emitter.getParticleType()))
+            {
+                Vec3 movement = position().subtract(xo, yo, zo);
+                // Particles advance later in this tick; start at the previous anchor before inheriting that movement.
+                origin = origin.subtract(movement);
+                direction = direction.add(movement);
+            }
+
             ClientHooks.RENDER.spawnParticle(emitter.getParticleType(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, 1F);
         });
     }

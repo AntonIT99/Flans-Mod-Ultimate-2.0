@@ -54,7 +54,7 @@ ReadWeaponsFromGunTypes true
 UseRealisticVehicleHealth true
 
 // Parts and Seats
-CameraDistance 10.0
+CameraDistance 20.0
 Propeller 0 0 0 0 core SMP_Part_Propeller_TurbineJet
 Propeller 1 0 0 0 core SMP_Part_Propeller_TurbineJet
 Pilot 73 12 0
@@ -76,3 +76,9 @@ PropSound viper
 PropSoundLength 30
 ShootSound gatling
 BombSound bomb
+
+// Engine exhaust
+AddEmitter flansmod.afterburn 1 [65,19,-8] [1,1,1] [4,0,0] 0.65 5 0 1 tail
+AddEmitter flansmod.afterburn 1 [69,19,-8] [1,1,1] [6,0,0] 0.65 5 0 1 tail
+AddEmitter flansmod.afterburn 1 [65,19,8] [1,1,1] [4,0,0] 0.65 5 0 1 tail
+AddEmitter flansmod.afterburn 1 [69,19,8] [1,1,1] [6,0,0] 0.65 5 0 1 tail
