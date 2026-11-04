@@ -257,6 +257,56 @@ public final class AircraftPerformancePhysics
     }
 
     /**
+     * The wing span to charge induced drag with, so that induced drag matches
+     * the game-scaled lift rather than the real wing.
+     *
+     * <p>The reference airspeed at which the wing carries the aircraft's weight
+     * is scaled down for playability, so the game wing makes its weight at a
+     * fraction of the real speed. Charging real induced drag at that low speed
+     * asked the engine for the drag of an impossibly slow real flight, which
+     * capped aircraft near the reference speed. Scaling induced drag by the
+     * square of the same ratio keeps lift and its price consistent. The
+     * parasitic term is back-solved from the same value, so top speed is kept.
+     *
+     * @param wingSpanM            the real wing span
+     * @param massKg               the aircraft's mass
+     * @param wingAreaM2           the real wing area
+     * @param gameReferenceSpeedMs the scaled reference airspeed lift is measured against
+     * @return the equivalent span; the real span when no scaling applies
+     */
+    public static double inducedDragSpanM(double wingSpanM, double massKg, double wingAreaM2, double gameReferenceSpeedMs)
+    {
+        double realReference = referenceSpeedMs(massKg, wingAreaM2);
+        if (!finitePositive(wingSpanM) || !finitePositive(realReference) || !finitePositive(gameReferenceSpeedMs))
+            return wingSpanM;
+        double ratio = gameReferenceSpeedMs / realReference;
+        // Induced drag scales with 1/b², so a span divided by the ratio charges ratio² of the real value.
+        return ratio < 1D ? wingSpanM / ratio : wingSpanM;
+    }
+
+
+    /**
+     * The load factor induced drag is charged for: what the wing is asked for,
+     * but never more than it can actually make at this airspeed.
+     *
+     * <p>Induced drag is the price of lift. Below flying speed the wing makes
+     * only part of the aircraft's weight, so charging the commanded load there
+     * stalled a nose-up tail-dragger on its take-off roll. Once the wing is
+     * working its lift fraction reaches the commanded load and nothing changes.
+     *
+     * @param commandedLoadFactor what the attitude asks of the wing
+     * @param liftFraction        what the wing can make, as a multiple of weight
+     * @return the load factor actually carried, never negative
+     */
+    public static double inducedLoadFactor(double commandedLoadFactor, double liftFraction)
+    {
+        if (!Double.isFinite(commandedLoadFactor))
+            return 1D;
+        double available = Double.isFinite(liftFraction) ? Math.max(0D, liftFraction) : 0D;
+        return Math.max(0D, Math.min(commandedLoadFactor, available));
+    }
+
+    /**
      * The share of a vertical lift force that acts along the flight path, which
      * a real wing never produces and which the caller must therefore remove.
      *

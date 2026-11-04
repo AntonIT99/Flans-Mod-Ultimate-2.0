@@ -895,9 +895,24 @@ public class Plane extends Driveable implements PlaneVisual
         }
         double loadFactor = AircraftPerformancePhysics.commandedLoadFactor(forward.y, flightPathY, excessAllowance);
 
+        int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0) + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
+        // A broken airframe carries no load, whatever is left of the wings.
+        if (isPartDestroyed(EnumDriveablePart.AIRFRAME))
+            intactWings = 0;
+        double referenceSpeedMs = physics.referenceSpeedMs(speedScale, ModCommonConfig.realisticAircraftReferenceSpeedScale());
+        // What the wing can make at this speed, which is what decides whether it
+        // is flying at all. It is deliberately not clamped to the commanded load
+        // factor: the alignment blend below reads it as how hard the wing bites.
+        double liftFraction = AircraftPerformancePhysics.liftFraction(wingAirspeedMs, referenceSpeedMs) * intactWings * 0.5D;
+
         Float wingSpan = physics.source().aircraft().effectiveWingSpanM();
-        double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(), airspeedMs, terminalMs, referenceThrust, wingSpan == null ? 0D : wingSpan,
-            throttleDemand * propellerFraction, loadFactor, ModCommonConfig.dragFactor(level()));
+        Float wingArea = physics.source().aircraft().effectiveWingAreaM2();
+        // Induced drag is the price of lift actually made, measured against the same
+        // scaled reference speed as the lift, so a nose-up tail-dragger rolling
+        // slowly is not charged for lift its wing has not built yet.
+        double inducedSpan = AircraftPerformancePhysics.inducedDragSpanM(wingSpan == null ? 0D : wingSpan, physics.massKg(), wingArea == null ? 0D : wingArea, referenceSpeedMs);
+        double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(), airspeedMs, terminalMs, referenceThrust, inducedSpan,
+            throttleDemand * propellerFraction, AircraftPerformancePhysics.inducedLoadFactor(loadFactor, liftFraction), ModCommonConfig.dragFactor(level()));
         accelerationMs2 = Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
             accelerationMs2 - ModPhysics.dragForce(AircraftPerformancePhysics.maneuverDecelerationMs2(airspeedMs, angularYaw, angularPitch, angularRoll), level()));
         if (rolling)
@@ -912,16 +927,6 @@ public class Plane extends Driveable implements PlaneVisual
         // this floor the deceleration tail leaves a permanent crawl.
         if (rolling && throttleDemand <= 0D && VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(newSpeed) < VehiclePhysicsConstants.GROUND_PARKING_SPEED_MS)
             newSpeed = 0D;
-
-        int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0) + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
-        // A broken airframe carries no load, whatever is left of the wings.
-        if (isPartDestroyed(EnumDriveablePart.AIRFRAME))
-            intactWings = 0;
-        double referenceSpeedMs = physics.referenceSpeedMs(speedScale, ModCommonConfig.realisticAircraftReferenceSpeedScale());
-        // What the wing can make at this speed, which is what decides whether it
-        // is flying at all. It is deliberately not clamped to the commanded load
-        // factor: the alignment blend below reads it as how hard the wing bites.
-        double liftFraction = AircraftPerformancePhysics.liftFraction(wingAirspeedMs, referenceSpeedMs) * intactWings * 0.5D;
 
         Vec3 velocity;
         if (rolling)

@@ -90,7 +90,7 @@
 
 * Wheels and tracks throw up dust in the colour of the ground they run on, a helicopter hovering low blows a ring of dust, or of ripples over water, out from under itself, and ground vehicles smoke from their exhaust while under power; ships keep their bow spray and funnel smoke
 * The vehicle HUD shows the current ammunition-switch key below the ammunition display for drivers with shells, bombs or missiles
-* Driveables with real-world engine data take their power only from that data, no longer multiplied by the installed engine's `EngineSpeed`, so the same vehicle category performs alike in every pack; this lets the Manus WW2 Ju 87 Stuka take off again
+* Driveables with real-world engine data take their power only from that data, no longer multiplied by the installed engine's `EngineSpeed`, so the same vehicle category performs alike in every pack; induced drag now matches the playability-scaled lift, so aircraft such as the Ju 87 Stuka no longer stall out around 45 km/h on the runway or in slow flight
 
 * Armour hits on driveables and NPC vehicle models show outward sparks and metallic impacts when blocked, and tighter flashes, metal fragments and smoke when large shells penetrate, with effects scaled to projectile mass
 * Ricochet star particles default to half as many; configure their base count with `ricochetSparkCount` (0 disables them)

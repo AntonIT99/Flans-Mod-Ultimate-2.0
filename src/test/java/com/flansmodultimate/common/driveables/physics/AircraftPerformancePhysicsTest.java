@@ -202,6 +202,41 @@ class AircraftPerformancePhysicsTest
     }
 
     @Test
+    void inducedDragIsChargedOnlyForTheLiftTheWingActuallyMakes()
+    {
+        // Rolling slowly the wing makes a fraction of the weight, whatever the attitude asks.
+        assertEquals(0.1D, AircraftPerformancePhysics.inducedLoadFactor(1.3D, 0.1D), 1.0E-9D);
+        // Once flying, the commanded load is carried and charged in full.
+        assertEquals(1.3D, AircraftPerformancePhysics.inducedLoadFactor(1.3D, 1.5D), 1.0E-9D);
+        assertEquals(0D, AircraftPerformancePhysics.inducedLoadFactor(1.3D, Double.NaN), 1.0E-9D);
+        assertEquals(1D, AircraftPerformancePhysics.inducedLoadFactor(Double.NaN, 1D), 1.0E-9D);
+    }
+
+    @Test
+    void aJu87KeepsAcceleratingPastItsScaledReferenceSpeed()
+    {
+        // Ju 87 D-1: 6600 kg, 1400 PS, 410 km/h, 13.8 m span, 31.9 m² wing, with the default reference speed scale.
+        double terminal = 410D / 3.6D;
+        double powerKw = 1400D * 0.7355D;
+        double gameReference = AircraftPerformancePhysics.clampedReferenceSpeedMs(6600D, 31.9D, terminal, 0.25D);
+        double span = AircraftPerformancePhysics.inducedDragSpanM(13.8D, 6600D, 31.9D, gameReference);
+        double reference = AircraftPerformancePhysics.thrustNewtons(0D, powerKw, terminal, terminal);
+        // Rolling nose-up below the reference speed, and flying level just above it, as in the reported caps.
+        for (double airspeedKmh : new double[]{43D, 60D})
+        {
+            double airspeed = airspeedKmh / 3.6D;
+            double thrust = AircraftPerformancePhysics.thrustNewtons(0D, powerKw, airspeed, terminal);
+            double commanded = AircraftPerformancePhysics.commandedLoadFactor(0.22D, 0D, 0.5D);
+            double liftFraction = AircraftPerformancePhysics.liftFraction(airspeed, gameReference);
+            double acceleration = AircraftPerformancePhysics.accelerationMs2(thrust, 6600D, airspeed, terminal, reference, span, 1D,
+                AircraftPerformancePhysics.inducedLoadFactor(commanded, liftFraction), 1D);
+            assertTrue(acceleration > VehiclePhysicsConstants.GROUND_ROLLING_DECELERATION_MS2, airspeedKmh + " km/h: net acceleration " + acceleration);
+        }
+        // Top speed is still where the drag calibration puts it.
+        assertEquals(0D, AircraftPerformancePhysics.accelerationMs2(reference, 6600D, terminal, terminal, reference, span, 1D, 1D, 1D), 1.0E-6D);
+    }
+
+    @Test
     void verticalLiftLeavesSpeedUntouchedOnceItsWorkIsRemoved()
     {
         // A 30-degree climb at 100 m/s. Lift applied on the world vertical
