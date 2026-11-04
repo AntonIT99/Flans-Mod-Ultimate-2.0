@@ -495,52 +495,30 @@ class AircraftPerformancePhysicsTest
     }
 
     @Test
-    void theGameplayMultiplierScalesTheAirBrakeAndNothingElse()
+    void airBrakeAssistanceFadesAndDoesNotStackWithPhysicalDrag()
     {
-        double area = AircraftPerformancePhysics.airBrakeAreaM2(0D, WING_AREA);
-        double physical = 0.5D * VehiclePhysicsUnits.AIR_DENSITY * area
-            * VehiclePhysicsConstants.AIR_BRAKE_DRAG_COEFFICIENT * 100D * 100D;
-        assertEquals(physical * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS,
-            AircraftPerformancePhysics.airBrakeDragNewtons(100D, area), 1.0E-6D,
-            "the brake is the flat-plate drag times the playability multiplier");
-        // Manoeuvring speed is where a physically exact brake disappears into the
-        // coast floor, so that is where the multiplier has to earn its keep.
-        assertTrue(AircraftPerformancePhysics.airBrakeDecelerationMs2(100D, area, MASS_KG)
-            > 2D * VehiclePhysicsConstants.MIN_AIRCRAFT_COAST_DECELERATION_MS2,
-            "at manoeuvring speed the brake clearly beats simply closing the throttle");
+        assertEquals(0D, brake(0D, 0D, 1D, 1D, 4D, 1D), 1E-9D);
+        assertEquals(1D, brake(75D / 3.6D, 0D, 1D, 1D, 4D, 1D), 1E-9D);
+        assertEquals(4D, brake(150D / 3.6D, 0D, 1D, 1D, 4D, 1D), 1E-9D);
+        assertEquals(8D, brake(200D / 3.6D, 0D, 1D, 1D, 4D, 2D), 1E-9D);
+        double physical = AircraftPerformancePhysics.airBrakeDragNewtons(100D, 2D) / 1000D;
+        assertEquals(physical, brake(100D, 2D, 1000D, 1D, 4D, 1D), 1E-9D);
+        assertTrue(physical > 9D);
+        assertEquals(physical * 2D, brake(100D, 2D, 1000D, 2D, 0D, 1D), 1E-9D);
+        assertEquals(0D, brake(100D, 2D, 1000D, 0D, 0D, 1D), 1E-9D);
+        assertEquals(0D, brake(100D, 2D, 1000D, 1D, 4D, 0D), 1E-9D);
     }
 
     @Test
-    void theAirBrakeDecelerationIsUsableAndBounded()
+    void airBrakeAssistanceWorksWithoutResearchAndRespectsDimensionDrag()
     {
-        double area = AircraftPerformancePhysics.airBrakeAreaM2(0D, WING_AREA);
-        double deceleration = AircraftPerformancePhysics.airBrakeDecelerationMs2(160D, area, MASS_KG);
-        // A speed brake worth having is a fraction of a g, not a wall.
-        assertTrue(deceleration > 1D && deceleration < 9.81D,
-            "expected a fraction of a g but got " + deceleration);
-        assertEquals(VehiclePhysicsConstants.AIR_BRAKE_MAX_DECELERATION_MS2,
-            AircraftPerformancePhysics.airBrakeDecelerationMs2(2000D, area, 1D), 1.0E-9D,
-            "absurd inputs still respect the air brake ceiling");
-        assertTrue(VehiclePhysicsConstants.AIR_BRAKE_MAX_DECELERATION_MS2
-            < VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
-            "the brake saturates before the shared acceleration ceiling does");
-        assertEquals(0D, AircraftPerformancePhysics.airBrakeDecelerationMs2(160D, area, 0D), 1.0E-9D,
-            "no mass means no derived deceleration");
+        assertEquals(2D, AircraftPerformancePhysics.airBrakeDecelerationMs2(150D / 3.6D, 0D, 0D, 0.5D, 1D, 4D, 150D, 1D), 1E-9D);
+        assertEquals(0D, AircraftPerformancePhysics.airBrakeDecelerationMs2(100D, 2D, 1000D, 0D, 1D, 4D, 150D, 1D), 1E-9D);
+        assertEquals(0D, brake(Double.NaN, 2D, 1000D, 1D, 4D, 1D), 1E-9D);
     }
 
-    @Test
-    void theLegacyAirBrakeFactorBleedsSpeedWithoutStoppingThePlane()
+    private double brake(double speed, double area, double mass, double effectiveness, double assist, double multiplier)
     {
-        float fallback = AircraftPerformancePhysics.legacyAirBrakeDragFactor(0D, 0D);
-        assertEquals(1D - VehiclePhysicsConstants.AIR_BRAKE_WING_AREA_FRACTION
-            * VehiclePhysicsConstants.LEGACY_AIR_BRAKE_DRAG_SCALE
-            * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS, fallback, 1.0E-6D,
-            "with no researched areas the default proportion applies");
-        assertTrue(fallback < 1F && fallback > 0.9F, "a multiplier that bleeds speed but does not stop it");
-        assertTrue(AircraftPerformancePhysics.legacyAirBrakeDragFactor(2D, WING_AREA) < fallback,
-            "a larger researched brake bites harder than the default");
-        assertEquals(1D - VehiclePhysicsConstants.MAX_LEGACY_AIR_BRAKE_DRAG,
-            AircraftPerformancePhysics.legacyAirBrakeDragFactor(WING_AREA, WING_AREA), 1.0E-6D,
-            "an absurd brake area is capped");
+        return AircraftPerformancePhysics.airBrakeDecelerationMs2(speed, area, mass, 1D, effectiveness, assist, 150D, multiplier);
     }
 }

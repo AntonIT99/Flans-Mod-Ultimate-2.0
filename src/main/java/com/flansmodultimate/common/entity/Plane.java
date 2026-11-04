@@ -268,17 +268,13 @@ public class Plane extends Driveable implements PlaneVisual
         return AircraftPerformancePhysics.airBrakeAreaM2(authored == null ? 0D : authored, wingArea == null ? 0D : wingArea);
     }
 
-    /**
-     * Per-tick velocity multiplier for deployed air brakes on the legacy flight
-     * model. Both areas come from the real-world keys, since the legacy
-     * {@code WingArea} is a gameplay coefficient and not a dimension in metres.
-     */
-    private float legacyAirBrakeDragFactor(PlaneType type)
+    private double airBrakeDecelerationMs2(PlaneType type, double speedMs)
     {
-        RealWorldVehicleSpec.Aircraft aircraft = type.getResolvedPhysics().source().aircraft();
-        Float authored = aircraft.airBrakeAreaM2();
-        Float wingArea = aircraft.effectiveWingAreaM2();
-        return AircraftPerformancePhysics.legacyAirBrakeDragFactor(authored == null ? 0D : authored, wingArea == null ? 0D : wingArea);
+        if (!isAirBrakeDeployed() || !type.isHasAirBrake())
+            return 0D;
+        return AircraftPerformancePhysics.airBrakeDecelerationMs2(speedMs, deployedAirBrakeAreaM2(type), type.getResolvedPhysics().massKg(),
+            ModCommonConfig.dragFactor(level()), ModCommonConfig.airBrakeEffectiveness(), ModCommonConfig.airBrakeAssistDeceleration(),
+            ModCommonConfig.airBrakeAssistReferenceSpeedKmh(), type.getAirBrakeStrengthMultiplier());
     }
 
     /** Retracted gear is stowed inside the airframe, so it cannot be shot. */
@@ -634,10 +630,6 @@ public class Plane extends Driveable implements PlaneVisual
         float effectiveThrottle = effectivePropellerThrottle(type, throttle);
         float thrust = LegacyPlanePhysics.thrust(effectiveThrottle, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater());
         float drag = Math.max(0F, LegacyPlanePhysics.drag(type.getDrag()) - (float) Math.sqrt(angularYaw * angularYaw + angularPitch * angularPitch + angularRoll * angularRoll) / 100F);
-        // The legacy model carries drag as a per-tick multiplier rather than a
-        // force, so the air brake folds into that same multiplier.
-        if (isAirBrakeDeployed() && type.isHasAirBrake())
-            drag *= legacyAirBrakeDragFactor(type);
         double speed = Math.min(current.length(), type.isNewFlightControl() ? type.getMaxSpeed() : 2D);
         Vec3 forward = flightForwardVector();
         double wingAirspeed = LegacyPlanePhysics.forwardAirspeed(current.x, current.y, current.z, forward.x, forward.y, forward.z);
@@ -657,6 +649,13 @@ public class Plane extends Driveable implements PlaneVisual
             velocity = new Vec3(velocity.x, -0.01D, velocity.z);
         velocity = new Vec3(velocity.x * ModPhysics.dragRetention(drag, level()), velocity.y * ModPhysics.dragRetention(velocity.y < 0D && drag < 1F ? 0.999D : drag, level()),
             velocity.z * ModPhysics.dragRetention(drag, level()));
+        double brakeSpeed = velocity.length();
+        if (brakeSpeed > 0D)
+        {
+            double loss = VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(
+                airBrakeDecelerationMs2(type, VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(brakeSpeed)));
+            velocity = velocity.scale(Math.max(0D, brakeSpeed - loss) / brakeSpeed);
+        }
         if (isWingFolded())
             velocity = velocity.multiply(ModPhysics.dragRetention(0.98D, level()), 1D, ModPhysics.dragRetention(0.98D, level()));
         if (!hasFlightController())
@@ -917,10 +916,9 @@ public class Plane extends Driveable implements PlaneVisual
             accelerationMs2 - ModPhysics.dragForce(AircraftPerformancePhysics.maneuverDecelerationMs2(airspeedMs, angularYaw, angularPitch, angularRoll), level()));
         if (rolling)
             accelerationMs2 -= AircraftPerformancePhysics.groundDecelerationMs2(throttleDemand);
-        // Deployed air brakes are a real extra drag force, so they bite hardest
-        // at speed and do nothing at a standstill.
-        accelerationMs2 = Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
-            accelerationMs2 - AircraftPerformancePhysics.airBrakeDecelerationMs2(airspeedMs, deployedAirBrakeAreaM2(type), physics.massKg(), ModCommonConfig.dragFactor(level())));
+        // Air brakes apply the stronger of physical drag and configured assist;
+        // both increase with speed and vanish at a standstill.
+        accelerationMs2 -= airBrakeDecelerationMs2(type, airspeedMs);
         double newSpeed = Math.max(0D, airspeedBlocksPerTick + VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(accelerationMs2));
         newSpeed = Math.min(newSpeed, terminalBlocksPerTick * (type.isSupersonic() ? 1.2D : 1D));
         // A closed throttle below walking pace on the ground is parked. Without

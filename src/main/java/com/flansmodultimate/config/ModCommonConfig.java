@@ -282,6 +282,9 @@ public final class ModCommonConfig
     private static final ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
+    private static final Supplier<Double> AIR_BRAKE_EFFECTIVENESS;
+    private static final Supplier<Double> AIR_BRAKE_ASSIST_DECELERATION;
+    private static final Supplier<Double> AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
     private static final Supplier<Double> REALISTIC_PLANE_SPEED_SCALE;
@@ -624,6 +627,14 @@ public final class ModCommonConfig
         ENABLE_AIRCRAFT_ROLL_SELF_LEVELING = builder.comment("Enable the weak airborne roll force that slowly returns planes, helicopters and VTOL hover mode toward horizontal.",
             "Keyboard or mouse roll input overrides it immediately. Fixed-wing airflow, rotor authority, damage and available",
             "real-world lifting-surface characteristics still determine its strength when enabled.").define("enableAircraftRollSelfLeveling", true);
+        AIR_BRAKE_EFFECTIVENESS = builder.comment("Multiplier on physical air-brake drag in both flight models; 0 disables the physical contribution.")
+            .defineInRange("airBrakeEffectiveness", 1D, 0D, 100D);
+        AIR_BRAKE_ASSIST_DECELERATION = builder.comment("Minimum additional air-brake deceleration in m/s squared at or above the assist reference speed.",
+            "Uses the stronger of physical braking and assistance. 0 disables assistance. Engine thrust remains active.")
+            .defineInRange("airBrakeAssistDeceleration", 4D, 0D, 100D);
+        AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH = builder.comment("Speed in km/h at which air-brake assistance reaches full strength.",
+            "Below this speed assistance fades with speed squared, independently of the aircraft lift reference speed.")
+            .defineInRange("airBrakeAssistReferenceSpeedKmh", 150D, 1D, 10000D);
         REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder.comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
             "This changes the speed at which lift equals weight, so it affects takeoff, low-speed lift and stall-like behaviour together.",
             "0.5 halves the physically derived reference speed for shorter Minecraft runways; 1.0 keeps the physical result.", "Legacy aircraft, helicopters, VTOL and six-DOF craft are unaffected.")
@@ -794,7 +805,7 @@ public final class ModCommonConfig
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
-            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get());
+            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(), AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -938,6 +949,24 @@ public final class ModCommonConfig
     public static boolean forceLegacyMovement(@Nullable EnumVehicleCategory category)
     {
         return category == EnumVehicleCategory.AIRCRAFT ? forceLegacyPlanePhysics() : category == EnumVehicleCategory.GROUND && forceLegacyVehiclePhysics();
+    }
+
+    public static double airBrakeEffectiveness()
+    {
+        var config = get();
+        return config == null ? 1D : config.airBrakeEffectiveness();
+    }
+
+    public static double airBrakeAssistDeceleration()
+    {
+        var config = get();
+        return config == null ? 4D : config.airBrakeAssistDeceleration();
+    }
+
+    public static double airBrakeAssistReferenceSpeedKmh()
+    {
+        var config = get();
+        return config == null ? 150D : config.airBrakeAssistReferenceSpeedKmh();
     }
 
     /** Server-authoritative arcade scale for derived fixed-wing lift and takeoff speed. */

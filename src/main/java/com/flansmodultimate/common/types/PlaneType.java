@@ -146,6 +146,7 @@ public class PlaneType extends DriveableType
      * {@code RealAirBrakeAreaM2}, or from wing area when that is not researched.
      */
     protected boolean hasAirBrake = true;
+    protected float airBrakeStrengthMultiplier = 1F;
     protected boolean hasWing;
     protected boolean foldWingForLand;
     protected boolean flyWithOpenDoor;
@@ -194,6 +195,9 @@ public class PlaneType extends DriveableType
         hasDoor = readValue("HasDoor", hasDoor, file);
         hasAirBrake = readValue("HasAirBrake", mode != EnumPlaneMode.HELI, file);
         hasAirBrake = readValue("AirBrake", hasAirBrake, file);
+        airBrakeStrengthMultiplier = readValue("AirBrakeStrengthMultiplier", airBrakeStrengthMultiplier, file);
+        if (!Float.isFinite(airBrakeStrengthMultiplier) || airBrakeStrengthMultiplier < 0F)
+            airBrakeStrengthMultiplier = 1F;
         hasWing = readValue("HasWing", hasWing, file);
         foldWingForLand = readValue("FoldWingForLand", foldWingForLand, file);
         flyWithOpenDoor = readValue("FlyWithOpenDoor", flyWithOpenDoor, file);

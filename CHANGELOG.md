@@ -2,6 +2,8 @@
 
 ## Highlights
 
+* Air brakes use configurable physical effectiveness and low-speed assistance (`airBrakeEffectiveness`, `airBrakeAssistDeceleration`, `airBrakeAssistReferenceSpeedKmh`) in both flight models, with per-aircraft `AirBrakeStrengthMultiplier` and no fixed air-brake deceleration ceiling
+
 * Destroyed AA guns leave unusable, charred wrecks with a modest fire and smoke effect, using `driveableWreckLifetime`; destroyed guns and their ammunition do not drop
 
 * Cross-pack specialist classes: national WW2 flamethrowers, a Soviet NKVD officer and German support roles including Wolff MG34/MG42 gunners, modern attachment loadouts, survivor rescue and supply roles, and Zombie weapons for modern SWAT and Criminal teams

@@ -473,61 +473,28 @@ public final class AircraftPerformancePhysics
         return 0D;
     }
 
-    /**
-     * Drag in newtons contributed by a deployed air brake, from the flat-plate
-     * form {@code D = 0.5 * rho * S * Cd * v²}, times
-     * {@link VehiclePhysicsConstants#AIR_BRAKE_EFFECTIVENESS}. It is a genuine
-     * extra force rather than a multiplier, so it is heaviest exactly where a
-     * speed brake matters — at high airspeed — and vanishes at a standstill.
-     */
+    /** Physical flat-plate drag before configurable effectiveness, in newtons. */
     public static double airBrakeDragNewtons(double airspeedMs, double airBrakeAreaM2)
     {
         if (!finitePositive(airBrakeAreaM2))
             return 0D;
         double speed = Double.isFinite(airspeedMs) ? Math.abs(airspeedMs) : 0D;
         return 0.5D * VehiclePhysicsUnits.AIR_DENSITY * airBrakeAreaM2
-            * VehiclePhysicsConstants.AIR_BRAKE_DRAG_COEFFICIENT * speed * speed
-            * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS;
+            * VehiclePhysicsConstants.AIR_BRAKE_DRAG_COEFFICIENT * speed * speed;
     }
 
-    /**
-     * Deceleration in m/s² from a deployed air brake, capped by its own ceiling
-     * so the quadratic term stays decisive without becoming a wall at the top of
-     * the speed range. Always zero or positive; the caller subtracts it.
-     */
-    public static double airBrakeDecelerationMs2(double airspeedMs, double airBrakeAreaM2, double massKg)
+    /** Additional deceleration shared by both flight models; no aircraft-independent ceiling. */
+    @SuppressWarnings("java:S107") // The calculation needs the aircraft and configurable brake inputs.
+    public static double airBrakeDecelerationMs2(double airspeedMs, double areaM2, double massKg,
+        double dragFactor, double effectiveness, double assistDeceleration, double assistReferenceSpeedKmh, double strengthMultiplier)
     {
-        return airBrakeDecelerationMs2(airspeedMs, airBrakeAreaM2, massKg, 1D);
-    }
-
-    public static double airBrakeDecelerationMs2(double airspeedMs, double airBrakeAreaM2, double massKg,
-                                                  double dragFactor)
-    {
-        if (!finitePositive(massKg))
+        if (!Double.isFinite(airspeedMs) || !Double.isFinite(strengthMultiplier) || strengthMultiplier <= 0D)
             return 0D;
-        double deceleration = ModPhysics.dragForce(airBrakeDragNewtons(airspeedMs, airBrakeAreaM2), dragFactor) / massKg;
-        if (!Double.isFinite(deceleration) || deceleration <= 0D)
-            return 0D;
-        return Math.min(deceleration, VehiclePhysicsConstants.AIR_BRAKE_MAX_DECELERATION_MS2);
-    }
-
-    /**
-     * Per-tick velocity multiplier standing in for a deployed air brake on the
-     * legacy flight model, which carries drag as a multiplier rather than a force.
-     *
-     * <p>Both areas are used only as a ratio, so a pack that states neither, or
-     * only one of them, falls back to the same default proportion the derived
-     * model uses rather than mixing a real dimension with a gameplay number.
-     */
-    public static float legacyAirBrakeDragFactor(double airBrakeAreaM2, double wingAreaM2)
-    {
-        double fraction = finitePositive(airBrakeAreaM2) && finitePositive(wingAreaM2)
-            ? airBrakeAreaM2 / wingAreaM2
-            : VehiclePhysicsConstants.AIR_BRAKE_WING_AREA_FRACTION;
-        double loss = Math.min(VehiclePhysicsConstants.MAX_LEGACY_AIR_BRAKE_DRAG,
-            fraction * VehiclePhysicsConstants.LEGACY_AIR_BRAKE_DRAG_SCALE
-                * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS);
-        return (float) (1D - Math.max(0D, loss));
+        double physical = finitePositive(massKg) ? airBrakeDragNewtons(airspeedMs, areaM2) / massKg * Math.max(0D, effectiveness) : 0D;
+        double ratio = finitePositive(assistReferenceSpeedKmh) ? Math.min(1D, Math.abs(airspeedMs) * 3.6D / assistReferenceSpeedKmh) : 0D;
+        double assist = Math.max(0D, assistDeceleration) * ratio * ratio;
+        double result = ModPhysics.dragForce(Math.max(physical, assist) * strengthMultiplier, dragFactor);
+        return Double.isFinite(result) ? Math.max(0D, result) : 0D;
     }
 
     /**

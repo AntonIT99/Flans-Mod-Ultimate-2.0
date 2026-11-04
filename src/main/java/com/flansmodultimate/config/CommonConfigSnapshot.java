@@ -171,10 +171,13 @@ public record CommonConfigSnapshot(
     double driveableMeleeDamageThreshold,
     boolean forceUncensoredContent,
     boolean showBotKillsInKillFeed,
-    double explosionParticleRange
+    double explosionParticleRange,
+    double airBrakeEffectiveness,
+    double airBrakeAssistDeceleration,
+    double airBrakeAssistReferenceSpeedKmh
 )
 {
-    public static final int CURRENT_VERSION = 50;
+    public static final int CURRENT_VERSION = 51;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -353,6 +356,9 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.forceUncensoredContent);
         buf.writeBoolean(s.showBotKillsInKillFeed);
         buf.writeDouble(s.explosionParticleRange);
+        buf.writeDouble(s.airBrakeEffectiveness);
+        buf.writeDouble(s.airBrakeAssistDeceleration);
+        buf.writeDouble(s.airBrakeAssistReferenceSpeedKmh);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -522,6 +528,9 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
             buf.readDouble()
         );
     }
