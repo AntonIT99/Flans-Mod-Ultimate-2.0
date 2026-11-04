@@ -25,6 +25,8 @@
 
 ## Teams
 
+* `Deployed guns break` (`canBreakGuns`) now defaults to off; saved settings are preserved
+
 * Capture point letters and names render clearly over their label backgrounds
 
 * Newly placed capture points use the first unused letter on their map, reusing freed letters; the editor and saved points support A-Z

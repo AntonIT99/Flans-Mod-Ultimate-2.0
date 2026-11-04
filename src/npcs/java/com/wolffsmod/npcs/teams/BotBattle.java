@@ -29,6 +29,7 @@ final class BotBattle
     /** Strategic reports are deliberately not persisted or reconstructed from hidden enemies after a restart. */
     private final BotIntelligence intelligence = new BotIntelligence();
     private final Deque<Integer> queue = new ArrayDeque<>();
+    private final BotSpawnerWaves spawnerWaves = new BotSpawnerWaves();
     /** Tickets each side has left, by side; absent while no ticket limit is set. */
     private final Map<Integer, Integer> tickets = new HashMap<>();
     /** Loose infantry spawns made by each team. */

@@ -479,6 +479,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     /** Brings in the next bots waiting in a battle's spawn queue, a few a tick. */
     static void spawnQueued(ServerLevel level, BotBattle current, long now, RandomGenerator random)
     {
+        current.getSpawnerWaves().retain(current.getQueue());
         int spawned = 0;
         while (spawned < SPAWNS_PER_TICK && !current.getQueue().isEmpty())
         {
@@ -491,6 +492,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
                 spawn(level, current, slot, now, random);
                 spawned++;
             }
+            if (slot != null)
+                current.getSpawnerWaves().attempted(slot.getId());
         }
     }
 
@@ -535,6 +538,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         if (slot.isVehicle() && deployment.source().spawner() != null)
         {
             BotSpawnPlacement.recordSpawner(npc.get(), deployment.source().spawner().id());
+            if (deployment.source().spawner().npcSpawnAll())
+                current.getSpawnerWaves().started(deployment.source().spawner().id(), current.getQueue());
             FlansTeams.recordVehicleSpawnerSpawn(deployment.source().spawner());
         }
         slot.setSpawns(slot.getSpawns() + 1);
@@ -562,16 +567,17 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         List<SpawnPoint> points = at == null ? spawnPoints(level, current, slot, team, random) : List.of(new SpawnPoint(at, null));
         for (SpawnPoint point : points)
         {
-            Optional<Vec3> position = position(level, slot, point, yaw);
+            Optional<Vec3> position = position(level, current, slot, point, yaw);
             if (position.isPresent())
                 return Optional.of(new Deployment(point, position.get(), yaw));
         }
         return Optional.empty();
     }
 
-    private static Optional<Vec3> position(ServerLevel level, BotSlot slot, SpawnPoint point, float yaw)
+    private static Optional<Vec3> position(ServerLevel level, BotBattle current, BotSlot slot, SpawnPoint point, float yaw)
     {
-        if (point.spawner() != null && !FlansTeams.isVehicleSpawnerReady(point.spawner()))
+        if (point.spawner() != null && !(point.spawner().npcSpawnAll() && current.getSpawnerWaves().contains(point.spawner().id(), slot.getId()))
+            && !FlansTeams.isVehicleSpawnerReady(point.spawner()))
             return Optional.empty();
         if (point.spawner() != null && !point.spawner().npcSpawnAll() && BotSpawnPlacement.stagingOccupied(level, point.spawner().id(), point.origin()))
             return Optional.empty();

@@ -163,7 +163,7 @@ public final class TeamsManager
     @Getter @Setter
     private boolean restoreBlocks;
     @Getter @Setter
-    private boolean canBreakGuns = true;
+    private boolean canBreakGuns = false;
     @Getter @Setter
     private boolean canBreakAAGuns = true;
     @Getter @Setter
