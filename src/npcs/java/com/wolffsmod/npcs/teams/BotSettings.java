@@ -196,7 +196,7 @@ public final class BotSettings
     /** How many loose infantry bots form one squad. */
     private int squadSize = 6;
     /** Chance, in percent, that a destroyed vehicle bot leaves a damaged vehicle players can repair and use. */
-    private int abandonChance = 100;
+    private int abandonChance = 25;
     /** Most extra infantry, in percent of its force, a side gets while it trails on score; 0 switches it off. */
     private int rubberBand;
     private Difficulty difficulty = Difficulty.REGULAR;

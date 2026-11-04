@@ -348,6 +348,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         {
             BotBattles.remove(ended);
             removeAll(server, ended);
+            BotTransports.clearRoundWrecks(server, ended.getInstance());
         }
         BotFactions.tearDown();
         forgetDuties(server);
@@ -417,8 +418,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     private static void removeBody(ServerLevel level, BotBattle current, BotSlot slot, EntityNPCInterface npc, boolean dead)
     {
         remove(npc);
-        if (dead && slot.isWreckPending())
-            BotTransports.leaveWreck(level, slot, npc.position(), npc.getYRot(), paintjobOf(npc));
+        if (dead && slot.isVehicle())
+            BotTransports.leaveWreck(level, slot, npc.position(), npc.getYRot(), paintjobOf(npc), current.getGround().round().map(ITeamsLiveRound::getInstanceId));
         forget(current, slot);
     }
 
@@ -645,15 +646,20 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     /** Removes every bot in the loaded levels that is not the living bot of a slot of a battle being fought. */
     private static void sweep(MinecraftServer server)
     {
+        Optional<UUID> runningRound = FlansTeams.getRunningRound().map(ITeamsLiveRound::getInstanceId);
         for (ServerLevel level : server.getAllLevels())
         {
+            List<Entity> staleWrecks = new ArrayList<>();
             List<EntityNPCInterface> stale = new ArrayList<>();
             for (Entity entity : level.getAllEntities())
             {
+                if (BotTransports.staleWreck(entity.getPersistentData(), runningRound))
+                    staleWrecks.add(entity);
                 if (entity instanceof EntityNPCInterface npc && BotTag.read(npc).filter(data -> belongs(npc, data)).isEmpty() && BotTag.isBot(npc))
                     stale.add(npc);
             }
             stale.forEach(TeamsBots::remove);
+            staleWrecks.forEach(Entity::discard);
         }
     }
 

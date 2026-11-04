@@ -5862,6 +5862,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     // Wrecks
 
+    /** Converts a newly spawned replacement into an inert wreck without another death explosion or item drops. Server thread only. */
+    public boolean makeReplacementWreck()
+    {
+        if (!becomeWreck())
+            return false;
+        destroyed = true;
+        return true;
+    }
+
     /** @return whether this driveable stays as a wreck once destroyed: wrecks are on and its type does not opt out */
     protected boolean leavesWreck()
     {

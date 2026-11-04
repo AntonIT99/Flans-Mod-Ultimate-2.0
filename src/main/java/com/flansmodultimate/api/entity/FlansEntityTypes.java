@@ -499,6 +499,32 @@ public final class FlansEntityTypes
     }
 
     /**
+     * Spawns an inert, non-repairable driveable wreck, without a death explosion or item drops.
+     * Uses the server's driveable wreck lifetime and respects the definition's wreck opt-out.
+     * Call on the server level thread. Position is in world blocks and yaw in degrees.
+     *
+     * @param level destination server level
+     * @param type driveable definition
+     * @param position world position in blocks
+     * @param yaw heading in degrees
+     * @param paintjob definition paintjob index
+     * @return the wreck, or empty if disabled, unsupported or placement failed
+     */
+    public static Optional<Entity> spawnDriveableWreck(ServerLevel level, IContentType type, Vec3 position, float yaw, int paintjob)
+    {
+        if (com.flansmodultimate.config.ModCommonConfig.driveableWreckLifetimeTicks() <= 0)
+            return Optional.empty();
+        Optional<Entity> spawned = spawnDriveable(level, type, position, yaw, 1F, paintjob);
+        if (spawned.isEmpty())
+            return Optional.empty();
+        Driveable driveable = (Driveable) spawned.get();
+        if (driveable.makeReplacementWreck())
+            return spawned;
+        driveable.discard();
+        return Optional.empty();
+    }
+
+    /**
      * As {@link #spawnDriveable(ServerLevel, IContentType, Vec3, float, float)}, painted with one of the definition's paintjobs.
      *
      * @param paintjob

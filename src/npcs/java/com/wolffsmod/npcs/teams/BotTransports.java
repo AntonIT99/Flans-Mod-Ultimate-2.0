@@ -10,6 +10,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -28,6 +30,8 @@ import java.util.random.RandomGenerator;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class BotTransports
 {
+    static final String NBT_WRECK_ROUND = "wolffsmodnpcs_wreck_round";
+
     /** Blocks beyond its task's radius within which a ground transport unloads. */
     private static final double GROUND_DROP_MARGIN = 16D;
     /** Blocks beyond its task's radius, across the ground, within which an aircraft drops its squad. */
@@ -118,9 +122,10 @@ final class BotTransports
             npc.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, FALL_TICKS));
     }
 
-    /** Leaves a damaged, empty driveable in the bot's paintjob where a vehicle bot was destroyed, for players to repair and use. */
-    static void leaveWreck(ServerLevel level, BotSlot slot, Vec3 position, float yaw, int paintjob)
+    /** Leaves either a repairable driveable or an inert wreck in the destroyed vehicle bot's paintjob. */
+    static void leaveWreck(ServerLevel level, BotSlot slot, Vec3 position, float yaw, int paintjob, Optional<UUID> round)
     {
+        boolean repairable = slot.isWreckPending();
         slot.setWreckPending(false);
         FlansModApi.getType(slot.getRole()).ifPresent(type ->
         {
@@ -128,11 +133,39 @@ final class BotTransports
             for (int attempt = 0; attempt <= WRECK_ATTEMPTS; attempt++)
             {
                 Vec3 spot = attempt == 0 ? position : wreckSpot(position, attempt);
-                if (FlansEntityTypes.spawnDriveable(level, type, spot, yaw, WRECK_HEALTH, paintjob).isPresent())
+                Optional<Entity> spawned = repairable
+                    ? FlansEntityTypes.spawnDriveable(level, type, spot, yaw, WRECK_HEALTH, paintjob)
+                    : FlansEntityTypes.spawnDriveableWreck(level, type, spot, yaw, paintjob);
+                if (spawned.isPresent())
+                {
+                    round.ifPresent(id -> spawned.get().getPersistentData().putUUID(NBT_WRECK_ROUND, id));
                     return;
+                }
             }
             NpcsMod.log.debug("No room for the wreck of {} near {}", slot.getRole(), position);
         });
+    }
+
+    /** Removes repairable vehicles from an ended round, even if players moved them to another dimension. */
+    static void clearRoundWrecks(MinecraftServer server, UUID round)
+    {
+        for (ServerLevel level : server.getAllLevels())
+        {
+            List<Entity> removed = new ArrayList<>();
+            for (Entity entity : level.getAllEntities())
+            {
+                CompoundTag data = entity.getPersistentData();
+                if (data.hasUUID(NBT_WRECK_ROUND) && round.equals(data.getUUID(NBT_WRECK_ROUND)))
+                    removed.add(entity);
+            }
+            removed.forEach(Entity::discard);
+        }
+    }
+
+    /** Loaded vehicles from other rounds are removed by the bot sweep, including after chunk reload or server restart. */
+    static boolean staleWreck(CompoundTag data, Optional<UUID> runningRound)
+    {
+        return data.hasUUID(NBT_WRECK_ROUND) && !runningRound.filter(data.getUUID(NBT_WRECK_ROUND)::equals).isPresent();
     }
 
     /** One of the places around a destroyed vehicle tried for its wreck: eight directions, at two distances. */
