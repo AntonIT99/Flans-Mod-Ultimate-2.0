@@ -2,6 +2,8 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.api.driveables.WeaponTriggerState;
+import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.MechaMeleeProperties;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
@@ -42,6 +44,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -308,14 +311,14 @@ public class Mecha extends Driveable implements MechaVisual
     public Vec3 getDriverWeaponOrigin(boolean secondary)
     {
         MechaType type = getMechaType();
-        return type != null && handHoldsGun(!secondary) ? handGunOrigin(type, !secondary) : null;
+        return type != null && handHasToolOrGun(secondary) ? (handHoldsGun(!secondary) ? handGunOrigin(type, !secondary) : meleeOrigin()) : null;
     }
 
     @Override
     @Nullable
     public Vec3 getDriverWeaponDirection(boolean secondary)
     {
-        return getMechaType() != null && handHoldsGun(!secondary) ? aimDirection() : null;
+        return getMechaType() != null && handHasToolOrGun(secondary) ? aimDirection() : null;
     }
 
     /** A mecha points its hand guns with its arms, so its driver's triggers never fire along the hull alone. */
@@ -323,6 +326,79 @@ public class Mecha extends Driveable implements MechaVisual
     public boolean isDriverWeaponHullFixed(boolean secondary)
     {
         return false;
+    }
+
+    private Vec3 meleeOrigin()
+    {
+        return getControllingEntity() instanceof LivingEntity living ? living.getEyePosition() : getEyePosition();
+    }
+
+    private boolean handHasToolOrGun(boolean secondary)
+    {
+        if (driveableData == null || !isPartIntact(secondary ? EnumDriveablePart.RIGHT_ARM : EnumDriveablePart.LEFT_ARM))
+            return false;
+        ItemStack stack = driveableData.getMechaAddon(secondary ? EnumMechaSlotType.RIGHT_TOOL : EnumMechaSlotType.LEFT_TOOL);
+        return stack.getItem() instanceof GunItem || stack.getItem() instanceof MechaAddonItem addon && addon.getConfigType().getMechaItemType() == EnumMechaItemType.TOOL;
+    }
+
+    public Optional<MechaMeleeProperties> getDriverMeleeProperties(boolean secondary)
+    {
+        if (!handHasToolOrGun(secondary) || getMechaType() == null)
+            return Optional.empty();
+        ItemStack stack = driveableData.getMechaAddon(secondary ? EnumMechaSlotType.RIGHT_TOOL : EnumMechaSlotType.LEFT_TOOL);
+        return FlansEquipment.getMechaMeleeProperties(getMechaType(), stack);
+    }
+
+    public OptionalDouble getDriverMiningReach(boolean secondary)
+    {
+        if (!handHasToolOrGun(secondary) || getMechaType() == null)
+            return OptionalDouble.empty();
+        ItemStack stack = driveableData.getMechaAddon(secondary ? EnumMechaSlotType.RIGHT_TOOL : EnumMechaSlotType.LEFT_TOOL);
+        if (!(stack.getItem() instanceof MechaAddonItem addon) || addon.getConfigType().getFunction() == EnumMechaToolType.SWORD)
+            return OptionalDouble.empty();
+        return OptionalDouble.of(Mth.clamp(addon.getConfigType().getReach() * getMechaType().getReach(), 1F, 32F));
+    }
+
+    @Override
+    public WeaponTriggerState getDriverTriggerState(boolean secondary)
+    {
+        if (driveableData == null)
+            return new WeaponTriggerState(WeaponTriggerState.Mode.HELD, false);
+        ItemStack stack = driveableData.getMechaAddon(secondary ? EnumMechaSlotType.RIGHT_TOOL : EnumMechaSlotType.LEFT_TOOL);
+        if (!(stack.getItem() instanceof GunItem gun))
+            return new WeaponTriggerState(WeaponTriggerState.Mode.HELD, false);
+        var mode = switch (gun.getConfigType().getFireMode(stack))
+        {
+            case SEMIAUTO -> WeaponTriggerState.Mode.SEMIAUTOMATIC;
+            case BURST -> WeaponTriggerState.Mode.BURST;
+            default -> WeaponTriggerState.Mode.HELD;
+        };
+        return new WeaponTriggerState(mode, hasActiveHandGunBurst(!secondary));
+    }
+
+    public boolean canDriverMineBlock(boolean secondary, BlockPos position)
+    {
+        if (getDriverMiningReach(secondary).isEmpty() || !mayMine(position))
+            return false;
+        BlockState state = level().getBlockState(position);
+        MechaItemType tool = ((MechaAddonItem) driveableData.getMechaAddon(secondary ? EnumMechaSlotType.RIGHT_TOOL : EnumMechaSlotType.LEFT_TOOL).getItem()).getConfigType();
+        float hardness = state.getDestroySpeed(level(), position);
+        return !state.isAir() && hardness >= 0F && level().getBlockEntity(position) == null && effectiveAgainst(tool.getFunction(), state) && tool.getToolHardness() + 0.001F >= hardness;
+    }
+
+    public double getMiningProgress(BlockPos position)
+    {
+        return position.equals(breakingBlock) ? Mth.clamp(breakingProgress, 0D, 1D) : 0D;
+    }
+
+    private boolean mayMine(BlockPos position)
+    {
+        if (!(level() instanceof ServerLevel server) || !server.hasChunkAt(position) || !FlansMod.teamsManager.isDriveablesBreakBlocks())
+            return false;
+        Entity driver = getControllingEntity();
+        if (driver instanceof Player player)
+            return server.mayInteract(player, position);
+        return driver instanceof LivingEntity && server.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
     }
 
     private boolean handHoldsGun(boolean left)
@@ -386,7 +462,9 @@ public class Mecha extends Driveable implements MechaVisual
         float force = (float) Math.max(0D, -descent - 0.45D);
         if (type.isTakeFallDamage() && !stopFallDamage())
             damagePart(EnumDriveablePart.HIPS, force * 18F * type.getFallDamageMultiplier() * Math.max(0F, type.getFallDamageFactor()), level().damageSources().fall());
-        if ((type.isDamageBlocksFromFalling() || breakBlocksUponFalling()) && force * type.getBlockDamageFromFalling() > 0.8F)
+        if (!(getControllingEntity() instanceof Player))
+            MechaEquipmentSupport.landing(this, type, breakBlocksUponFalling(), descent);
+        else if ((type.isDamageBlocksFromFalling() || breakBlocksUponFalling()) && force * type.getBlockDamageFromFalling() > 0.8F)
             breakLandingBlocks(Math.min(3, 1 + Mth.floor(force * type.getBlockDamageFromFalling())));
     }
 
@@ -711,8 +789,12 @@ public class Mecha extends Driveable implements MechaVisual
         Vec3 origin = attacker.getEyePosition();
         Vec3 direction = aimDirection();
         AABB sweep = new AABB(origin, origin.add(direction.scale(reach))).inflate(1.25D);
-        Entity target = level().getEntities(this, sweep, entity -> entity instanceof LivingEntity && entity != attacker && !isPartOfThis(entity)).stream()
-            .min(java.util.Comparator.comparingDouble(entity -> entity.distanceToSqr(origin))).orElse(null);
+        Entity target = level()
+            .getEntities(this, sweep,
+                entity -> entity instanceof LivingEntity living && entity.isAlive() && entity != attacker && !isPartOfThis(entity)
+                    && (attacker instanceof Player || (!FriendlyFireRules.spares(living, attacker) && (!(attacker instanceof Mob mob) || mob.getTarget() == living)
+                        && level().clip(new ClipContext(origin, living.getBoundingBox().getCenter(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, attacker)).getType() == HitResult.Type.MISS)))
+            .stream().min(java.util.Comparator.comparingDouble(entity -> entity.distanceToSqr(origin))).orElse(null);
         if (target != null)
         {
             target.hurt(level().damageSources().mobAttack(attacker), melee.damage());
@@ -726,15 +808,15 @@ public class Mecha extends Driveable implements MechaVisual
     /** Points a held mining arm at the block it reaches. The right arm wins when both do, as in 1.7.10. */
     private void aimMiningTool(MechaItemType tool, int index)
     {
-        if (!(level() instanceof ServerLevel serverLevel) || !(getControllingEntity() instanceof Player player) || !FlansMod.teamsManager.isDriveablesBreakBlocks())
+        if (!(getControllingEntity() instanceof LivingEntity operator))
             return;
         MechaType mechaType = getMechaType();
         if (mechaType == null)
             return;
         double reach = Mth.clamp(tool.getReach() * mechaType.getReach(), 1F, 32F);
-        Vec3 origin = player.getEyePosition();
-        BlockHitResult hit = level().clip(new ClipContext(origin, origin.add(aimDirection().scale(reach)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-        if (hit.getType() != HitResult.Type.BLOCK || !serverLevel.mayInteract(player, hit.getBlockPos()) || !player.mayUseItemAt(hit.getBlockPos(), hit.getDirection(), ItemStack.EMPTY))
+        Vec3 origin = operator.getEyePosition();
+        BlockHitResult hit = level().clip(new ClipContext(origin, origin.add(aimDirection().scale(reach)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, operator));
+        if (hit.getType() != HitResult.Type.BLOCK || !mayMine(hit.getBlockPos()) || operator instanceof Player player && !player.mayUseItemAt(hit.getBlockPos(), hit.getDirection(), ItemStack.EMPTY))
             return;
         miningAim = hit.getBlockPos().immutable();
         miningHand = index;
@@ -753,7 +835,7 @@ public class Mecha extends Driveable implements MechaVisual
         MechaItemType soundTool = miningSoundTool;
         miningAim = null;
         miningSoundTool = null;
-        if (target == null || !(level() instanceof ServerLevel serverLevel) || !(getControllingEntity() instanceof Player player) || driveableData == null)
+        if (target == null || !(level() instanceof ServerLevel serverLevel) || !(getControllingEntity() instanceof LivingEntity operator) || driveableData == null || !mayMine(target))
         {
             breakingBlock = null;
             breakingProgress = 0F;
@@ -775,7 +857,7 @@ public class Mecha extends Driveable implements MechaVisual
         if (breakingProgress < 1F)
             return;
 
-        harvestMinedBlock(serverLevel, player, target, state, !effectiveSpeeds.isEmpty());
+        harvestMinedBlock(serverLevel, operator, target, state, !effectiveSpeeds.isEmpty());
         breakingBlock = null;
         breakingProgress = 0F;
         toolCooldown[hand] = 2;
@@ -793,7 +875,7 @@ public class Mecha extends Driveable implements MechaVisual
         }
     }
 
-    private void harvestMinedBlock(ServerLevel level, Player player, BlockPos pos, BlockState state, boolean effective)
+    private void harvestMinedBlock(ServerLevel level, LivingEntity player, BlockPos pos, BlockState state, boolean effective)
     {
         if (!vacuumItems())
         {

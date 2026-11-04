@@ -153,7 +153,7 @@ public final class DamageVisualCurves
         int from = Math.max(1, lifetimeTicks - SINK_TICKS);
         if (ageTicks <= from)
             return 0F;
-        float t = Mth.clamp((ageTicks - from) / (float) Math.max(1, lifetimeTicks - from), 0F, 1F);
+        float t = Mth.clamp((ageTicks - from) / Math.max(1, lifetimeTicks - from), 0F, 1F);
         // Slow at first, then away: the hull tips in rather than descending like a lift.
         return SINK_DEPTH * t * t;
     }

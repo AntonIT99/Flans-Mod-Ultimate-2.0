@@ -1,0 +1,23 @@
+apply plugin: 'org.jetbrains.qodana'
+
+qodana {
+    projectPath = rootProject.projectDir.absolutePath
+    resultsPath = providers.gradleProperty('qodanaResultsPath').orElse("${buildDir}/qodana/results").get()
+    cachePath = providers.gradleProperty('qodanaCachePath').orElse("${buildDir}/qodana/cache").get()
+    qodanaPath = providers.gradleProperty('qodanaPath').orElse("${buildDir}/qodana/bin/qodana.exe").get()
+}
+
+tasks.named('qodanaScan') {
+    // Local Community analysis must not upload even when the caller has a Cloud token configured.
+    environment 'QODANA_TOKEN', ''
+    def qodanaArguments = ['--within-docker', 'false', '--linter', 'qodana-jvm-community']
+    if (project.hasProperty('qodanaConfigPath'))
+    {
+        qodanaArguments.addAll(['--config', project.property('qodanaConfigPath').toString()])
+    }
+    if (project.hasProperty('qodanaOnlyDirectory'))
+    {
+        qodanaArguments.addAll(['--only-directory', project.property('qodanaOnlyDirectory').toString()])
+    }
+    arguments = qodanaArguments
+}

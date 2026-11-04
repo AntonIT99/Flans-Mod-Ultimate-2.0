@@ -27,6 +27,28 @@ class BotSettingsTest
     }
 
     @Test
+    void wreckChanceDefaultsTo25AndPreservesSavedValues()
+    {
+        assertEquals(25, new BotSettings().getAbandonChance());
+        assertEquals(25, BotSettings.load(new CompoundTag()).getAbandonChance());
+        BotSettings settings = new BotSettings();
+        settings.setAbandonChance(100);
+        assertEquals(100, BotSettings.load(settings.save()).getAbandonChance());
+    }
+
+    @Test
+    void repairableWreckOnlySurvivesItsOwnRunningRound()
+    {
+        UUID round = UUID.randomUUID();
+        CompoundTag tag = new CompoundTag();
+        assertFalse(BotTransports.staleWreck(tag, java.util.Optional.empty()));
+        tag.putUUID(BotTransports.NBT_WRECK_ROUND, round);
+        assertFalse(BotTransports.staleWreck(tag, java.util.Optional.of(round)));
+        assertTrue(BotTransports.staleWreck(tag, java.util.Optional.of(UUID.randomUUID())));
+        assertTrue(BotTransports.staleWreck(tag, java.util.Optional.empty()));
+    }
+
+    @Test
     void emplacementsDefaultOnForOldRoundsAndExplicitDisableSurvivesCopies()
     {
         BotSettings settings = new BotSettings();

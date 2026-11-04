@@ -10,6 +10,7 @@ import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.teams.RoundRule;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
@@ -55,6 +56,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
 {
     private final EmplacementControl automation = new EmplacementControl();
     private boolean suppressRemovalDrops;
+    private float combatHealth = 20F;
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 1F;
 
@@ -303,6 +305,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
+        combatHealth = tag.contains("combatHealth", Tag.TAG_ANY_NUMERIC) ? tag.getFloat("combatHealth") : 20F;
         setShortName(tag.getString(NBT_TYPE_NAME));
 
         if (InfoType.getInfoType(shortname) instanceof GunType gType)
@@ -330,6 +333,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
             return;
         }
 
+        tag.putFloat("combatHealth", combatHealth);
         tag.putString(NBT_TYPE_NAME, shortname);
         tag.putInt(NBT_DIRECTION, getGunDirection());
         tag.putInt(NBT_BLOCK_X, blockPos.getX());
@@ -391,8 +395,22 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         Entity gunner = getFirstPassenger();
 
         // If the gunner left-clicked the gun: ignore
-        if (gunner == entity)
+        if (gunner != null && gunner == entity)
             return true;
+
+        if (level().isClientSide)
+            return true;
+
+        if (FlansMod.teamsManager.isRoundRunning() && FlansMod.teamsManager.getRoundRuleRuntime().rules().enabled(RoundRule.DESTROYABLE_DEPLOYED_GUNS))
+        {
+            if (amount > 0F && Float.isFinite(amount))
+            {
+                combatHealth -= amount;
+                if (combatHealth <= 0F)
+                    discardWithoutDrops();
+            }
+            return true;
+        }
 
         // If someone else hits the gun while someone is mounted: forward damage to gunner
         if (gunner != null)
@@ -490,7 +508,9 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
 
         float baseYaw = Direction.from2DDataValue(getGunDirection()).toYRot();
         float side = configType.getSideViewLimit();
-        float requestedYaw = Mth.clamp(Mth.wrapDegrees(p.getYRot() - baseYaw), -side, side);
+        Optional<Vec3> automatedAim = p instanceof Player ? Optional.empty() : automation.aim(level().getGameTime(), p);
+        float yaw = automatedAim.map(ModUtils::getYawFromDirection).orElse(p.getYRot());
+        float requestedYaw = Mth.clamp(Mth.wrapDegrees(yaw - baseYaw), -side, side);
         riderYawOffset = limitRiderYaw(p, baseYaw, riderYawOffset, requestedYaw);
 
         // Clamp pitch
@@ -502,7 +522,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
             top = bottom;
             bottom = tmp;
         }
-        float pitch = Mth.clamp(p.getXRot(), top, bottom);
+        float pitch = Mth.clamp(automatedAim.map(ModUtils::getPitchFromDirection).orElse(p.getXRot()), top, bottom);
 
         float gunYaw = baseYaw + requestedYaw;
         setYRot(gunYaw);
@@ -614,6 +634,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     protected void removePassenger(@NotNull Entity passenger)
     {
         super.removePassenger(passenger);
+        automation.clearAim();
 
         resetToPlacementFacing();
 
@@ -883,6 +904,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         if (level().isClientSide || getFirstPassenger() != operator)
             return;
         Vec3 direction = point.subtract(getShootingOrigin());
+        automation.aim(level().getGameTime(), operator, direction);
         operator.setYRot(ModUtils.getYawFromDirection(direction));
         operator.setXRot(ModUtils.getPitchFromDirection(direction));
         positionRider(operator, Entity::setPos);

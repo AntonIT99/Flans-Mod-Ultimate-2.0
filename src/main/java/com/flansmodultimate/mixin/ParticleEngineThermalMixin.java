@@ -3,7 +3,6 @@ package com.flansmodultimate.mixin;
 import com.flansmodultimate.client.particle.LegacyParticleRenderTypes;
 import com.flansmodultimate.client.render.thermal.ThermalHotParticles;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,28 +19,25 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.particles.ParticleOptions;
 
-/** Tracks hot particles for thermal sights and draws legacy smoke depth after its blended colour. */
+/** Tracks hot particles for thermal sights, draws legacy smoke depth after its blended colour and restores the depth mask after muzzle smoke. */
 @Mixin(ParticleEngine.class)
 public abstract class ParticleEngineThermalMixin
 {
     @Unique
-    private boolean flansmodultimateLegacyDepthPass;
+    private ParticleRenderType flansmodultimateBatchType;
 
     // ParticleRenderType has no end hook on 1.21. Capture the type at begin and replace only its mesh draw.
     @Redirect(method = "render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleRenderType;begin(Lcom/mojang/blaze3d/vertex/Tesselator;Lnet/minecraft/client/renderer/texture/TextureManager;)Lcom/mojang/blaze3d/vertex/BufferBuilder;"))
     private BufferBuilder flansmodultimateBeginParticleBatch(ParticleRenderType type, Tesselator tesselator, TextureManager textures)
     {
-        flansmodultimateLegacyDepthPass = LegacyParticleRenderTypes.usesDepthPass(type);
+        flansmodultimateBatchType = type;
         return type.begin(tesselator, textures);
     }
 
     @Redirect(method = "render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/MeshData;)V"))
     private void flansmodultimateDrawParticleBatch(MeshData mesh)
     {
-        if (flansmodultimateLegacyDepthPass)
-            LegacyParticleRenderTypes.drawWithDepth(mesh);
-        else
-            BufferUploader.drawWithShader(mesh);
+        LegacyParticleRenderTypes.drawBatch(flansmodultimateBatchType, mesh);
     }
 
     /** Every particle passes through here, including those the mod adds directly by class. */

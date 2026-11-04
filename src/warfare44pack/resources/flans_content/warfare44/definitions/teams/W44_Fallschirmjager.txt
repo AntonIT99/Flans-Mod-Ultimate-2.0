@@ -33,6 +33,7 @@ AddClass W44_FallschirmjagerMarksmanFG42
 
 // Anti-tank
 AddClass W44_FallschirmjagerAntiTank
+AddClass W44_FallschirmjagerAntiTankRifle
 
 // Engineers and military police
 AddClass W44_FallschirmjagerEngineer

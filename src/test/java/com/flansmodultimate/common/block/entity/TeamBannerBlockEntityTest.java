@@ -8,11 +8,7 @@ import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -96,6 +92,45 @@ class TeamBannerBlockEntityTest
     }
 
     @Test
+    void reassignmentImmediatelySyncsColourAndFlagWithoutWaitingForATick()
+    {
+        TeamBannerBlockEntity banner = banner(bannerBlock.defaultBlockState());
+        ServerLevel level = mock(ServerLevel.class);
+        banner.setLevel(level);
+        TeamsManager manager = mock(TeamsManager.class);
+        try (var managers = mockStatic(TeamsManager.class))
+        {
+            managers.when(TeamsManager::getInstance).thenReturn(manager);
+            for (int index = 0; index < 2; index++)
+            {
+                UUID id = UUID.randomUUID();
+                ITeamBase base = mock(ITeamBase.class);
+                Team team = mock(Team.class);
+                int colour = index == 0 ? 0xDD2222 : 0x2244DD;
+                String name = index == 0 ? "red" : "blue";
+                when(manager.getBase(id)).thenReturn(Optional.of(base));
+                when(manager.getDisplayTeamForBase(base)).thenReturn(team);
+                when(team.getTeamColour()).thenReturn(colour);
+                when(team.getShortName()).thenReturn(name);
+                clearInvocations(level);
+
+                banner.setBaseId(id);
+
+                assertEquals(colour, banner.getTeamColour());
+                assertEquals(name, banner.getTeamName());
+                CompoundTag update = banner.createUpdateTag(null);
+                assertEquals(colour, update.getInt("team_colour"));
+                assertEquals(name, update.getString("team_name"));
+                verify(level, atLeastOnce()).sendBlockUpdated(POS, banner.getBlockState(), banner.getBlockState(), Block.UPDATE_CLIENTS);
+            }
+            banner.setBaseId(null);
+            assertEquals(TeamBannerBlockEntity.UNOWNED_COLOUR, banner.getTeamColour());
+            assertEquals("", banner.getTeamName());
+            verify(manager, never()).getTeamForBase(any());
+        }
+    }
+
+    @Test
     void followsCapturesAndNeutralisationWithoutSendingUnchangedColours()
     {
         TeamBannerBlockEntity banner = banner(bannerBlock.defaultBlockState());
@@ -109,7 +144,7 @@ class TeamBannerBlockEntityTest
         when(first.getTeamColour()).thenReturn(0xDD2222);
         when(second.getTeamColour()).thenReturn(0x2244DD);
         when(manager.getBase(baseId)).thenReturn(Optional.of(base));
-        when(manager.getTeamForBase(base)).thenReturn(first);
+        when(manager.getDisplayTeamForBase(base)).thenReturn(first);
 
         try (var managers = mockStatic(TeamsManager.class))
         {
@@ -122,16 +157,16 @@ class TeamBannerBlockEntityTest
             TeamBannerBlockEntity.serverTick(level, POS, banner.getBlockState(), banner);
             verify(level, never()).sendBlockUpdated(any(), any(), any(), anyInt());
 
-            when(manager.getTeamForBase(base)).thenReturn(second);
+            when(manager.getDisplayTeamForBase(base)).thenReturn(second);
             TeamBannerBlockEntity.serverTick(level, POS, banner.getBlockState(), banner);
             assertEquals(0x2244DD, banner.getTeamColour());
             verify(level).sendBlockUpdated(POS, banner.getBlockState(), banner.getBlockState(), Block.UPDATE_CLIENTS);
 
-            when(manager.getTeamForBase(base)).thenReturn(null);
+            when(manager.getDisplayTeamForBase(base)).thenReturn(null);
             TeamBannerBlockEntity.serverTick(level, POS, banner.getBlockState(), banner);
             assertEquals(TeamBannerBlockEntity.UNOWNED_COLOUR, banner.getTeamColour());
 
-            when(manager.getTeamForBase(base)).thenReturn(first);
+            when(manager.getDisplayTeamForBase(base)).thenReturn(first);
             TeamBannerBlockEntity.serverTick(level, POS, banner.getBlockState(), banner);
             when(manager.getBase(baseId)).thenReturn(Optional.empty());
             TeamBannerBlockEntity.serverTick(level, POS, banner.getBlockState(), banner);
@@ -156,7 +191,7 @@ class TeamBannerBlockEntityTest
         when(first.getShortName()).thenReturn("blue");
         when(second.getShortName()).thenReturn("navy");
         when(manager.getBase(baseId)).thenReturn(Optional.of(base));
-        when(manager.getTeamForBase(base)).thenReturn(first);
+        when(manager.getDisplayTeamForBase(base)).thenReturn(first);
 
         try (var managers = mockStatic(TeamsManager.class))
         {
@@ -166,13 +201,13 @@ class TeamBannerBlockEntityTest
             clearInvocations(level);
 
             when(level.getGameTime()).thenReturn(20L);
-            when(manager.getTeamForBase(base)).thenReturn(second);
+            when(manager.getDisplayTeamForBase(base)).thenReturn(second);
             TeamBannerBlockEntity.serverTick(level, POS, banner.getBlockState(), banner);
             assertEquals("navy", banner.getTeamName());
             verify(level).sendBlockUpdated(POS, banner.getBlockState(), banner.getBlockState(), Block.UPDATE_CLIENTS);
             assertEquals("navy", banner.createUpdateTag(null).getString("team_name"));
 
-            when(manager.getTeamForBase(base)).thenReturn(null);
+            when(manager.getDisplayTeamForBase(base)).thenReturn(null);
             TeamBannerBlockEntity.serverTick(level, POS, banner.getBlockState(), banner);
             assertEquals("", banner.getTeamName());
         }
@@ -195,7 +230,7 @@ class TeamBannerBlockEntityTest
         Team team = mock(Team.class);
         when(team.getTeamColour()).thenReturn(0xAA4400);
         when(manager.getBase(baseId)).thenReturn(Optional.of(base));
-        when(manager.getTeamForBase(base)).thenReturn(team);
+        when(manager.getDisplayTeamForBase(base)).thenReturn(team);
         try (var managers = mockStatic(TeamsManager.class))
         {
             managers.when(TeamsManager::getInstance).thenReturn(manager);

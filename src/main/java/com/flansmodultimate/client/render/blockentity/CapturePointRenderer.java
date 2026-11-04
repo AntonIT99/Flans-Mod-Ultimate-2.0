@@ -82,7 +82,7 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
     private void renderLabel(CapturePointBlockEntity point, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         Vec3 centre = Vec3.atBottomCenterOf(point.getBlockPos());
-        if (dispatcher.camera == null || dispatcher.camera.getPosition().distanceToSqr(centre) > LABEL_RANGE_SQUARED)
+        if (dispatcher.camera.getPosition().distanceToSqr(centre) > LABEL_RANGE_SQUARED)
             return;
         poseStack.pushPose();
         poseStack.translate(0.5F, point.getPoleHeight() + LABEL_OFFSET, 0.5F);
@@ -90,9 +90,17 @@ public final class CapturePointRenderer implements BlockEntityRenderer<CapturePo
         ClientPlatform.scaleCameraFacingLabel(poseStack, LABEL_SCALE);
         Matrix4f pose = poseStack.last().pose();
         String symbol = String.valueOf(point.getSymbol());
-        font.drawInBatch(symbol, -font.width(symbol) / 2F, -10F, 0xFFFFFFFF, false, pose, buffer, Font.DisplayMode.SEE_THROUGH, 0x70000000, packedLight);
-        font.drawInBatch(point.getBaseName(), -font.width(point.getBaseName()) / 2F, 0F, 0xFFE0E0E0, false, pose, buffer, Font.DisplayMode.SEE_THROUGH, 0x70000000, packedLight);
+        renderLabelLine(symbol, -10F, 0xFFFFFFFF, pose, buffer, packedLight);
+        renderLabelLine(point.getBaseName(), 0F, 0xFFE0E0E0, pose, buffer, packedLight);
         poseStack.popPose();
+    }
+
+    private void renderLabelLine(String text, float y, int colour, Matrix4f pose, MultiBufferSource buffer, int packedLight)
+    {
+        float x = -font.width(text) / 2F;
+        // Match vanilla nameplates: a faint through-wall pass, then clear foreground text without another background.
+        font.drawInBatch(text, x, y, (colour & 0x00FFFFFF) | 0x20000000, false, pose, buffer, Font.DisplayMode.SEE_THROUGH, 0x70000000, packedLight);
+        font.drawInBatch(text, x, y, colour, false, pose, buffer, Font.DisplayMode.NORMAL, 0, packedLight);
     }
 
     @Override

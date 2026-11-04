@@ -4,11 +4,15 @@ import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
+import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import noppes.npcs.ai.EntityAIRangedAttack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataAI;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -22,10 +26,26 @@ import static org.mockito.Mockito.*;
 
 class CustomNpcTacticGoalTest
 {
+    private MockedStatic<NpcInfantryRole> roles;
+
     @BeforeAll
     static void bootstrap() throws ReflectiveOperationException
     {
         EntityTestBootstrap.initialize();
+    }
+
+    /** Ranged eligibility reads the infantry role; these unequipped NPCs fight as riflemen. */
+    @BeforeEach
+    void stubInfantryRole()
+    {
+        roles = mockStatic(NpcInfantryRole.class);
+        roles.when(() -> NpcInfantryRole.of(any())).thenReturn(ClassRole.RIFLEMAN);
+    }
+
+    @AfterEach
+    void closeInfantryRole()
+    {
+        roles.close();
     }
 
     @Test

@@ -151,30 +151,24 @@ public record ResolvedVehiclePhysics(EnumVehiclePhysicsMode mode, EnumVehicleCat
     // ---------------------------------------------------- engine interaction
 
     /**
-     * Usable engine power in watts after the installed engine part's gameplay
-     * modifier.
+     * Usable engine power in watts: the category's reference powerplant.
      *
      * <p>
-     * {@code RealEnginePowerKw} is the vehicle's reference powerplant.
-     * {@code PartType.engineSpeed} stays what it has always been, a dimensionless
-     * gameplay multiplier that defaults to 1.0, so engine upgrades keep working
-     * and no arbitrary gameplay number is reinterpreted as kilowatts.
-     * {@code PartType.enginePower} is deliberately not consulted here.
+     * The installed engine part's {@code engineSpeed} is deliberately not applied.
+     * Packs default their driveables to whatever engine they happen to ship, so the
+     * multiplier made the same real-world category perform differently from pack to
+     * pack. The real-world data alone decides realistic performance; engine parts
+     * keep their effect on the legacy model.
      */
-    public double effectivePowerWatts(float engineModifier)
+    public double effectivePowerWatts()
     {
-        return baselinePowerKw * VehiclePhysicsUnits.WATTS_PER_KILOWATT * sanitizeModifier(engineModifier);
+        return baselinePowerKw * VehiclePhysicsUnits.WATTS_PER_KILOWATT;
     }
 
-    /** Usable jet thrust in kilonewtons after the installed engine part's modifier. */
-    public double effectiveThrustKn(float engineModifier)
+    /** Usable jet thrust in kilonewtons, likewise independent of the installed engine part. */
+    public double effectiveThrustKn()
     {
-        return baselineThrustKn * sanitizeModifier(engineModifier);
-    }
-
-    private static double sanitizeModifier(float engineModifier)
-    {
-        return Float.isFinite(engineModifier) && engineModifier > 0F ? engineModifier : 1F;
+        return baselineThrustKn;
     }
 
     // ------------------------------------------------------ derived aircraft

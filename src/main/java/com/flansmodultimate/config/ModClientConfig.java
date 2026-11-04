@@ -131,6 +131,8 @@ public final class ModClientConfig
     public final boolean enableWeaponSprintStance;
     public final boolean enableRandomSprintStance;
     public final boolean showCasingEjections;
+    public final boolean showWeaponSmoke;
+    public final boolean showBloodEffects;
     public final EnumMuzzleFlashStyle muzzleFlashStyle;
 
     public final boolean enableFastTranslucentRendering;
@@ -249,8 +251,9 @@ public final class ModClientConfig
     private static final Supplier<Integer> MAX_FLANS_PARTICLES_PER_TICK;
     private static final Supplier<Integer> MAX_FRAG_SPARKS;
     private static final Supplier<Double> FRAG_SPARK_MULTIPLIER;
-    private static final Supplier<Double> DRIVEABLE_DAMAGE_EFFECT_DENSITY;
-    private static final Supplier<Integer> MAX_DETACHED_DRIVEABLE_PIECES;
+    public static final DoubleValue DRIVEABLE_DAMAGE_EFFECT_DENSITY;
+    public static final IntValue MAX_DETACHED_DRIVEABLE_PIECES;
+    public static final BooleanValue SHOW_BLOOD_EFFECTS;
 
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -268,7 +271,8 @@ public final class ModClientConfig
     private static final Supplier<Boolean> ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
     private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
     private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
-    private static final Supplier<Boolean> SHOW_CASING_EJECTIONS;
+    public static final BooleanValue SHOW_CASING_EJECTIONS;
+    public static final BooleanValue SHOW_WEAPON_SMOKE;
     public static final EnumValue<EnumMuzzleFlashStyle> MUZZLE_FLASH_STYLE;
 
     private static final Supplier<Boolean> ENABLE_FAST_TRANSLUCENT_RENDERING;
@@ -509,6 +513,7 @@ public final class ModClientConfig
         builder.pop();
 
         builder.push("Particle Rendering Settings");
+        SHOW_BLOOD_EFFECTS = builder.comment("Show airborne blood and ground splatters when enabled by the server; disabling this hides blood on this client only").define("showBloodEffects", true);
         PARTICLE_DISTANCE_SCALE = builder.comment(
             "Multiplies how far Flan's Mod particles are drawn. Every effect has its own natural drawing distance: 128 blocks for ordinary particles, and further for large effects such as an explosion's rising column, which grows with the charge up to 256 blocks. 0.5 halves every distance; 2 doubles it.")
             .defineInRange("particleDistanceScale", 1.0D, 0.125D, 4.0D);
@@ -575,6 +580,7 @@ public final class ModClientConfig
         ENABLE_WEAPON_SPRINT_STANCE = builder.comment("This will move weapons to a lowered position when sprinting").define("enableWeaponSprintStance", true);
         ENABLE_RANDOM_SPRINT_STANCE = builder.comment("This will randomly generate unique positions for each weapon using the weapon name as a seed").define("enableRandomSprintStance", false);
         SHOW_CASING_EJECTIONS = builder.comment("Render animated casing ejections for guns that provide a casing model").define("showCasingEjections", true);
+        SHOW_WEAPON_SMOKE = builder.comment("Render smoke puffs from held and mounted weapons; does not affect muzzle flashes, casings or smoke grenades").define("showWeaponSmoke", true);
         MUZZLE_FLASH_STYLE = builder.comment("""
             Preferred muzzle flash model: FMU_1_7_10 uses FlashModel (FMU 1.7.10 Style),
             MC_1_12_2 uses MuzzleFlashModel (1.12.2 Style).
@@ -734,6 +740,8 @@ public final class ModClientConfig
         enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
         enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
         showCasingEjections = SHOW_CASING_EJECTIONS.get();
+        showWeaponSmoke = SHOW_WEAPON_SMOKE.get();
+        showBloodEffects = SHOW_BLOOD_EFFECTS.get();
         muzzleFlashStyle = MUZZLE_FLASH_STYLE.get();
 
         enableFastTranslucentRendering = ENABLE_FAST_TRANSLUCENT_RENDERING.get();

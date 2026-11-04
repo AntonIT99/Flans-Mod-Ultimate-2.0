@@ -189,6 +189,8 @@ public final class NpcThrowing
      */
     public static Optional<Choice> occasionalThrow(EntityNPCInterface npc, LivingEntity target, long[] readyAt, long now)
     {
+        if (com.wolffsmod.npcs.tactics.NpcInfantryAirDefense.holdsPosition(npc, target))
+            return Optional.empty();
         if (npc.ais.onAttack != 0 || TacticKind.of(npc) != TacticKind.STANDARD || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc) || !npc.getSensing().hasLineOfSight(target))
             return Optional.empty();
         double distance = npc.distanceTo(target);
@@ -207,6 +209,8 @@ public final class NpcThrowing
     /** @return whether a throw that has begun may go on: the item is still carried and the target in sight, and neither the NPC nor an ally is now where it lands */
     public static boolean stillWorthThrowing(EntityNPCInterface npc, LivingEntity target, Choice choice)
     {
+        if (com.wolffsmod.npcs.tactics.NpcInfantryAirDefense.holdsPosition(npc, target))
+            return false;
         ItemStack stack = choice.stack();
         if (stack.isEmpty() || !target.isAlive() || target.level() != npc.level() || !carries(npc, stack) || !npc.getSensing().hasLineOfSight(target))
             return false;
@@ -240,7 +244,8 @@ public final class NpcThrowing
     /** Whether a hand-thrown grenade is unsuitable or endangers its thrower or nearby allies. Server thread. */
     public static boolean shouldWithholdGrenade(EntityNPCInterface npc, LivingEntity target, ItemStack stack)
     {
-        return !suitableGrenade(npc, target, stack) || !keepsClear(npc, target, stack, npc.distanceTo(target), strategy(npc, Kind.GRENADE) == Throwing.CAUTIOUS);
+        return com.wolffsmod.npcs.tactics.NpcInfantryAirDefense.holdsPosition(npc, target) || !suitableGrenade(npc, target, stack)
+            || !keepsClear(npc, target, stack, npc.distanceTo(target), strategy(npc, Kind.GRENADE) == Throwing.CAUTIOUS);
     }
 
     private static boolean handGrenade(ItemStack stack)

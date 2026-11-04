@@ -2,12 +2,14 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
+import com.flansmodultimate.api.driveables.CrashMode;
+import com.flansmodultimate.api.driveables.CrashMotion;
+import com.flansmodultimate.api.driveables.DriveableAttitude;
+import com.flansmodultimate.api.driveables.WeaponTriggerState;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
-import com.flansmodultimate.common.FlanDamageSources;
-import com.flansmodultimate.common.FlanEntityPermissions;
-import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.distant.DistantRenderRange;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.*;
@@ -195,6 +197,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     private static final int WRECK_IMPACT_COOLDOWN = 10;
     /** Degrees a tick a collapsing mecha goes over at, which the fall's own curve never needs all of. */
     private static final float MECHA_COLLAPSE_DEGREES_PER_TICK = 8F;
+    /** Share of the core's hit points a single blast has to deal as it destroys the core to count as blowing it apart. */
+    private static final float BREAK_UP_DAMAGE_SHARE = 0.5F;
     /** The hardest a blast that does not break a wreck up can throw it, in blocks a tick. */
     private static final double MAX_WRECK_SHOVE = 0.8D;
     /** Matches the radius the server used when it still broadcast emitter particles. */
@@ -415,6 +419,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     private float wreckSpinYaw;
     private float wreckSpinPitch;
     private float wreckSpinRoll;
+    /** Server: how a wreck that died in the air comes down; {@link CrashMode#TUMBLE} for anything that only tumbles. */
+    private CrashMode wreckCrashMode = CrashMode.TUMBLE;
+    /** Server: the turn a falling aircraft wreck makes each tick, as a world-space rotation vector in degrees. */
+    private Vec3 wreckCrashRotation = Vec3.ZERO;
+    /** Server: whether the blow that destroyed the core was a large blast, which may break an aircraft up in the air. */
+    protected boolean blownApart;
     /** Server: the fire stage last sent, so a client is told the moment its wreck's fire changes. */
     private int wreckStageSent = -1;
     /** Server: what was aboard when the driveable was destroyed. */
@@ -2806,6 +2816,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return getConfiguredShootDelay(secondary);
     }
 
+    /** Trigger state for autonomous controllers; server thread. */
+    public WeaponTriggerState getDriverTriggerState(boolean secondary)
+    {
+        var apiMode = switch (getWeaponBankFireMode(secondary))
+        {
+            case SEMIAUTO -> WeaponTriggerState.Mode.SEMIAUTOMATIC;
+            case BURST -> WeaponTriggerState.Mode.BURST;
+            default -> WeaponTriggerState.Mode.HELD;
+        };
+        return new WeaponTriggerState(apiMode, (secondary ? secondaryBurstRemaining : primaryBurstRemaining) > 0);
+    }
+
     public EnumFireMode getWeaponBankFireMode(boolean secondary)
     {
         DriveableType type = initializedType();
@@ -5085,6 +5107,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         boolean fire = source != null && source.is(DamageTypeTags.IS_FIRE);
         float previousHealth = part.getHealth();
         boolean newlyDestroyed = !part.isDestroyed() && part.damage(amount, fire);
+        if (newlyDestroyed && target == EnumDriveablePart.CORE)
+            blownApart = source != null && source.is(DamageTypeTags.IS_EXPLOSION) && amount >= part.getMaxHealth() * BREAK_UP_DAMAGE_SHARE;
         DriveableDamageDebug.reportDamage(DriveableDamageDebug.playerFrom(source), this, target, Math.max(0F, previousHealth - part.getHealth()));
         if (newlyDestroyed)
             onPartDestroyed(target);
@@ -5530,6 +5554,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 origin = modelLocalToWorld(localOrigin);
                 direction = modelLocalDirectionToWorld(localVelocity);
             }
+            // Carry the exhaust with the aircraft so fast flight does not separate it into isolated puffs.
+            if (FlanParticles.FM_AFTERBURN.equals(emitter.getParticleType()))
+            {
+                Vec3 movement = position().subtract(xo, yo, zo);
+                // Particles advance later in this tick; start at the previous anchor before inheriting that movement.
+                origin = origin.subtract(movement);
+                direction = direction.add(movement);
+            }
+
             ClientHooks.RENDER.spawnParticle(emitter.getParticleType(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, 1F);
         });
     }
@@ -5680,7 +5713,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         ItemStack held = player.getItemInHand(hand);
         if (held.getItem() instanceof ToolItem tool && tool.getConfigType().isKey())
             return InteractionResult.sidedSuccess(level().isClientSide || bindOrCheckKey(player, held));
-        if (isWreck())
+        if (isWreck() || ToolItem.isRepairTool(held))
             return InteractionResult.PASS;
         if (!canPlayerAccess(player) || player.isSpectator() || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
             return InteractionResult.PASS;
@@ -5842,6 +5875,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     // Wrecks
 
+    /** Converts a newly spawned replacement into an inert wreck without another death explosion or item drops. Server thread only. */
+    public boolean makeReplacementWreck()
+    {
+        if (!becomeWreck())
+            return false;
+        destroyed = true;
+        return true;
+    }
+
     /** @return whether this driveable stays as a wreck once destroyed: wrecks are on and its type does not opt out */
     protected boolean leavesWreck()
     {
@@ -5859,8 +5901,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (level().isClientSide || isRemoved() || !leavesWreck())
             return false;
         wreckTicks = 0;
+        FlansMod.teamsManager.stampWreck(this);
         wreckLanded = onGround() || isInWater();
         seedWreckTumble();
+        // An aircraft that dies in the air comes down as an airframe; anything else, or one torn apart, tumbles.
+        wreckCrashMode = wreckLanded || !ModCommonConfig.realisticAircraftDamageEnabled() ? CrashMode.TUMBLE : fallingWreckMode();
+        wreckCrashRotation = Vec3.ZERO;
+        if (wreckCrashMode != CrashMode.TUMBLE)
+        {
+            wreckSpinYaw = 0F;
+            wreckSpinPitch = 0F;
+            wreckSpinRoll = 0F;
+        }
         // The wreck burns as a whole from here on; its parts no longer burn away one by one.
         if (driveableData != null)
             driveableData.getParts().values().forEach(DriveablePart::extinguish);
@@ -6075,7 +6127,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // The ground the wreck was resting on at the start of the tick, which both the slide and the settling read.
         WreckGround ground = !water && onGround() ? sampleWreckGround() : null;
         double fallSpeed = -getDeltaMovement().y;
-        Vec3 velocity = water ? sinkWreck(getDeltaMovement()) : settleWreck(getDeltaMovement(), ground);
+        boolean flying = isWreckFlying(water, ground);
+        Vec3 velocity = wreckVelocity(water, flying, ground);
         setDeltaMovement(velocity);
         move(MoverType.SELF, velocity);
         if (verticalCollision)
@@ -6084,11 +6137,24 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // A wreck blown back into the air, or one that rolls off a ledge after settling, comes down again.
         if (contact && (!wreckLanded || wreckImpactCooldown <= 0 && fallSpeed > WreckPhysics.MIN_IMPACT_FALL_SPEED))
             landWreck(fallSpeed, water);
-        tickWreckAttitude(contact, water, ground);
+        turnWreck(flying && !contact, contact, water, ground);
         if (collisionHelper != null)
             collisionHelper.tick(this);
         updateProxyPositions();
         syncChangedPartState();
+    }
+
+    /** @return whether the wreck is still coming down through the air as an airframe, rather than tumbling, resting or sinking */
+    private boolean isWreckFlying(boolean water, @Nullable WreckGround ground)
+    {
+        return !water && ground == null && !wreckLanded && wreckCrashMode != CrashMode.TUMBLE;
+    }
+
+    private Vec3 wreckVelocity(boolean water, boolean flying, @Nullable WreckGround ground)
+    {
+        if (water)
+            return sinkWreck(getDeltaMovement());
+        return flying ? flyWreck(getDeltaMovement()) : settleWreck(getDeltaMovement(), ground);
     }
 
     /**
@@ -6124,6 +6190,55 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         double drag = ModPhysics.dragRetention(grounded ? WreckPhysics.groundDragRetention(hasWreckRunningGear()) : 0.98D, level());
         Vec3 settled = new Vec3(velocity.x * drag, velocity.y - gravity, velocity.z * drag);
         return grounded ? settled.add(ground.slide(gravity)) : settled;
+    }
+
+    /**
+     * An aircraft that died in the air comes down as an airframe: its tail keeps its nose into the wind, what is left
+     * of its wings bends its path, and what it has lost rolls or spins it, as {@link AircraftCrashPhysics} works out.
+     */
+    private Vec3 flyWreck(Vec3 velocity)
+    {
+        double gravity = 0.08D * ModCommonConfig.gravityFactor(level());
+        CrashMotion next = AircraftCrashPhysics.step(new CrashMotion(velocity, wreckCrashRotation), attitudeAt(getYaw(), getPitch(), getRoll()), wreckCrashMode, fallingWreckLift(), gravity,
+            isWreckMirrored());
+        wreckCrashRotation = next.rotation();
+        return next.velocity();
+    }
+
+    private void turnWreck(boolean falling, boolean contact, boolean water, @Nullable WreckGround ground)
+    {
+        if (falling)
+            turnFallingWreck();
+        else
+            tickWreckAttitude(contact, water, ground);
+    }
+
+    /** Turns a falling aircraft wreck by this tick's turn. */
+    private void turnFallingWreck()
+    {
+        AircraftCrashPhysics.Angles turned = AircraftCrashPhysics.turn(this::attitudeAt, new AircraftCrashPhysics.Angles(getYaw(), getPitch(), getRoll()), wreckCrashRotation);
+        orientWreck(turned.yaw(), turned.pitch(), turned.roll());
+    }
+
+    /** @return how this driveable comes down if it dies in the air: it tumbles, unless it is an aircraft */
+    protected CrashMode fallingWreckMode()
+    {
+        return CrashMode.TUMBLE;
+    }
+
+    /** @return the share of its lift a falling wreck still has */
+    protected float fallingWreckLift()
+    {
+        return 0F;
+    }
+
+    /**
+     * @return where the driveable's front and roof point at the given angles; an aircraft answers with its flight axes,
+     *         which its model may face differently from its hull
+     */
+    protected DriveableAttitude attitudeAt(float yaw, float pitch, float roll)
+    {
+        return new DriveableAttitude(localDirectionToWorld(new Vec3(1D, 0D, 0D), yaw, pitch, roll), localDirectionToWorld(new Vec3(0D, 1D, 0D), yaw, pitch, roll));
     }
 
     /**
@@ -6320,13 +6435,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         float radius = Math.max(3F, getBbWidth() * 1.5F);
         if (getDamageClass().flies())
         {
-            PacketHandler.sendToAllAround(new PacketDriveableCrashFireball(position(), radius), position(), 256D, level().dimension());
+            if (level() instanceof ServerLevel server)
+                AircraftCrashEffects.crash(server, position(), radius, water, getId());
             return;
         }
         // Not a fireball: a burnt-out hull coming down is dust, a scorched patch and a great deal of noise.
         if (!water)
         {
-            PacketHandler.sendToTracking(new PacketDriveableImpact(position(), radius * (0.4F + 0.6F * severity), severity), this);
+            PacketHandler.sendToTracking(new PacketDriveableImpact(getId(), position(), radius * (0.4F + 0.6F * severity), severity), this);
             breakGroundUnderWreck(fallSpeed);
         }
         String sound = water ? FlansModSounds.SOUND_IMPACT_WATER : FlansModSounds.SOUND_IMPACT_METAL;
@@ -7006,16 +7122,26 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
         double correctedY = SuspensionPhysics.dampVerticalVelocity(velocity.y, supportError / groundedWheelCount, spring, velocity.horizontalDistance(), appliedGravity);
 
-        if (alignToTerrain && frontCount > 0 && backCount > 0)
+        if (alignToTerrain)
         {
-            double front = frontHeight / frontCount;
-            double back = backHeight / backCount;
-            double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
-            double mountDifference = frontMountHeight / frontCount - backMountHeight / backCount;
-            float targetPitch = SuspensionPhysics.supportAngle(front - back, length, mountDifference, this instanceof Plane);
+            // Support found at only one end (the other wheels over a drop deeper than the probe) eases the
+            // driveable level instead of freezing whatever angle it had at that moment.
+            float targetPitch = 0F;
+            if (frontCount > 0 && backCount > 0)
+            {
+                double front = frontHeight / frontCount;
+                double back = backHeight / backCount;
+                double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
+                double mountDifference = frontMountHeight / frontCount - backMountHeight / backCount;
+                targetPitch = SuspensionPhysics.supportAngle(front - back, length, mountDifference, this instanceof Plane);
+            }
             float pitch = SuspensionPhysics.smoothTerrainAngle(getPitch(), targetPitch, spring);
             float roll = getRoll();
-            if (configType.isCanRoll() && leftCount > 0 && rightCount > 0)
+            if (configType.isCanRoll() && (leftCount == 0 || rightCount == 0))
+            {
+                roll = SuspensionPhysics.smoothTerrainAngle(getRoll(), 0F, spring);
+            }
+            else if (configType.isCanRoll())
             {
                 double left = leftHeight / leftCount;
                 double right = rightHeight / rightCount;

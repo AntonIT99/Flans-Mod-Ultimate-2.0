@@ -704,9 +704,9 @@ public class GunItemHandler
             }
 
             if (hit instanceof PlayerBulletHit ph)
-                applyPlayerHit(level, attacker, attackerData, itemstack, swingDistance, ph, pointIdx, dPos);
+                applyPlayerHit(attacker, attackerData, itemstack, swingDistance, ph, pointIdx, dPos);
             else if (hit instanceof EntityHit eh)
-                applyEntityHit(level, attacker, attackerData, itemstack, swingDistance, eh, pointIdx, dPos);
+                applyEntityHit(attacker, attackerData, itemstack, swingDistance, eh, pointIdx, dPos);
         }
     }
 
@@ -728,7 +728,7 @@ public class GunItemHandler
         return destroySpeed < 0.0F || destroySpeed > 0.2F;
     }
 
-    private void applyPlayerHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, PlayerBulletHit hit, int pointIdx, Vector3f dPos)
+    private void applyPlayerHit(Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, PlayerBulletHit hit, int pointIdx, Vector3f dPos)
     {
         LivingEntity attackedPlayer = hit.getHitbox().entity;
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, false));
@@ -741,7 +741,7 @@ public class GunItemHandler
             attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()), 1000, 1F, 0F, 0F);
     }
 
-    private void applyEntityHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, EntityHit hit, int pointIdx, Vector3f dPos)
+    private void applyEntityHit(Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, EntityHit hit, int pointIdx, Vector3f dPos)
     {
         Entity target = hit.getEntity();
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, false));

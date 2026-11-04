@@ -616,6 +616,17 @@ public final class NpcCrew
 
     // The vehicle's end
 
+    /**
+     * Gets the crew out of a crippled aircraft going down, while there is still height to jump, when its settings have the
+     * crew bail out of a vehicle that is destroyed. Those who stay ride it in.
+     */
+    public static void abandonFalling(EntityNPCInterface vehicle)
+    {
+        if (vehicle.level().isClientSide || NpcCrewSettings.of(vehicle).getDestroyed() != NpcCrewSettings.Destroyed.BAIL_OUT)
+            return;
+        crew(vehicle).stream().filter(member -> member.isAlive() && !member.isKilled()).forEach(member -> bailOut(vehicle, member, false));
+    }
+
     /** Deals with the crew of a vehicle that has just been destroyed, as its settings say. Runs as it dies. */
     public static void destroyed(EntityNPCInterface vehicle)
     {
@@ -627,7 +638,7 @@ public final class NpcCrew
             return;
         switch (NpcCrewSettings.of(vehicle).getDestroyed())
         {
-            case BAIL_OUT -> crew.forEach(member -> bailOut(vehicle, member));
+            case BAIL_OUT -> crew.forEach(member -> bailOut(vehicle, member, false));
             case DIE -> crew.forEach(LivingEntity::kill);
             case VANISH -> crew.forEach(EntityNPCInterface::delete);
         }
@@ -646,6 +657,12 @@ public final class NpcCrew
      */
     static void bailOut(EntityNPCInterface vehicle, EntityNPCInterface crew)
     {
+        bailOut(vehicle, crew, true);
+    }
+
+    /** Emergency exits use carried parachutes only; planned exits retain their existing fallback equipment. */
+    private static void bailOut(EntityNPCInterface vehicle, EntityNPCInterface crew, boolean fallback)
+    {
         NpcVehicleState state = NpcVehicleState.of(vehicle);
         Vec3 seat = seatOf(vehicle, crew).flatMap(mount -> state.seatOffset(vehicle, mount)).orElse(Vec3.ZERO);
         crew.stopRiding();
@@ -657,7 +674,7 @@ public final class NpcCrew
         double ground = vehicle.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(spot.x), Mth.floor(spot.z));
         boolean jump = vehicle.getY() - ground > JUMP_HEIGHT;
         crew.teleportTo(spot.x, jump ? vehicle.getY() + seat.y : Math.max(ground, vehicle.getY()), spot.z);
-        if (jump && !NpcParachutes.open(crew) && !FlansEquipment.deployParachute(crew))
+        if (jump && !NpcParachutes.open(crew) && fallback && !FlansEquipment.deployParachute(crew))
             crew.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, FALL_TICKS));
         crew.ais.setStartPos(BlockPos.containing(spot.x, ground, spot.z));
     }

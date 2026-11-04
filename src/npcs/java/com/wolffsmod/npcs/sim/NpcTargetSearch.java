@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
+import com.wolffsmod.npcs.combat.NpcAirCombat;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.diag.NpcBudgets;
@@ -242,7 +243,8 @@ public final class NpcTargetSearch
             scratchRanks[best] = scratchRanks[remaining];
             scratchDistances[best] = scratchDistances[remaining];
             tested++;
-            if (conditions.test(npc, candidate))
+            // A submarine running at depth is only picked up well inside the range the same hull is seen at on the surface.
+            if (conditions.test(npc, candidate) && NpcSubmergedContact.detectable(npc, candidate))
                 return new Selected(candidate, tested);
             if (heap)
                 siftDown(0, remaining);
@@ -388,7 +390,10 @@ public final class NpcTargetSearch
     public static double range(Mob mob)
     {
         double follow = mob.getAttributeValue(Attributes.FOLLOW_RANGE);
-        return mob instanceof EntityNPCInterface npc ? Math.max(follow, NpcWeaponRange.aggro(npc)) : follow;
+        if (!(mob instanceof EntityNPCInterface npc))
+            return follow;
+        double range = Math.max(follow, NpcWeaponRange.aggro(npc));
+        return NpcAirCombat.active(npc) ? Math.max(range, Math.min(NpcSight.range(), NpcTuning.of(npc).get(Value.AIR_SEARCH_RANGE))) : range;
     }
 
     /** @return the NPC's own interval, or the server's when the NPC states none */

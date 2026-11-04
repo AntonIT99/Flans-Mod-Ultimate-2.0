@@ -1,12 +1,16 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.wolffsmod.npcs.sim.NpcDormancy;
+import com.wolffsmod.npcs.sim.NpcSubmergedContact;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
 import noppes.npcs.ai.target.NpcNearestAttackableTargetGoal;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -22,6 +26,8 @@ import java.util.function.Predicate;
  * <li>With progressive search, targets are looked for in distance bands on their own schedules, nearest candidates first,
  * instead of testing every entity within aggro range on each search.</li>
  * <li>A target the NPC already has is kept for a margin beyond its aggro range, so tactical manoeuvres do not lose it.</li>
+ * <li>A submarine running at depth is picked up, and kept, only well inside the range the same hull is seen at on the
+ * surface, so one that dives away breaks contact instead of being followed on a bearing nothing can see.</li>
  * <li>A dormant NPC, beyond its dormant range from every player, looks for no target at all.</li>
  * </ul>
  */
@@ -53,6 +59,18 @@ public abstract class NpcNearestAttackableTargetGoalMixin<T extends LivingEntity
             wolffsmodnpcsSearch = new NpcTargetSearch();
         target = wolffsmodnpcsSearch.find(npc, targetConditions, NpcTargetSearch.range(mob));
         return target != null;
+    }
+
+    /**
+     * Custom NPCs keeps a target of its own here, so this hooks its method rather than overriding it: the goal is given
+     * up only when contact with a submerged hull is lost, and everything else it does is left alone.
+     */
+    @Inject(method = "canContinueToUse", at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsBreakSubmergedContact(CallbackInfoReturnable<Boolean> callback)
+    {
+        LivingEntity held = mob.getTarget();
+        if (mob instanceof EntityNPCInterface npc && held != null && !NpcSubmergedContact.holds(npc, held))
+            callback.setReturnValue(false);
     }
 
     @Override

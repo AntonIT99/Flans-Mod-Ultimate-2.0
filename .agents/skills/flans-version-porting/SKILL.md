@@ -44,7 +44,7 @@ when the other branch must be built or edited. Do not switch a dirty checkout.
    well as the implementation.
 3. Port the smallest end-to-end slice. Keep domain rules independent of loader
    glue where practical, and adapt the boundary to the destination API.
-4. Audit all coupled surfaces: registration, events, networking, saved/synced
+4. Audit the coupled surfaces affected by the change: registration, events, networking, saved/synced
    state, client setup, resources/data generation, configuration, and packaging.
 5. Validate on the destination branch, then compare the result against the
    observable contract rather than source-code similarity.
@@ -83,7 +83,8 @@ the Git merge as a way to collect changes, not as the completed port:
 
 For maintained class- and location-specific API differences, read
 [`docs/minecraft-version-code-differences.md`](../../../docs/minecraft-version-code-differences.md)
-before porting and update the relevant version section as the implementation
+before porting: search for the affected classes or APIs and read the relevant
+version sections, expanding only when needed. Update those sections as the implementation
 changes. The merge workflow above still applies when an existing entry covers
 an API seam.
 
@@ -111,10 +112,22 @@ an API seam.
 
 ## Validation
 
-Run focused tests first with the destination Gradle wrapper and required Java
-version. Include a dedicated-server-safe check for client-sensitive changes and
-exercise both packet directions for networking changes. Run a full `build` after
-loader setup, registries, networking, entities, resources, source sets, or
-packaging changes. Run `packsManagerJar` and/or `officialPacksJar` when their
-inputs or packaging change. Finish with a scoped diff review and
-`git diff --check`; report checks that could not be run.
+Follow the root `AGENTS.md` validation policy and coordinator. For a local feature
+port, compile affected source sets and run focused tests with the destination
+wrapper and required Java version. Registration, networking, resource-loading and
+packaging changes also require the affected artifact tasks and consumer checks;
+they do not automatically require a full `build`. Existing entity-behaviour changes
+alone do not require assembling unchanged packs.
+
+Use full `build` for branch-wide ports, loader setup, shared build/source-set
+changes, release verification, or effects spanning modules that scoped checks cannot
+cover confidently. Include affected pack consumers when shared signatures, model
+classes or content contracts change. Run `packsManagerJar` and/or `officialPacksJar`
+when their inputs or packaging change.
+
+For client-sensitive changes include a dedicated-server-safe compile or focused
+check; for networking cover both packet directions with relevant tests or static
+checks. Live clients, servers, GameTests and profiling remain on demand under the
+root game-testing policy. Reuse successful validation while its inputs remain
+unchanged. Finish with a scoped diff review and `git diff --check`; report checks
+that could not be run.

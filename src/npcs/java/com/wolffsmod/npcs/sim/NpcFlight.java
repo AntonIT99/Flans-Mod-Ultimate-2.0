@@ -2,10 +2,17 @@ package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.AircraftDamage;
+import com.flansmodultimate.api.driveables.AircraftMode;
+import com.flansmodultimate.api.driveables.CrashMode;
+import com.flansmodultimate.api.driveables.CrashMotion;
+import com.flansmodultimate.api.driveables.DriveableAttitude;
 import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.FlansAircraftCrashes;
 import com.flansmodultimate.api.driveables.FlightPerformance;
 import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
+import com.wolffsmod.npcs.combat.NpcAirCombat;
 import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -19,8 +26,10 @@ import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
@@ -55,6 +64,11 @@ public final class NpcFlight
      */
     static final double PLANE_MARGIN = 5D;
     static final double HELICOPTER_MARGIN = 4D;
+    /**
+     * Blocks above the attack altitude a plane setting up a diving gun run holds instead, so that the dive has height to
+     * spend without taking the plane under the altitude it may fire from.
+     */
+    static final double GUN_RUN_MARGIN = 18D;
     /** Blocks an aircraft has to climb past its attack altitude before it fires again, so that it does not flicker. */
     static final double ATTACK_HYSTERESIS = 2D;
     /** Blocks below the height it should hold within which an aircraft no longer climbs. */
@@ -92,7 +106,7 @@ public final class NpcFlight
     static final float MAX_BANK = 45F;
     static final float ROLL_RATE = 3F;
     /** Ticks an orbiting plane circles its target before it turns in for a gun pass, and the longest a pass lasts. */
-    static final int ORBIT_PASS_INTERVAL = 200;
+    static final int ORBIT_PASS_INTERVAL = 120;
     static final int MAX_PASS_TICKS = 300;
     /** Blocks per tick a plane climbs at most, and a helicopter, without a climb rate of their own. */
     static final double PLANE_CLIMB = 0.24D;
@@ -111,6 +125,13 @@ public final class NpcFlight
     /** Least and most a model's control rates scale the default pitch and roll rates by. */
     private static final double MIN_AUTHORITY = 0.25D;
     private static final double MAX_AUTHORITY = 3D;
+    /** Longest an aircraft may take to come down, in ticks, before it is written off where it is. */
+    static final int MAX_CRASH_TICKS = 1200;
+    /** Share of a windmilling rotor's lift a dead helicopter keeps on its way down, as a driveable's wreck does. */
+    private static final float WRECK_ROTOR_LIFT = 0.3F;
+    /** Least size of the fireball an aircraft going in makes, in blocks, and its size against the aircraft's width. */
+    private static final float MIN_CRASH_RADIUS = 3F;
+    private static final float CRASH_RADIUS_PER_WIDTH = 1.5F;
 
     private int sampledAt = Integer.MIN_VALUE;
     /** Height of the highest terrain under and ahead of the aircraft. */
@@ -125,6 +146,8 @@ public final class NpcFlight
     /** Whether a plane flies straight on because its target lies too close beside it to turn onto, until it has room to. */
     private boolean gainingRoom;
     private boolean flying;
+    @Getter
+    private final NpcAirCombat airCombat = new NpcAirCombat();
     private float yaw;
     /**
      * Degrees a plane's nose points below the horizon, negative above it, as Minecraft counts pitch: along its flight path,
@@ -153,6 +176,13 @@ public final class NpcFlight
     private double tightestCircle;
     @Getter
     private double circle;
+    /** Motion of the aircraft coming down, crippled or dead, as a driveable comes down; null while it flies. */
+    @Nullable
+    private CrashMotion crash;
+    /** Ticks the aircraft has been coming down. */
+    private int crashTicks;
+    /** Whether it has already come down this life, so that a wreck thrown back into the air is not brought down twice. */
+    private boolean crashed;
 
     /** @return how the NPC flies: as its flight type says, Automatic resolved by its model; Normal unless it moves by flying */
     public static Flight type(EntityNPCInterface npc)
@@ -222,15 +252,97 @@ public final class NpcFlight
         circle = 0D;
     }
 
-    /** @return whether the aircraft is too low to attack and climbing back */
+    /** @return whether the aircraft is too low to attack and climbing back, or coming down */
     public boolean holdsFire()
     {
-        return flying && (!attackAllowed || extending);
+        return crash != null || flying && (!attackAllowed || extending);
+    }
+
+    /** @return whether the aircraft is coming down, crippled or dead */
+    public boolean isCrashing()
+    {
+        return crash != null;
+    }
+
+    /**
+     * Brings a crippled aircraft down rather than letting it die where it was hit: from here it comes down as an airframe,
+     * as a driveable does, its nose into the wind, spiralling over a lost wing or spinning without its tail, until it
+     * strikes the ground. Server side.
+     *
+     * @return whether it is coming down, and so lives until it strikes; false when it cannot fall, standing on the ground,
+     *         not flying, or with realistic aircraft damage off, and should die where it is
+     */
+    public boolean bringDown(EntityNPCInterface npc)
+    {
+        if (crash != null)
+            return true;
+        if (crashed || !FlansAircraftCrashes.realisticDamageEnabled() || npc.ais.movementType != 1 || type(npc) == Flight.NORMAL || npc.onGround() || npc.isInWater())
+            return false;
+        Vec3 heading = Vec3.directionFromRotation(pitch, yaw);
+        // A plane carries on at the speed it flew, along its nose; a helicopter with whatever it was drifting by.
+        Vec3 velocity = airspeed > 0D ? heading.scale(airspeed) : npc.getDeltaMovement();
+        crash = CrashMotion.of(velocity);
+        crashTicks = 0;
+        stopNavigating(npc);
+        return true;
+    }
+
+    /** One tick of the aircraft coming down: the shared fall, then the impact once it strikes something. */
+    private void comeDown(EntityNPCInterface npc, Flight type)
+    {
+        AircraftMode mode = type == Flight.HELICOPTER ? AircraftMode.ROTORCRAFT : AircraftMode.FIXED_WING;
+        AircraftDamage damage = damageOf(npc);
+        CrashMode falling = FlansAircraftCrashes.wreckMode(damage, mode);
+        float lift = FlansAircraftCrashes.fallLift(damage, mode) * (mode == AircraftMode.ROTORCRAFT ? WRECK_ROTOR_LIFT : 1F);
+        DriveableAttitude attitude = DriveableAttitude.of(yaw, -pitch, bank);
+        double gravity = 0.08D * FlansModApi.getGravityFactor(npc.level());
+        boolean mirrored = (npc.getId() & 1) != 0;
+        crash = FlansAircraftCrashes.fall(crash, attitude, falling, lift, gravity, mirrored);
+        attitude = FlansAircraftCrashes.rotate(attitude, crash.rotation());
+        yaw = attitude.heading();
+        pitch = -attitude.pitch();
+        bank = attitude.roll();
+        npc.setDeltaMovement(crash.velocity());
+        stopNavigating(npc);
+        npc.setYRot(yaw);
+        npc.setYBodyRot(yaw);
+        if (++crashTicks > MAX_CRASH_TICKS || npc.onGround() || npc.horizontalCollision || npc.isInWater())
+            strike(npc);
+    }
+
+    /** @return what is left of the parts that keep the aircraft in the air; whole for an NPC without a part body */
+    private static AircraftDamage damageOf(EntityNPCInterface npc)
+    {
+        if (!(npc instanceof NpcVehicleStateHolder))
+            return AircraftDamage.INTACT;
+        return NpcVehicleState.of(npc).getParts().body().map(body -> NpcPartEffects.aircraftDamage(body.getParts())).orElse(AircraftDamage.INTACT);
+    }
+
+    /** Gives up whatever path the NPC was following, so that its own movement does not fight the fall. */
+    private static void stopNavigating(EntityNPCInterface npc)
+    {
+        PathNavigation navigation = npc.getNavigation();
+        if (navigation != null)
+            navigation.stop();
+    }
+
+    /** The aircraft goes in: a fireball, or a splash in water, and it is lost, if it was not already. */
+    private void strike(EntityNPCInterface npc)
+    {
+        crash = null;
+        crashed = true;
+        if (npc.level() instanceof ServerLevel server)
+            FlansAircraftCrashes.crash(server, npc.position(), Math.max(MIN_CRASH_RADIUS, npc.getBbWidth() * CRASH_RADIUS_PER_WIDTH), npc.isInWater());
+        npc.setDeltaMovement(npc.getDeltaMovement().multiply(0.3D, 0D, 0.3D));
+        if (!npc.isKilled() && npc.getHealth() > 0F)
+            npc.setHealth(0F);
     }
 
     /** @return one word for what the aircraft is doing, for the movement debug log */
     public String state(EntityNPCInterface npc)
     {
+        if (crash != null)
+            return "CRASHING";
         if (!flying)
             return "NORMAL";
         if (!attackAllowed)
@@ -251,10 +363,26 @@ public final class NpcFlight
         return NpcTactics.of(npc) == Tactic.ORBIT && !passing ? "ORBIT" : "ATTACK_RUN";
     }
 
+    /** @return whether the aircraft is coming down as a crashing airframe, which then flies this tick instead of its pilot */
+    private boolean tickCrash(EntityNPCInterface npc, Flight type)
+    {
+        if (!npc.isKilled() && npc.getHealth() > 0F && crash == null)
+            crashed = false;
+        // An aircraft killed in the air, its core shot through, comes down as an airframe too.
+        if (npc.isKilled() && crash == null)
+            bringDown(npc);
+        if (crash == null)
+            return false;
+        comeDown(npc, type);
+        return true;
+    }
+
     /** Runs once per tick after the NPC has moved. */
     public void tick(EntityNPCInterface npc)
     {
         Flight type = type(npc);
+        if (tickCrash(npc, type))
+            return;
         // Custom NPCs' flying travel keeps running after death, but never applies gravity itself.
         // Even the Normal flight setting must let a destroyed aircraft model fall.
         if (npc.isKilled() && npc.ais.movementType == 1 && (type != Flight.NORMAL || automatic(model(npc)) != Flight.NORMAL))
@@ -280,14 +408,14 @@ public final class NpcFlight
             yaw = npc.getYRot();
             sampledAt = Integer.MIN_VALUE;
         }
+        airCombat.tick(npc);
         NpcTuning tuning = NpcTuning.of(npc);
-        int minimum = tuning.get(Value.ATTACK_ALTITUDE);
+        int minimum = attackAltitude(npc, tuning);
         sample(npc, type, minimum);
         Vec3 motion = npc.getDeltaMovement();
         FlightPerformance model = performance(npc).orElse(null);
-        double vertical = climb(motion.y, terrain + minimum + (type == Flight.PLANE ? PLANE_MARGIN : HELICOPTER_MARGIN) - npc.getY(), type, npc.getNavigation().isDone(),
-            maxClimb(tuning, model, type));
         LivingEntity target = npc.getTarget();
+        double vertical = flightHeight(npc, tuning, model, type, target, motion.y, minimum);
         boolean engaged = target != null && target.isAlive();
         if (type == Flight.PLANE)
             flyPlane(npc, tuning, model, engaged ? target : null, vertical, minimum);
@@ -298,6 +426,39 @@ public final class NpcFlight
         }
         npc.setYRot(yaw);
         npc.setYBodyRot(yaw);
+    }
+
+    private static int attackAltitude(EntityNPCInterface npc, NpcTuning tuning)
+    {
+        int minimum = tuning.get(Value.ATTACK_ALTITUDE);
+        return NpcVehicleState.of(npc).isBombRun() ? Math.max(minimum, (int) Math.ceil(NpcBlastSafety.standoff(npc)) + 4) : minimum;
+    }
+
+    private double flightHeight(EntityNPCInterface npc, NpcTuning tuning, @Nullable FlightPerformance model, Flight type, @Nullable LivingEntity target, double vertical, int minimum)
+    {
+        double height = terrain + minimum + (type == Flight.PLANE ? planeMargin(npc, target) : HELICOPTER_MARGIN);
+        boolean intercept = target != null && NpcAirCombat.airborne(target);
+        if (intercept)
+            height = Math.max(terrain + minimum + PLANE_MARGIN, target.getBoundingBox().getCenter().y);
+        return climb(vertical, height - npc.getY(), type, !intercept && npc.getNavigation().isDone(), maxClimb(tuning, model, type));
+    }
+
+    /**
+     * The attack altitude is the lowest a plane fires from, and its nose goes no lower than that, so a plane holding just
+     * above it has almost no height to spend on a dive and its fixed guns barely bear before it levels off again. One
+     * setting up a gun run therefore holds high enough that the whole dive stays above the altitude it may fire from.
+     *
+     * @return blocks above the attack altitude a plane holds
+     */
+    private static double planeMargin(EntityNPCInterface npc, @Nullable LivingEntity target)
+    {
+        return gunRun(npc, target) ? GUN_RUN_MARGIN : PLANE_MARGIN;
+    }
+
+    /** @return whether the plane is setting up a diving gun run: it fights a target on the ground and is not bombing it */
+    private static boolean gunRun(EntityNPCInterface npc, @Nullable LivingEntity target)
+    {
+        return target != null && target.isAlive() && !NpcAirCombat.airborne(target) && !NpcVehicleState.of(npc).isBombRun();
     }
 
     /**
@@ -314,6 +475,13 @@ public final class NpcFlight
     private void flyHelicopter(EntityNPCInterface npc, NpcTuning tuning, @Nullable FlightPerformance model, @Nullable LivingEntity target, double vertical)
     {
         Vec3 motion = npc.getDeltaMovement();
+        Vec3 patrol = airCombat.getPatrol();
+        if (target == null && patrol != null)
+        {
+            Vec3 across = patrol.subtract(npc.position()).multiply(1D, 0D, 1D);
+            double speed = Math.min(0.4D, across.length() / 20D);
+            motion = across.normalize().scale(speed);
+        }
         pitch = 0F;
         bank = 0F;
         float wanted = yaw;
@@ -384,12 +552,14 @@ public final class NpcFlight
         Vec3 motion = npc.getDeltaMovement();
         // Guns are led at where the target will be; a bomber flies over where its bomb meets the target.
         NpcVehicleState state = NpcVehicleState.of(npc);
-        Vec3 toTarget = target == null ? Vec3.ZERO : state.bombPoint().orElse(target.position()).subtract(npc.position());
+        // Only a bomber steers for the drop point; a plane making a gun run flies at the target, bombs beside its guns or not.
+        Vec3 toTarget = target == null ? Vec3.ZERO : (state.isBombRun() ? state.bombPoint().orElse(target.position()) : target.position()).subtract(npc.position());
         Vec3 aim = target != null && !state.isBombRun() ? state.aimDirection().orElse(toTarget) : toTarget;
         // The horizontal speed of a diving or climbing plane is only part of its airspeed.
         int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
-        double combat = target == null ? 0D : combatSpeed(npc.stats.aggroRange, turnRate);
+        double combat = target == null ? 0D : combatSpeed(NpcTargetSearch.range(npc), turnRate);
         double speed = flightSpeed(tuning, model, combat, motion.horizontalDistance() / Math.max(0.5D, Math.cos(Math.toRadians(pitch))));
+        aim = flightAim(npc, target, state, speed, aim);
         flownSpeed = speed;
         // No circle is tighter than the plane turns at its speed, with some turn to spare to stay on it.
         tightestCircle = turnRadius(speed, maxTurn(turnRate, speed, model != null)) * CIRCLE_MARGIN;
@@ -419,7 +589,8 @@ public final class NpcFlight
         double horizontal = speed;
         if (target != null && attacks(npc, aim))
         {
-            // The nose goes no lower than lets the plane fly level along its attack altitude.
+            // The nose goes no lower than lets the plane fly level along its attack altitude, which is also the lowest it may
+            // fire from. A plane setting up a gun run holds {@link #GUN_RUN_MARGIN} above that, so the dive has room to spend.
             float dive = Mth.clamp(MountMotion.relative(aim, yaw).pitch(), -MAX_CLIMB, MAX_DIVE);
             if (npc.getY() - terrain <= minimum + 1D)
                 dive = Math.min(dive, 0F);
@@ -431,6 +602,35 @@ public final class NpcFlight
             pitch += Mth.clamp((float) -Math.toDegrees(Math.atan2(climb, speed)) - pitch, -pitchRate, pitchRate);
         Vec3 forward = Vec3.directionFromRotation(0F, yaw);
         npc.setDeltaMovement(forward.x * horizontal, climb, forward.z * horizontal);
+    }
+
+    private static Vec3 flightAim(EntityNPCInterface npc, @Nullable LivingEntity target, NpcVehicleState state, double speed, Vec3 fallback)
+    {
+        if (target == null || !NpcAirCombat.airborne(target))
+            return fallback;
+        return intercept(target.getBoundingBox().getCenter().subtract(npc.position()), state.motionOf(target).map(TargetMotion::velocity).orElse(target.getDeltaMovement()), speed);
+    }
+
+    /** Leads an aircraft's flight path separately from its guns' much faster projectile solution. */
+    static Vec3 intercept(Vec3 displacement, Vec3 velocity, double speed)
+    {
+        double a = velocity.lengthSqr() - speed * speed;
+        double b = 2D * displacement.dot(velocity);
+        double c = displacement.lengthSqr();
+        double time = 0D;
+        if (Math.abs(a) < 1.0E-6D)
+            time = b < -1.0E-6D ? -c / b : 0D;
+        else
+        {
+            double discriminant = b * b - 4D * a * c;
+            if (discriminant >= 0D)
+            {
+                double first = (-b - Math.sqrt(discriminant)) / (2D * a);
+                double second = (-b + Math.sqrt(discriminant)) / (2D * a);
+                time = first > 0D && second > 0D ? Math.min(first, second) : Math.max(first, second);
+            }
+        }
+        return displacement.add(velocity.scale(Mth.clamp(time, 0D, 80D)));
     }
 
     /**
@@ -478,6 +678,12 @@ public final class NpcFlight
      */
     private float idleYaw(EntityNPCInterface npc, double radius)
     {
+        Vec3 mission = airCombat.getPatrol();
+        if (mission != null)
+        {
+            roamCentre = null;
+            return loiterYaw(npc.position(), mission, radius, (npc.getId() & 1) == 0, yaw);
+        }
         if (!roams(npc))
         {
             roamCentre = null;
@@ -528,28 +734,53 @@ public final class NpcFlight
     {
         gainingRoom = false;
         Tactic tactic = NpcTactics.of(npc);
+        if (NpcAirCombat.airborne(target))
+        {
+            extending = false;
+            passing = false;
+            orbitTicks = 0;
+            return MountMotion.yaw(aim);
+        }
         double horizontal = Math.sqrt(npc.distanceToSqr(target.getX(), npc.getY(), target.getZ()));
         // A plane carrying something explosive breaks off before it flies into its own blast, as one on a run breaks off past its target.
-        double pass = Math.max(PASS_DISTANCE, NpcBlastSafety.standoff(npc));
-        if (tactic == Tactic.ORBIT)
+        boolean bombRun = NpcVehicleState.of(npc).isBombRun();
+        // A bomb run must cross the release line; ground strafing breaks off before reaching the target instead.
+        double pass = bombRun ? 0D : Math.max(PASS_DISTANCE, NpcBlastSafety.standoff(npc));
+        if (bombRun && bombEscape(npc, target, horizontal, radius))
+            return yaw;
+        if (!bombRun && tactic == Tactic.ORBIT)
         {
             if (!orbitPass(horizontal, radius, pass))
                 return loiterYaw(npc.position(), new Vec3(target.getX(), npc.getY(), target.getZ()), radius, (npc.getId() & 1) == 0, yaw);
         }
-        else
-        {
-            passing = false;
-            orbitTicks = 0;
-            boolean runs = tactic == Tactic.STRAFING_RUN;
-            double extend = Math.max(MIN_EXTEND, runs ? NpcTactics.engagement(npc).preferred() : pass);
-            extending = (runs || pass > PASS_DISTANCE) && extending(extending, horizontal, extend, pass);
-        }
+        else if (!bombRun)
+            groundPass(npc, tactic, horizontal, pass);
         if (extending || horizontal <= 1D)
             return yaw;
         // A target inside the circle the plane would turn on toward it cannot be reached by turning, only circled: it flies
         // straight on until the target lies outside that circle, and turns in for its run from there.
         gainingRoom = insideTurn(npc.position(), yaw, target.position(), tightestCircle);
         return gainingRoom ? yaw : MountMotion.yaw(aim);
+    }
+
+    private void groundPass(EntityNPCInterface npc, Tactic tactic, double horizontal, double pass)
+    {
+        passing = false;
+        orbitTicks = 0;
+        boolean runs = tactic == Tactic.STRAFING_RUN;
+        double extend = Math.max(MIN_EXTEND, runs ? NpcTactics.engagement(npc).preferred() : pass);
+        extending = (runs || pass > PASS_DISTANCE) && extending(extending, horizontal, extend, pass);
+    }
+
+    private boolean bombEscape(EntityNPCInterface npc, LivingEntity target, double horizontal, double radius)
+    {
+        Vec3 forward = Vec3.directionFromRotation(0F, yaw);
+        Vec3 toTarget = target.position().subtract(npc.position());
+        boolean passed = toTarget.x * forward.x + toTarget.z * forward.z < -PASS_DISTANCE;
+        extending = (extending || passed) && horizontal < Math.max(MIN_EXTEND, radius);
+        passing = false;
+        orbitTicks = 0;
+        return extending;
     }
 
     /**

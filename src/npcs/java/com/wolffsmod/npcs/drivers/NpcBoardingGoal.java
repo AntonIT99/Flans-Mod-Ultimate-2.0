@@ -45,6 +45,8 @@ public final class NpcBoardingGoal extends Goal
             return false;
         driver.setNextSearch(now + NpcDrivers.SEARCH_INTERVAL);
         seat = NpcDrivers.findSeat(npc).orElse(null);
+        if (seat != null && !NpcDrivers.reserve(npc, seat))
+            seat = null;
         return seat != null;
     }
 
@@ -73,6 +75,11 @@ public final class NpcBoardingGoal extends Goal
     {
         if (seat == null)
             return;
+        if (!NpcDrivers.reserve(npc, seat))
+        {
+            seat = null;
+            return;
+        }
         ticks++;
         npc.getLookControl().setLookAt(seat, 30F, 30F);
         if (NpcDrivers.withinReach(npc, seat))
@@ -99,6 +106,7 @@ public final class NpcBoardingGoal extends Goal
     {
         // Once aboard, the path to the driveable would only hold it where it stands.
         npc.getNavigation().stop();
+        NpcDrivers.releaseReservation(npc);
         if (!boarded && ticks >= REACH_TICKS)
             NpcDrivers.refuse(npc, seat);
         seat = null;

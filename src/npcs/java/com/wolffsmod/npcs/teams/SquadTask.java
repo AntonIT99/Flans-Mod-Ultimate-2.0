@@ -23,6 +23,11 @@ public record SquadTask(Kind kind, Vec3 target, double radius)
         GUARD,
         /** Seek out the enemy where they were last seen. */
         HUNT,
+        /**
+         * Cover an objective from a distance instead of driving onto it, as armour does while the infantry go in: its guns
+         * reach the objective from open ground, where the anti-tank weapons waiting on it do not reach the armour.
+         */
+        OVERWATCH,
         /** Circle over a place, as aircraft and ships do. */
         PATROL,
         /** Stay where it is, as AA guns do. */

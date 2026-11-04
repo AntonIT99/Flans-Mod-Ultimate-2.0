@@ -270,11 +270,12 @@ public class FlanExplosion extends Explosion
         {
             PacketHandler.sendToAllAround(new PacketFlanExplosionBlockParticles(center, stats.explosionRadius, sampleBlockBurstPositions(affectedBlockPositions)), center,
                 Math.max(EXPLOSION_PARTICLE_RANGE, stats.explosionRadius), level.dimension());
-            PacketHandler.sendToAllAround(
-                new PacketFlanExplosionParticles(center, smokeCount, debrisCount, stats.blastRadius, stats.explosionRadius, stats.fragRadius, stats.fragIntensity,
-                    stats.fragmentation().fragmentCount(), stats.fragmentation().pattern(), fragmentDirection(), fieryVisuals),
-                center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.blastRadius), level.dimension());
-            DistantSync.onExplosion(sl, center, stats.explosionRadius, stats.blastRadius, fieryVisuals, Math.max(EXPLOSION_PARTICLE_RANGE, stats.blastRadius));
+            float visualRadius = ExplosionVisuals.visualRadius(stats.explosionRadius, stats.explosiveMassKg);
+            // Heavy charges are drawn as landmarks, so they are sent as far as they can be seen.
+            double particleRange = Math.max(Math.max(EXPLOSION_PARTICLE_RANGE, stats.blastRadius), ExplosionVisuals.landmarkRange(visualRadius));
+            PacketHandler.sendToAllAround(new PacketFlanExplosionParticles(center, smokeCount, debrisCount, stats.blastRadius, visualRadius, stats.fragRadius, stats.fragIntensity,
+                stats.fragmentation().fragmentCount(), stats.fragmentation().pattern(), fragmentDirection(), fieryVisuals), center, particleRange, level.dimension());
+            DistantSync.onExplosion(sl, center, stats.explosionRadius, visualRadius, stats.blastRadius, fieryVisuals, particleRange);
         }
     }
 

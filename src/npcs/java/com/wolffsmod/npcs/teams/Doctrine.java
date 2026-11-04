@@ -52,6 +52,17 @@ public final class Doctrine
     private static final double ENGAGE_RANGE = 48D;
     /** Blocks around the front a squad spreads over. */
     private static final double FRONT_RADIUS = 16D;
+    /** Blocks beyond an objective's radius at which armour covering it stands off, out of the reach of hand-held anti-tank weapons. */
+    private static final double OVERWATCH_STANDOFF = 24D;
+    /** Blocks around its standoff an armour squad spreads over, enough for its vehicles to stand apart with their own lines of fire. */
+    private static final double OVERWATCH_RADIUS = 12D;
+    /** Blocks from the objective in play within which a naval squad already supports the battle, rather than making for a patrol point. */
+    private static final double NAVAL_SUPPORT_RANGE = 96D;
+    /** Blocks beyond the overwatch standoff a ship holds off an objective it shells, so that it stays out over its own water. */
+    private static final double NAVAL_STANDOFF = 48D;
+    /** Fewest blocks of water a naval squad spreads over, and the room each of its hulls is given within it. */
+    private static final double NAVAL_RADIUS = 16D;
+    private static final double NAVAL_SPACING = 24D;
 
     /**
      * A squad as the commander sees it.
@@ -67,8 +78,14 @@ public final class Doctrine
      * @param antiArmour
      *            readiness-weighted members equipped to engage reported armour
      */
-    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget, double readiness, double antiArmour)
+    public record SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget, double readiness, double antiArmour,
+        @Nullable Vec3 failedTarget, @Nullable Vec3 supportTarget)
     {
+        public SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget, double readiness, double antiArmour)
+        {
+            this(id, role, posture, position, strength, carrying, currentTarget, readiness, antiArmour, null, null);
+        }
+
         public SquadView(int id, BotRole role, SquadTemplate.Posture posture, Vec3 position, int strength, boolean carrying, @Nullable Vec3 currentTarget)
         {
             this(id, role, posture, position, strength, carrying, currentTarget, 1D, role == BotRole.ARMOR ? strength : 0D);
@@ -173,12 +190,22 @@ public final class Doctrine
     }
 
     /**
-     * Without objectives, squads seek out the nearest enemy, or the enemy's spawn when none is seen. With a front, they
-     * head for it instead and only turn to an enemy that comes near them, so the two sides meet there.
+     * Without objectives, squads divide reported enemies, or enemy spawns when none are seen, by travel cost and allied
+     * commitments. With a front, they head for it instead and only turn to nearby enemies, so the two sides meet there.
      */
     private static void planHunt(Battlefield field, List<SquadView> squads, Map<Integer, SquadTask> tasks)
     {
+        Map<Vec3, Double> assigned = new LinkedHashMap<>();
+        List<Vec3> candidates = new ArrayList<>(field.enemies().isEmpty() ? field.enemySpawns() : field.enemies());
         for (SquadView squad : squads)
+            if (squad.supportTarget() != null && !candidates.contains(squad.supportTarget()))
+                candidates.add(squad.supportTarget());
+        Map<Vec3, Double> support = new HashMap<>();
+        for (Vec3 candidate : candidates)
+            support.put(candidate, squads.stream().filter(squad -> squad.supportTarget() != null && squad.supportTarget().distanceToSqr(candidate) <= 576D).mapToDouble(SquadView::power).sum());
+        List<SquadView> ordered = new ArrayList<>(squads);
+        ordered.sort(Comparator.comparingDouble(SquadView::power).reversed().thenComparingInt(SquadView::id));
+        for (SquadView squad : ordered)
         {
             Optional<Vec3> enemy = nearest(squad.position(), field.enemies());
             if (field.front() != null && enemy.map(found -> found.distanceTo(squad.position()) > ENGAGE_RANGE).orElse(true))
@@ -186,9 +213,20 @@ public final class Doctrine
                 tasks.put(squad.id(), new SquadTask(SquadTask.Kind.HUNT, field.front(), FRONT_RADIUS));
                 continue;
             }
-            Vec3 target = enemy.or(() -> nearest(squad.position(), field.enemySpawns())).orElse(squad.position());
+            Vec3 target = candidates.stream().filter(candidate -> field.front() == null || candidate.distanceTo(squad.position()) <= ENGAGE_RANGE)
+                .min(Comparator.comparingDouble(candidate -> huntCost(squad, candidate, assigned, support.get(candidate)))).orElse(squad.position());
+            assigned.merge(target, squad.power(), Double::sum);
             tasks.put(squad.id(), new SquadTask(SquadTask.Kind.HUNT, target, HUNT_RADIUS));
         }
+    }
+
+    /** Nearby reports share a commitment count, so a cluster of enemies does not attract every squad independently. */
+    private static double huntCost(SquadView squad, Vec3 candidate, Map<Vec3, Double> assigned, double requested)
+    {
+        double committed = assigned.entrySet().stream().filter(entry -> entry.getKey().distanceToSqr(candidate) <= HUNT_RADIUS * HUNT_RADIUS).mapToDouble(Map.Entry::getValue).sum();
+        double staying = candidate.equals(squad.currentTarget()) ? STAY_BONUS : 0D;
+        double reinforcement = reinforcement(squad, requested);
+        return squad.position().distanceTo(candidate) / DISTANCE_SCALE + CROWDING * committed / 4D - staying + failureCost(squad, candidate) - reinforcement;
     }
 
     /**
@@ -291,8 +329,10 @@ public final class Doctrine
         {
             var guarded = field.points().stream().filter(point -> point.ownerSide() == field.side()).min(Comparator.comparingDouble(point -> point.position().distanceToSqr(squad.position())));
             if (guarded.isPresent())
-                return new SquadTask(kindAt(field, guarded.get()), guarded.get().position(), guarded.get().radius());
+                return taskAt(field, squad, guarded.get());
         }
+        if (squad.role() == BotRole.ARMOR)
+            return new SquadTask(SquadTask.Kind.OVERWATCH, standoff(squad.position(), front.position(), front.radius()), OVERWATCH_RADIUS);
         return new SquadTask(SquadTask.Kind.ATTACK, front.position(), front.radius());
     }
 
@@ -308,30 +348,65 @@ public final class Doctrine
             return;
         }
         Map<Integer, Double> assigned = new HashMap<>();
+        Map<Integer, Double> infantry = new HashMap<>();
         List<Pressure> pressure = field.points().stream().map(point -> pressure(field, point)).toList();
+        // Summed once per point, rather than scanning requesting squads inside the assignment loop.
+        List<Double> support = field.points().stream()
+            .map(point -> squads.stream().filter(squad -> squad.supportTarget() != null && near(point, squad.supportTarget())).mapToDouble(SquadView::power).sum()).toList();
         List<SquadView> ordered = new ArrayList<>(squads);
         ordered.sort(Comparator.comparingDouble(SquadView::power).reversed().thenComparingInt(SquadView::id));
         for (SquadView squad : ordered)
         {
-            int best = -1;
-            double bestValue = Double.NEGATIVE_INFINITY;
-            for (int i = 0; i < field.points().size(); i++)
-            {
-                TeamsCapturePoint candidate = field.points().get(i);
-                if (!field.mayCapture() && candidate.ownerSide() != field.side())
-                    continue;
-                double demand = Math.max(4D, pressure.get(i).power());
-                double value = value(field, candidate, squad, pressure.get(i)) - CROWDING * assigned.getOrDefault(i, 0D) / demand;
-                if (value > bestValue)
-                {
-                    bestValue = value;
-                    best = i;
-                }
-            }
+            int best = bestObjective(field, squad, pressure, assigned, support, infantry);
             TeamsCapturePoint point = field.points().get(best);
             assigned.merge(best, squad.power(), Double::sum);
-            tasks.put(squad.id(), new SquadTask(kindAt(field, point), point.position(), point.radius()));
+            if (squad.role() == BotRole.INFANTRY && squad.readiness() >= 0.5D)
+                infantry.merge(best, squad.power(), Double::sum);
+            tasks.put(squad.id(), taskAt(field, squad, point));
         }
+    }
+
+    private static int bestObjective(Battlefield field, SquadView squad, List<Pressure> pressure, Map<Integer, Double> assigned, List<Double> support, Map<Integer, Double> infantry)
+    {
+        int best = -1;
+        double bestValue = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < field.points().size(); i++)
+        {
+            TeamsCapturePoint candidate = field.points().get(i);
+            if (!field.mayCapture() && candidate.ownerSide() != field.side())
+                continue;
+            double value = objectiveValue(field, candidate, squad, pressure.get(i), assigned.getOrDefault(i, 0D), support.get(i));
+            // Reinforce a fight with one ready squad before committing every remaining squad to it.
+            // Keep the ordinary travel, danger and failure costs, so distant or impossible objectives still lose.
+            if (needsInfantryReinforcement(field, squad) && infantry.getOrDefault(i, 0D) >= 4D)
+                value -= 12D;
+            if (value > bestValue)
+            {
+                bestValue = value;
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    private static boolean needsInfantryReinforcement(Battlefield field, SquadView squad)
+    {
+        return field.mayCapture() && squad.role() == BotRole.INFANTRY && squad.readiness() >= 0.5D;
+    }
+
+    private static double objectiveValue(Battlefield field, TeamsCapturePoint point, SquadView squad, Pressure pressure, double assigned, double requested)
+    {
+        double demand = Math.max(4D, pressure.power() + requested);
+        // Pinning is itself a report of danger, even when the shooter has not been located.
+        double reportedThreat = requested > 0D && point.ownerSide() == field.side() && !pressure.threatened() ? (THREATENED_VALUE - SAFE_VALUE) * Math.min(1D, squad.readiness()) : 0D;
+        return value(field, point, squad, pressure) + reportedThreat + reinforcement(squad, requested) - CROWDING * assigned / demand;
+    }
+
+    private static double reinforcement(SquadView squad, double requested)
+    {
+        if (squad.supportTarget() != null || squad.readiness() < 0.5D || requested <= 0D)
+            return 0D;
+        return Math.min(8D, 4D + requested);
     }
 
     static double value(Battlefield field, TeamsCapturePoint point, SquadView squad)
@@ -350,7 +425,12 @@ public final class Doctrine
             value -= Math.max(0D, pressure.power() - squad.power());
             value -= 4D * Math.max(0D, pressure.armour() - squad.antiArmour());
         }
-        return value - squad.position().distanceTo(point.position()) / DISTANCE_SCALE;
+        return value - squad.position().distanceTo(point.position()) / DISTANCE_SCALE - failureCost(squad, point.position());
+    }
+
+    private static double failureCost(SquadView squad, Vec3 target)
+    {
+        return squad.failedTarget() != null && squad.failedTarget().distanceToSqr(target) <= 256D ? 12D : 0D;
     }
 
     private static double baseValue(Battlefield field, TeamsCapturePoint point, SquadView squad, boolean threatened)
@@ -398,6 +478,29 @@ public final class Doctrine
         return threatened(field, point) ? SquadTask.Kind.DEFEND : SquadTask.Kind.GUARD;
     }
 
+    /**
+     * @return what the squad does at the point. Armour sent to take one covers it from a standoff rather than driving onto
+     *         it: from there its guns reach the objective while the anti-tank weapons waiting on it do not reach the
+     *         armour, and the infantry who alone can take the point go in under its fire.
+     */
+    private static SquadTask taskAt(Battlefield field, SquadView squad, TeamsCapturePoint point)
+    {
+        SquadTask.Kind kind = kindAt(field, point);
+        if (squad.role() != BotRole.ARMOR || kind != SquadTask.Kind.ATTACK)
+            return new SquadTask(kind, point.position(), point.radius());
+        return new SquadTask(SquadTask.Kind.OVERWATCH, standoff(squad.position(), point.position(), point.radius()), OVERWATCH_RADIUS);
+    }
+
+    /**
+     * @return a point back from the objective along the way the squad is coming, far enough out that it covers the
+     *         objective from beyond it; the objective itself when the squad already stands on it
+     */
+    static Vec3 standoff(Vec3 from, Vec3 point, double radius)
+    {
+        Vec3 back = from.subtract(point).multiply(1D, 0D, 1D);
+        return back.lengthSqr() < 1.0E-4D ? point : point.add(back.normalize().scale(radius + OVERWATCH_STANDOFF));
+    }
+
     /** Whether the enemy is taking a point the side holds, or closing in on it. */
     static boolean threatened(Battlefield field, TeamsCapturePoint point)
     {
@@ -426,11 +529,41 @@ public final class Doctrine
         return votes.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElseGet(() -> centroid(field.enemies()));
     }
 
+    /**
+     * Where a naval squad goes. A squad with fight left in it supports the battle ashore: it makes for the patrol point
+     * nearest the objective in play, and once it is within reach of that objective it holds station off it and shells it
+     * instead of steaming back to the point, since a ship that leaves gun range to patrol takes its guns out of the
+     * battle. A battered squad leaves the line for the patrol point farthest from the enemy. The water it spreads over
+     * grows with the number of hulls in it: ships cannot share a station the way soldiers share a rally point.
+     */
     private static SquadTask naval(Battlefield field, SquadView squad)
     {
+        double radius = navalRadius(squad);
+        if (squad.readiness() < 0.5D)
+            return new SquadTask(SquadTask.Kind.PATROL, navalRefuge(field, squad), radius);
         Vec3 focus = field.points().isEmpty() ? centroid(field.enemies()) : field.points().get(Math.min(activeObjective(field.points(), field.attackingSide()), field.points().size() - 1)).position();
-        Vec3 anchor = focus == null ? squad.position() : focus;
-        return nearest(anchor, field.navalPoints()).map(point -> new SquadTask(SquadTask.Kind.PATROL, point, 16D)).orElse(new SquadTask(SquadTask.Kind.HOLD, squad.position(), 8D));
+        if (focus == null)
+            return nearest(squad.position(), field.navalPoints()).map(point -> new SquadTask(SquadTask.Kind.PATROL, point, radius))
+                .orElseGet(() -> new SquadTask(SquadTask.Kind.HOLD, squad.position(), radius));
+        if (squad.position().distanceTo(focus) <= NAVAL_SUPPORT_RANGE)
+            return new SquadTask(SquadTask.Kind.OVERWATCH, standoff(squad.position(), focus, NAVAL_STANDOFF), radius);
+        Vec3 station = standoff(squad.position(), focus, NAVAL_STANDOFF);
+        return nearest(focus, field.navalPoints()).map(point -> new SquadTask(SquadTask.Kind.PATROL, point, radius)).orElseGet(() -> new SquadTask(SquadTask.Kind.OVERWATCH, station, radius));
+    }
+
+    /** @return blocks a naval squad's line spreads over: room for every hull in it, and never less than one station */
+    static double navalRadius(SquadView squad)
+    {
+        return Math.max(NAVAL_RADIUS, NAVAL_SPACING * Math.max(1, squad.strength()) * 0.5D);
+    }
+
+    /** @return the patrol point farthest from the enemy, where a battered squad goes; its own water without any point */
+    private static Vec3 navalRefuge(Battlefield field, SquadView squad)
+    {
+        Vec3 enemy = centroid(field.enemies());
+        if (enemy == null)
+            return nearest(squad.position(), field.navalPoints()).orElse(squad.position());
+        return field.navalPoints().stream().max(Comparator.comparingDouble(point -> point.distanceToSqr(enemy))).orElse(squad.position());
     }
 
     private static Optional<Vec3> nearest(Vec3 from, List<Vec3> candidates)

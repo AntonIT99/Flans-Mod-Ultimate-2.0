@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,6 +42,8 @@ public final class GroundBloodParticle extends TextureSheetParticle
     @Override
     public void render(@NotNull VertexConsumer vertices, @NotNull Camera camera, float partialTick)
     {
+        if (ModClientConfig.get() != null && !ModClientConfig.get().showBloodEffects)
+            return;
         Vec3 relative = new Vec3(x, y, z).subtract(camera.getPosition());
         float sine = Mth.sin(rotation) * quadSize;
         float cosine = Mth.cos(rotation) * quadSize;
@@ -68,6 +71,8 @@ public final class GroundBloodParticle extends TextureSheetParticle
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
+            if (ModClientConfig.get() != null && !ModClientConfig.get().showBloodEffects)
+                return null;
             return new GroundBloodParticle(level, x, y, z, sprites);
         }
     }

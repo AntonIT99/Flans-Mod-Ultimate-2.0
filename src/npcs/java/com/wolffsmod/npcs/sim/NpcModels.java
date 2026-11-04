@@ -96,11 +96,11 @@ public final class NpcModels
         Vec3 point = offset.add(0D, type == null ? 0F : type.getShape().modelHeight(), 0D);
         if (type != null)
         {
-            // Round the middle of the model's box, as it is drawn.
+            // Use the same pivot as the renderer, including the vehicle's authored origin.
             Vec3 pivot = new Vec3(0D, attitudePivot(type), 0D);
             point = tilt(npc, point.subtract(pivot)).add(pivot);
         }
-        return point.scale(scale(npc)).yRot((float) Math.toRadians(180F - hullYaw)).add(0D, bodyOffset(npc), 0D);
+        return point.scale(scale(npc)).yRot((float) Math.toRadians(180F - hullYaw)).add(0D, bodyOffset(npc) + NpcVehicleState.of(npc).getAttitudeLift(), 0D);
     }
 
     /**
@@ -117,10 +117,10 @@ public final class NpcModels
         return vector.zRot((float) Math.toRadians(state.getAttitudeBank())).xRot((float) Math.toRadians(state.getAttitudePitch()));
     }
 
-    /** @return blocks above the feet, at size 5, a model pitches and banks about: the middle of its box */
+    /** @return blocks above the feet, at size 5, a model pitches and banks about: the vehicle origin, or an aircraft's box centre */
     public static float attitudePivot(FlanModelEntityType type)
     {
-        return NpcPlatform.height(type.getShape().dimensions()) / 2F;
+        return type.getKind() == FlanModelKind.VEHICLE ? type.getShape().modelHeight() : NpcPlatform.height(type.getShape().dimensions()) / 2F;
     }
 
     /** @return the world position of a point of the model preview frame */

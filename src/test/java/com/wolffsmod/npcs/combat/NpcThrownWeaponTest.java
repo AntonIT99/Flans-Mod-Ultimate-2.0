@@ -12,6 +12,8 @@ import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Throwing;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
+import com.wolffsmod.npcs.tactics.NpcInfantryRole;
+import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.*;
@@ -239,8 +241,10 @@ class NpcThrownWeaponTest
                 var projectiles = mockStatic(FlansProjectiles.class);
                 var options = mockStatic(NpcEquipment.class, CALLS_REAL_METHODS);
                 var vehicles = mockStatic(NpcVehicleState.class);
-                var attacks = mockStatic(NpcItemAttacks.class, CALLS_REAL_METHODS))
+                var attacks = mockStatic(NpcItemAttacks.class, CALLS_REAL_METHODS);
+                var roles = mockStatic(NpcInfantryRole.class))
             {
+                roles.when(() -> NpcInfantryRole.of(npc)).thenReturn(ClassRole.RIFLEMAN);
                 options.when(() -> NpcEquipment.enabled(eq(npc), any())).thenReturn(true);
                 // The NPC throws within its own firing range, not one its weapon would give it.
                 options.when(() -> NpcEquipment.enabled(npc, Feature.WEAPON_FIRING_RANGE)).thenReturn(false);

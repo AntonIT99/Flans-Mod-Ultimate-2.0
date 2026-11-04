@@ -6,9 +6,7 @@ import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.NpcSafetyState.Action;
-import com.wolffsmod.npcs.teams.NpcDuties;
-import com.wolffsmod.npcs.teams.NpcSuppression;
-import com.wolffsmod.npcs.teams.TeamsBots;
+import com.wolffsmod.npcs.teams.*;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +39,7 @@ public final class NpcSafetyGoal extends Goal
     @Nullable
     private Vec3 ordered;
     private boolean arrived;
+    private boolean airDefense;
 
     public NpcSafetyGoal(EntityNPCInterface npc)
     {
@@ -176,8 +175,25 @@ public final class NpcSafetyGoal extends Goal
         if (state.getAnchor() == null)
             state.setAnchor(npc.position());
         LivingEntity target = npc.getTarget();
+        NpcInfantryAirDefense.observe(npc);
         if (retreatToRefuge() || keepClearOfBlast(target))
             return;
+        if (defendFromAir(now))
+            return;
+        if (TeamsBots.movesUnderFire(npc))
+        {
+            // On its way to an objective: the objective goal walks it on while it fires; no stopping for cover or bounds.
+            state.clear();
+            state.setAdvanceIntent(null);
+            return;
+        }
+        if (holdAgainstAircraft(target))
+            return;
+        planFight(target, now);
+    }
+
+    private void planFight(LivingEntity target, long now)
+    {
         Situation fight = situation(target, now);
         if (fight == null)
         {
@@ -196,6 +212,98 @@ public final class NpcSafetyGoal extends Goal
         state.setCover(null);
         if (!flank(target, fight, now) && !spread(target))
             state.clear();
+    }
+
+    private boolean holdAgainstAircraft(LivingEntity target)
+    {
+        if (!NpcInfantryAirDefense.holdsPosition(npc, target))
+            return false;
+        state.setAdvanceIntent(null);
+        NpcCombatIntent assigned = NpcCombatAdvance.assigned(npc);
+        Vec3 point = assigned != null && !assigned.reached(npc.position()) && !NpcSuppression.isPinned(npc) ? assigned.step(npc.position(), 8D) : npc.position();
+        if (!NpcCombatMovement.permits(npc, point))
+            point = npc.position();
+        state.setCover(null);
+        order(point.distanceToSqr(npc.position()) > 1D ? Action.ADVANCE : Action.FIRE, point, 20L);
+        return true;
+    }
+
+    /** Temporarily interrupts objective travel too, but keeps the firing target and the underlying order intact. */
+    private boolean defendFromAir(long now)
+    {
+        NpcInfantryAirDefense.Memory air = state.getAirDefense();
+        if (!NpcEquipment.enabled(npc, Feature.TACTICAL_COVER) || !air.active(now))
+        {
+            if (airDefense)
+            {
+                airDefense = false;
+                TeamsBots.releaseCover(npc);
+                state.clear();
+                state.setCoverReadyAt(0L);
+            }
+            return false;
+        }
+        beginAirDefense();
+        state.setAdvanceIntent(null);
+        state.setCover(null);
+        if (state.active(now) && state.getAction() == Action.HIDE && state.getDestination() != null && NpcCover.hidden(npc, air.getSources(), state.getDestination()))
+        {
+            state.setUntil(air.getUntil());
+            return true;
+        }
+        if (NpcCover.sheltered(npc, npc.position()) && NpcCover.hidden(npc, air.getSources(), npc.position()))
+        {
+            order(Action.HIDE, npc.position(), air.getUntil() - now);
+            return true;
+        }
+        if (now >= state.getCoverReadyAt() && seekAirCover(air, now))
+            return true;
+        disperseFromAir(air, now);
+        return true;
+    }
+
+    private void disperseFromAir(NpcInfantryAirDefense.Memory air, long now)
+    {
+        if (state.active(now) && state.getAction() == Action.SPREAD)
+            return;
+        Vec3 side = air.getEscapeDirection();
+        // Vary nearby soldiers' escape distances rather than sending a squad to one identical point.
+        if (side.lengthSqr() < 0.01D)
+            side = new Vec3((npc.getId() & 1) == 0 ? 1D : -1D, 0D, 0D);
+        if (!moveAside(Action.SPREAD, side, 6D + Math.floorMod(npc.getId(), 3) * 2D))
+            order(Action.FIRE, npc.position(), 20L);
+    }
+
+    private void beginAirDefense()
+    {
+        if (!airDefense)
+        {
+            state.clear();
+            state.setCoverReadyAt(0L);
+            airDefense = true;
+        }
+    }
+
+    private boolean seekAirCover(NpcInfantryAirDefense.Memory air, long now)
+    {
+        NpcCover.Result<List<BlockPos>> result = NpcCover.safePositions(npc, air.getSources(), NpcTuning.of(npc).get(Value.COVER_RADIUS), null, true);
+        if (!result.complete())
+        {
+            state.setNextSearch(now + 1L);
+            order(Action.FIRE, npc.position(), 20L);
+            return true;
+        }
+        state.setCoverReadyAt(now + 20L);
+        unreachable.entrySet().removeIf(entry -> entry.getValue() <= now);
+        alternatives = Objects.requireNonNull(result.value()).stream().filter(point -> !unreachable.containsKey(point)).toList();
+        alternative = 0;
+        for (BlockPos stand : alternatives)
+            if (TeamsBots.claimCover(npc, stand, now))
+            {
+                order(Action.HIDE, Vec3.atBottomCenterOf(stand), air.getUntil() - now);
+                return true;
+            }
+        return false;
     }
 
     private boolean evade(long now)
@@ -339,10 +447,13 @@ public final class NpcSafetyGoal extends Goal
 
     private boolean retreatToRefuge()
     {
-        if (!NpcDuties.retreating(npc))
+        boolean personal = NpcDuties.retreating(npc);
+        Optional<Vec3> squad = personal ? Optional.empty() : TeamsBots.squadWithdrawal(npc);
+        if (!personal && squad.isEmpty())
             return false;
         state.setAdvanceIntent(null);
-        Optional<Vec3> refuge = NpcDuties.destination(npc).filter(point -> NpcCombatMovement.permits(npc, point));
+        Optional<Vec3> refuge = squad.map(point -> new NpcCombatIntent(point, 3D).step(npc.position(), 16D)).or(() -> NpcDuties.destination(npc))
+            .filter(point -> NpcCombatMovement.permits(npc, point));
         if (refuge.isEmpty())
             return false;
         order(Action.RETREAT, refuge.get(), 40L);
@@ -370,8 +481,10 @@ public final class NpcSafetyGoal extends Goal
             return null;
         boolean visible = npc.getSensing().hasLineOfSight(danger);
         boolean vehicle = NpcVehicleThreats.groundVehicle(danger);
-        boolean outmatched = visible && vehicle && NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS)
-            && NpcWeaponChoice.effectiveness(npc, danger) == NpcWeaponChoice.Effectiveness.INEFFECTIVE;
+        // A vehicle that has shot itself dry has no fight left to win, whatever is in front of it, so it breaks contact too.
+        boolean spent = outOfAmmunition();
+        boolean outmatched = spent
+            || visible && vehicle && NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS) && NpcWeaponChoice.effectiveness(npc, danger) == NpcWeaponChoice.Effectiveness.INEFFECTIVE;
         boolean outranged = NpcEquipment.enabled(npc, Feature.OUTRANGED_COVER) && !threats.isEmpty() && !npc.isInRange(danger, NpcWeaponRange.firing(npc));
         boolean underFire = !threats.isEmpty() && NpcEquipment.enabled(npc, Feature.TACTICAL_COVER);
         List<Vec3> sources = new ArrayList<>();
@@ -381,6 +494,12 @@ public final class NpcSafetyGoal extends Goal
             sources.add(NpcVehicleThreats.fireOrigin(danger));
         Vec3 position = visible || threats.isEmpty() ? danger.position() : threats.get(threats.size() - 1).position();
         return new Situation(position, visible, outmatched, outranged, outmatched || outranged || underFire, NpcTacticState.of(npc).isReloading(now), sources);
+    }
+
+    /** @return whether the NPC is a vehicle that has used up everything it could fire, and is allowed to give up the fight over it */
+    private boolean outOfAmmunition()
+    {
+        return npc instanceof NpcVehicleStateHolder && NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS) && NpcVehicleState.of(npc).isOutOfAmmunition(npc);
     }
 
     private boolean takeCover(@Nullable LivingEntity target, Situation fight, long now)

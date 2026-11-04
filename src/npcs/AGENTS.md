@@ -10,7 +10,8 @@
   Mojang name only, for example `method = "tick"`. Merges from the Forge branch add SRG aliases such as
   `"m_8119_"`; remove them.
 - All Custom NPCs entity hooks belong in `EntityNPCInterfaceMixin` and all fallback ranged-AI hooks
-  in `EntityAIRangedAttackMixin`, following the root one-mixin-per-target rule.
+  in `EntityAIRangedAttackMixin`, following the shared one-mixin-per-target rule in
+  `src/main/java/com/flansmodultimate/mixin/AGENTS.md`.
 
 ## Older Custom NPCs build on 1.21.1
 

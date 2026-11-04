@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.distant;
 
+import com.flansmodultimate.common.explosions.ExplosionVisuals;
 import com.flansmodultimate.network.client.effects.PacketDistantExplosion;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -79,6 +80,8 @@ public final class DistantExplosionCues
     {
         private final Vec3 center;
         private final double radius;
+        private final double cloudHeight;
+        private final int riseTicks;
         private final int fireTicks;
         private final int lifetime;
         private final boolean fiery;
@@ -94,9 +97,11 @@ public final class DistantExplosionCues
         private Cue(Vec3 center, float explosionRadius, boolean fiery)
         {
             this.center = center;
-            this.radius = Mth.clamp(Float.isFinite(explosionRadius) ? explosionRadius : 1F, 1F, 64F);
+            this.radius = ExplosionVisuals.fireballDiameter(explosionRadius) * 0.5D;
+            this.cloudHeight = ExplosionVisuals.cloudHeight(explosionRadius);
+            this.riseTicks = ExplosionVisuals.cloudRiseTicks(explosionRadius);
             this.fiery = fiery;
-            this.fireTicks = fiery ? 80 : 30;
+            this.fireTicks = Math.max(1, ExplosionVisuals.fireballHotTicks(explosionRadius, fiery));
             // Bigger explosions raise smoke that lingers longer
             this.lifetime = Mth.clamp((int) (160 + radius * 24), 160, 600);
         }
@@ -163,21 +168,22 @@ public final class DistantExplosionCues
             double heat = Math.min(1D, (double) age / fireTicks);
             double grow = Math.min(1D, age / 6D);
             double fireAlpha = age < fireTicks ? 235D * Math.pow(1D - heat, 0.6D) : 0D;
-            fire = List.of(cube(radius * 0.2D, flash > 0D ? radius * 1.6D * (0.7D + 0.3D * flash) : 0D, argb(255D * flash, 255D, 246D, 227D)), cube(radius * (0.2D + 0.3D * heat),
-                age < fireTicks ? radius * (0.6D + 0.5D * grow) : 0D, argb(fireAlpha, Mth.lerp(heat, 255D, 150D), Mth.lerp(heat, 214D, 38D), Mth.lerp(heat, 110D, 12D))));
+            fire = List.of(cube(radius * 0.2D, flash > 0D ? radius * (0.7D + 0.3D * flash) : 0D, argb(255D * flash, 255D, 246D, 227D)), cube(radius * (0.2D + 0.3D * heat),
+                age < fireTicks ? radius * (0.6D + 0.4D * grow) : 0D, argb(fireAlpha, Mth.lerp(heat, 255D, 150D), Mth.lerp(heat, 214D, 38D), Mth.lerp(heat, 110D, 12D))));
 
             double life = (double) age / lifetime;
             List<DistantBox> puffs = new ArrayList<>(SMOKE_PUFFS);
             for (int puff = 0; puff < SMOKE_PUFFS; puff++)
             {
-                double puffAge = age - (2D + puff * 4D);
+                double puffAge = age - (2D + puff * riseTicks / (double) SMOKE_PUFFS);
                 if (puffAge < 0D)
                 {
                     puffs.add(cube(0D, 0D, 0));
                     continue;
                 }
-                double rise = radius * (0.4D + 0.85D * puff) + puffAge * (0.02D * radius + 0.04D);
-                double half = 0.5D * radius * (0.9D + 0.22D * puff) * (0.55D + 0.45D * Math.min(1D, puffAge / 30D)) * (1D + 0.6D * life);
+                double progress = Math.min(1D, puffAge / riseTicks);
+                double rise = cloudHeight * (0.2D + 0.65D * puff / (SMOKE_PUFFS - 1D)) * progress;
+                double half = cloudHeight * 0.06D * (0.9D + 0.22D * puff) * (0.55D + 0.45D * Math.min(1D, puffAge / 30D));
                 double alpha = 210D * Math.min(1D, puffAge / 8D) * Math.pow(1D - life, 1.2D);
                 double grey = fiery ? 50D + 6D * puff : 92D + 7D * puff;
                 puffs.add(cube(rise, half, argb(alpha, grey, grey - 2D, grey - 4D)));

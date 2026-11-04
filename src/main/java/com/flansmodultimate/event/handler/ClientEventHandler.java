@@ -11,6 +11,7 @@ import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
 import com.flansmodultimate.client.input.*;
 import com.flansmodultimate.client.particle.ParticleHelper;
+import com.flansmodultimate.client.particle.WeaponShotEffects;
 import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.OpStickConnectionRenderer;
 import com.flansmodultimate.client.render.effects.*;
@@ -167,6 +168,7 @@ public final class ClientEventHandler
         }
         applyVehicleScreenShake(event);
         applyGunScreenShake(event);
+        applyAircraftTremor(event);
         applyCombatScreenEffects(event);
     }
 
@@ -204,6 +206,21 @@ public final class ClientEventHandler
             event.setPitch(Mth.clamp(event.getPitch() + pitch, -89.9F, 89.9F));
     }
 
+    /** Shakes the view of the pilot of a damaged aircraft, harder the worse the damage. */
+    private static void applyAircraftTremor(ViewportEvent.ComputeCameraAngles event)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null || !config.vehicleScreenShake)
+            return;
+        float partialTick = (float) event.getPartialTick();
+        float pitch = AircraftCockpit.tremorPitch(partialTick);
+        float roll = AircraftCockpit.tremorRoll(partialTick);
+        if (pitch == 0F && roll == 0F)
+            return;
+        event.setPitch(Mth.clamp(event.getPitch() + pitch, -89.9F, 89.9F));
+        event.setRoll(event.getRoll() + roll);
+    }
+
     /** Adds the camera kick of a nearby firing driveable on top of whatever angles the view already has. */
     private static void applyVehicleScreenShake(ViewportEvent.ComputeCameraAngles event)
     {
@@ -238,6 +255,7 @@ public final class ClientEventHandler
         ModClient.tick();
         ParticleHelper.tick();
         DriveableDamageEffects.tickClient();
+        AircraftCockpit.tick();
         DistantHorizonsClient.tick();
     }
 
@@ -289,6 +307,7 @@ public final class ClientEventHandler
         }
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
+        WeaponShotEffects.captureWorldView(event.getPoseStack(), event.getProjectionMatrix());
         float partialTick = ClientPlatform.partialTick(event);
         MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
         InstantBulletRenderer.renderAllTrails(event.getPoseStack(), buffers, partialTick, event.getCamera());

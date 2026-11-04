@@ -11,6 +11,7 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,6 +33,7 @@ public class BlastPuffParticle extends TextureSheetParticle
 
     private final Look look;
     private final float baseSize;
+    private int fadeInTicks;
     /** Turn per tick; a puff lying on the ground keeps still. */
     protected float spin;
 
@@ -99,7 +101,19 @@ public class BlastPuffParticle extends TextureSheetParticle
     @Nullable
     public static BlastPuffParticle createFlat(ClientLevel level, double x, double y, double z, Look look, float size, int lifetime)
     {
-        return sprites == null ? null : new Flat(level, x, y, z, sprites, look, size, lifetime);
+        return createFlat(level, x, y, z, look, size, lifetime, null);
+    }
+
+    /**
+     * As {@link #createFlat(ClientLevel, double, double, double, Look, float, int)}, but bound to an entity: when that entity is
+     * destroyed or removed for good, the mark fades out over a short time instead of outliving it.
+     */
+    // Keeps the existing flat-particle factory parameters together with the optional owner.
+    @SuppressWarnings("java:S107")
+    @Nullable
+    public static BlastPuffParticle createFlat(ClientLevel level, double x, double y, double z, Look look, float size, int lifetime, @Nullable Entity owner)
+    {
+        return sprites == null ? null : new Flat(level, x, y, z, sprites, look, size, lifetime, owner);
     }
 
     @Override
@@ -132,15 +146,37 @@ public class BlastPuffParticle extends TextureSheetParticle
         updateLook();
     }
 
+    /** Softens the arrival of staged smoke without delaying flashes or other existing effects. */
+    public void fadeIn(int ticks)
+    {
+        fadeInTicks = Math.max(0, ticks);
+        updateLook();
+    }
+
+    @Override
+    public void render(@NotNull VertexConsumer buffer, Camera camera, float partialTick)
+    {
+        if (fadeInTicks > 0)
+            updateLook(Math.max(0F, age - 1F + partialTick));
+        super.render(buffer, camera, partialTick);
+    }
+
     private void updateLook()
     {
-        float t = Mth.clamp(age / (float) lifetime, 0F, 1F);
+        updateLook(age);
+    }
+
+    private void updateLook(float visualAge)
+    {
+        float t = Mth.clamp(visualAge / lifetime, 0F, 1F);
         // Cools quickly and then lingers, the way a fireball goes from orange to smoke.
         float cooling = 1F - (1F - t) * (1F - t);
         float fade = 1F - t * t;
 
         quadSize = baseSize * (1F + look.growth() * Mth.sqrt(t));
-        alpha = look.alpha() * fade;
+        float arrival = fadeInTicks == 0 ? 1F : Mth.clamp(visualAge / fadeInTicks, 0F, 1F);
+        arrival = arrival * arrival * (3F - 2F * arrival);
+        alpha = look.alpha() * fade * arrival;
 
         float r = Mth.lerp(cooling, look.startR(), look.endR());
         float g = Mth.lerp(cooling, look.startG(), look.endG());
@@ -185,14 +221,38 @@ public class BlastPuffParticle extends TextureSheetParticle
     private static final class Flat extends BlastPuffParticle
     {
         private static final float[][] CORNERS = {{-1F, -1F}, {-1F, 1F}, {1F, 1F}, {1F, -1F}};
+        /** Ticks a mark takes to fade once the entity it belongs to is gone. */
+        private static final int OWNER_GONE_FADE_TICKS = 40;
+
+        @Nullable
+        private final Entity owner;
+        /** The age at which the owner was found gone, or -1 while it is there. */
+        private int goneAt = -1;
 
         // Mirrors the vanilla particle constructor shape: level, position and sprites, with the look.
         @SuppressWarnings("java:S107")
-        private Flat(ClientLevel level, double x, double y, double z, SpriteSet sprites, Look look, float size, int lifetime)
+        private Flat(ClientLevel level, double x, double y, double z, SpriteSet sprites, Look look, float size, int lifetime, @Nullable Entity owner)
         {
             super(level, x, y, z, 0D, 0D, 0D, sprites, look, size, lifetime);
+            this.owner = owner;
             spin = 0F;
             hasPhysics = false;
+        }
+
+        @Override
+        public void tick()
+        {
+            if (goneAt < 0 && owner != null && owner.isRemoved())
+                goneAt = age;
+            super.tick();
+            if (goneAt >= 0 && !removed)
+            {
+                int gone = age - goneAt;
+                if (gone >= OWNER_GONE_FADE_TICKS)
+                    remove();
+                else
+                    alpha *= 1F - gone / (float) OWNER_GONE_FADE_TICKS;
+            }
         }
 
         @Override

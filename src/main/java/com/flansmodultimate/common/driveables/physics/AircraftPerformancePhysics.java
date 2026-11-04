@@ -257,6 +257,56 @@ public final class AircraftPerformancePhysics
     }
 
     /**
+     * The wing span to charge induced drag with, so that induced drag matches
+     * the game-scaled lift rather than the real wing.
+     *
+     * <p>The reference airspeed at which the wing carries the aircraft's weight
+     * is scaled down for playability, so the game wing makes its weight at a
+     * fraction of the real speed. Charging real induced drag at that low speed
+     * asked the engine for the drag of an impossibly slow real flight, which
+     * capped aircraft near the reference speed. Scaling induced drag by the
+     * square of the same ratio keeps lift and its price consistent. The
+     * parasitic term is back-solved from the same value, so top speed is kept.
+     *
+     * @param wingSpanM            the real wing span
+     * @param massKg               the aircraft's mass
+     * @param wingAreaM2           the real wing area
+     * @param gameReferenceSpeedMs the scaled reference airspeed lift is measured against
+     * @return the equivalent span; the real span when no scaling applies
+     */
+    public static double inducedDragSpanM(double wingSpanM, double massKg, double wingAreaM2, double gameReferenceSpeedMs)
+    {
+        double realReference = referenceSpeedMs(massKg, wingAreaM2);
+        if (!finitePositive(wingSpanM) || !finitePositive(realReference) || !finitePositive(gameReferenceSpeedMs))
+            return wingSpanM;
+        double ratio = gameReferenceSpeedMs / realReference;
+        // Induced drag scales with 1/b², so a span divided by the ratio charges ratio² of the real value.
+        return ratio < 1D ? wingSpanM / ratio : wingSpanM;
+    }
+
+
+    /**
+     * The load factor induced drag is charged for: what the wing is asked for,
+     * but never more than it can actually make at this airspeed.
+     *
+     * <p>Induced drag is the price of lift. Below flying speed the wing makes
+     * only part of the aircraft's weight, so charging the commanded load there
+     * stalled a nose-up tail-dragger on its take-off roll. Once the wing is
+     * working its lift fraction reaches the commanded load and nothing changes.
+     *
+     * @param commandedLoadFactor what the attitude asks of the wing
+     * @param liftFraction        what the wing can make, as a multiple of weight
+     * @return the load factor actually carried, never negative
+     */
+    public static double inducedLoadFactor(double commandedLoadFactor, double liftFraction)
+    {
+        if (!Double.isFinite(commandedLoadFactor))
+            return 1D;
+        double available = Double.isFinite(liftFraction) ? Math.max(0D, liftFraction) : 0D;
+        return Math.max(0D, Math.min(commandedLoadFactor, available));
+    }
+
+    /**
      * The share of a vertical lift force that acts along the flight path, which
      * a real wing never produces and which the caller must therefore remove.
      *
@@ -423,61 +473,28 @@ public final class AircraftPerformancePhysics
         return 0D;
     }
 
-    /**
-     * Drag in newtons contributed by a deployed air brake, from the flat-plate
-     * form {@code D = 0.5 * rho * S * Cd * v²}, times
-     * {@link VehiclePhysicsConstants#AIR_BRAKE_EFFECTIVENESS}. It is a genuine
-     * extra force rather than a multiplier, so it is heaviest exactly where a
-     * speed brake matters — at high airspeed — and vanishes at a standstill.
-     */
+    /** Physical flat-plate drag before configurable effectiveness, in newtons. */
     public static double airBrakeDragNewtons(double airspeedMs, double airBrakeAreaM2)
     {
         if (!finitePositive(airBrakeAreaM2))
             return 0D;
         double speed = Double.isFinite(airspeedMs) ? Math.abs(airspeedMs) : 0D;
         return 0.5D * VehiclePhysicsUnits.AIR_DENSITY * airBrakeAreaM2
-            * VehiclePhysicsConstants.AIR_BRAKE_DRAG_COEFFICIENT * speed * speed
-            * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS;
+            * VehiclePhysicsConstants.AIR_BRAKE_DRAG_COEFFICIENT * speed * speed;
     }
 
-    /**
-     * Deceleration in m/s² from a deployed air brake, capped by its own ceiling
-     * so the quadratic term stays decisive without becoming a wall at the top of
-     * the speed range. Always zero or positive; the caller subtracts it.
-     */
-    public static double airBrakeDecelerationMs2(double airspeedMs, double airBrakeAreaM2, double massKg)
+    /** Additional deceleration shared by both flight models; no aircraft-independent ceiling. */
+    @SuppressWarnings("java:S107") // The calculation needs the aircraft and configurable brake inputs.
+    public static double airBrakeDecelerationMs2(double airspeedMs, double areaM2, double massKg,
+        double dragFactor, double effectiveness, double assistDeceleration, double assistReferenceSpeedKmh, double strengthMultiplier)
     {
-        return airBrakeDecelerationMs2(airspeedMs, airBrakeAreaM2, massKg, 1D);
-    }
-
-    public static double airBrakeDecelerationMs2(double airspeedMs, double airBrakeAreaM2, double massKg,
-                                                  double dragFactor)
-    {
-        if (!finitePositive(massKg))
+        if (!Double.isFinite(airspeedMs) || !Double.isFinite(strengthMultiplier) || strengthMultiplier <= 0D)
             return 0D;
-        double deceleration = ModPhysics.dragForce(airBrakeDragNewtons(airspeedMs, airBrakeAreaM2), dragFactor) / massKg;
-        if (!Double.isFinite(deceleration) || deceleration <= 0D)
-            return 0D;
-        return Math.min(deceleration, VehiclePhysicsConstants.AIR_BRAKE_MAX_DECELERATION_MS2);
-    }
-
-    /**
-     * Per-tick velocity multiplier standing in for a deployed air brake on the
-     * legacy flight model, which carries drag as a multiplier rather than a force.
-     *
-     * <p>Both areas are used only as a ratio, so a pack that states neither, or
-     * only one of them, falls back to the same default proportion the derived
-     * model uses rather than mixing a real dimension with a gameplay number.
-     */
-    public static float legacyAirBrakeDragFactor(double airBrakeAreaM2, double wingAreaM2)
-    {
-        double fraction = finitePositive(airBrakeAreaM2) && finitePositive(wingAreaM2)
-            ? airBrakeAreaM2 / wingAreaM2
-            : VehiclePhysicsConstants.AIR_BRAKE_WING_AREA_FRACTION;
-        double loss = Math.min(VehiclePhysicsConstants.MAX_LEGACY_AIR_BRAKE_DRAG,
-            fraction * VehiclePhysicsConstants.LEGACY_AIR_BRAKE_DRAG_SCALE
-                * VehiclePhysicsConstants.AIR_BRAKE_EFFECTIVENESS);
-        return (float) (1D - Math.max(0D, loss));
+        double physical = finitePositive(massKg) ? airBrakeDragNewtons(airspeedMs, areaM2) / massKg * Math.max(0D, effectiveness) : 0D;
+        double ratio = finitePositive(assistReferenceSpeedKmh) ? Math.min(1D, Math.abs(airspeedMs) * 3.6D / assistReferenceSpeedKmh) : 0D;
+        double assist = Math.max(0D, assistDeceleration) * ratio * ratio;
+        double result = ModPhysics.dragForce(Math.max(physical, assist) * strengthMultiplier, dragFactor);
+        return Double.isFinite(result) ? Math.max(0D, result) : 0D;
     }
 
     /**

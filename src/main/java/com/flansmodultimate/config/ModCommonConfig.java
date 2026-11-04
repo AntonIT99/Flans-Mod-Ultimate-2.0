@@ -82,6 +82,7 @@ public final class ModCommonConfig
     public static final double DEFAULT_HEAT_DAMAGE_REFERENCE = 1100.0D;
     /** Damage dealt to each occupant of a part a HEAT jet has penetrated. Half a player's health. */
     public static final double DEFAULT_HEAT_CREW_SPALL_DAMAGE = 10.0D;
+    public static final double DEFAULT_EXPLOSION_PARTICLE_RANGE = 256.0D;
     /** Defaults of what is sent to players who draw far terrain with Distant Horizons. */
     public static final boolean DEFAULT_DISTANT_CONTACTS_ENABLED = true;
     public static final double DEFAULT_DISTANT_CONTACT_RANGE = 3072.0D;
@@ -148,6 +149,7 @@ public final class ModCommonConfig
 
     private static final BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
     private static final BooleanValue DISABLE_CROSSHAIR_WHILE_SCOPED;
+    private static final BooleanValue PARACHUTES_CAN_BE_HIT;
     private static final BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final Supplier<Boolean> FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS;
     private static final BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
@@ -221,6 +223,7 @@ public final class ModCommonConfig
     private static final Supplier<Integer> SHOOTABLE_DEFAULT_RESPAWN_TIME;
     private static final Supplier<Boolean> SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE;
     private static final Supplier<Double> LOCK_ON_RANGE;
+    private static final Supplier<Integer> RICOCHET_SPARK_COUNT;
     private static final Supplier<Integer> FLAK_PARTICLES_RANGE;
     private static final Supplier<Double> ENTITY_HIT_PARTICLE_RANGE;
     private static final Supplier<Double> BLOCK_HIT_PARTICLE_RANGE;
@@ -280,6 +283,10 @@ public final class ModCommonConfig
     private static final ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
+    private static final Supplier<Boolean> ENABLE_REALISTIC_AIRCRAFT_DAMAGE;
+    private static final Supplier<Double> AIR_BRAKE_EFFECTIVENESS;
+    private static final Supplier<Double> AIR_BRAKE_ASSIST_DECELERATION;
+    private static final Supplier<Double> AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
     private static final Supplier<Double> REALISTIC_PLANE_SPEED_SCALE;
@@ -300,6 +307,7 @@ public final class ModCommonConfig
     private static final Supplier<Double> MAX_BLAST_RADIUS;
     private static final Supplier<Double> HEAT_DAMAGE_REFERENCE;
     private static final Supplier<Double> HEAT_CREW_SPALL_DAMAGE;
+    private static final Supplier<Double> EXPLOSION_PARTICLE_RANGE;
 
     private static final Supplier<Boolean> DISTANT_CONTACTS_ENABLED;
     private static final Supplier<Double> DISTANT_CONTACT_RANGE;
@@ -352,6 +360,7 @@ public final class ModCommonConfig
             Private singleplayer worlds always use the client preference. Open-to-LAN worlds
             follow this server setting for both the host and joining players.
             """).define("disableCrosshairWhileScoped", true);
+        PARACHUTES_CAN_BE_HIT = builder.comment("Whether direct hits can collapse open parachutes, for both players and NPCs. Explosions never collapse them.").define("parachutesCanBeHit", false);
         EXPLOSIONS_BREAK_BLOCKS = builder.comment("Whether explosions can break blocks").define("explosionBreakBlocks", true);
         FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS = builder.comment("Force shootables using the new explosion system to break blocks, ignoring their ExplosionBreaksBlocks property.",
             "The teams rule and explosionBreakBlocks remain higher-priority global gates.").define("forceNewExplosionsBreakBlocks", true);
@@ -419,8 +428,10 @@ public final class ModCommonConfig
             "of the same ammunition, taken from the driveable's cargo first and then from the driver's inventory.").define("autoRefillVehicleAmmo", true);
         GUNS_IN_DESTROYED_PARTS_WORK = builder.comment("Whether an occupied passenger gun remains usable when the driveable part supporting its seat is destroyed.",
             "Disabled by default. Destroyed seats still cannot be newly occupied.").define("gunsInDestroyedPartsWork", false);
-        DRIVEABLE_WRECK_LIFETIME = builder.comment("Seconds a destroyed driveable stays as a burning wreck before it is removed. Wrecks cannot be driven, keep their collision and burn out over time.",
-            "0 removes destroyed driveables at once, as before.").defineInRange("driveableWreckLifetime", 120, 0, 3600);
+        DRIVEABLE_WRECK_LIFETIME = builder
+            .comment("Seconds a destroyed driveable stays as a burning wreck before it is removed. Wrecks cannot be driven, keep their collision and burn out over time.",
+                "The scorch mark under a wreck lasts as long as the wreck and fades when it is broken up or removed.", "0 removes destroyed driveables at once, as before.")
+            .defineInRange("driveableWreckLifetime", 300, 0, 3600);
         DRIVEABLE_MELEE_DAMAGE_THRESHOLD = builder.comment("Minimum melee damage in health points for driveables and NPC driveable models. Weaker hits are ignored; qualifying hits apply in full.",
             "Compared after Flan weapon vehicle modifiers, before armor and resistances. 0 disables the threshold.",
             "Content packs may override this with MeleeDamageThreshold; NPCs may override their model's threshold.").defineInRange("driveableMeleeDamageThreshold", 10D, 0D, 100_000D);
@@ -528,6 +539,7 @@ public final class ModCommonConfig
             .define("shootableProximityTriggerFriendlyFire", false);
         SHOOTABLE_DEFAULT_RESPAWN_TIME = builder.comment("Max despawn time in ticks (0.05s). 0 means no despawn time.").defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);
         LOCK_ON_RANGE = builder.comment("Range in blocks used by lock-on missiles when searching for targets.").defineInRange("lockOnRange", 128.0, 1.0, 4096.0);
+        RICOCHET_SPARK_COUNT = builder.comment("Base number of star particles spawned by a ricochet, scaled by projectile size.").defineInRange("ricochetSparkCount", 4, 0, 64);
         FLAK_PARTICLES_RANGE = builder.comment("Range in blocks for sending flak particle packets to clients.").defineInRange("flakParticlesRange", 256, 1, 4096);
         ENTITY_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending entity-hit particle packets to clients.").defineInRange("entityHitParticleRange", 64.0, 1.0, 4096.0);
         BLOCK_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending block-hit particle packets to clients.").defineInRange("blockHitParticleRange", 64.0, 1.0, 4096.0);
@@ -618,6 +630,18 @@ public final class ModCommonConfig
         ENABLE_AIRCRAFT_ROLL_SELF_LEVELING = builder.comment("Enable the weak airborne roll force that slowly returns planes, helicopters and VTOL hover mode toward horizontal.",
             "Keyboard or mouse roll input overrides it immediately. Fixed-wing airflow, rotor authority, damage and available",
             "real-world lifting-surface characteristics still determine its strength when enabled.").define("enableAircraftRollSelfLeveling", true);
+        ENABLE_REALISTIC_AIRCRAFT_DAMAGE = builder.comment("Enable progressive aircraft damage and realistic crashes, for driveables and NPC aircraft alike.",
+            "Worn wings lose lift and pull to one side, a shot-up tail answers slowly, hit engines lose power, holed wing tanks leak fuel,",
+            "helicopters can autorotate after an engine failure, gear-up landings slide on the belly, and crippled or dead aircraft",
+            "dive, spiral or spin down as an airframe instead of tumbling. Off restores the previous all-or-nothing behaviour.").define("enableRealisticAircraftDamage", true);
+        AIR_BRAKE_EFFECTIVENESS = builder.comment("Multiplier on physical air-brake drag in both flight models; 0 disables the physical contribution.")
+            .defineInRange("airBrakeEffectiveness", 1D, 0D, 100D);
+        AIR_BRAKE_ASSIST_DECELERATION = builder.comment("Minimum additional air-brake deceleration in m/s squared at or above the assist reference speed.",
+            "Uses the stronger of physical braking and assistance. 0 disables assistance. Engine thrust remains active.")
+            .defineInRange("airBrakeAssistDeceleration", 4D, 0D, 100D);
+        AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH = builder.comment("Speed in km/h at which air-brake assistance reaches full strength.",
+            "Below this speed assistance fades with speed squared, independently of the aircraft lift reference speed.")
+            .defineInRange("airBrakeAssistReferenceSpeedKmh", 150D, 1D, 10000D);
         REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder.comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
             "This changes the speed at which lift equals weight, so it affects takeoff, low-speed lift and stall-like behaviour together.",
             "0.5 halves the physically derived reference speed for shorter Minecraft runways; 1.0 keeps the physical result.", "Legacy aircraft, helicopters, VTOL and six-DOF craft are unaffected.")
@@ -701,6 +725,9 @@ public final class ModCommonConfig
             .defineInRange("heatDamageReference", DEFAULT_HEAT_DAMAGE_REFERENCE, 0D, 100000D);
         HEAT_CREW_SPALL_DAMAGE = builder.comment("Damage dealt to each occupant of a vehicle part that a HEAT jet penetrates, on vehicles using UseRealisticVehicleHealth.",
             "Scaled down like the vehicle damage when the jet barely penetrates. Set to 0 to disable crew spall.").defineInRange("heatCrewSpallDamage", DEFAULT_HEAT_CREW_SPALL_DAMAGE, 0D, 1000D);
+        EXPLOSION_PARTICLE_RANGE = builder.comment("Longest distance in blocks at which the fireball and smoke of heavy explosions such as bombs are drawn and sent to players.",
+            "Smaller explosions keep a shorter range that grows with their size. Clients scale it further with particleDistanceScale.")
+            .defineInRange("explosionParticleRange", DEFAULT_EXPLOSION_PARTICLE_RANGE, 128D, 1024D);
         builder.pop();
 
         builder.push("Distant Horizons Settings");
@@ -735,7 +762,8 @@ public final class ModCommonConfig
             ADD_ALL_PAINTJOBS_TO_CREATIVE.get(), VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD.get(), DEFAULT_VEHICLE_ENGINE.get(), DEFAULT_PLANE_ENGINE.get(), DEFAULT_MECHA_ENGINE.get(),
             NAME_TAG_RENDER_RANGE.get().floatValue(), NAME_TAG_SNEAK_RENDER_RANGE.get().floatValue(), NOTICE_SPAWN_KILL_TIME.get(),
 
-            DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), EXPLOSIONS_BREAK_BLOCKS.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(), FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
+            DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), EXPLOSIONS_BREAK_BLOCKS.get(), PARACHUTES_CAN_BE_HIT.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(),
+            FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
             BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(), SHOW_DISTANCE_IN_KILL_MESSAGE.get(),
             DEFAULT_FLAGPOLE_HEIGHT_VALUE.get(), BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(),
             AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
@@ -785,7 +813,8 @@ public final class ModCommonConfig
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
-            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get());
+            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(), AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get(),
+            ENABLE_REALISTIC_AIRCRAFT_DAMAGE.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -918,6 +947,13 @@ public final class ModCommonConfig
         return config != null && config.forceLegacyVehiclePhysics();
     }
 
+    /** Whether aircraft damage is progressive and crippled or dead aircraft come down as airframes. */
+    public static boolean realisticAircraftDamageEnabled()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.enableRealisticAircraftDamage();
+    }
+
     /** Whether aircraft receive the weak server-authoritative roll restoring moment. */
     public static boolean aircraftRollSelfLevelingEnabled()
     {
@@ -929,6 +965,24 @@ public final class ModCommonConfig
     public static boolean forceLegacyMovement(@Nullable EnumVehicleCategory category)
     {
         return category == EnumVehicleCategory.AIRCRAFT ? forceLegacyPlanePhysics() : category == EnumVehicleCategory.GROUND && forceLegacyVehiclePhysics();
+    }
+
+    public static double airBrakeEffectiveness()
+    {
+        var config = get();
+        return config == null ? 1D : config.airBrakeEffectiveness();
+    }
+
+    public static double airBrakeAssistDeceleration()
+    {
+        var config = get();
+        return config == null ? 4D : config.airBrakeAssistDeceleration();
+    }
+
+    public static double airBrakeAssistReferenceSpeedKmh()
+    {
+        var config = get();
+        return config == null ? 150D : config.airBrakeAssistReferenceSpeedKmh();
     }
 
     /** Server-authoritative arcade scale for derived fixed-wing lift and takeoff speed. */
@@ -1042,6 +1096,17 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.driveableCollisionsBreakBlocks();
+    }
+
+    public static boolean parachutesCanBeHit()
+    {
+        CommonConfigSnapshot config = get();
+        return config != null && config.parachutesCanBeHit();
+    }
+
+    public static void setParachutesCanBeHit(boolean enabled)
+    {
+        setRuntimeValue(PARACHUTES_CAN_BE_HIT.getPath(), enabled);
     }
 
     public static boolean autoRefillVehicleAmmo()
@@ -1213,6 +1278,12 @@ public final class ModCommonConfig
         return config == null || config.enableKillMessages();
     }
 
+    public static double explosionParticleRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_EXPLOSION_PARTICLE_RANGE : config.explosionParticleRange();
+    }
+
     public static boolean showBotKillsInKillFeed()
     {
         CommonConfigSnapshot config = get();
@@ -1365,6 +1436,11 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? LOCK_ON_RANGE.get() : config.lockOnRange();
+    }
+
+    public static int ricochetSparkCount()
+    {
+        return RICOCHET_SPARK_COUNT.get();
     }
 
     public static int flakParticlesRange()

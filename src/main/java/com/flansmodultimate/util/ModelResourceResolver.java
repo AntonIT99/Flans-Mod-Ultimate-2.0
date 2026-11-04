@@ -48,6 +48,7 @@ public final class ModelResourceResolver
     }
 
     @Nullable
+    @SuppressWarnings({"java:S2093", "java:S2589"}) // A successful lookup transfers filesystem ownership to Resource; directory providers have no filesystem.
     private static Resource openInPack(IContentProvider provider, String relative, String[] extensions) throws IOException
     {
         // Old Java models hardcode the original pack folder before assets/flansmod/models.

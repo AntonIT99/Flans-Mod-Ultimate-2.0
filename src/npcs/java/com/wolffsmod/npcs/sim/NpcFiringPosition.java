@@ -222,9 +222,24 @@ public final class NpcFiringPosition
         course = wanted;
         if (!renew)
             return;
-        Vec3 point = ShipBearing.point(wanted, npc.position(), target.position(), hold, (npc.getId() & 1) == 0 ? 1 : -1);
+        Vec3 aim = bowAim(npc, state, target, wanted);
+        Vec3 point = ShipBearing.clearPoint(wanted, npc.position(), aim, hold, (npc.getId() & 1) == 0 ? 1 : -1, ahead -> ShipWaters.clear(npc, npc, ahead));
         npc.getNavigation().moveTo(point.x, point.y, point.z, 1D);
         order(npc, point);
+    }
+
+    /**
+     * @return the point the ship lays its bow on: where a round fixed to the hull meets the target while it is running in
+     *         to fire one, and the target itself on any other course, which is steamed about the target where it is
+     */
+    private static Vec3 bowAim(EntityNPCInterface npc, NpcVehicleState state, LivingEntity target, Course course)
+    {
+        if (course != Course.RUN_IN)
+            return target.position();
+        Optional<TargetMotion> motion = state.motionOf(target);
+        if (motion.isEmpty())
+            return target.position();
+        return ShipBearing.intercept(npc.position(), target.position(), state.shotSpeed(), motion.get()::lead);
     }
 
     /** Backs the vehicle away from its target, or as near that way as it finds a path, far enough for its gun to reach it. */

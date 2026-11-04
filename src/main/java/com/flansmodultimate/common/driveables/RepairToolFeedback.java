@@ -2,6 +2,7 @@ package com.flansmodultimate.common.driveables;
 
 import com.flansmodultimate.api.parts.FlansRepairs;
 import com.flansmodultimate.api.parts.IFlanRepairTarget;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -37,7 +38,7 @@ public final class RepairToolFeedback
     public record PartHealth(String name, String displayName, float health, float maximum)
     {}
 
-    /** Hit points of every part of a driveable or part-body wearer that holds any; read before a repair to find the part it raised. */
+    /** Hit points of a driveable, AA gun or part-body wearer; read before a repair to find the part it raised. */
     public static List<PartHealth> parts(Entity target)
     {
         List<PartHealth> parts = new ArrayList<>();
@@ -48,6 +49,10 @@ public final class RepairToolFeedback
                 if (part.getMaxHealth() > 0F)
                     parts.add(new PartHealth(part.getType().getShortName(), part.getType().getName(), Math.max(0F, part.getHealth()), part.getMaxHealth()));
             }
+        }
+        else if (target instanceof AAGun aaGun && aaGun.getConfigType() != null)
+        {
+            parts.add(new PartHealth("core", aaGun.getConfigType().getName(), Math.max(0, aaGun.getHealth()), aaGun.getConfigType().getHealth()));
         }
         else if (target instanceof IFlanRepairTarget repairable)
         {

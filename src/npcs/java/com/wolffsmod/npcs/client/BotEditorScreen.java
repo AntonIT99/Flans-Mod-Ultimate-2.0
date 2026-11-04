@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  */
 public final class BotEditorScreen extends Screen
 {
-    private static final int ROW_HEIGHT = 22;
+    private static final int ROW_HEIGHT = 21;
     private static final int LABEL_WIDTH = 120;
     private static final int FIELD_WIDTH = 220;
     /** Width of one of the two columns of the match and combat pages, labels included. */
@@ -52,6 +52,7 @@ public final class BotEditorScreen extends Screen
     private static final String TOTAL = "total";
     private static final String TICKETS = "tickets";
     private static final String RETREAT = "retreat";
+    private static final String SQUAD_SIZE = "squadsize";
     private static final String PRESET_NAME = "preset_name";
     /** Ticks between checks whether the edits differ from what the server holds. */
     private static final int CHECK_TICKS = 10;
@@ -68,6 +69,12 @@ public final class BotEditorScreen extends Screen
         POPULATION, LOADOUT, ORGANIZATION
     }
 
+    private enum VehicleSection
+    {
+        ALLOCATIONS, RULES, DRIVEABLES
+    }
+
+    private VehicleSection vehicleSection = VehicleSection.ALLOCATIONS;
     private BotEditorStatePacket state;
     private BotSettings settings;
     /** The round's settings as the server holds them, to tell unsaved edits by. */
@@ -175,7 +182,7 @@ public final class BotEditorScreen extends Screen
 
     // --- Pages ---
 
-    /** Bot population, respawns, objectives and display, in two columns of six rows. */
+    /** Bot population, respawns, tickets and display. */
     private void initMatch(int left)
     {
         int second = left + COLUMN_WIDTH + 4;
@@ -185,43 +192,35 @@ public final class BotEditorScreen extends Screen
         // Only share mode shares the total out; the others keep it unused.
         fields.get(TOTAL).setEditable(settings.getMode() == BotSettings.Mode.SHARE);
         addCompactField(left, 3, "respawn", Integer.toString(settings.getRespawnSeconds()));
-        addCompactField(left, 4, "vehicle_respawn", Integer.toString(settings.getVehicleRespawnSeconds()));
-        addCompactField(left, 5, TICKETS, Integer.toString(settings.getTickets()));
+        addCompactField(left, 4, TICKETS, Integer.toString(settings.getTickets()));
         fields.get(TICKETS).setEditable(state.rounds().get(state.round()).botRespawnBudget());
         if (!state.rounds().get(state.round()).botRespawnBudget())
             fields.get(TICKETS).setValue("-");
         fields.get(TICKETS).setTooltip(tip(state.rounds().get(state.round()).botRespawnBudget() ? TICKETS : "match_tickets"));
         addCompactField(second, 0, "rubberband", Integer.toString(settings.getRubberBand()));
-        addCompactField(second, 1, "capture_infantry", Float.toString(settings.getInfantryCaptureWeight()));
-        addCompactField(second, 2, "capture_vehicles", Float.toString(settings.getVehicleCaptureWeight()));
-        labels.add(new Label(Component.translatable(PREFIX + "display"), second, y(3) + 6));
-        addRenderableWidget(enumButton(second, y(4), COLUMN_WIDTH, "nameplates", BotSettings.Nameplates.values(), settings.getNameplates(), settings::setNameplates));
-        addRenderableWidget(enumButton(second, y(5), COLUMN_WIDTH, "scoreboard", BotSettings.Scoreboard.values(), settings.getScoreboard(), settings::setScoreboard));
+        labels.add(new Label(Component.translatable(PREFIX + "display"), second, y(1) + 6));
+        addRenderableWidget(enumButton(second, y(2), COLUMN_WIDTH, "nameplates", BotSettings.Nameplates.values(), settings.getNameplates(), settings::setNameplates));
+        addRenderableWidget(enumButton(second, y(3), COLUMN_WIDTH, "scoreboard", BotSettings.Scoreboard.values(), settings.getScoreboard(), settings::setScoreboard));
     }
 
-    /** How bots fight, coordinate and use vehicles. */
+    /** How bots fight and coordinate. */
     private void initCombat(int left)
     {
-        int width = LABEL_WIDTH + FIELD_WIDTH;
         int editWidth = SHORT_FIELD_WIDTH;
         int second = left + COLUMN_WIDTH + 4;
-        addRenderableWidget(difficultyButton(left, y(0), width - editWidth - 4));
+        addRenderableWidget(difficultyButton(left, y(0), LABEL_WIDTH + FIELD_WIDTH - editWidth - 4));
         addRenderableWidget(Button
             .builder(Component.translatable("wolffsmodnpcs.difficulty_editor.edit"),
                 button -> openPicker(() -> new BotDifficultyScreen(this, settings.getCustomTraining(), settings::setCustomTraining)))
-            .bounds(left + width - editWidth, y(0), editWidth, 20).tooltip(Tooltip.create(Component.translatable("wolffsmodnpcs.difficulty_editor.edit.tip"))).build()).active = settings
-                .getDifficulty() == BotSettings.Difficulty.CUSTOM;
+            .bounds(left + LABEL_WIDTH + FIELD_WIDTH - editWidth, y(0), editWidth, 20).tooltip(Tooltip.create(Component.translatable("wolffsmodnpcs.difficulty_editor.edit.tip")))
+            .build()).active = settings.getDifficulty() == BotSettings.Difficulty.CUSTOM;
         addRenderableWidget(enumButton(left, y(1), COLUMN_WIDTH, "tactical_profile", NpcTacticalProfile.values(), settings.getTacticalProfile(), settings::setTacticalProfile));
         addRenderableWidget(switchButton(left, y(2), COLUMN_WIDTH, "radio", settings.isRadio(), settings::setRadio));
-        addRenderableWidget(switchButton(left, y(3), COLUMN_WIDTH, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
-        addCompactField(left, 4, "squadsize", Integer.toString(settings.getSquadSize()));
-        addCompactField(left, 5, RETREAT, Integer.toString(settings.getRetreatHealth()));
+        addRenderableWidget(switchButton(second, y(2), COLUMN_WIDTH, "rally_points", settings.isRallyPoints(), settings::setRallyPoints));
+        addCompactField(left, 3, RETREAT, Integer.toString(settings.getRetreatHealth()));
+        addCompactField(left, 4, "capture_infantry", Float.toString(settings.getInfantryCaptureWeight()));
+        addCompactField(second, 4, "capture_vehicles", Float.toString(settings.getVehicleCaptureWeight()));
         addRenderableWidget(switchButton(second, y(1), COLUMN_WIDTH, "suppression", settings.isSuppression(), settings::setSuppression));
-        addRenderableWidget(switchButton(second, y(2), COLUMN_WIDTH, "vehicles_enabled", settings.isVehiclesEnabled(), settings::setVehiclesEnabled));
-        addRenderableWidget(switchButton(second, y(3), COLUMN_WIDTH, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
-        addCompactField(second, 4, "abandon", Integer.toString(settings.getAbandonChance()));
-        addRenderableWidget(switchButton(second, y(5), COLUMN_WIDTH, "emplacements", settings.isEmplacements(), settings::setEmplacements));
-        addRenderableWidget(switchButton(second, y(0), COLUMN_WIDTH, "player_seat_deployment", settings.isPlayerSeatDeployment(), settings::setPlayerSeatDeployment));
     }
 
     private void initCommander(int left)
@@ -296,6 +295,7 @@ public final class BotEditorScreen extends Screen
             case ORGANIZATION -> {
                 addPickerButton(left, 2, "squads", squadsSummary(force), () -> new BotSquadsPicker(this, name, force));
                 addPickerButton(left, 3, "roles", rolesSummary(force), () -> new BotRolesPicker(this, name, force));
+                addField(left, 4, SQUAD_SIZE, SQUAD_SIZE, Integer.toString(settings.squadSize(name)), SHORT_FIELD_WIDTH);
             }
         }
     }
@@ -310,20 +310,51 @@ public final class BotEditorScreen extends Screen
         addRenderableWidget(nameListButton(beside, y(3), besideWidth, force.getNameList(), force::setNameList));
     }
 
-    /** The team's vehicle allocations and crews. */
+    /** Vehicle NPC allocations and the independent rules for real driveables. */
     private void initVehicles(int left)
     {
-        if (teams().isEmpty())
-            return;
-        addTeamSelector(left);
-        String name = teams().get(team);
-        BotSettings.TeamForce force = settings.team(name);
-        addPickerButton(left, 1, "vehicle_allocations",
-            Component.translatable("wolffsmodnpcs.picker.vehicles.total", force.getVehicles().size(), force.getVehicles().stream().mapToInt(BotSettings.VehicleEntry::count).sum()),
-            () -> new BotVehiclesPicker(this, name, force));
-        addPickerButton(left, 2, "crew", Component.translatable("wolffsmodnpcs.picker.crew.scopes.summary", force.crewScopes().size()),
-            () -> new BotCrewScopesPicker(this, name, force, settings.isVehicleCrews()));
-        labels.add(new Label(Component.translatable("wolffsmodnpcs.picker.vehicles.help"), left, y(4) + 6));
+        if (!teams().isEmpty())
+            addTeamSelector(left);
+        int sectionWidth = (LABEL_WIDTH + FIELD_WIDTH) / VehicleSection.values().length;
+        for (VehicleSection section : VehicleSection.values())
+        {
+            String key = "vehicle_section." + lower(section);
+            addRenderableWidget(Button.builder(Component.translatable(PREFIX + key), button ->
+            {
+                commit();
+                vehicleSection = section;
+                rebuildWidgets();
+            }).bounds(left + section.ordinal() * sectionWidth, y(1), sectionWidth - 2, 20).tooltip(tip(key)).build()).active = section != vehicleSection;
+        }
+        int second = left + COLUMN_WIDTH + 4;
+        switch (vehicleSection)
+        {
+            case ALLOCATIONS -> {
+                if (!teams().isEmpty())
+                {
+                    String name = teams().get(team);
+                    BotSettings.TeamForce force = settings.team(name);
+                    addPickerButton(left, 2, "vehicle_allocations",
+                        Component.translatable("wolffsmodnpcs.picker.vehicles.total", force.getVehicles().size(), force.getVehicles().stream().mapToInt(BotSettings.VehicleEntry::count).sum()),
+                        () -> new BotVehiclesPicker(this, name, force));
+                    addPickerButton(left, 3, "crew", Component.translatable("wolffsmodnpcs.picker.crew.scopes.summary", force.crewScopes().size()),
+                        () -> new BotCrewScopesPicker(this, name, force, settings.isVehicleCrews()));
+                }
+            }
+            case RULES -> {
+                addRenderableWidget(switchButton(left, y(2), COLUMN_WIDTH, "vehicles_enabled", settings.isVehiclesEnabled(), settings::setVehiclesEnabled));
+                addRenderableWidget(switchButton(second, y(2), COLUMN_WIDTH, "vehicle_crews", settings.isVehicleCrews(), settings::setVehicleCrews));
+                addRenderableWidget(switchButton(left, y(3), COLUMN_WIDTH, "emplacements", settings.isEmplacements(), settings::setEmplacements));
+                addRenderableWidget(switchButton(second, y(3), COLUMN_WIDTH, "player_seat_deployment", settings.isPlayerSeatDeployment(), settings::setPlayerSeatDeployment));
+                addCompactField(left, 4, "abandon", Integer.toString(settings.getAbandonChance()));
+                addCompactField(second, 4, "vehicle_respawn", Integer.toString(settings.getVehicleRespawnSeconds()));
+            }
+            case DRIVEABLES -> {
+                addRenderableWidget(switchButton(left, y(2), LABEL_WIDTH + FIELD_WIDTH, "drive_real_vehicles", settings.isDriveRealVehicles(), settings::setDriveRealVehicles));
+                addRenderableWidget(switchButton(left, y(3), LABEL_WIDTH + FIELD_WIDTH, "gun_real_vehicles", settings.isGunRealVehicles(), settings::setGunRealVehicles));
+                addRenderableWidget(switchButton(left, y(4), LABEL_WIDTH + FIELD_WIDTH, "ride_real_vehicles", settings.isRideRealVehicles(), settings::setRideRealVehicles));
+            }
+        }
     }
 
     private void initTemplates(int left)
@@ -335,15 +366,17 @@ public final class BotEditorScreen extends Screen
         fields.get("template_id").setResponder(value -> templateId = value);
         addField(left, 2, "template_name", templateName);
         fields.get("template_name").setResponder(value -> templateName = value);
-        addPickerButton(left, 3, "members", Component.translatable("wolffsmodnpcs.picker.members.total", templateMembers.stream().mapToInt(SquadTemplate.Member::count).sum()),
-            () -> new BotTemplateMembersPicker(this, templateMembers, members -> templateMembers = members));
-        addRenderableWidget(enumButton(left + LABEL_WIDTH, y(4), FIELD_WIDTH, "posture", SquadTemplate.Posture.values(), posture, value -> posture = value));
-        labels.add(new Label(Component.translatable(PREFIX + "names"), left, y(5) + 6));
+        Component members = Component.translatable(PREFIX + "members").append(": ")
+            .append(Component.translatable("wolffsmodnpcs.picker.members.total", templateMembers.stream().mapToInt(SquadTemplate.Member::count).sum()));
+        addRenderableWidget(Button.builder(members, button -> openPicker(() -> new BotTemplateMembersPicker(this, templateMembers, chosen -> templateMembers = chosen)))
+            .bounds(left, y(3), COLUMN_WIDTH, 20).tooltip(tip("members")).build());
+        addRenderableWidget(enumButton(left + COLUMN_WIDTH + 4, y(3), COLUMN_WIDTH, "posture", SquadTemplate.Posture.values(), posture, value -> posture = value));
+        labels.add(new Label(Component.translatable(PREFIX + "names"), left, y(4) + 6));
         Component names = templateNames.isEmpty() ? Component.translatable(PREFIX + "names.inherited") : Component.literal(templateNames);
-        addSelector(left, 5, names, () -> cycleTemplateNames(-1), () -> cycleTemplateNames(1), tip("names.template"));
-        addRenderableWidget(Button.builder(Component.translatable("wolffsmodnpcs.editor.save_template"), button -> saveTemplate()).bounds(left + LABEL_WIDTH, y(6), FIELD_WIDTH / 2 - 2, 20).build());
+        addSelector(left, 4, names, () -> cycleTemplateNames(-1), () -> cycleTemplateNames(1), tip("names.template"));
+        addRenderableWidget(Button.builder(Component.translatable("wolffsmodnpcs.editor.save_template"), button -> saveTemplate()).bounds(left + LABEL_WIDTH, y(5), FIELD_WIDTH / 2 - 2, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("wolffsmodnpcs.editor.remove_template"), button -> removeTemplate())
-            .bounds(left + LABEL_WIDTH + FIELD_WIDTH / 2 + 2, y(6), FIELD_WIDTH / 2 - 2, 20).build()).active = edited != null;
+            .bounds(left + LABEL_WIDTH + FIELD_WIDTH / 2 + 2, y(5), FIELD_WIDTH / 2 - 2, 20).build()).active = edited != null;
     }
 
     private void addBottomButtons(int left)
@@ -389,7 +422,7 @@ public final class BotEditorScreen extends Screen
         for (BotSettings.SquadEntry entry : force.getSquads())
         {
             String name = templates.stream().filter(candidate -> candidate.id().equals(entry.template()) && !candidate.name().isBlank()).map(SquadTemplate::name).findFirst().orElse(entry.template());
-            joiner.add(name + " ×" + entry.count());
+            joiner.add(name + " Ã—" + entry.count());
         }
         return Component.literal(joiner.toString());
     }
@@ -441,7 +474,7 @@ public final class BotEditorScreen extends Screen
      */
     private void addField(int left, int row, String key, String label, String value, int boxWidth)
     {
-        EditBox box = new EditBox(font, left + LABEL_WIDTH, y(row), boxWidth, 20, Component.translatable(PREFIX + label));
+        EditBox box = new EditBox(font, left + LABEL_WIDTH, y(row) + 1, boxWidth, 18, Component.translatable(PREFIX + label));
         box.setMaxLength(TEXT_LIMIT);
         box.setValue(value);
         box.setTooltip(tip(label));
@@ -467,7 +500,7 @@ public final class BotEditorScreen extends Screen
     private void addCompactField(int x, int row, String key, String value)
     {
         int boxWidth = COLUMN_WIDTH / 3;
-        EditBox box = new EditBox(font, x + COLUMN_WIDTH - boxWidth, y(row), boxWidth, 20, Component.translatable(PREFIX + key));
+        EditBox box = new EditBox(font, x + COLUMN_WIDTH - boxWidth, y(row) + 1, boxWidth, 18, Component.translatable(PREFIX + key));
         box.setMaxLength(TEXT_LIMIT);
         box.setValue(value);
         box.setTooltip(tip(key));
@@ -583,20 +616,18 @@ public final class BotEditorScreen extends Screen
                 settings.setTotal(Math.max(0, number(TOTAL, settings.getTotal())));
                 settings.setRespawnSeconds(Math.max(0, number("respawn", settings.getRespawnSeconds())));
                 settings.setTickets(Math.max(0, number(TICKETS, settings.getTickets())));
-                settings.setVehicleRespawnSeconds(Math.max(0, number("vehicle_respawn", settings.getVehicleRespawnSeconds())));
                 settings.setRubberBand(Math.max(0, number("rubberband", settings.getRubberBand())));
-                settings.setInfantryCaptureWeight(Math.max(0F, decimal("capture_infantry", settings.getInfantryCaptureWeight())));
-                settings.setVehicleCaptureWeight(Math.max(0F, decimal("capture_vehicles", settings.getVehicleCaptureWeight())));
             }
             case COMBAT -> {
                 settings.setRetreatHealth(Math.max(0, Math.min(100, number(RETREAT, settings.getRetreatHealth()))));
-                settings.setSquadSize(Math.max(1, number("squadsize", settings.getSquadSize())));
-                settings.setAbandonChance(Math.max(0, Math.min(100, number("abandon", settings.getAbandonChance()))));
+                settings.setInfantryCaptureWeight(Math.max(0F, decimal("capture_infantry", settings.getInfantryCaptureWeight())));
+                settings.setVehicleCaptureWeight(Math.max(0F, decimal("capture_vehicles", settings.getVehicleCaptureWeight())));
             }
             case COMMANDER -> settings.setCommanderDisruptionSeconds(Math.max(0, number("commander_disruption", settings.getCommanderDisruptionSeconds())));
             case TEAM -> commitTeam();
             case VEHICLES -> {
-                // Vehicle allocations and crews are applied by their pickers.
+                settings.setAbandonChance(Math.max(0, Math.min(100, number("abandon", settings.getAbandonChance()))));
+                settings.setVehicleRespawnSeconds(Math.max(0, number("vehicle_respawn", settings.getVehicleRespawnSeconds())));
             }
             case TEMPLATES, PRESETS -> {
                 // Templates and presets are saved on their own, with their buttons.
@@ -607,11 +638,21 @@ public final class BotEditorScreen extends Screen
     /** The infantry page's numbers; its clone and class weights are set by their pickers. */
     private void commitTeam()
     {
-        if (teams().isEmpty() || !fields.containsKey(COUNT))
+        if (teams().isEmpty())
             return;
         BotSettings.TeamForce force = settings.team(teams().get(team));
-        force.setCount(Math.max(0, number(COUNT, force.getCount())));
-        force.setBudget(Math.max(0, number(BUDGET, force.getBudget())));
+        if (fields.containsKey(COUNT))
+        {
+            force.setCount(Math.max(0, number(COUNT, force.getCount())));
+            force.setBudget(Math.max(0, number(BUDGET, force.getBudget())));
+        }
+        if (fields.containsKey(SQUAD_SIZE))
+        {
+            int current = settings.squadSize(teams().get(team));
+            int size = Math.max(1, number(SQUAD_SIZE, current));
+            if (size != current)
+                force.setSquadSize(size);
+        }
     }
 
     private String text(String key)

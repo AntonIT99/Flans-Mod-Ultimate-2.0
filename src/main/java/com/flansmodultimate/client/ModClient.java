@@ -1,6 +1,7 @@
 package com.flansmodultimate.client;
 
 import com.flansmod.client.model.*;
+import com.flansmodultimate.api.equipment.IMechaEquipment;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.KeyInputHandler;
@@ -528,6 +529,12 @@ public class ModClient
                 handleShootableLight(shootable, requested);
             else if (entity instanceof Mecha mecha)
                 handleMechaLight(mecha, requested, darkSkyLight);
+            else if (entity instanceof IMechaEquipment equipment)
+            {
+                DynamicLightUpdates.request(requested, entity.blockPosition().asLong(), equipment.flansmodultimateMechaLightLevel());
+                if (equipment.flansmodultimateMechaForceDark())
+                    addForceDarkOverrides(entity.blockPosition(), darkSkyLight);
+            }
         }
     }
 

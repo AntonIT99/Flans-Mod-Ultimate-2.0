@@ -6,24 +6,16 @@
 package com.flansmodultimate.api.entity;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.AircraftMode;
-import com.flansmodultimate.api.driveables.DriveableAttitude;
-import com.flansmodultimate.api.driveables.FlightPerformance;
-import com.flansmodultimate.api.driveables.GroundHandling;
-import com.flansmodultimate.api.driveables.GroundPropulsion;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.MechaMobility;
-import com.flansmodultimate.api.driveables.ReloadCycle;
-import com.flansmodultimate.api.driveables.TerrainAttitude;
-import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.common.driveables.MechaEquipmentSupport;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.item.DriveableItem;
+import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
-import com.flansmodultimate.common.types.DriveableMobilityProfiles;
-import com.flansmodultimate.common.types.EntityTypePropertySupport;
-import com.flansmodultimate.common.types.GroundPropulsionProfiles;
+import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,16 +25,41 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 /** Read-only AA and driveable property inspection for addons, without creating a live vehicle. */
 @ApiStatus.Experimental
 public final class FlansEntityTypes
 {
+    /** @return authored mecha stomp cadence, or empty for another definition or a silent mecha; either side */
+    public static Optional<MechaGait> getMechaGait(IContentType type)
+    {
+        if (!(type instanceof MechaType mecha) || mecha.getStompSound() == null || mecha.getStompSound().isBlank())
+            return Optional.empty();
+        return Optional.of(new MechaGait(mecha.getStompSound(), Math.max(1, mecha.getStompSoundLength()), mecha.getLegAnimSpeed() > 0F ? mecha.getLegAnimSpeed() : 0.12F, mecha.getStompRangeLower(),
+            mecha.getStompRangeUpper()));
+    }
+
+    /**
+     * Applies a mecha definition's landing block damage for an addon-controlled entity on the server thread.
+     * Respects driveable breaking rules, mob griefing, unbreakable blocks, block entities and protection events.
+     *
+     * @param entity
+     *            live model entity at the landing position
+     * @param type
+     *            selected mecha definition
+     * @param force
+     *            whether a carried addon enables landing block damage
+     * @param descent
+     *            pre-landing vertical velocity in blocks per tick, negative downward
+     */
+    public static void applyMechaLanding(Entity entity, IContentType type, boolean force, double descent)
+    {
+        if (type instanceof MechaType mecha)
+            MechaEquipmentSupport.landing(entity, mecha, force, descent);
+    }
+
     private FlansEntityTypes()
     {}
 
@@ -58,12 +75,13 @@ public final class FlansEntityTypes
      *            selected content definition
      * @param modelToWorld
      *            transforms static preview points (blocks, Y up, forward -Z, right +X) to world positions,
-     *            including the current attitude, model resting height and any body offset
+     *            including the current attitude, its lift, model resting height and any body offset
      * @param scale
      *            additional uniform entity scale, excluding the definition's ModelScale; must be positive and finite
      * @param current
-     *            current nose-down pitch and right-down bank, in degrees
-     * @return smoothed ground attitude, respecting the definition's wheel spring strength and roll permission
+     *            current nose-down pitch and right-down bank, in degrees, and lift in blocks
+     * @return smoothed ground attitude, respecting the definition's wheel spring strength and roll permission, lifted so the
+     *         wheels that bear the load rest on the terrain
      */
     public static TerrainAttitude sampleTerrainAttitude(Entity entity, IContentType type, UnaryOperator<Vec3> modelToWorld, double scale, TerrainAttitude current)
     {
@@ -477,9 +495,49 @@ public final class FlansEntityTypes
      */
     public static Optional<Entity> spawnDriveable(ServerLevel level, IContentType type, Vec3 position, float yaw, float health)
     {
+        return spawnDriveable(level, type, position, yaw, health, 0);
+    }
+
+    /**
+     * Spawns an inert, non-repairable driveable wreck, without a death explosion or item drops.
+     * Uses the server's driveable wreck lifetime and respects the definition's wreck opt-out.
+     * Call on the server level thread. Position is in world blocks and yaw in degrees.
+     *
+     * @param level destination server level
+     * @param type driveable definition
+     * @param position world position in blocks
+     * @param yaw heading in degrees
+     * @param paintjob definition paintjob index
+     * @return the wreck, or empty if disabled, unsupported or placement failed
+     */
+    public static Optional<Entity> spawnDriveableWreck(ServerLevel level, IContentType type, Vec3 position, float yaw, int paintjob)
+    {
+        if (com.flansmodultimate.config.ModCommonConfig.driveableWreckLifetimeTicks() <= 0)
+            return Optional.empty();
+        Optional<Entity> spawned = spawnDriveable(level, type, position, yaw, 1F, paintjob);
+        if (spawned.isEmpty())
+            return Optional.empty();
+        Driveable driveable = (Driveable) spawned.get();
+        if (driveable.makeReplacementWreck())
+            return spawned;
+        driveable.discard();
+        return Optional.empty();
+    }
+
+    /**
+     * As {@link #spawnDriveable(ServerLevel, IContentType, Vec3, float, float)}, painted with one of the definition's paintjobs.
+     *
+     * @param paintjob
+     *            the paintjob id, 0 for the default one
+     */
+    public static Optional<Entity> spawnDriveable(ServerLevel level, IContentType type, Vec3 position, float yaw, float health, int paintjob)
+    {
         if (!(type.getItem() instanceof DriveableItem<?, ?> item))
             return Optional.empty();
-        Driveable driveable = item.spawnDriveable(level, position.x, position.y, position.z, yaw, null, ItemStack.EMPTY);
+        ItemStack source = new ItemStack(item);
+        if (paintjob != 0)
+            ItemStackData.update(source, tag -> tag.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob));
+        Driveable driveable = item.spawnDriveable(level, position.x, position.y, position.z, yaw, null, source);
         if (driveable == null)
             return Optional.empty();
         driveable.wearDown(health);

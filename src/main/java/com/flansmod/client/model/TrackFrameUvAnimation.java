@@ -10,7 +10,8 @@ import java.util.List;
 /** Builds legacy texture-swap frames from one painted bank of rectangular tread boxes. */
 public final class TrackFrameUvAnimation
 {
-    private TrackFrameUvAnimation() {}
+    private TrackFrameUvAnimation()
+    {}
 
     /**
      * Each frame must initially use the same painted UVs, with local X along the belt.
@@ -26,7 +27,7 @@ public final class TrackFrameUvAnimation
                 var group = part.getTextureGroup();
                 List<TexturedPolygon> animated = new ArrayList<>();
                 for (TexturedPolygon face : group.poly)
-                    scroll(face, (float)frame / textureWidth, animated);
+                    scroll(face, (float) frame / textureWidth, animated);
                 group.poly.clear();
                 group.poly.addAll(animated);
             }
@@ -35,7 +36,8 @@ public final class TrackFrameUvAnimation
     private static void scroll(TexturedPolygon face, float phase, List<TexturedPolygon> output)
     {
         PositionTextureVertex[] vertices = face.vertexPositions;
-        float minU = Float.POSITIVE_INFINITY, maxU = Float.NEGATIVE_INFINITY;
+        float minU = Float.POSITIVE_INFINITY;
+        float maxU = Float.NEGATIVE_INFINITY;
         double direction = 0;
         for (PositionTextureVertex vertex : vertices)
         {
@@ -55,8 +57,9 @@ public final class TrackFrameUvAnimation
         float span = maxU - minU;
         // Increasing frames move the tread in +local X (forward on the upper run).
         // UV sampling moves in the opposite direction to the visible pattern.
-        float shift = -Math.copySign(phase, (float)direction) % span;
-        if (shift < 0) shift += span;
+        float shift = -Math.copySign(phase, (float) direction) % span;
+        if (shift < 0)
+            shift += span;
         if (shift == 0)
         {
             output.add(face);
@@ -69,8 +72,7 @@ public final class TrackFrameUvAnimation
         clip(vertices, seam, false, shift - span, output);
     }
 
-    private static void clip(PositionTextureVertex[] vertices, float seam, boolean below,
-                             float shift, List<TexturedPolygon> output)
+    private static void clip(PositionTextureVertex[] vertices, float seam, boolean below, float shift, List<TexturedPolygon> output)
     {
         List<PositionTextureVertex> clipped = new ArrayList<>(4);
         PositionTextureVertex previous = vertices[vertices.length - 1];
@@ -81,8 +83,8 @@ public final class TrackFrameUvAnimation
             if (inside != previousInside)
             {
                 float fraction = (seam - previous.texturePositionX) / (current.texturePositionX - previous.texturePositionX);
-                clipped.add(new PositionTextureVertex(previous.vector3D.lerp(current.vector3D, fraction),
-                    seam + shift, previous.texturePositionY + fraction * (current.texturePositionY - previous.texturePositionY)));
+                clipped.add(new PositionTextureVertex(previous.vector3D.lerp(current.vector3D, fraction), seam + shift,
+                    previous.texturePositionY + fraction * (current.texturePositionY - previous.texturePositionY)));
             }
             if (inside)
                 clipped.add(current.setTexturePosition(current.texturePositionX + shift, current.texturePositionY));

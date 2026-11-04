@@ -5,6 +5,7 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.IEmplacement;
 import com.flansmodultimate.common.FlanEntityPermissions;
+import com.flansmodultimate.common.driveables.DriveableRepairRules;
 import com.flansmodultimate.common.driveables.collision.AAGunCollisionHelper;
 import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
 import com.flansmodultimate.common.driveables.visual.AAGunVisual;
@@ -12,6 +13,7 @@ import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.entity.geometry.AAGunTraverse;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.*;
@@ -30,9 +32,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.*;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -55,6 +59,8 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 {
     private final EmplacementControl automation = new EmplacementControl();
     private boolean suppressRemovalDrops;
+    private int wreckTicks = -1;
+    private static final EntityDataAccessor<Boolean> DATA_WRECK = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.BOOLEAN);
     @Nullable
     private AAGunCollisionHelper collisionHelper;
     public static final int RENDER_DISTANCE = 128;
@@ -65,6 +71,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     public static final String NBT_TYPE_NAME = "type";
     public static final String NBT_HEALTH = "health";
+    private static final String NBT_WRECK_AGE = "wreck_age";
     public static final String NBT_GUN_YAW = "gun_yaw";
     public static final String NBT_GUN_PITCH = "gun_pitch";
     public static final String NBT_RELOAD_TIMER = "reload_timer";
@@ -293,6 +300,17 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         entityData.set(DATA_HEALTH, value);
     }
 
+    /** Repairs a surviving mounting on the server, with the same per-use health cap as driveables. */
+    public boolean repairFromTool(int amount)
+    {
+        AAGunType type = getConfigType();
+        if (level().isClientSide || !isAlive() || type == null || amount <= 0 || getHealth() <= 0 || getHealth() >= type.getHealth())
+            return false;
+        int restored = Math.min(type.getHealth() - getHealth(), (int) DriveableRepairRules.toolAmount(type.getHealth(), amount));
+        setHealth(getHealth() + restored);
+        return restored > 0;
+    }
+
     public Component getCurrentAmmoName()
     {
         return entityData.get(DATA_CURRENT_AMMO_NAME);
@@ -417,7 +435,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     @Override
     public boolean isPickable()
     {
-        return isAlive();
+        return !isRemoved();
     }
 
     /** Physical collision is provided by the yaw-rotated hull. */
@@ -464,6 +482,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         data.define(DATA_RELOAD_TIMER, 0);
         data.define(DATA_CURRENT_BARREL, 0);
         data.define(DATA_HEALTH, 0);
+        data.define(DATA_WRECK, false);
         data.define(DATA_CURRENT_AMMO_NAME, Component.empty());
         data.define(DATA_MAGAZINE_LEFT, 0);
         data.define(DATA_MAGAZINE_SIZE, 0);
@@ -539,6 +558,13 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         setReloadTimer(tag.getInt(NBT_RELOAD_TIMER));
         setCurrentBarrel(tag.getInt(NBT_CURRENT_BARREL));
         shotsFired = tag.getInt(NBT_SHOTS_FIRED);
+        if (tag.contains(NBT_WRECK_AGE, Tag.TAG_INT))
+        {
+            wreckTicks = Math.max(0, tag.getInt(NBT_WRECK_AGE));
+            entityData.set(DATA_WRECK, true);
+            suppressRemovalDrops = true;
+            setHealth(0);
+        }
         if (tag.hasUUID(NBT_PLACER))
             placerId = tag.getUUID(NBT_PLACER);
 
@@ -565,6 +591,8 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
         tag.putString(NBT_TYPE_NAME, getShortName());
         tag.putInt(NBT_HEALTH, getHealth());
+        if (isWreck())
+            tag.putInt(NBT_WRECK_AGE, wreckTicks);
         tag.putFloat(NBT_GUN_YAW, getGunYaw());
         tag.putFloat(NBT_GUN_PITCH, getGunPitch());
         tag.putInt(NBT_RELOAD_TIMER, getReloadTimer());
@@ -628,17 +656,19 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     @Override
     public boolean hurt(DamageSource source, float amount)
     {
+        if (level().isClientSide || isRemoved() || isWreck())
+            return false;
         Entity attacker = source.getEntity();
         if (attacker instanceof Player player && !FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ATTACK))
             return false;
         Entity gunner = getFirstPassenger();
 
-        if (attacker == gunner)
+        if (gunner != null && attacker == gunner)
             return true;
         if (gunner != null)
             return gunner.hurt(source, amount);
 
-        if (attacker instanceof Player player && FlansMod.teamsManager.isCanBreakGuns())
+        if (attacker instanceof Player player && FlansMod.teamsManager.isCanBreakAAGuns())
         {
             if (FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_PICKUP))
                 discard();
@@ -647,7 +677,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
         setHealth(getHealth() - (int) amount);
         if (getHealth() <= 0)
-            discard();
+            becomeWreck();
 
         return true;
     }
@@ -657,7 +687,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
     {
         AAGunType type = getConfigType();
-        if (type == null)
+        if (type == null || isWreck() || ToolItem.isRepairTool(player.getItemInHand(hand)))
             return InteractionResult.PASS;
 
         Level level = level();
@@ -693,13 +723,14 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger)
     {
-        return super.canAddPassenger(passenger) && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ENTER));
+        return !isWreck() && super.canAddPassenger(passenger) && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ENTER));
     }
 
     @Override
     protected void removePassenger(@NotNull Entity passenger)
     {
         super.removePassenger(passenger);
+        automation.clearAim();
         shootKeyPressed = false;
         prevShootKeyPressed = false;
         if (!level().isClientSide)
@@ -764,6 +795,12 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         {
             prevGunYaw = getGunYaw();
             prevGunPitch = getGunPitch();
+        }
+
+        if (isWreck())
+        {
+            tickWreckState();
+            return;
         }
 
         Entity passenger = getFirstPassenger();
@@ -876,8 +913,11 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     private void updateAimFromPassenger(LivingEntity passenger)
     {
         float speed = configType == null ? 0F : configType.getTraverseSpeed();
-        setGunYaw(AAGunTraverse.yaw(getGunYaw(), passenger.getYRot(), speed));
-        setGunPitch(AAGunTraverse.pitch(getGunPitch(), clampPitch(passenger.getXRot()), speed));
+        Optional<Vec3> automatedAim = passenger instanceof Player ? Optional.empty() : automation.aim(level().getGameTime(), passenger);
+        float yaw = automatedAim.map(ModUtils::getYawFromDirection).orElse(passenger.getYRot());
+        float pitch = automatedAim.map(ModUtils::getPitchFromDirection).orElse(passenger.getXRot());
+        setGunYaw(AAGunTraverse.yaw(getGunYaw(), yaw, speed));
+        setGunPitch(AAGunTraverse.pitch(getGunPitch(), clampPitch(pitch), speed));
         setYRot(getGunYaw());
         setXRot(getGunPitch());
     }
@@ -989,7 +1029,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
             attempted = true;
             if (fireBarrel(level, attacker, barrel, slot, !requireInput) && type.getCountExplodeAfterShoot() != -1 && shotsFired >= type.getCountExplodeAfterShoot())
             {
-                discard();
+                becomeWreck();
                 return false;
             }
         }
@@ -1161,6 +1201,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (level().isClientSide || getFirstPassenger() != operator)
             return;
         Vec3 direction = point.subtract(getEmplacementOrigin());
+        automation.aim(level().getGameTime(), operator, direction);
         operator.setYRot(ModUtils.getYawFromDirection(direction));
         operator.setXRot(ModUtils.getPitchFromDirection(direction));
     }
@@ -1247,6 +1288,63 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         }
         if (changed)
             updateAmmoMask();
+    }
+
+    /** Destroyed mountings retain their hull but cannot be operated or recovered as working guns. */
+    public boolean isWreck()
+    {
+        return entityData.get(DATA_WRECK);
+    }
+
+    @Override
+    public boolean isAlive()
+    {
+        return super.isAlive() && !isWreck();
+    }
+
+    private void becomeWreck()
+    {
+        if (level().isClientSide || isWreck() || isRemoved())
+            return;
+        suppressRemovalDrops = true;
+        setHealth(0);
+        entityData.set(DATA_WRECK, true);
+        wreckTicks = 0;
+        FlansMod.teamsManager.stampWreck(this);
+        ejectPassengers();
+        target = null;
+        shootKeyPressed = false;
+        automation.firing(level().getGameTime(), null, false);
+        Arrays.fill(ammo, ItemStack.EMPTY);
+        updateAmmoMask();
+        if (ModCommonConfig.driveableWreckLifetimeTicks() <= 0)
+            discard();
+    }
+
+    private void tickWreckState()
+    {
+        if (!level().isClientSide)
+            tickWreck();
+        if (collisionHelper != null)
+            collisionHelper.tick();
+    }
+
+    private void tickWreck()
+    {
+        int lifetime = ModCommonConfig.driveableWreckLifetimeTicks();
+        if (++wreckTicks >= lifetime)
+        {
+            discard();
+            return;
+        }
+        applyMotion();
+        if (!(level() instanceof ServerLevel server) || isInWater() || wreckTicks > Math.min(600, lifetime / 2))
+            return;
+        double height = Math.min(0.8D, getBbHeight() * 0.5D);
+        if (wreckTicks % 4 == 0)
+            server.sendParticles(ParticleTypes.SMOKE, getX(), getY() + height, getZ(), 2, 0.2D, 0.15D, 0.2D, 0.025D);
+        if (wreckTicks % 6 == 0)
+            server.sendParticles(ParticleTypes.FLAME, getX(), getY() + height * 0.5D, getZ(), 1, 0.15D, 0.1D, 0.15D, 0.01D);
     }
 
     private void applyMotion()

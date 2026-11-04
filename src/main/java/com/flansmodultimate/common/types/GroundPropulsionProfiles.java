@@ -2,12 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.GroundPropulsion;
-import com.flansmodultimate.common.driveables.physics.EnumDriveType;
-import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
-import com.flansmodultimate.common.driveables.physics.GroundSlopePhysics;
-import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
-import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
-import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.config.ModCommonConfig;
 
 import net.minecraft.util.Mth;
@@ -77,7 +72,7 @@ public final class GroundPropulsionProfiles
                 ? physics.reverseSpeedBlocksPerTick(scale)
                 : terminal * Math.min(1D, vehicle.getMaxNegativeThrottle() / Math.max(1.0E-4D, vehicle.getMaxThrottle()));
         }
-        return new Derived(Math.min(terminal, cap), Math.min(reverse, cap), terminal, physics.effectivePowerWatts(1F), physics.massKg(),
+        return new Derived(Math.min(terminal, cap), Math.min(reverse, cap), terminal, physics.effectivePowerWatts(), physics.massKg(),
             physics.driveType().tractionFactor() * (water ? WATER_TRACTION : 1D), physics.baselinePowerKw(), vehicle.isTracked(), water ? 0F : physics.powerToWeightKwPerKg(), physics.driveType(),
             false);
     }
@@ -96,7 +91,7 @@ public final class GroundPropulsionProfiles
         if (terminal <= 0D || !Double.isFinite(terminal))
             return Optional.empty();
         double reverse = physics.hasReverseSpeedOverride() ? physics.reverseSpeedBlocksPerTick(scale) : terminal * MARINE_ASTERN_SHARE;
-        return Optional.of(new Derived(terminal, Math.min(reverse, terminal), terminal, physics.effectivePowerWatts(1F), physics.massKg(), EnumDriveType.MARINE.tractionFactor(),
+        return Optional.of(new Derived(terminal, Math.min(reverse, terminal), terminal, physics.effectivePowerWatts(), physics.massKg(), EnumDriveType.MARINE.tractionFactor(),
             physics.baselinePowerKw(), false, 0F, EnumDriveType.MARINE, true));
     }
 

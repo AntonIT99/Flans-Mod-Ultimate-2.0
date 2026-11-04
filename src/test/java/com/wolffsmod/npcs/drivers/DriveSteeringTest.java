@@ -14,6 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class DriveSteeringTest
 {
     private static final double ARRIVAL = 2.5D;
+    /** Blocks a test ship measures, which decides how much water it needs to stop in. */
+    private static final double HULL = 24D;
 
     private static Decision wheeled(float off, double distance, double speed)
     {
@@ -114,5 +116,51 @@ class DriveSteeringTest
         assertEquals(controls(RIGHT), DriveSteering.keepDistance(driving, new DriveSteering.Traffic(2D, 0D), 6, 0D));
         // Reversing, or braking already, it has nothing to hold back.
         assertEquals(controls(BACKWARD), DriveSteering.keepDistance(controls(BACKWARD), new DriveSteering.Traffic(2D, 0.3D), 6, -0.3D));
+    }
+
+    private static Decision ship(float off, double distance, double speed)
+    {
+        return DriveSteering.ship(new Situation(off, distance, ARRIVAL, speed, false, false), HULL);
+    }
+
+    @Test
+    void aShipHoldsItsThrottleThroughATurnHoweverSharpItIs()
+    {
+        // A rudder only bites while the ship has way on, so it never brakes for a corner as a wheeled vehicle does.
+        assertEquals(controls(FORWARD, RIGHT), ship(80F, 800D, 0.5D).controls());
+        assertEquals(controls(FORWARD, LEFT), ship(-80F, 800D, 0.5D).controls());
+        assertFalse(ship(80F, 800D, 0.5D).controls().contains(BRAKE));
+    }
+
+    @Test
+    void aShipNeverReversesToAGoalBehindItButSteamsItsTurningCircle()
+    {
+        Decision behind = ship(170F, 8D, 0.3D);
+        assertFalse(behind.reversing());
+        assertFalse(behind.controls().contains(BACKWARD), "it turns round rather than backing up as a car would");
+    }
+
+    @Test
+    void aShipTakesItsWayOffALongRunBeforeItsGoalRatherThanBrakingAtIt()
+    {
+        double stopping = DriveSteering.stoppingDistance(0.5D, HULL);
+        assertTrue(stopping > 40D, "a hull's run is far longer than a vehicle's");
+        assertEquals(controls(FORWARD), ship(0F, stopping + ARRIVAL + 10D, 0.5D).controls(), "still driving while the goal is beyond its run");
+        assertEquals(controls(), ship(0F, stopping * 0.6D + ARRIVAL, 0.5D).controls(), "coasting down inside it");
+        assertEquals(controls(BRAKE), ship(0F, stopping * 0.2D + ARRIVAL, 0.5D).controls(), "braking as well close in");
+    }
+
+    @Test
+    void aShipPutsItsEnginesAsternToStopOnItsStationAndRestsOnceStopped()
+    {
+        assertEquals(controls(BACKWARD), ship(0F, ARRIVAL, 0.4D).controls());
+        assertEquals(controls(), ship(0F, ARRIVAL, 0D).controls());
+    }
+
+    @Test
+    void aLongerHullNeedsMoreWaterToComeToAStand()
+    {
+        assertTrue(DriveSteering.stoppingDistance(0.5D, 40D) > DriveSteering.stoppingDistance(0.5D, 8D));
+        assertEquals(DriveSteering.SHIP_BRAKE_LEAD * 0.5D, DriveSteering.stoppingDistance(0.5D, 0D), 1.0E-6D);
     }
 }

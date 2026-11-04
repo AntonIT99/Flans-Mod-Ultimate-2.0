@@ -20,6 +20,7 @@ import java.util.Map;
 public final class NpcSafetyState
 {
     private final NpcArmorEngagement armorEngagement = new NpcArmorEngagement();
+    private final NpcInfantryAirDefense.Memory airDefense = new NpcInfantryAirDefense.Memory();
     public enum Action
     {
         NONE, EVADE, RETREAT, HIDE, PEEK, FLANK, SPREAD, ADVANCE, FIRE

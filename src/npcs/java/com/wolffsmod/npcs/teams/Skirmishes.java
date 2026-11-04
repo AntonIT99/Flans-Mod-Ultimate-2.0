@@ -196,7 +196,7 @@ final class Skirmishes
         force.setBudget(force.getCount());
         force.getSquads().replaceAll(squad -> new BotSettings.SquadEntry(squad.template(), squad.count(), squad.count()));
         force.getVehicles().replaceAll(vehicle -> new BotSettings.VehicleEntry(vehicle.type(), vehicle.count(), vehicle.count(), vehicle.respawnSeconds(), vehicle.ticketCost(), vehicle.spawner(),
-            vehicle.carry(), vehicle.paintjobs()));
+            vehicle.carry(), vehicle.paintjobs(), vehicle.aircraftRole()));
         return force;
     }
 
@@ -279,7 +279,6 @@ final class Skirmishes
             decide(server, level, skirmish, now);
         }
         TeamsBots.spawnQueued(level, battle, now, random);
-        BotGunners.tick(level, battle);
         if (tick % COMMAND_INTERVAL == 0)
         {
             BotCommander.plan(server, level, battle);

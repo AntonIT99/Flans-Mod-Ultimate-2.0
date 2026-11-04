@@ -21,8 +21,8 @@ import java.util.*;
  */
 final class RulesPage extends TeamsPage
 {
-    private static final List<String> PROTECTION = List.of("explosions", "canBreakGlass", "canBreakGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles", "survivalCanPlaceVehicles",
-        "forceAdventure", "pacifism");
+    private static final List<String> PROTECTION = List.of("explosions", "canBreakGlass", "canBreakGuns", "canBreakAAGuns", "vehiclesBreakBlocks", "survivalCanBreakVehicles",
+        "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "parachutesCanBeHit");
     private static final List<String> COMBAT = List.of("bombs", "shells", "bullets", "armourDrops", "overrideHunger", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom", "movieProp", "bloodEffects");
     private static final List<String> WEAPON_DROPS = List.of("on", "smart", "off");
     /** The game type variable every game type takes, for the score limit of the round being played. */
@@ -41,12 +41,74 @@ final class RulesPage extends TeamsPage
         PROTECTION, COMBAT, HEALTH, CLEANUP, GAME_TYPE, MINECRAFT
     }
 
+    /** The first row shown of each tab that scrolls. */
+    private final Map<Tab, Integer> scrolls = new EnumMap<>(Tab.class);
     private Tab tab = Tab.PROTECTION;
     private String selectedGameRule = "";
 
     RulesPage()
     {
         super("rules", Items.WRITABLE_BOOK, 400);
+    }
+
+    /**
+     * The rows of a scrolling tab that fit above the presets button. Rows are laid out from {@code first}; the rest are not
+     * built, so nothing overlaps however many rules a tab gets.
+     */
+    private record Viewport(int left, int top, int width, int height, int first, int visible, int total)
+    {
+        boolean scrolling()
+        {
+            return total > visible;
+        }
+
+        /** Width of the rows, leaving room for the scroll bar when there is one. */
+        int contentWidth()
+        {
+            return scrolling() ? width - CentreScrollArea.BAR_SPACE : width;
+        }
+
+        int columnWidth()
+        {
+            return (contentWidth() - GAP) / 2;
+        }
+
+        boolean shows(int row)
+        {
+            return row >= first && row < first + visible;
+        }
+
+        int y(int row)
+        {
+            return top + (row - first) * ROW;
+        }
+    }
+
+    private static int totalRows(Tab tab)
+    {
+        return switch (tab)
+        {
+            // The spawn protection and the weapon drops take the slot after the last switch.
+            case PROTECTION -> (PROTECTION.size() + 1) / 2 + 1;
+            case COMBAT -> COMBAT.size() / 2 + 1;
+            default -> 0;
+        };
+    }
+
+    private Viewport viewport(ICommandCentreView view)
+    {
+        int top = view.getTop() + WIDGET_HEIGHT + GAP + 16;
+        int height = Math.max(WIDGET_HEIGHT, presetsTop(view) - GAP - top);
+        int visible = Math.max(1, (height - WIDGET_HEIGHT) / ROW + 1);
+        int total = totalRows(tab);
+        int first = Math.max(0, Math.min(scrolls.getOrDefault(tab, 0), total - visible));
+        return new Viewport(view.getLeft(), top, view.getWidth(), height, first, visible, total);
+    }
+
+    /** Where the presets button sits on every tab that has one: the bottom of the content area. */
+    private static int presetsTop(ICommandCentreView view)
+    {
+        return view.getTop() + view.getHeight() - WIDGET_HEIGHT;
     }
 
     @Override
@@ -56,20 +118,25 @@ final class RulesPage extends TeamsPage
         int left = view.getLeft();
         int width = view.getWidth();
         int y = view.getTop() + tabs(view, Tab.values(), tab, shown -> tr("rules_tab." + shown.name().toLowerCase(Locale.ROOT)), left, view.getTop(), width, chosen -> tab = chosen);
-        int bottom = view.getTop() + view.getHeight() - WIDGET_HEIGHT;
         switch (tab)
         {
             case PROTECTION -> {
-                switches(view, data.rules(), PROTECTION, left, y + 16, width);
-                initSpawnProtection(view, data.rules(), left, spawnProtectionTop(y + 16), width);
+                Viewport port = scrollArea(view);
+                switches(view, data.rules(), PROTECTION, port);
+                int row = (PROTECTION.size() + 1) / 2;
+                if (port.shows(row))
+                    initSpawnProtection(view, data.rules(), left, port.y(row), port.contentWidth());
             }
             case COMBAT -> {
-                switches(view, data.rules(), COMBAT, left, y + 16, width);
-                // Weapon drops take the slot after the last switch.
-                int columnWidth = (width - GAP) / 2;
+                Viewport port = scrollArea(view);
+                switches(view, data.rules(), COMBAT, port);
                 int slot = COMBAT.size();
-                choice(view, tr(RULE + "weaponDrops"), WEAPON_DROPS, data.rules().getString(TeamsSection.WEAPON_DROPS), mode -> tr("weapon_drops." + mode), left + (slot % 2) * (columnWidth + GAP),
-                    y + 16 + (slot / 2) * ROW, columnWidth, mode -> run(view, "teams weaponDrops", mode)).setTooltip(Tooltip.create(tr(RULE + "weaponDrops.tip")));
+                if (port.shows(slot / 2))
+                {
+                    choice(view, tr(RULE + "weaponDrops"), WEAPON_DROPS, data.rules().getString(TeamsSection.WEAPON_DROPS), mode -> tr("weapon_drops." + mode),
+                        left + (slot % 2) * (port.columnWidth() + GAP), port.y(slot / 2), port.columnWidth(), mode -> run(view, "teams weaponDrops", mode))
+                        .setTooltip(Tooltip.create(tr(RULE + "weaponDrops.tip")));
+                }
             }
             case HEALTH -> initHealth(view, data.rules(), left, y + 16, width);
             case CLEANUP -> initCleanup(view, data.rules(), left, y + 16, width);
@@ -78,9 +145,23 @@ final class RulesPage extends TeamsPage
         }
         if (tab != Tab.GAME_TYPE && tab != Tab.MINECRAFT)
         {
-            button(view, Component.translatable("gui.flansmodultimate.presets.manage"), left, bottom, width,
+            button(view, Component.translatable("gui.flansmodultimate.presets.manage"), left, presetsTop(view), width,
                 () -> com.flansmodultimate.api.client.commandcentre.FlansCommandCentreClient.openPresets(com.flansmodultimate.common.teams.centre.SettingsPresets.TEAMS, ""));
         }
+    }
+
+    /** Adds the scrolling of the tab, before its rows so that it takes the mouse wheel first, and gives the rows that fit. */
+    private Viewport scrollArea(ICommandCentreView view)
+    {
+        Viewport port = viewport(view);
+        scrolls.put(tab, port.first());
+        Tab scrolled = tab;
+        view.addWidget(new CentreScrollArea(port.left(), port.top(), port.width(), port.height(), port.total(), port.visible(), port.first(), row ->
+        {
+            scrolls.put(scrolled, row);
+            view.rebuild();
+        }));
+        return port;
     }
 
     private void initMinecraftRules(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
@@ -118,22 +199,17 @@ final class RulesPage extends TeamsPage
     }
 
     /** Lays out on/off switches for rules in two columns. */
-    private static void switches(ICommandCentreView view, CompoundTag rules, List<String> names, int left, int top, int width)
+    private static void switches(ICommandCentreView view, CompoundTag rules, List<String> names, Viewport port)
     {
-        int columnWidth = (width - GAP) / 2;
+        int columnWidth = port.columnWidth();
         for (int i = 0; i < names.size(); i++)
         {
+            if (!port.shows(i / 2))
+                continue;
             String rule = names.get(i);
-            int x = left + (i % 2) * (columnWidth + GAP);
-            int y = top + (i / 2) * ROW;
-            toggle(view, tr(RULE + rule), rules.getBoolean(rule), x, y, columnWidth, tr(RULE + rule + ".tip"), enabled -> run(view, TEAMS, rule, enabled));
+            int x = port.left() + (i % 2) * (columnWidth + GAP);
+            toggle(view, tr(RULE + rule), rules.getBoolean(rule), x, port.y(i / 2), columnWidth, tr(RULE + rule + ".tip"), enabled -> run(view, TEAMS, rule, enabled));
         }
-    }
-
-    /** The row of the spawn protection time, the slot after the last protection switch. */
-    private static int spawnProtectionTop(int rowsTop)
-    {
-        return rowsTop + (PROTECTION.size() + 1) / 2 * ROW;
     }
 
     private static void initSpawnProtection(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
@@ -154,12 +230,12 @@ final class RulesPage extends TeamsPage
         toggle(view, tr(RULE + "bodyPartDamageModifiers"), rules.getBoolean("bodyPartDamageModifiers"), left, top, width, tr(RULE + "bodyPartDamageModifiers.tip"),
             enabled -> run(view, "teams bodyPartDamageModifiers", enabled));
         int row = 1;
-        for (String rule : List.of("playerHealth", "botHealth"))
+        for (String rule : List.of("playerHealth", "botHealth", "playerRegenSeconds", "botRegenSeconds"))
         {
             int x = left + width - 100;
             int y = top + row++ * ROW;
             view.addField(rule, x, y, 56, Integer.toString(rules.getInt(rule)), tr(RULE + rule)).setTooltip(Tooltip.create(tr(RULE + rule + ".tip")));
-            button(view, tr("set"), x + 60, y, 40, () -> number(view, rule, 0, TeamsManager.MAX_HEALTH_OVERRIDE, tr(RULE + rule)).ifPresent(health -> run(view, TEAMS, rule, health)));
+            button(view, tr("set"), x + 60, y, 40, () -> number(view, rule, 0, rule.endsWith("Health") ? TeamsManager.MAX_HEALTH_OVERRIDE : Integer.MAX_VALUE, tr(RULE + rule)).ifPresent(health -> run(view, TEAMS, rule, health)));
         }
     }
 
@@ -253,11 +329,16 @@ final class RulesPage extends TeamsPage
             }
             case HEALTH -> {
                 int row = 1;
-                for (String rule : List.of("playerHealth", "botHealth"))
+                for (String rule : List.of("playerHealth", "botHealth", "playerRegenSeconds", "botRegenSeconds"))
                     label(view, graphics, tr(RULE + rule), left + 2, rowsTop + row++ * ROW + 5, width - 104, CentreStyle.TEXT);
-                paragraph(view, graphics, tr("health.help"), left + 2, rowsTop + 3 * ROW + GAP, width - 4, CentreStyle.MUTED);
+                paragraph(view, graphics, tr("health.help"), left + 2, rowsTop + 5 * ROW + GAP, width - 4, CentreStyle.MUTED);
             }
-            case PROTECTION -> label(view, graphics, tr(RULE + TeamsSection.SPAWN_PROTECTION), left + 2, spawnProtectionTop(rowsTop) + 5, columnWidth - 104, CentreStyle.TEXT);
+            case PROTECTION -> {
+                Viewport port = viewport(view);
+                int row = (PROTECTION.size() + 1) / 2;
+                if (port.shows(row))
+                    label(view, graphics, tr(RULE + TeamsSection.SPAWN_PROTECTION), left + 2, port.y(row) + 5, port.columnWidth() - 104, CentreStyle.TEXT);
+            }
             case GAME_TYPE -> renderGameType(view, graphics, data, left, rowsTop, width, columnWidth);
             default -> {
                 // The switches name themselves.

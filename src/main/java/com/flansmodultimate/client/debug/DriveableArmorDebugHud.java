@@ -7,6 +7,7 @@ import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.parts.PartBodies;
 import com.flansmodultimate.common.driveables.parts.PartBody;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.raytracing.hits.*;
@@ -26,8 +27,7 @@ import java.util.Locale;
 
 /**
  * Shows the health of the part under the crosshair while debugging or holding a driveable repair tool, and in debug mode also the normal and composite (HEAT) protection on the first part hitbox face
- * under the crosshair: of a driveable, or of an entity
- * wearing a driveable's part boxes.
+ * under the crosshair: of a driveable, an AA gun, or an entity wearing a driveable's part boxes.
  */
 public final class DriveableArmorDebugHud
 {
@@ -39,7 +39,10 @@ public final class DriveableArmorDebugHud
     {}
 
     /** The part face under the crosshair, with the armour that protects it. */
-    private record Aimed(float time, EnumDriveablePart part, EnumArmorFacing facing, ResolvedVehicleArmor armor, @Nullable DriveablePart state)
+    record Aimed(float time, EnumDriveablePart part, EnumArmorFacing facing, @Nullable ResolvedVehicleArmor armor, @Nullable Health health)
+    {}
+
+    record Health(float current, float maximum, boolean destroyed)
     {}
 
     public static void render(GuiGraphics graphics, int screenWidth, int screenHeight)
@@ -55,14 +58,15 @@ public final class DriveableArmorDebugHud
         Vec3 origin = camera.getPosition();
         Vec3 motion = new Vec3(camera.getLookVector()).scale(debug ? AIM_RANGE : REPAIR_AIM_RANGE);
         Aimed closest = nearer(aimedDriveable(mc.level, origin, motion), aimedPartBody(mc.level, origin, motion));
+        closest = nearer(closest, aimedAAGun(mc.level.entitiesForRendering(), origin, motion));
         if (closest == null)
             return;
 
         int y = screenHeight / 2 + 14;
-        DriveablePart state = closest.state();
-        if (state != null && state.getMaxHealth() > 0F)
+        Health state = closest.health();
+        if (state != null && state.maximum() > 0F)
         {
-            String health = String.format(Locale.ROOT, "%s HP: %.0f / %.0f", closest.part().getShortName(), Math.max(0F, state.getHealth()), state.getMaxHealth());
+            String health = String.format(Locale.ROOT, "%s HP: %.0f / %.0f", closest.part().getShortName(), Math.max(0F, state.current()), state.maximum());
             graphics.drawString(mc.font, health, (screenWidth - mc.font.width(health)) / 2, y, healthColor(state), true);
             y += 10;
         }
@@ -70,7 +74,7 @@ public final class DriveableArmorDebugHud
             return;
 
         ResolvedVehicleArmor armor = closest.armor();
-        if (!armor.isPlateConfigured(closest.part(), closest.facing()))
+        if (armor == null || !armor.isPlateConfigured(closest.part(), closest.facing()))
             return;
         ArmorPlate plate = armor.plate(closest.part(), closest.facing()).authored();
         String label = String.format(Locale.ROOT, "%s %s | Normal armor: %.1f mm", closest.part().getShortName(), closest.facing().name().toLowerCase(Locale.ROOT), plate.thicknessMm());
@@ -97,11 +101,17 @@ public final class DriveableArmorDebugHud
     }
 
     /** Green when intact, yellow when damaged, red when destroyed. */
-    private static int healthColor(DriveablePart state)
+    static int healthColor(Health state)
     {
-        if (state.isDestroyed())
+        if (state.destroyed())
             return 0xFF5555;
-        return state.getHealth() < state.getMaxHealth() ? 0xFFFF55 : 0x55FF55;
+        return state.current() < state.maximum() ? 0xFFFF55 : 0x55FF55;
+    }
+
+    @Nullable
+    private static Health health(@Nullable DriveablePart state)
+    {
+        return state == null ? null : new Health(state.getHealth(), state.getMaxHealth(), state.isDestroyed());
     }
 
     @Nullable
@@ -124,7 +134,7 @@ public final class DriveableArmorDebugHud
             {
                 if (hit instanceof DriveableHit partHit)
                     closest = nearer(closest, new Aimed(partHit.getIntersectTime(), partHit.getPart(), partHit.getFacing(), driveable.getConfigType().getResolvedArmor(),
-                        driveable.getDriveableData() == null ? null : driveable.getDriveableData().getPart(partHit.getPart())));
+                        health(driveable.getDriveableData() == null ? null : driveable.getDriveableData().getPart(partHit.getPart()))));
             }
         }
         return closest;
@@ -143,8 +153,27 @@ public final class DriveableArmorDebugHud
             for (BulletHit hit : body.trace(wearer, origin, motion, true))
             {
                 if (hit instanceof PartBodyHit partHit)
-                    closest = nearer(closest, new Aimed(partHit.getIntersectTime(), partHit.getPart(), partHit.getFacing(), body.armor(), body.partState(partHit.getPart())));
+                    closest = nearer(closest, new Aimed(partHit.getIntersectTime(), partHit.getPart(), partHit.getFacing(), body.armor(), health(body.partState(partHit.getPart()))));
             }
+        }
+        return closest;
+    }
+
+    /** AA guns have one health pool and no driveable armour plates; trace their actual rotating hull. */
+    @Nullable
+    static Aimed aimedAAGun(Iterable<Entity> entities, Vec3 origin, Vec3 motion)
+    {
+        Aimed closest = null;
+        for (Entity entity : entities)
+        {
+            if (!(entity instanceof AAGun aaGun) || aaGun.isRemoved() || aaGun.getConfigType() == null)
+                continue;
+            Vec3 point = aaGun.clipCollisionBox(origin, origin.add(motion), 0D);
+            if (point == null)
+                continue;
+            float time = motion.lengthSqr() <= 1.0E-8D ? 0F : (float) (origin.distanceTo(point) / motion.length());
+            closest = nearer(closest, new Aimed(time, EnumDriveablePart.CORE, EnumArmorFacing.FRONT, null,
+                new Health(aaGun.getHealth(), aaGun.getConfigType().getHealth(), aaGun.isWreck() || aaGun.getHealth() <= 0)));
         }
         return closest;
     }

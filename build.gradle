@@ -8,6 +8,14 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.security.MessageDigest
 
+buildscript {
+    if (gradle.startParameter.taskNames.any { it.tokenize(':').last() == 'qodanaScan' })
+    {
+        repositories { gradlePluginPortal() }
+        dependencies { classpath 'org.jetbrains.qodana:org.jetbrains.qodana.gradle.plugin:2026.2.2' }
+    }
+}
+
 plugins {
     id 'java-library'
     id 'idea'
@@ -698,3 +706,10 @@ abstract class EncryptOptionalContent extends DefaultTask {
 apply from: 'scripts/minecraft-mcp.gradle'
 apply from: 'scripts/spark.gradle'
 apply from: 'scripts/mineflayer.gradle'
+
+// Keep the Qodana plugin and CLI off normal Gradle invocations. The inspection worker requests
+// qodanaScan explicitly, which applies its plugin only for that invocation.
+if (gradle.startParameter.taskNames.any { it.tokenize(':').last() == 'qodanaScan' })
+{
+    apply from: 'scripts/qodana.gradle'
+}

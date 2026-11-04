@@ -5,6 +5,7 @@ import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.RepairToolFeedback;
 import com.flansmodultimate.common.entity.*;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.network.PacketHandler;
@@ -26,7 +27,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 
@@ -65,6 +67,21 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
         {
             tooltipComponents.add(Component.literal(tag.getString(NBT_KEY_STRING)).withStyle(ChatFormatting.AQUA));
         }
+
+        if (configType.isHealDriveables())
+        {
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.REPAIR_AMOUNT), String.valueOf(configType.getHealAmount())));
+            if (hasFiniteUses())
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.TOOL_USES), (configType.getToolLife() - stack.getDamageValue()) + " / " + configType.getToolLife()));
+            else
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.TOOL_USES), Component.translatable(TooltipKeys.TOOL_USES_UNLIMITED)));
+        }
+    }
+
+    /** Whether a stack is a driveable repair tool, whose use must not be swallowed by entering a seat. */
+    public static boolean isRepairTool(ItemStack stack)
+    {
+        return stack.getItem() instanceof ToolItem tool && tool.getConfigType().isHealDriveables();
     }
 
     @Override

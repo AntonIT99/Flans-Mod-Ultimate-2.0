@@ -202,7 +202,13 @@ public final class NpcTuning
         /** Maximum blocks of one infantry advance before stopping to fire again. */
         ADVANCE_DISTANCE(6, 2, 12),
         /** Ticks spent returning fire between infantry advances. */
-        ADVANCE_FIRE_TICKS(40, 10, 120);
+        ADVANCE_FIRE_TICKS(40, 10, 120),
+        /** Index into AircraftRole; applies to flying aircraft in and outside battles. */
+        AIRCRAFT_ROLE(0, 0, AircraftRole.values().length - 1),
+        /** Blocks within which an aircraft evaluates missions across all target-search bands. */
+        AIR_SEARCH_RANGE(192, 32, 512),
+        /** Greatest extra spread of a vehicle's guns, in tenths of a degree, while its hull runs at speed and turns hard; 0 keeps them steady. */
+        MOVING_SPREAD(25, 0, 200);
 
         private final int fallback;
         private final int minimum;
@@ -308,6 +314,16 @@ public final class NpcTuning
             this.cornerSpeed = cornerSpeed;
             this.turnRate = turnRate;
         }
+    }
+
+    /**
+     * Mission priorities; AUTO uses a bomb-only armament as a bomber, a gun-armed rotorcraft as an attacker, and anything
+     * else as a fighter. ATTACKER is the gun-armed counterpart of BOMBER: it supports the ground with whatever it carries
+     * and leaves the air to the fighters, turning on an aircraft only where one threatens its own side.
+     */
+    public enum AircraftRole
+    {
+        AUTO, FIGHTER, BOMBER, ATTACKER
     }
 
     /** How a flying NPC flies. */
@@ -460,7 +476,13 @@ public final class NpcTuning
         /** Hands out ammunition to allies near it. */
         SUPPORT,
         /** Goes after enemy vehicles before anything else. */
-        ANTI_TANK
+        ANTI_TANK,
+        /** Leads close-range advances; appended to preserve saved duty indices. */
+        ASSAULT,
+        /** Closes for melee, with an opening throw when equipped. */
+        MELEE,
+        /** Keeps its distance while using bows or thrown weapons. */
+        SKIRMISHER
     }
 
     public NpcTuning()
@@ -496,6 +518,11 @@ public final class NpcTuning
     public WeaponSwitch weaponSwitch()
     {
         return WeaponSwitch.values()[get(Value.WEAPON_SWITCH)];
+    }
+
+    public AircraftRole aircraftRole()
+    {
+        return AircraftRole.values()[get(Value.AIRCRAFT_ROLE)];
     }
 
     public Flight flight()

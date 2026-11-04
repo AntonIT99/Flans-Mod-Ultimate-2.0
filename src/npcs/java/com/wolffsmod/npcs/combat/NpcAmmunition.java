@@ -146,7 +146,7 @@ public final class NpcAmmunition
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
         boolean secondary = NpcEquipment.secondaryBank(npc, weapon);
         // Anything but Flan ammunition in the projectile slot is the NPC's own Custom NPCs projectile.
-        boolean arbitrarySlot = slotChoice(npc) && !(weapon instanceof IDriveableType && NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT));
+        boolean arbitrarySlot = slotChoice(npc) && !(weapon instanceof IDriveableType && (NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT) || NpcAirCombat.active(npc)));
         if (!projectile.isEmpty() && (arbitrarySlot || !FlansProjectiles.isProjectile(projectile)))
             return projectile;
         List<ItemStack> pool = carried(npc, weapon, secondary, projectile);
@@ -218,6 +218,30 @@ public final class NpcAmmunition
         List<ItemStack> pool = carried(npc, model, secondary);
         append(pool, NpcDefaultAmmo.forBank(npc, model, secondary));
         return choose(npc, model, secondary, pool);
+    }
+
+    /**
+     * Whether every weapon of the NPC's vehicle model has run out: neither weapon group, nor any gun mounted in one, has a
+     * round left that it could fire. A vehicle that falls back on the rounds its guns are issued with by default, as one
+     * does unless it really uses its ammunition up, is never out. Server thread.
+     */
+    public static boolean modelDry(EntityNPCInterface npc)
+    {
+        FlanModelEntity model = NpcModels.flan(npc);
+        IContentType definition = model == null ? null : model.getInfoType();
+        if (!(definition instanceof IDriveableType))
+            return false;
+        for (boolean secondary : new boolean[]{false, true})
+        {
+            if (!bankTemplate(npc, definition, secondary).isEmpty())
+                return false;
+            for (var muzzle : FlansProjectiles.getMuzzles(definition, secondary, 0, false))
+            {
+                if (muzzle.weapon().filter(gun -> !driverGunTemplate(npc, gun).isEmpty()).isPresent())
+                    return false;
+            }
+        }
+        return true;
     }
 
     /** Vehicle ammunition, an NPC gunner's own, then the seat gun's default rounds; templates are never consumed. */

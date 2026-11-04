@@ -50,6 +50,7 @@ AddClass W44_GermanArmyScoutSumpftarn
 
 // Anti-tank
 AddClass W44_GermanArmyAntiTank
+AddClass W44_GermanArmyAntiTankRifle
 AddClass W44_GermanArmyWinterPanzerfaust
 AddClass W44_GermanArmyPanzerfaust
 AddClass W44_GermanArmyWinterAntiTank

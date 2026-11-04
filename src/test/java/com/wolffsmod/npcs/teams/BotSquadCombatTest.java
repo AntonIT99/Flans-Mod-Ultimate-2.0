@@ -3,6 +3,8 @@ package com.wolffsmod.npcs.teams;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.tactics.NpcCombatAdvance;
+import com.wolffsmod.npcs.tactics.NpcInfantryRole;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,8 +49,9 @@ class BotSquadCombatTest
         when(second.getTarget()).thenReturn(initial);
         BotSquadCombat combat = squad.getCombat();
         BlockPos cover = new BlockPos(10, 64, 0);
-        try (var equipment = mockStatic(NpcEquipment.class))
+        try (var equipment = mockStatic(NpcEquipment.class); var roles = mockStatic(NpcInfantryRole.class); var advances = mockStatic(NpcCombatAdvance.class))
         {
+            roles.when(() -> NpcInfantryRole.of(any())).thenReturn(BotSettings.ClassRole.RIFLEMAN);
             equipment.when(() -> NpcEquipment.enabled(any(), eq(Feature.COVERING_FIRE))).thenReturn(false);
             var original = combat.members(first, battle, squad, 0L);
             assertSame(original, combat.members(first, battle, squad, 1L));

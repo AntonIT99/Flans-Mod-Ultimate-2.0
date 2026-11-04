@@ -26,6 +26,10 @@ public final class BotSquad
     private final List<Integer> slots = new ArrayList<>();
     /** Transient combat leases; commands and respawns do not persist stale movement or occupied cover. */
     private final BotSquadCombat combat = new BotSquadCombat();
+    /** Transient approach, shared by the squad's members and discarded when the battle reloads. */
+    private final BotApproach approach = new BotApproach();
+    /** Transient leadership and reports, shared by the whole squad. */
+    private final SquadTactics tactics = new SquadTactics();
     @Nullable
     private SquadTask task;
     /** Index of the next route point, for a squad that follows a patrol of several points. */

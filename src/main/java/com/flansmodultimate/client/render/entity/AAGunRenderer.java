@@ -33,9 +33,10 @@ public class AAGunRenderer extends FlanEntityRenderer<AAGun>
         if (!(ModelCache.getOrLoadTypeModel(type) instanceof ModelAAGun model))
             return;
 
-        float red = getRed(type);
-        float green = getGreen(type);
-        float blue = getBlue(type);
+        float charred = aaGun.isWreck() ? 0.3F : 1F;
+        float red = getRed(type) * charred;
+        float green = getGreen(type) * charred;
+        float blue = getBlue(type) * charred;
         float modelScale = type.getModelScale();
         ResourceLocation texture = type.getTexture();
         boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
@@ -44,16 +45,16 @@ public class AAGunRenderer extends FlanEntityRenderer<AAGun>
         poseStack.pushPose();
 
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            model.renderBase(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F,
-                modelScale, renderPass);
+            model.renderBase(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale,
+                renderPass);
 
         float yaw = Mth.rotLerp(partialTicks, aaGun.getPrevGunYaw(), aaGun.getRenderGunYaw());
         float pitch = Mth.lerp(partialTicks, aaGun.getPrevGunPitch(), aaGun.getRenderGunPitch());
         poseStack.mulPose(Axis.YP.rotationDegrees(270F - yaw));
 
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            model.renderGun(aaGun, pitch, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green,
-                blue, 1F, modelScale, renderPass);
+            model.renderGun(aaGun, pitch, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale,
+                renderPass);
 
         poseStack.popPose();
     }

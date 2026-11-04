@@ -21,6 +21,7 @@ public record CommonConfigSnapshot(
     boolean disableCrosshairForGuns,
     boolean disableCrosshairWhileScoped,
     boolean explosionsBreakBlocks,
+    boolean parachutesCanBeHit,
     boolean forceNewExplosionsBreakBlocks,
     boolean flanExplosionsDropBlocks,
     int bonusRegenAmount,
@@ -170,10 +171,15 @@ public record CommonConfigSnapshot(
     int driveableWreckLifetime,
     double driveableMeleeDamageThreshold,
     boolean forceUncensoredContent,
-    boolean showBotKillsInKillFeed
+    boolean showBotKillsInKillFeed,
+    double explosionParticleRange,
+    double airBrakeEffectiveness,
+    double airBrakeAssistDeceleration,
+    double airBrakeAssistReferenceSpeedKmh,
+    boolean enableRealisticAircraftDamage
 )
 {
-    public static final int CURRENT_VERSION = 49;
+    public static final int CURRENT_VERSION = 53;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -191,6 +197,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.disableCrosshairWhileScoped);
         buf.writeBoolean(s.explosionsBreakBlocks);
+        buf.writeBoolean(s.parachutesCanBeHit);
         buf.writeBoolean(s.forceNewExplosionsBreakBlocks);
         buf.writeBoolean(s.flanExplosionsDropBlocks);
         buf.writeVarInt(s.bonusRegenAmount);
@@ -351,6 +358,11 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.driveableMeleeDamageThreshold);
         buf.writeBoolean(s.forceUncensoredContent);
         buf.writeBoolean(s.showBotKillsInKillFeed);
+        buf.writeDouble(s.explosionParticleRange);
+        buf.writeDouble(s.airBrakeEffectiveness);
+        buf.writeDouble(s.airBrakeAssistDeceleration);
+        buf.writeDouble(s.airBrakeAssistReferenceSpeedKmh);
+        buf.writeBoolean(s.enableRealisticAircraftDamage);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -367,6 +379,7 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readVarInt(),
 
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
@@ -519,6 +532,11 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readDouble(),
             buf.readBoolean(),
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
             buf.readBoolean()
         );
     }

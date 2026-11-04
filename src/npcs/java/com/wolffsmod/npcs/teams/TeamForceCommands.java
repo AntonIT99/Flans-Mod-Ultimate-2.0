@@ -14,6 +14,7 @@ import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.model.FlanModelEntities;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import com.wolffsmod.npcs.names.SoldierNames;
+import com.wolffsmod.npcs.sim.NpcTuning.AircraftRole;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -33,6 +34,8 @@ import java.util.function.Consumer;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class TeamForceCommands
 {
+    private static final String SQUAD_SIZE = "squadsize";
+    private static final String INHERIT = "inherit";
     private static final String COUNT = "count";
     private static final String BUDGET = "budget";
     private static final String VALUE = "value";
@@ -85,6 +88,10 @@ final class TeamForceCommands
             .executes(context -> target.edit(context, force -> force.setCount(IntegerArgumentType.getInteger(context, VALUE)), text(SET, COUNT, IntegerArgumentType.getInteger(context, VALUE))))));
         team.then(Commands.literal(BUDGET).then(Commands.argument(VALUE, IntegerArgumentType.integer(0))
             .executes(context -> target.edit(context, force -> force.setBudget(IntegerArgumentType.getInteger(context, VALUE)), text(SET, BUDGET, IntegerArgumentType.getInteger(context, VALUE))))));
+        team.then(Commands.literal(SQUAD_SIZE)
+            .then(Commands.argument(VALUE, IntegerArgumentType.integer(1)).executes(
+                context -> target.edit(context, force -> force.setSquadSize(IntegerArgumentType.getInteger(context, VALUE)), text(SET, SQUAD_SIZE, IntegerArgumentType.getInteger(context, VALUE)))))
+            .then(Commands.literal(INHERIT).executes(context -> target.edit(context, force -> force.setSquadSize(0), text(SET, SQUAD_SIZE, INHERIT)))));
         team.then(Commands.literal(NAMES).then(Commands.argument(NAME, StringArgumentType.word()).suggests(NAME_LISTS)
             .executes(context -> target.edit(context, force -> force.setNameList(BotCommands.word(context, NAME)), text(SET, NAMES, StringArgumentType.getString(context, NAME))))));
         team.then(Commands.literal("clone").then(Commands.literal(BotCommands.NONE).executes(context -> target.edit(context, force -> force.setCloneTab(0), text("clone_none"))))
@@ -125,9 +132,14 @@ final class TeamForceCommands
         team.then(Commands.literal("vehiclerespawn")
             .then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES)
                 .then(Commands.argument(VALUE, IntegerArgumentType.integer(0)).executes(context -> vehicleRespawn(context, target, IntegerArgumentType.getInteger(context, VALUE))))
-                .then(Commands.literal("inherit").executes(context -> vehicleRespawn(context, target, 0)))));
+                .then(Commands.literal(INHERIT).executes(context -> vehicleRespawn(context, target, 0)))));
         team.then(Commands.literal("removevehicle").then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES).executes(context -> target.edit(context,
             force -> force.getVehicles().removeIf(entry -> entry.type().equals(StringArgumentType.getString(context, TYPE))), text("vehicle_removed", StringArgumentType.getString(context, TYPE))))));
+        team.then(Commands.literal("aircraftrole")
+            .then(Commands.argument(TYPE, StringArgumentType.word()).suggests(VEHICLES)
+                .then(Commands.argument(ROLE, StringArgumentType.word())
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(Arrays.stream(AircraftRole.values()).map(BotCommands::lower).toList(), builder))
+                    .executes(context -> aircraftRole(context, target)))));
         return team;
     }
 
@@ -185,6 +197,8 @@ final class TeamForceCommands
             // The squad a vehicle carries is set on its own and kept when the rest of the entry changes.
             String carry = index < 0 ? "" : vehicles.get(index).carry();
             BotSettings.VehicleEntry entry = new BotSettings.VehicleEntry(type, count, budget, respawn, ticketCost, null, carry);
+            if (index >= 0)
+                entry = entry.withAircraftRole(vehicles.get(index).aircraftRole());
             if (index < 0)
                 vehicles.add(entry);
             else
@@ -205,8 +219,8 @@ final class TeamForceCommands
             {
                 BotSettings.VehicleEntry entry = vehicles.get(i);
                 if (entry.type().equals(type))
-                    vehicles.set(i,
-                        new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), entry.respawnSeconds(), entry.ticketCost(), entry.spawner(), template, entry.paintjobs()));
+                    vehicles.set(i, new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), entry.respawnSeconds(), entry.ticketCost(), entry.spawner(), template, entry.paintjobs(),
+                        entry.aircraftRole()));
             }
         }, template.isEmpty() ? text("carry_none", type) : text("carry", type, template));
     }
@@ -218,9 +232,25 @@ final class TeamForceCommands
         return target.edit(context,
             force -> force.getVehicles()
                 .replaceAll(entry -> entry.type().equals(type)
-                    ? new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), seconds, entry.ticketCost(), entry.spawner(), entry.carry(), entry.paintjobs())
+                    ? new BotSettings.VehicleEntry(entry.type(), entry.count(), entry.budget(), seconds, entry.ticketCost(), entry.spawner(), entry.carry(), entry.paintjobs(), entry.aircraftRole())
                     : entry),
             text("vehicle_respawn", type, seconds));
+    }
+
+    private static int aircraftRole(CommandContext<CommandSourceStack> context, Target target) throws CommandSyntaxException
+    {
+        String type = StringArgumentType.getString(context, TYPE);
+        AircraftRole role;
+        try
+        {
+            role = AircraftRole.valueOf(StringArgumentType.getString(context, ROLE).toUpperCase(Locale.ROOT));
+        }
+        catch (IllegalArgumentException ignored)
+        {
+            throw NO_ROLE.create();
+        }
+        return target.edit(context, force -> force.getVehicles().replaceAll(entry -> entry.type().equals(type) ? entry.withAircraftRole(role) : entry),
+            text("aircraft_role", type, BotCommands.lower(role)));
     }
 
     private static Component text(String key, Object... args)

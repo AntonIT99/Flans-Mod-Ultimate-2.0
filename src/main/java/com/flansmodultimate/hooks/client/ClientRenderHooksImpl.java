@@ -80,6 +80,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     }
 
     @Override
+    public void withLandmarkRange(double range, Runnable spawner)
+    {
+        ParticleHelper.withLandmarkRange(range, spawner);
+    }
+
+    @Override
     public void spawnTracerBeam(Vec3 start, Vec3 end, float red, float green, float blue, float alpha, float width)
     {
         TracerBeamParticle.spawn(start, end, red, green, blue, alpha, width);
@@ -125,6 +131,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     public void spawnScorchMark(Vec3 position, float radius)
     {
         DriveableDamageEffects.scorch(position, radius);
+    }
+
+    @Override
+    public void spawnScorchMark(Vec3 position, float radius, Driveable owner)
+    {
+        DriveableDamageEffects.scorch(position, radius, owner);
     }
 
     @Override
@@ -259,6 +271,8 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     {
         boolean offHand = hand == InteractionHand.OFF_HAND;
         float side = offHand ? -1.0F : 1.0F;
+        if (player.getMainArm() == net.minecraft.world.entity.HumanoidArm.LEFT)
+            side = -side;
 
         RotatedAxes bodyAxes = new RotatedAxes(player.yBodyRot + 90.0F, 0.0F, 0.0F);
         // The legacy shoulder joint was fixed at 22/16 blocks. Deriving it from

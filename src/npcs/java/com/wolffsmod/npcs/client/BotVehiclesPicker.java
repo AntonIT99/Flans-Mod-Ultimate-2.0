@@ -128,8 +128,8 @@ final class BotVehiclesPicker extends BotPickerScreen
         addStepper(x, y, entry.count(), Integer.MAX_VALUE, count ->
         {
             BotSettings.VehicleEntry current = entries.get(index);
-            entries.set(index,
-                new BotSettings.VehicleEntry(current.type(), count, current.budget(), current.respawnSeconds(), current.ticketCost(), current.spawner(), current.carry(), current.paintjobs()));
+            entries.set(index, new BotSettings.VehicleEntry(current.type(), count, current.budget(), current.respawnSeconds(), current.ticketCost(), current.spawner(), current.carry(),
+                current.paintjobs(), current.aircraftRole()));
         }, Component.translatable(PREFIX + "vehicles.count"));
         addRowWidget(Button.builder(Component.literal("…"), button -> Minecraft.getInstance().setScreen(new BotVehicleSettingsScreen(this, editor.templates(), entries.get(index), updated ->
         {

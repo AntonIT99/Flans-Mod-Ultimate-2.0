@@ -12,6 +12,7 @@ import com.wolffsmod.npcs.sim.NpcFiringPosition;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.tactics.NpcInfantryAirDefense;
 import com.wolffsmod.npcs.tactics.NpcTacticSteering;
 import com.wolffsmod.npcs.tactics.NpcTactics;
 import noppes.npcs.ai.EntityAIRangedAttack;
@@ -36,6 +37,7 @@ import java.util.Optional;
  *
  * <ul>
  * <li>Crew holding their fire cannot start or fire an ordinary ranged attack.</li>
+ * <li>Infantry avoid chasing airborne targets and hold fire when their shot is unsuitable.</li>
  * <li>It never fires synthetic shots alongside an authoritative equipped weapon, and reports that weapon's shots to the tactics
  * that wait for it to have fired.</li>
  * <li>A vehicle with ammunition consumption disabled starts its ranged attack using default ammunition even with an empty inventory.</li>
@@ -110,6 +112,11 @@ public abstract class EntityAIRangedAttackMixin
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/navigation/PathNavigation;moveTo(Lnet/minecraft/world/entity/Entity;D)Z"))
     private boolean wolffsmodnpcsTacticAdvances(PathNavigation navigation, Entity target, double speed)
     {
+        if (target instanceof LivingEntity living && NpcInfantryAirDefense.holdsPosition(npc, living))
+        {
+            navigation.stop();
+            return true;
+        }
         return NpcTactics.followsPath(NpcTactics.of(npc)) || target instanceof LivingEntity living && NpcFiringPosition.reposition(npc, living) || navigation.moveTo(target, speed);
     }
 
@@ -167,7 +174,7 @@ public abstract class EntityAIRangedAttackMixin
         boolean hold = state.isActive() && !state.isAligned() || state.getFlight().holdsFire() || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc);
         LivingEntity target = npc.getTarget();
         // A target too close for the NPC's own explosive rounds is left alone until it has manoeuvred back out of their reach.
-        if (target != null && (state.holdsFire(npc, target) || NpcBlastSafety.tooClose(npc, target, state.blastReach())))
+        if (target != null && (state.holdsFire(npc, target) || NpcBlastSafety.tooClose(npc, target, state.blastReach()) || NpcInfantryAirDefense.holdsFire(npc, target)))
         {
             hold = true;
             // Custom NPCs stops advancing once it has seen its target for a while; it has to keep going for a clear shot.

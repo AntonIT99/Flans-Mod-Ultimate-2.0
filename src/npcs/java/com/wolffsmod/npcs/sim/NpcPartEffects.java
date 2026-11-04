@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
+import com.flansmodultimate.api.driveables.AircraftDamage;
 import com.flansmodultimate.api.parts.PartState;
 import com.wolffsmod.npcs.model.FlanModelKind;
 
@@ -44,6 +45,35 @@ public record NpcPartEffects(float mobility, boolean gunDisabled, boolean shotDo
         boolean gun = isBroken(broken, "turret") || isBroken(broken, "barrel") || kind == FlanModelKind.MECHA && isBroken(broken, "leftarm") && isBroken(broken, "rightarm");
         boolean shotDown = kind == FlanModelKind.PLANE && FLIGHT.stream().anyMatch(name -> isBroken(broken, name));
         return new NpcPartEffects(mobility(broken, kind), gun, shotDown);
+    }
+
+    /**
+     * @param parts
+     *            the parts of the NPC's body as they stand
+     * @return what is left of the parts that keep it in the air, as a driveable aircraft counts them, so that it flies
+     *         and falls as one does
+     */
+    public static AircraftDamage aircraftDamage(Collection<PartState> parts)
+    {
+        Map<String, Float> shares = new HashMap<>();
+        float engine = 0F;
+        int engines = 0;
+        for (PartState part : parts)
+        {
+            float maximum = part.box().health();
+            if (!part.enabled() || maximum <= 0F)
+                continue;
+            String name = part.name().toLowerCase(Locale.ROOT);
+            float share = part.destroyed() ? 0F : Math.max(0F, Math.min(1F, part.health() / maximum));
+            shares.put(name, share);
+            if (ENGINES.contains(name))
+            {
+                engine += share;
+                ++engines;
+            }
+        }
+        return new AircraftDamage(shares.getOrDefault("leftwing", 1F), shares.getOrDefault("rightwing", 1F), shares.getOrDefault("tail", 1F), shares.getOrDefault("airframe", 1F),
+            engines == 0 ? 1F : engine / engines, shares.getOrDefault("blades", 1F), 1F);
     }
 
     private static float mobility(Map<String, Boolean> broken, FlanModelKind kind)

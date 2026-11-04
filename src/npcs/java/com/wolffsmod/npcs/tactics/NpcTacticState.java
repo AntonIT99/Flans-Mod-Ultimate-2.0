@@ -14,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -87,6 +88,10 @@ public final class NpcTacticState
     private final NpcCover.Searches coverSearches = new NpcCover.Searches();
     @Getter
     private final NpcSafetyState safety = new NpcSafetyState();
+    @Getter
+    private final NpcTacticalPosture posture = new NpcTacticalPosture();
+    @Getter @Setter @Nullable
+    private UUID meleeThrowTarget;
 
     /** A position learned from incoming fire; a hidden attacker's subsequent movement is not followed. */
     public record Threat(LivingEntity entity, Vec3 position, long until)

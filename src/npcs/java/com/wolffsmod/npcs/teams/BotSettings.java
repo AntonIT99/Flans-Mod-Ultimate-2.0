@@ -4,15 +4,12 @@ import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcSkill;
 import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.model.FlanModelKind;
+import com.wolffsmod.npcs.sim.NpcTuning.AircraftRole;
 import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
@@ -52,6 +49,9 @@ public final class BotSettings
     private static final String NBT_VEHICLE_CREWS = "vehicle_crews";
     private static final String NBT_EMPLACEMENTS = "emplacements";
     private static final String NBT_PLAYER_SEAT_DEPLOYMENT = "player_seat_deployment";
+    private static final String NBT_DRIVE_REAL_VEHICLES = "drive_real_vehicles";
+    private static final String NBT_GUN_REAL_VEHICLES = "gun_real_vehicles";
+    private static final String NBT_RIDE_REAL_VEHICLES = "ride_real_vehicles";
     private static final String NBT_TEAMS = "teams";
     /** The custom values a round, skirmish or war starts with: those of Regular. */
     public static final BotTraining DEFAULT_CUSTOM = Difficulty.REGULAR.training(null);
@@ -96,7 +96,13 @@ public final class BotSettings
         /** Hands out ammunition to allies near it. */
         SUPPORT,
         /** Goes after enemy vehicles before anything else. */
-        ANTI_TANK
+        ANTI_TANK,
+        /** Leads close-range advances and enters assigned capture areas. */
+        ASSAULT,
+        /** Closes for melee, allowing an opening throw on the approach. */
+        MELEE,
+        /** Keeps distance to fight with bows, javelins or other ranged weapons. */
+        SKIRMISHER
     }
 
     /**
@@ -213,6 +219,10 @@ public final class BotSettings
     private boolean emplacements = true;
     /** Whether allied players may deploy into NPC-occupied seats in real vehicles and AA guns. */
     private boolean playerSeatDeployment = true;
+    /** Whether soldiers drive, gun or travel in real Flan driveables, independently of generated vehicle NPCs. */
+    private boolean driveRealVehicles = true;
+    private boolean gunRealVehicles = true;
+    private boolean rideRealVehicles = true;
     private NpcTacticalProfile tacticalProfile = NpcTacticalProfile.INHERIT;
     private final Map<String, TeamForce> teams = new LinkedHashMap<>();
 
@@ -242,6 +252,8 @@ public final class BotSettings
         private String commanderClass = "";
         /** Loose infantry spawns the team may make in all; 0 for no limit. */
         private int budget;
+        /** Loose infantry squad size, or zero to inherit the round's legacy default. */
+        private int squadSize;
         /** The soldier name list bots are named from, such as {@code german_20th}; empty keeps the template's names. */
         private String nameList = "";
         /** The Custom NPCs clone bots are made from; tab 0 or an empty name makes plain NPCs. */
@@ -273,6 +285,8 @@ public final class BotSettings
             tag.putInt(NBT_COUNT, count);
             tag.putString("commander_class", commanderClass);
             tag.putInt(NBT_BUDGET, budget);
+            if (squadSize > 0)
+                tag.putInt(NBT_SQUAD_SIZE, squadSize);
             tag.putString(NBT_NAME_LIST, nameList);
             tag.putInt(NBT_CLONE_TAB, cloneTab);
             tag.putString(NBT_CLONE_NAME, cloneName);
@@ -312,6 +326,7 @@ public final class BotSettings
             force.count = Math.max(0, tag.getInt(NBT_COUNT));
             force.commanderClass = tag.getString("commander_class");
             force.budget = Math.max(0, tag.getInt(NBT_BUDGET));
+            force.squadSize = Math.max(0, tag.getInt(NBT_SQUAD_SIZE));
             force.nameList = tag.getString(NBT_NAME_LIST);
             force.cloneTab = tag.getInt(NBT_CLONE_TAB);
             force.cloneName = tag.getString(NBT_CLONE_NAME);
@@ -533,7 +548,7 @@ public final class BotSettings
      * @param paintjobs
      *            allowed definition-local paintjob IDs; empty permits every available paintjob
      */
-    public record VehicleEntry(String type, int count, int budget, int respawnSeconds, int ticketCost, @Nullable UUID spawner, String carry, List<Integer> paintjobs)
+    public record VehicleEntry(String type, int count, int budget, int respawnSeconds, int ticketCost, @Nullable UUID spawner, String carry, List<Integer> paintjobs, AircraftRole aircraftRole)
     {
         private static final String NBT_TYPE = "type";
         private static final String NBT_COUNT = "count";
@@ -550,6 +565,16 @@ public final class BotSettings
             this(type, count, budget, respawnSeconds, ticketCost, spawner, carry, List.of());
         }
 
+        public VehicleEntry(String type, int count, int budget, int respawnSeconds, int ticketCost, @Nullable UUID spawner, String carry, List<Integer> paintjobs)
+        {
+            this(type, count, budget, respawnSeconds, ticketCost, spawner, carry, paintjobs, AircraftRole.AUTO);
+        }
+
+        public VehicleEntry withAircraftRole(AircraftRole role)
+        {
+            return new VehicleEntry(type, count, budget, respawnSeconds, ticketCost, spawner, carry, paintjobs, role);
+        }
+
         public VehicleEntry
         {
             count = Math.max(0, count);
@@ -558,6 +583,7 @@ public final class BotSettings
             ticketCost = Math.max(0, ticketCost);
             carry = carry == null ? "" : carry;
             paintjobs = paintjobs.stream().filter(id -> id >= 0).distinct().toList();
+            aircraftRole = aircraftRole == null ? AircraftRole.AUTO : aircraftRole;
         }
 
         CompoundTag save()
@@ -572,6 +598,7 @@ public final class BotSettings
                 tag.putUUID(NBT_SPAWNER, spawner);
             tag.putString(NBT_CARRY, carry);
             tag.putIntArray(NBT_PAINTJOBS, paintjobs);
+            tag.putString("aircraft_role", aircraftRole.name());
             return tag;
         }
 
@@ -579,7 +606,8 @@ public final class BotSettings
         {
             return new VehicleEntry(tag.getString(NBT_TYPE), tag.getInt(NBT_COUNT), tag.getInt(NBT_BUDGET), tag.getInt(NBT_RESPAWN), tag.getInt(NBT_TICKET_COST),
                 tag.hasUUID(NBT_SPAWNER) ? tag.getUUID(NBT_SPAWNER) : null, tag.getString(NBT_CARRY),
-                tag.contains(NBT_PAINTJOBS) ? Arrays.stream(tag.getIntArray(NBT_PAINTJOBS)).boxed().toList() : List.of(0));
+                tag.contains(NBT_PAINTJOBS) ? Arrays.stream(tag.getIntArray(NBT_PAINTJOBS)).boxed().toList() : List.of(0),
+                parse(AircraftRole.class, tag.getString("aircraft_role"), AircraftRole.AUTO));
         }
     }
 
@@ -587,6 +615,13 @@ public final class BotSettings
     public TeamForce team(String team)
     {
         return teams.computeIfAbsent(team, ignored -> new TeamForce());
+    }
+
+    /** The team's loose infantry squad size, falling back to the round-wide value for older settings. */
+    public int squadSize(String team)
+    {
+        int size = team(team).getSquadSize();
+        return size > 0 ? size : squadSize;
     }
 
     /** @return what the round's bots are trained to: the values of its difficulty, or its custom ones */
@@ -629,6 +664,9 @@ public final class BotSettings
         tag.putBoolean(NBT_VEHICLE_CREWS, vehicleCrews);
         tag.putBoolean(NBT_EMPLACEMENTS, emplacements);
         tag.putBoolean(NBT_PLAYER_SEAT_DEPLOYMENT, playerSeatDeployment);
+        tag.putBoolean(NBT_DRIVE_REAL_VEHICLES, driveRealVehicles);
+        tag.putBoolean(NBT_GUN_REAL_VEHICLES, gunRealVehicles);
+        tag.putBoolean(NBT_RIDE_REAL_VEHICLES, rideRealVehicles);
         tag.putString("tactical_profile", tacticalProfile.name());
         CompoundTag teamTag = new CompoundTag();
         teams.forEach((team, force) -> teamTag.put(team, force.save()));
@@ -670,11 +708,19 @@ public final class BotSettings
         settings.vehicleCrews = !tag.contains(NBT_VEHICLE_CREWS) || tag.getBoolean(NBT_VEHICLE_CREWS);
         settings.emplacements = !tag.contains(NBT_EMPLACEMENTS) || tag.getBoolean(NBT_EMPLACEMENTS);
         settings.playerSeatDeployment = !tag.contains(NBT_PLAYER_SEAT_DEPLOYMENT) || tag.getBoolean(NBT_PLAYER_SEAT_DEPLOYMENT);
+        settings.driveRealVehicles = enabledByDefault(tag, NBT_DRIVE_REAL_VEHICLES);
+        settings.gunRealVehicles = enabledByDefault(tag, NBT_GUN_REAL_VEHICLES);
+        settings.rideRealVehicles = enabledByDefault(tag, NBT_RIDE_REAL_VEHICLES);
         settings.tacticalProfile = parse(NpcTacticalProfile.class, tag.getString("tactical_profile"), NpcTacticalProfile.INHERIT);
         CompoundTag teamTag = tag.getCompound(NBT_TEAMS);
         for (String team : teamTag.getAllKeys())
             settings.teams.put(team, TeamForce.load(teamTag.getCompound(team)));
         return settings;
+    }
+
+    private static boolean enabledByDefault(CompoundTag tag, String key)
+    {
+        return !tag.contains(key) || tag.getBoolean(key);
     }
 
     private static float weight(CompoundTag tag, String key)

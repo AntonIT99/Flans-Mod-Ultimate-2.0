@@ -38,7 +38,8 @@ forge*changelog.txt
 src/*/resources/flan
 
 # AI agents
-.claude
+.claude/*
+!.claude/settings.json
 
 reports/temp
 

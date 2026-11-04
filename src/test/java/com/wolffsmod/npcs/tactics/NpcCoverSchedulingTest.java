@@ -5,6 +5,7 @@ import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.diag.NpcBudgets;
 import com.wolffsmod.npcs.sim.NpcSight;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataAI;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -36,8 +37,12 @@ class NpcCoverSchedulingTest
         private long now;
         private int rays;
 
-        private Fixture(boolean visible)
+        @SuppressWarnings("java:S3011") // Mockito skips the dependency's final AI container construction.
+        private Fixture(boolean visible) throws ReflectiveOperationException
         {
+            var ai = EntityNPCInterface.class.getField("ais");
+            ai.setAccessible(true);
+            ai.set(npc, new DataAI(npc));
             when(npc.level()).thenReturn(level);
             when(npc.position()).thenReturn(new Vec3(0D, 64D, 0D));
             when(npc.blockPosition()).thenReturn(new BlockPos(0, 64, 0));
@@ -71,8 +76,36 @@ class NpcCoverSchedulingTest
     }
 
     @Test
+    void airAttackSearchesPreferARoofAndRemainWithinTheRayBudget() throws ReflectiveOperationException
+    {
+        try (Fixture fixture = new Fixture(false))
+        {
+            fixture.sight.when(() -> NpcSight.clear(eq(fixture.level), any(), any(), eq(0), eq(fixture.npc))).thenAnswer(call ->
+            {
+                fixture.rays++;
+                Vec3 from = call.getArgument(1);
+                Vec3 to = call.getArgument(2);
+                return to.y - from.y > 10D && from.x < 3D;
+            });
+            NpcCover.Result<List<BlockPos>> result = null;
+            for (int tick = 0; tick < 30 && (result == null || !result.complete()); tick++)
+            {
+                fixture.now = tick;
+                int before = fixture.rays;
+                result = NpcCover.safePositions(fixture.npc, SOURCES, 8, null, true);
+                assertTrue(fixture.rays - before <= 128);
+            }
+            assertNotNull(result);
+            assertTrue(result.complete());
+            assertNotNull(result.value());
+            assertFalse(result.value().isEmpty());
+            assertTrue(result.value().get(0).getX() >= 3, "overhead shelter outweighs a closer exposed hiding spot");
+        }
+    }
+
+    @Test
     @SuppressWarnings("java:S8714") // fail bounds a resumable search; the try-with-resources only closes static mocks.
-    void aCoverShortlistResumesAcrossTicksAndBoundsEachSlicesRays()
+    void aCoverShortlistResumesAcrossTicksAndBoundsEachSlicesRays() throws ReflectiveOperationException
     {
         try (Fixture fixture = new Fixture(false))
         {
@@ -101,7 +134,7 @@ class NpcCoverSchedulingTest
 
     @Test
     @SuppressWarnings("java:S8714") // fail bounds a resumable search; the try-with-resources only closes static mocks.
-    void budgetDeferralIsNotReportedAsNoCoverAndResumesAfterCapacityReturns()
+    void budgetDeferralIsNotReportedAsNoCoverAndResumesAfterCapacityReturns() throws ReflectiveOperationException
     {
         try (Fixture fixture = new Fixture(false); MockedStatic<NpcBudgets> budgets = mockStatic(NpcBudgets.class))
         {
@@ -127,7 +160,7 @@ class NpcCoverSchedulingTest
 
     @Test
     @SuppressWarnings("java:S8714") // fail bounds a resumable search; the try-with-resources only closes static mocks.
-    void firingCoverSearchRetainsItsCandidateLimitAcrossSlicesInOpenGround()
+    void firingCoverSearchRetainsItsCandidateLimitAcrossSlicesInOpenGround() throws ReflectiveOperationException
     {
         try (Fixture fixture = new Fixture(true))
         {

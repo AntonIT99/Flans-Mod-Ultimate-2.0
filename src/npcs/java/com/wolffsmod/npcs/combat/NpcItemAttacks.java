@@ -192,6 +192,8 @@ public final class NpcItemAttacks
         if (npc.level().isClientSide || NpcCrew.holdsFire(npc) || target == null || !target.isAlive() || target.level() != npc.level())
             return false;
         ItemStack weapon = NpcEquipment.rangedWeapon(npc);
+        if (com.wolffsmod.npcs.tactics.NpcInfantryAirDefense.holdsFire(npc, target, weapon))
+            return false;
         boolean fired = ranged(npc, target, weapon);
         if (fired)
             NpcAmmunition.refillEmptySlots(npc);
@@ -224,6 +226,8 @@ public final class NpcItemAttacks
         if (npc.level().isClientSide || NpcCrew.holdsFire(npc) || target == null || !target.isAlive() || target.level() != npc.level())
             return false;
         ItemStack weapon = npc.getItemInHand(hand);
+        if (com.wolffsmod.npcs.tactics.NpcInfantryAirDefense.holdsFire(npc, target, weapon))
+            return false;
         var flanWeapon = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
         if (flanWeapon.isEmpty())
             return false;

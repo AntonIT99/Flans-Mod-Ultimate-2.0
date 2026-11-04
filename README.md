@@ -85,6 +85,17 @@ Build the separate Packs Manager, content-pack, and NPC Vehicles & Soldiers arti
 
 Build artifacts are written under `build/libs/`.
 
+NPC Vehicles & Soldiers uses `2.X.Y`: `2.X` identifies the main mod's API
+compatibility line, and `Y` is the NPC module's independent revision, starting at
+zero. For example, NPC `2.2.0` and `2.2.1` both support main mod `2.2` and `2.2.x`,
+with a dependency range of `[2.2,2.3)`. Compatible main-mod fixes advance its patch
+version without requiring an NPC release. Breaking API changes advance the main
+mod's minor version (for example, `2.2` to `2.3`); an adapted NPC release then starts
+at `2.3.0`. Update `archiveVersion` in `src/npcs/fmu-module.gradle`, the main-mod
+range in `src/npcs/resources/META-INF/neoforge.mods.toml`, and the NPC changelog together.
+Content packs keep their existing independent versions; they do not use this API
+compatibility scheme. The published API artifact's `api_version` remains separate.
+
 Each module also has a separate, opt-in CurseForge upload task. Configure its
 project URL and ID in its `fmu-module.gradle`, then run a task such as `publishCurseForgeOfficialPacks` from
 the checkout for the Minecraft version you want to release. See
@@ -130,6 +141,8 @@ At the Paintjob Table or Gun Modification Table, left-click a paintjob to pay it
 ## Documentation
 
 Project wiki pages live on the [GitHub wiki](https://github.com/AntonIT99/Flans-Mod-Ultimate-2.0/wiki).
+
+See [Optional external mod compatibility](docs/optional-mod-compatibility.md) for supported integrations, Minecraft versions, features and project links.
 
 ## Upstream Projects, Attribution & License
 

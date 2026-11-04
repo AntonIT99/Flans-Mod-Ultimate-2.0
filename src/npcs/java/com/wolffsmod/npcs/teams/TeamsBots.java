@@ -1,21 +1,16 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.teams.FlansTeams;
-import com.flansmodultimate.api.teams.ITeam;
-import com.flansmodultimate.api.teams.ITeamsListener;
-import com.flansmodultimate.api.teams.ITeamsLiveRound;
+import com.flansmodultimate.api.teams.*;
 import com.flansmodultimate.api.teams.ITeamsRespawnRule.Reason;
-import com.flansmodultimate.api.teams.ITeamsSpawnProvider;
-import com.flansmodultimate.api.teams.TeamsCapturePoint;
-import com.flansmodultimate.api.teams.TeamsSpawner;
 import com.wolffsmod.npcs.NpcsMod;
+import com.wolffsmod.npcs.combat.NpcAirCombat;
+import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
-import com.wolffsmod.npcs.tactics.NpcCombatIntent;
-import com.wolffsmod.npcs.tactics.NpcCombatPolicy;
-import com.wolffsmod.npcs.tactics.NpcTacticalProfile;
+import com.wolffsmod.npcs.tactics.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,8 +19,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -91,7 +85,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
             BotBattles.remove(INSTANCE.round);
         }
         INSTANCE.round = null;
-        BotGunners.forget();
         BotFactions.tearDown();
         forgetDuties(server);
         Skirmishes.serverStopping(server);
@@ -132,6 +125,13 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         return BotBattles.of(npc).flatMap(battle -> BotCommander.order(server, battle, npc));
     }
 
+    /** A mission uses reported positions only; the aircraft acquires a live target itself once it can see one. */
+    public static Optional<NpcAirCombat.Mission> airMission(EntityNPCInterface npc)
+    {
+        Optional<BotCommander.Order> order = orderFor(npc).filter(found -> found.role().flies());
+        return order.map(found -> BotAirMissions.assign(npc, found.spot(), found.kind() == SquadTask.Kind.PATROL));
+    }
+
     /** Whether this battle allows soldiers to deploy and man placed guns; ordinary NPCs keep their own setting. */
     public static boolean mayManEmplacements(EntityNPCInterface npc)
     {
@@ -153,6 +153,17 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     /** Shares a fresh sighting or incoming-fire report with the observer's side, never following a hidden contact. */
     public static void reportContact(EntityNPCInterface observer, LivingEntity enemy)
     {
+        reportContact(observer, enemy, false);
+    }
+
+    /** Confirmed incoming fire or a visible attack approach calls for interception, including a player-piloted aircraft. */
+    public static void reportAirAttack(EntityNPCInterface observer, LivingEntity enemy)
+    {
+        reportContact(observer, enemy, true);
+    }
+
+    private static void reportContact(EntityNPCInterface observer, LivingEntity enemy, boolean airAttack)
+    {
         if (observer.level().isClientSide || enemy.level() != observer.level())
             return;
         BotBattles.of(observer).ifPresent(battle ->
@@ -161,8 +172,46 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
                 return;
             int side = BotBattles.slotOf(battle, observer).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1);
             if (side >= 0 && battle.getGround().areEnemies(observer, enemy))
-                battle.getIntelligence().report(side, enemy.getUUID(), enemy.position(), BotTargeting.armoured(battle, enemy), observer.level().getGameTime());
+            {
+                boolean air = NpcInfantryAirDefense.airborne(enemy);
+                boolean intercept = air && (airAttack || enemy instanceof Mob mob && mob.getTarget() != null && battle.getGround().sideOf(mob.getTarget()) == side);
+                battle.getIntelligence().report(side, enemy.getUUID(), enemy.position(), BotTargeting.armoured(battle, enemy), observer.level().getGameTime(), air, intercept);
+            }
         });
+    }
+
+    public static boolean reportedAirThreat(EntityNPCInterface observer, LivingEntity enemy)
+    {
+        return BotBattles.of(observer).map(battle ->
+        {
+            int side = BotBattles.slotOf(battle, observer).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1);
+            return battle.getIntelligence().intercept(side, enemy.getUUID(), observer.level().getGameTime());
+        }).orElse(false);
+    }
+
+    /** A report prompts a local sight check, never a shot at a hidden contact or a chase outside the mount's firing arc. */
+    @Nullable
+    public static LivingEntity airDefenseTarget(EntityNPCInterface observer, @Nullable LivingEntity current, double range, java.util.function.Predicate<LivingEntity> usable)
+    {
+        if (!(observer.level() instanceof ServerLevel level))
+            return current;
+        if (current != null && current.isAlive() && observer.distanceToSqr(current) <= range * range && reportedAirThreat(observer, current)
+            && observer.getSensing().hasLineOfSight(current) && usable.test(current))
+            return current;
+        return BotBattles.of(observer).map(battle ->
+        {
+            int side = BotBattles.slotOf(battle, observer).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1);
+            for (BotIntelligence.Contact contact : battle.getIntelligence().contacts(side, level.getGameTime()))
+            {
+                if (!contact.intercept() || !contact.airborne())
+                    continue;
+                Entity entity = level.getEntity(contact.enemy());
+                if (entity instanceof LivingEntity enemy && enemy.isAlive() && observer.distanceToSqr(enemy) <= range * range && battle.getGround().areEnemies(observer, enemy)
+                    && observer.getSensing().hasLineOfSight(enemy) && usable.test(enemy))
+                    return enemy;
+            }
+            return current;
+        }).orElse(current);
     }
 
     /** A battle order or ordinary NPC duty retained by the shared infantry combat movement. Server thread. */
@@ -175,6 +224,43 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     public static Optional<Boolean> coveringFire(EntityNPCInterface npc, long now)
     {
         return combatSquad(npc).map(entry -> entry.squad().getCombat().decisions().covers(BotSquadCombat.snapshot(npc, now), entry.members(npc, now), now));
+    }
+
+    /**
+     * Whether an autonomous squad soldier still travelling to its objective walks on while it fires at a distant target,
+     * instead of standing to fight it or chasing it; see {@link SquadTactics#transit}. Reads cached orders only.
+     */
+    public static boolean movesUnderFire(EntityNPCInterface npc)
+    {
+        LivingEntity target = npc.getTarget();
+        if (target == null || !target.isAlive() || target.level() != npc.level() || NpcDuties.retreating(npc) || !NpcCombatMovement.allowed(npc))
+            return false;
+        BotSquad squad = combatSquad(npc).map(CombatSquad::squad).orElse(null);
+        if (squad == null || squad.getOrder() != null || squad.getTask() == null)
+            return false;
+        return orderFor(npc).filter(order -> order.role() == BotRole.INFANTRY)
+            .map(order -> SquadTactics.transit(squad.getTactics().getPhase(), order.kind(), npc.position(), order.spot(), order.arrival(), target.position(), NpcSuppression.isPinned(npc)))
+            .orElse(false);
+    }
+
+    /** Leadership orders are cached by the commander; reading them never samples combat or starts a path search. */
+    public static Optional<Vec3> squadWithdrawal(EntityNPCInterface npc)
+    {
+        return combatSquad(npc).filter(entry -> entry.squad().getOrder() == null && entry.squad().getTask() != null)
+            .map(entry -> entry.squad().getTactics().order(entry.squad().getTask(), npc.getUUID())).filter(SquadTactics.Directive::retreat).map(SquadTactics.Directive::spot);
+    }
+
+    /** Only a squad leader can request rerouting, and repeated reports have a squad-local cooldown. */
+    static void reportSquadRouteFailure(EntityNPCInterface npc, long now)
+    {
+        combatSquad(npc).filter(entry -> entry.squad().getOrder() == null).ifPresent(entry -> entry.squad().getTactics().blocked(npc.getUUID(), now));
+    }
+
+    /** The team's explicit or equipment-derived class role, including overrides changed during a round. */
+    public static Optional<BotSettings.ClassRole> classRole(EntityNPCInterface npc)
+    {
+        return BotBattles.of(npc)
+            .flatMap(battle -> BotBattles.slotOf(battle, npc).filter(slot -> !slot.isVehicle()).map(slot -> BotRoles.of(battle.getSettings().team(slot.getTeam()), slot.getRole())));
     }
 
     /** Whether another member of this squad already occupies or has reserved the candidate cover. */
@@ -262,7 +348,6 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
             BotRoundStore.get(server).setDirty();
         }
         spawnQueued(level, current, now, random);
-        BotGunners.tick(level, current);
         if (tick % COMMAND_INTERVAL == 0)
         {
             BotCommander.plan(server, level, current);
@@ -308,9 +393,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         {
             BotBattles.remove(ended);
             removeAll(server, ended);
+            BotTransports.clearRoundWrecks(server, ended.getInstance());
         }
         BotFactions.tearDown();
-        BotGunners.forget();
         forgetDuties(server);
         BotRoundStore.get(server).forget();
         BotOrders.clearWaypoints(server);
@@ -378,9 +463,15 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     private static void removeBody(ServerLevel level, BotBattle current, BotSlot slot, EntityNPCInterface npc, boolean dead)
     {
         remove(npc);
-        if (dead && slot.isWreckPending())
-            BotTransports.leaveWreck(level, slot, npc.position(), npc.getYRot());
+        if (dead && slot.isVehicle())
+            BotTransports.leaveWreck(level, slot, npc.position(), npc.getYRot(), paintjobOf(npc), current.getGround().round().map(ITeamsLiveRound::getInstanceId));
         forget(current, slot);
+    }
+
+    /** The paintjob a vehicle bot is drawn with, which its wreck keeps. */
+    private static int paintjobOf(EntityNPCInterface npc)
+    {
+        return npc instanceof EntityCustomNpc custom ? Math.max(0, custom.modelData.extra.getInt(FlanModelEntity.PAINTJOB_KEY)) : 0;
     }
 
     private static void fallen(BotBattle current, BotSlot slot, long now)
@@ -434,6 +525,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     /** Brings in the next bots waiting in a battle's spawn queue, a few a tick. */
     static void spawnQueued(ServerLevel level, BotBattle current, long now, RandomGenerator random)
     {
+        current.getSpawnerWaves().retain(current.getQueue());
         int spawned = 0;
         while (spawned < SPAWNS_PER_TICK && !current.getQueue().isEmpty())
         {
@@ -446,6 +538,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
                 spawn(level, current, slot, now, random);
                 spawned++;
             }
+            if (slot != null)
+                current.getSpawnerWaves().attempted(slot.getId());
         }
     }
 
@@ -490,6 +584,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         if (slot.isVehicle() && deployment.source().spawner() != null)
         {
             BotSpawnPlacement.recordSpawner(npc.get(), deployment.source().spawner().id());
+            if (deployment.source().spawner().npcSpawnAll())
+                current.getSpawnerWaves().started(deployment.source().spawner().id(), current.getQueue());
             FlansTeams.recordVehicleSpawnerSpawn(deployment.source().spawner());
         }
         slot.setSpawns(slot.getSpawns() + 1);
@@ -517,16 +613,17 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         List<SpawnPoint> points = at == null ? spawnPoints(level, current, slot, team, random) : List.of(new SpawnPoint(at, null));
         for (SpawnPoint point : points)
         {
-            Optional<Vec3> position = position(level, slot, point, yaw);
+            Optional<Vec3> position = position(level, current, slot, point, yaw);
             if (position.isPresent())
                 return Optional.of(new Deployment(point, position.get(), yaw));
         }
         return Optional.empty();
     }
 
-    private static Optional<Vec3> position(ServerLevel level, BotSlot slot, SpawnPoint point, float yaw)
+    private static Optional<Vec3> position(ServerLevel level, BotBattle current, BotSlot slot, SpawnPoint point, float yaw)
     {
-        if (point.spawner() != null && !FlansTeams.isVehicleSpawnerReady(point.spawner()))
+        if (point.spawner() != null && !(point.spawner().npcSpawnAll() && current.getSpawnerWaves().contains(point.spawner().id(), slot.getId()))
+            && !FlansTeams.isVehicleSpawnerReady(point.spawner()))
             return Optional.empty();
         if (point.spawner() != null && !point.spawner().npcSpawnAll() && BotSpawnPlacement.stagingOccupied(level, point.spawner().id(), point.origin()))
             return Optional.empty();
@@ -594,15 +691,20 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     /** Removes every bot in the loaded levels that is not the living bot of a slot of a battle being fought. */
     private static void sweep(MinecraftServer server)
     {
+        Optional<UUID> runningRound = FlansTeams.getRunningRound().map(ITeamsLiveRound::getInstanceId);
         for (ServerLevel level : server.getAllLevels())
         {
+            List<Entity> staleWrecks = new ArrayList<>();
             List<EntityNPCInterface> stale = new ArrayList<>();
             for (Entity entity : level.getAllEntities())
             {
+                if (BotTransports.staleWreck(entity.getPersistentData(), runningRound))
+                    staleWrecks.add(entity);
                 if (entity instanceof EntityNPCInterface npc && BotTag.read(npc).filter(data -> belongs(npc, data)).isEmpty() && BotTag.isBot(npc))
                     stale.add(npc);
             }
             stale.forEach(TeamsBots::remove);
+            staleWrecks.forEach(Entity::discard);
         }
     }
 

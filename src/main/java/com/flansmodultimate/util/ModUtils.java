@@ -5,6 +5,7 @@ import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.PlatformTags;
@@ -80,7 +81,8 @@ public final class ModUtils
 
     public static boolean canEntityBeHitByBullets(Entity entity)
     {
-        return !(entity instanceof Bullet) && !(entity instanceof Seat) && !(entity instanceof Wheel) && !(entity instanceof ItemEntity) && !(entity instanceof Projectile)
+        return (!(entity instanceof Parachute) || ModCommonConfig.parachutesCanBeHit()) && !(entity instanceof Bullet) && !(entity instanceof Seat) && !(entity instanceof Wheel)
+            && !(entity instanceof ItemEntity) && !(entity instanceof Projectile)
             && !(entity instanceof ExperienceOrb) && !(entity instanceof Display) && !(entity instanceof Interaction);
     }
 

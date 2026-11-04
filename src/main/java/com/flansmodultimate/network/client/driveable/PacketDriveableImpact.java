@@ -1,6 +1,7 @@
 package com.flansmodultimate.network.client.driveable;
 
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
@@ -30,6 +31,7 @@ public class PacketDriveableImpact implements IClientPacket
     private static final int MAX_DEBRIS = 24;
     private static final float MAX_RADIUS = 16F;
 
+    private int driveableId = -1;
     private Vec3 position;
     private float radius;
     private float severity;
@@ -41,9 +43,16 @@ public class PacketDriveableImpact implements IClientPacket
         this.severity = severity;
     }
 
+    public PacketDriveableImpact(int driveableId, Vec3 position, float radius, float severity)
+    {
+        this(position, radius, severity);
+        this.driveableId = driveableId;
+    }
+
     @Override
     public void encodeInto(PacketBuffer data)
     {
+        data.writeVarInt(driveableId);
         data.writeDouble(position.x);
         data.writeDouble(position.y);
         data.writeDouble(position.z);
@@ -54,6 +63,7 @@ public class PacketDriveableImpact implements IClientPacket
     @Override
     public void decodeInto(PacketBuffer data)
     {
+        driveableId = data.readVarInt();
         position = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         radius = data.readFloat();
         severity = data.readFloat();
@@ -88,7 +98,9 @@ public class PacketDriveableImpact implements IClientPacket
         }
 
         // Only a bad landing leaves a mark; one that merely bumps down does not scar the ground.
-        if (force > 0.4F)
+        if (force > 0.4F && level.getEntity(driveableId) instanceof Driveable owner)
+            ClientHooks.RENDER.spawnScorchMark(position, size * 0.35F * force, owner);
+        else if (force > 0.4F && driveableId < 0)
             ClientHooks.RENDER.spawnScorchMark(position, size * 0.35F * force);
     }
 }

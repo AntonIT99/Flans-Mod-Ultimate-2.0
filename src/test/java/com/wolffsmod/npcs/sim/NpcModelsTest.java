@@ -1,10 +1,16 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.driveables.MountAim;
+import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.model.FlanModelEntityType;
+import com.wolffsmod.npcs.model.FlanModelKind;
+import com.wolffsmod.npcs.model.FlanModelShape;
 import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataDisplay;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.phys.Vec3;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,6 +21,29 @@ class NpcModelsTest
     /** Minecraft's sine table is good to a few ten-thousandths. */
     private static final double EPSILON = 1.0E-3D;
     private static final float DEGREES = 0.05F;
+
+    @Test
+    void groundVehiclesRotateAboutTheirOriginAndLiftAllWorldPoints()
+    {
+        withAttitude(20F, 15F, npc ->
+        {
+            NpcVehicleState state = NpcVehicleState.of(npc);
+            when(state.getAttitudeLift()).thenReturn(-0.75F);
+            FlanModelEntity model = mock(FlanModelEntity.class);
+            FlanModelEntityType type = mock(FlanModelEntityType.class);
+            when(model.getModelType()).thenReturn(type);
+            when(type.getKind()).thenReturn(FlanModelKind.VEHICLE);
+            when(type.getShape()).thenReturn(new FlanModelShape(EntityDimensions.scalable(4F, 3F), 0.5F));
+            npc.display = mock(DataDisplay.class);
+            when(npc.display.getSize()).thenReturn(10);
+            npc.currentAnimation = -1;
+            // Rotation does not move the authored origin. Lift is in world blocks, independent of model scale.
+            assertVec(new Vec3(0D, 0.25D, 0D), NpcModels.local(npc, model, Vec3.ZERO, 180F));
+            Vec3 point = new Vec3(1D, 0D, -2D);
+            Vec3 expected = NpcModels.tilt(npc, point).scale(2D).add(0D, 0.25D, 0D);
+            assertVec(expected, NpcModels.local(npc, model, point, 180F));
+        });
+    }
 
     private static void assertVec(Vec3 expected, Vec3 actual)
     {

@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.crew;
 
 import com.wolffsmod.npcs.sim.NpcParachutes;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -34,6 +35,13 @@ public final class CrewDisembark
     {
         if (vehicle.tickCount % INTERVAL != 0 || vehicle.level().isClientSide || vehicle.isKilled() || !vehicle.isAlive())
             return;
+        // A crippled aircraft going down is abandoned while there is height left to jump.
+        if (NpcVehicleState.of(vehicle).getFlight().isCrashing())
+        {
+            if (height(vehicle) > JUMP_HEIGHT)
+                NpcCrew.abandonFalling(vehicle);
+            return;
+        }
         LivingEntity target = vehicle.getTarget();
         // A target in the air, such as an aircraft the vehicle fights, is none for soldiers on foot.
         if (target == null || !target.isAlive() || target.level() != vehicle.level() || height(target) > JUMP_HEIGHT)

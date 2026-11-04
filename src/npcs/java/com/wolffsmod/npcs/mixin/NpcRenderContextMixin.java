@@ -2,6 +2,7 @@ package com.wolffsmod.npcs.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.wolffsmod.npcs.diag.NpcProfiler;
+import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.platform.render.NpcRenderBuffers;
 import com.wolffsmod.npcs.properties.NpcPresentation;
@@ -16,10 +17,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * Carries render context through borrowed buffers, copies visual policies and a plane's pitch and bank to Flan models, immediately
- * hides killed bodies when requested and leaves the body of an invisible NPC undrawn.
+ * Carries render context through borrowed buffers, copies visual policies and model pitch, bank and ground lift to Flan models, immediately
+ * hides killed bodies when requested, leaves the body of an invisible NPC undrawn and keeps an operator standing at a deployed gun at a
+ * player's height.
  */
 @Mixin(value = RenderCustomNpc.class, remap = false)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
@@ -37,7 +40,7 @@ public abstract class NpcRenderContextMixin
         {
             model.setVisualEffects(settings.isHurtFlash(), settings.isDeathRotation());
             NpcVehicleState state = NpcVehicleState.of(npc);
-            model.setAttitude(state.attitudePitch(partialTick), state.attitudeBank(partialTick));
+            model.setAttitude(state.attitudePitch(partialTick), state.attitudeBank(partialTick), state.attitudeLift(partialTick) / Math.max(0.01F, npc.display.getSize() / 5F));
         }
         if (!settings.isDeathRotation() && npc.stats.hideKilledBody && npc.isKilled())
             callback.cancel();
@@ -65,6 +68,14 @@ public abstract class NpcRenderContextMixin
     {
         if (!bodyVisible && !translucent)
             callback.setReturnValue(glowing ? RenderType.outline(((RenderCustomNpc<EntityCustomNpc, ?>) (Object) this).getTextureLocation(npc)) : null);
+    }
+
+    /** Custom NPCs lowers every rider into a seat; one standing at a mount that keeps riders upright stays on its feet. */
+    @Inject(method = "getRenderOffset(Lnoppes/npcs/entity/EntityCustomNpc;F)Lnet/minecraft/world/phys/Vec3;", at = @At("RETURN"), cancellable = true, require = 1)
+    private void wolffsmodnpcsStandingRider(EntityCustomNpc npc, float partialTick, CallbackInfoReturnable<Vec3> callback)
+    {
+        if (npc.isAlive() && NpcDrivers.standsWhileRiding(npc))
+            callback.setReturnValue(callback.getReturnValue().add(0D, (0.5F - npc.modelData.getLegsY() * 0.8F) * (npc.display.getSize() / 5F), 0D));
     }
 
     @Inject(method = "render(Lnoppes/npcs/entity/EntityCustomNpc;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("RETURN"))

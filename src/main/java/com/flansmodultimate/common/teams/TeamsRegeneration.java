@@ -28,7 +28,9 @@ public final class TeamsRegeneration
             return;
         if (entity instanceof Player player && player.getFoodData().getFoodLevel() < 18)
             return;
-        if (entity.tickCount % INTERVAL_TICKS == 0 && entity.getHealth() < entity.getMaxHealth())
+        TeamsManager manager = TeamsManager.getInstance();
+        int seconds = entity instanceof Player ? manager.getPlayerRegenSeconds() : manager.getBotRegenSeconds();
+        if (seconds > 0 && entity.tickCount % (seconds * 20L) == 0 && entity.getHealth() < entity.getMaxHealth())
         {
             entity.heal(1F);
             if (entity instanceof Player player)

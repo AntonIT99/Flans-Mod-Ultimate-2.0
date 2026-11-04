@@ -21,6 +21,16 @@ public interface IClientSoundHooks
 
     void cancelSound(UUID instanceUUID);
 
+    /**
+     * Plays a large blast heard from afar: it arrives as late as sound takes to cover the distance, and further away it
+     * is a deeper rumble. Client only; the server keeps the no-op.
+     *
+     * @param loudness
+     *            the size of the blast in blocks, which sets how far it carries
+     */
+    default void playDistantBlast(Vec3 position, float loudness)
+    {}
+
     /** Starts a following clip with optional entity-driven engine pitch. Server implementations retain the no-op sound path. */
     // Extend the existing packet bridge without changing its callers or dedicated-server no-op path.
     @SuppressWarnings("java:S107")

@@ -3,9 +3,12 @@ package com.wolffsmod.npcs.combat;
 import com.flansmodultimate.api.driveables.DriveableKind;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.IMechaEquipment;
+import com.flansmodultimate.api.equipment.MechaMeleeProperties;
 import com.flansmodultimate.common.driveables.EnumMechaItemType;
 import com.flansmodultimate.common.driveables.EnumMechaToolType;
+import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.MechaItemType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
@@ -75,12 +78,12 @@ class NpcMechaToolsTest
         ItemStack second = tool(EnumMechaToolType.SWORD, 2F, 3F);
         npc.inventory.drops.put(4, wrapped(first));
         npc.inventory.drops.put(7, wrapped(second));
-        assertSame(first, NpcMechaTools.findSword(npc));
-        assertEquals(6F, NpcMechaTools.properties(npc).orElseThrow().damage());
+        assertSame(second, NpcMechaTools.findSword(npc));
+        assertEquals(12F, NpcMechaTools.properties(npc).orElseThrow().damage());
         assertFalse(NpcModels.meleeless(npc));
         assertFalse(NpcEquipment.meleeAuthority(npc));
-        npc.inventory.drops.remove(4);
-        assertSame(second, NpcMechaTools.findSword(npc));
+        npc.inventory.drops.remove(7);
+        assertSame(first, NpcMechaTools.findSword(npc));
         assertEquals(1, second.getCount());
         npc.inventory.drops.clear();
         assertTrue(NpcModels.meleeless(npc));
@@ -91,6 +94,51 @@ class NpcMechaToolsTest
         assertFalse(NpcModels.meleeless(npc));
         when(npc.stats.melee.getStrength()).thenReturn(0);
         assertTrue(NpcModels.meleeless(npc));
+    }
+
+    @Test
+    void armsMirrorTheRangedGunOrSpareToolWithoutDuplicatingOneTool()
+    {
+        EntityCustomNpc npc = mock(EntityCustomNpc.class);
+        npc.modelData = mock(ModelData.class);
+        npc.inventory = new DataInventory(npc);
+        FlanModelEntity model = mock(FlanModelEntity.class);
+        MechaType mecha = mock(MechaType.class);
+        when(mecha.getDriveableKind()).thenReturn(DriveableKind.MECHA);
+        when(mecha.getReach()).thenReturn(2F);
+        when(model.getInfoType()).thenReturn(mecha);
+        when(npc.modelData.getEntity(npc)).thenReturn(model);
+        when(npc.getMainHandItem()).thenReturn(ItemStack.EMPTY);
+        when(npc.getOffhandItem()).thenReturn(ItemStack.EMPTY);
+        ItemStack sword = tool(EnumMechaToolType.SWORD, 1F, 2F);
+        ItemStack drill = tool(EnumMechaToolType.PICKAXE, 1F, 1F);
+        npc.inventory.drops.put(2, wrapped(sword));
+        npc.inventory.drops.put(4, wrapped(drill));
+        GunType type = mock(GunType.class);
+        when(type.hasAmmoTypes()).thenReturn(true);
+        GunItem item = mock(GunItem.class);
+        when(item.getConfigType()).thenReturn(type);
+        ItemStack gun = mock(ItemStack.class);
+        when(gun.getItem()).thenReturn(item);
+        try (var equipment = mockStatic(NpcEquipment.class))
+        {
+            equipment.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(gun);
+            assertSame(sword, NpcMechaTools.hand(npc, false));
+            assertSame(gun, NpcMechaTools.hand(npc, true));
+            equipment.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(ItemStack.EMPTY);
+            assertSame(drill, NpcMechaTools.hand(npc, true));
+            npc.inventory.drops.remove(2);
+            assertSame(drill, NpcMechaTools.hand(npc, false));
+            assertTrue(NpcMechaTools.hand(npc, true).isEmpty());
+        }
+    }
+
+    @Test
+    void equalReachPrefersDamagePerTickThenDamageAndExactTiesRemainStable()
+    {
+        assertTrue(NpcMechaTools.compare(new MechaMeleeProperties(6F, 4, 3D), new MechaMeleeProperties(10F, 10, 3D)) > 0);
+        assertTrue(NpcMechaTools.compare(new MechaMeleeProperties(12F, 8, 3D), new MechaMeleeProperties(6F, 4, 3D)) > 0);
+        assertEquals(0, NpcMechaTools.compare(new MechaMeleeProperties(6F, 4, 3D), new MechaMeleeProperties(6F, 4, 3D)));
     }
 
     private static ItemStack tool(EnumMechaToolType function, float speed, float reach)

@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.combat;
 
+import com.wolffsmod.npcs.tactics.NpcInfantryAirDefense;
 import com.wolffsmod.npcs.tactics.NpcWeaponRange;
 import com.wolffsmod.npcs.teams.NpcSuppression;
 import com.wolffsmod.npcs.teams.TeamsBots;
@@ -29,7 +30,8 @@ public final class NpcCombatApproachGoal extends Goal
     @Override
     public boolean canUse()
     {
-        return !TeamsBots.isCommander(npc) && NpcEquipmentRangedGoal.engages(npc);
+        // A soldier on its way to an objective leaves its movement to the objective goal and fires as it goes.
+        return !TeamsBots.isCommander(npc) && NpcEquipmentRangedGoal.engages(npc) && !TeamsBots.movesUnderFire(npc);
     }
 
     @Override
@@ -45,7 +47,7 @@ public final class NpcCombatApproachGoal extends Goal
         if (target == null)
             return;
         // Pinned down by fire, it moves no closer until the fire lets up.
-        if (!NpcSuppression.isPinned(npc) && (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target)))
+        if (!NpcInfantryAirDefense.holdsPosition(npc, target) && !NpcSuppression.isPinned(npc) && (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target)))
             npc.getNavigation().moveTo(target, 1D);
         else
             npc.getNavigation().stop();

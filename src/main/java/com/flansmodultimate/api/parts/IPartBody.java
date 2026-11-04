@@ -112,10 +112,14 @@ public interface IPartBody
 
     /**
      * @param solid
-     *            whether a broken part still stops rounds and blasts. Off by default: a broken part has been shot off,
-     *            as on a driveable.
+     *            ignored; destroyed parts always let rounds and blasts through
+     * @deprecated Destroyed parts no longer remain solid. Retained for addon compatibility.
      */
-    void setBrokenPartsSolid(boolean solid);
+    @Deprecated
+    default void setBrokenPartsSolid(boolean solid)
+    {
+        // Compatibility shim for callers built against the former setting.
+    }
 
     /**
      * @param outlined
@@ -128,7 +132,7 @@ public interface IPartBody
      * @param solid
      *            whether other entities collide with the boxes as they do with a driveable's hull: they walk into them,
      *            stand on them and are carried along. The entity wearing the body, its riders and what it rides pass
-     *            through. Broken parts are solid only while {@link #setBrokenPartsSolid} says so. Off by default; takes
+     *            through. Destroyed parts do not collide. Off by default; takes
      *            effect with the next {@link #setPose}, which has to be called on both sides
      */
     void setSolid(boolean solid);

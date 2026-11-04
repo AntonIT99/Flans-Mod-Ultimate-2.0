@@ -2,10 +2,8 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.DriveControl;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
-import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.driveables.*;
+import com.flansmodultimate.api.equipment.MechaMeleeProperties;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
@@ -13,6 +11,7 @@ import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.optics.*;
 import com.flansmodultimate.common.driveables.visual.SeatVisual;
+import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
@@ -25,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.*;
@@ -649,7 +649,7 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     @NotNull
     public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
     {
-        if (driveable == null || !driveable.canPlayerAccess(player))
+        if (driveable == null || !driveable.canPlayerAccess(player) || ToolItem.isRepairTool(player.getItemInHand(hand)))
             return InteractionResult.PASS;
         if (!SeatOccupants.canEnter(this, player, false))
             return InteractionResult.sidedSuccess(level().isClientSide);
@@ -857,6 +857,21 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         }
         if (origin == null)
             return false;
+        return aimFrom(parent, origin, target);
+    }
+
+    @Override
+    public boolean aimDriverWeapon(boolean secondary, Vec3 target)
+    {
+        Driveable parent = driveable;
+        if (refusesAutomation() || parent == null || !parent.isMovementController(this))
+            return false;
+        Vec3 origin = parent.getDriverWeaponOrigin(secondary);
+        return origin != null && aimFrom(parent, origin, target);
+    }
+
+    private boolean aimFrom(Driveable parent, Vec3 origin, Vec3 target)
+    {
         // The driveable aims the gun by hull-relative yaw; the seat stores it relative to its own frame, such as a turret.
         SeatAimSolver.Aim aim = SeatAimSolver.solve(parent::aimedDirection, target.subtract(origin), getHullAimYaw(), getAimPitch());
         return setAutomatedAim(Mth.wrapDegrees(aim.yaw() - parent.getSeatAimFrameYaw(this, 1F)), aim.pitch());
@@ -898,6 +913,42 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     {
         Driveable parent = driveable;
         return parent == null || !parent.isMovementController(this) ? Optional.empty() : Optional.ofNullable(parent.getDriverWeaponOrigin(secondary));
+    }
+
+    @Override
+    public Optional<MechaMeleeProperties> getDriverMeleeProperties(boolean secondary)
+    {
+        return driveable instanceof Mecha mecha && mecha.isMovementController(this) ? mecha.getDriverMeleeProperties(secondary) : Optional.empty();
+    }
+
+    @Override
+    public OptionalDouble getDriverMiningReach(boolean secondary)
+    {
+        return driveable instanceof Mecha mecha && mecha.isMovementController(this) ? mecha.getDriverMiningReach(secondary) : OptionalDouble.empty();
+    }
+
+    @Override
+    public boolean canDriverMineBlock(boolean secondary, BlockPos position)
+    {
+        return driveable instanceof Mecha mecha && mecha.isMovementController(this) && mecha.canDriverMineBlock(secondary, position);
+    }
+
+    @Override
+    public double getDriverMiningProgress(BlockPos position)
+    {
+        return driveable instanceof Mecha mecha && mecha.isMovementController(this) ? mecha.getMiningProgress(position) : 0D;
+    }
+
+    @Override
+    public boolean hasDriverRocketPack()
+    {
+        return driveable instanceof Mecha mecha && mecha.isMovementController(this) && mecha.shouldFly();
+    }
+
+    @Override
+    public WeaponTriggerState getDriverTriggerState(boolean secondary)
+    {
+        return driveable != null && driveable.isMovementController(this) ? driveable.getDriverTriggerState(secondary) : ISeat.super.getDriverTriggerState(secondary);
     }
 
     @Override

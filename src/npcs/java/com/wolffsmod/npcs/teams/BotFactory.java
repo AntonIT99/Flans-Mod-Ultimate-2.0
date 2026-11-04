@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.*;
 import com.wolffsmod.npcs.names.*;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.presets.NpcPreset;
 import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
@@ -70,6 +71,8 @@ public final class BotFactory
     /** Key, in the persistent data, of the level a bot was trained to and the stats it was trained from. */
     private static final String NBT_TRAINING = "WolffsModTraining";
     private static final String NBT_LEVEL = "level";
+    private static final String NBT_PRESET = "WolffsModBotPreset";
+    private static final String NBT_AIRCRAFT_ALLOCATION = "WolffsModAircraftAllocation";
     private static final String NBT_ACCURACY = "accuracy";
     private static final String NBT_AGGRO = "aggro";
     private static final String NBT_HEALTH = "health";
@@ -139,6 +142,7 @@ public final class BotFactory
         {
             EntityCustomNpc plain = new EntityCustomNpc(CustomEntities.entityCustomNpc, level);
             plain.moveTo(position.x, position.y, position.z, random.nextFloat() * 360F, 0F);
+            NpcDisplayNames.literalTitle(plain.display, "");
             npc = plain;
         }
         FlanSoldierSelection selection = new FlanSoldierSelection(order.team(), playerClass);
@@ -183,11 +187,13 @@ public final class BotFactory
         if (type.isEmpty() || spawned.isEmpty())
             return Optional.empty();
         EntityCustomNpc npc = spawned.get();
+        NpcDisplayNames.literalTitle(npc.display, "");
         // The hull used for clearance must already face its validated yaw before the next bot is placed this tick.
         npc.setYBodyRot(yaw);
         npc.yBodyRotO = yaw;
         IContentType definition = type.get().getInfoType();
         BotRole role = BotRole.of(type.get().getKind(), definition);
+        applyVehiclePreset(npc);
         NpcTuning tuning = NpcTuning.of(npc);
         switch (role)
         {
@@ -205,9 +211,17 @@ public final class BotFactory
             case PLANE -> Tactic.STRAFING_RUN;
             case HELICOPTER -> Tactic.STRAFE;
             case AA -> Tactic.HOLD;
+            // A ship keeps the water between itself and its target and brings its broadside round, rather than closing in on it.
+            case NAVAL -> Tactic.CIRCLE;
             default -> Tactic.CUSTOM_NPCS;
         };
         tuning.set(Value.TACTIC, tactic.ordinal());
+        if (order.slot().getEntry() >= 0 && order.slot().getEntry() < order.force().getVehicles().size())
+        {
+            var aircraftRole = order.force().getVehicles().get(order.slot().getEntry()).aircraftRole();
+            tuning.set(Value.AIRCRAFT_ROLE, aircraftRole.ordinal());
+            npc.getPersistentData().putString(NBT_AIRCRAFT_ALLOCATION, aircraftRole.name());
+        }
         if (definition != null)
             stockAmmunition(npc, definition);
         // FlanModelNpcs already uses the model's full name, including a definition fallback on dedicated servers.
@@ -261,16 +275,49 @@ public final class BotFactory
      */
     static void keepTrained(EntityNPCInterface npc, BotSettings settings)
     {
+        // Repair generated machines once, before training; hand-enlisted NPCs retain their authored settings.
+        if (BotTag.read(npc).filter(data -> data.vehicle() && !data.enlisted() && !data.crew()).isPresent() && !npc.getPersistentData().getBoolean(NBT_PRESET) && NpcPreset.model(npc) != null)
+        {
+            applyVehiclePreset(npc);
+            npc.stats.spawnCycle = NEVER_RESPAWN;
+            npc.ais.returnToStart = false;
+        }
         // Migrate generated bots already saved in an active battle, preserving enlisted NPCs and seated crew.
-        if (!npc.isPassenger() && npc.ais.getMovingType() == STANDING && BotTag.read(npc).filter(data -> !data.enlisted()).isPresent())
+        if (!npc.isPassenger() && NpcPreset.suggested(npc) != NpcPreset.TURRET && npc.ais.getMovingType() == STANDING && BotTag.read(npc).filter(data -> !data.enlisted()).isPresent())
         {
             npc.ais.setMovingType(WANDERING);
             npc.updateAI = true;
             npc.updateClient = true;
         }
+        updateAircraftAllocation(npc, settings);
         CompoundTag training = npc.getPersistentData().getCompound(NBT_TRAINING);
         if (training.contains(NBT_LEVEL) && !training.getString(NBT_LEVEL).equals(settings.trainingId()))
             train(npc, settings);
+    }
+
+    private static void updateAircraftAllocation(EntityNPCInterface npc, BotSettings settings)
+    {
+        BotTag.read(npc).filter(data -> data.vehicle() && !data.enlisted()).ifPresent(data -> BotBattles.of(npc).flatMap(battle -> BotBattles.slotOf(battle, npc)).ifPresent(slot ->
+        {
+            List<BotSettings.VehicleEntry> entries = settings.team(data.team()).getVehicles();
+            if (slot.getEntry() >= 0 && slot.getEntry() < entries.size())
+            {
+                var role = entries.get(slot.getEntry()).aircraftRole();
+                if (!npc.getPersistentData().getString(NBT_AIRCRAFT_ALLOCATION).equals(role.name()))
+                {
+                    NpcTuning.of(npc).set(Value.AIRCRAFT_ROLE, role.ordinal());
+                    npc.getPersistentData().putString(NBT_AIRCRAFT_ALLOCATION, role.name());
+                    npc.updateClient = true;
+                }
+            }
+        }));
+    }
+
+    /** Applies the full machine preset, including Custom NPCs movement and protections, exactly once per generated life. */
+    private static void applyVehiclePreset(EntityNPCInterface npc)
+    {
+        NpcPreset.suggested(npc).apply(npc);
+        npc.getPersistentData().putBoolean(NBT_PRESET, true);
     }
 
     /** @return the stat scaled by a level's factor, a factor of 1 leaving it exactly as it was */
@@ -304,6 +351,10 @@ public final class BotFactory
     private static void stockAmmunition(EntityCustomNpc npc, IContentType definition)
     {
         List<ItemStack> stocks = new ArrayList<>();
+        for (boolean secondary : new boolean[]{false, true})
+            for (ItemStack ammunition : FlansEquipment.createDefaultAmmunitionChoices(definition, secondary))
+                if (stocks.stream().noneMatch(stock -> NpcPlatform.isSameItemSameData(stock, ammunition)))
+                    stocks.add(NpcAmmunition.stock(npc, ammunition));
         for (WeaponMount mount : FlansEntityTypes.getMounts(definition))
         {
             mount.gun().flatMap(FlansEquipment::createDefaultAmmunition).filter(ammunition -> stocks.stream().noneMatch(stock -> NpcPlatform.isSameItemSameData(stock, ammunition)))
@@ -405,7 +456,8 @@ public final class BotFactory
         npc.advanced.attackOtherFactions = true;
         npc.stats.spawnCycle = NEVER_RESPAWN;
         npc.ais.returnToStart = false;
-        npc.ais.setMovingType(WANDERING);
+        if (membership != Membership.VEHICLE)
+            npc.ais.setMovingType(WANDERING);
         npc.ais.setStartPos(BlockPos.containing(position));
         // Battles away from players carry on, as long as a player is within the NPC's active range.
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.STAY_ACTIVE, true);

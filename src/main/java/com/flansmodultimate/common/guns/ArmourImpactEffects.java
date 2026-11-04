@@ -21,8 +21,8 @@ public final class ArmourImpactEffects
     {
         if (level.isClientSide || !armour.isArmoured() || incoming.lengthSqr() < 1.0E-12D || outwardNormal.lengthSqr() < 1.0E-12D)
             return;
-        PacketHandler.sendToAllAround(new PacketArmourImpact(position, incoming.normalize(), outwardNormal.normalize(), scale(massGrams), blocked), position, ModCommonConfig.entityHitParticleRange(),
-            level.dimension());
+        PacketHandler.sendToAllAround(new PacketArmourImpact(position, incoming.normalize(), outwardNormal.normalize(), scale(massGrams), blocked, ModCommonConfig.ricochetSparkCount()), position,
+            ModCommonConfig.entityHitParticleRange(), level.dimension());
     }
 
     /** Mass is the available size proxy: cube-root scaling keeps rifle rounds subtle and naval shells bounded. */

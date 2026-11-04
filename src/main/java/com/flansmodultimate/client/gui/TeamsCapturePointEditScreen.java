@@ -11,9 +11,7 @@ import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -29,12 +27,12 @@ public final class TeamsCapturePointEditScreen extends Screen
     private static final String[] OWNER_KEYS = {"gui.flansmod.teams.capture_point.owner_none", "gui.flansmod.teams.capture_point.owner_first", "gui.flansmod.teams.capture_point.owner_second"};
 
     private final PacketCapturePointEditState state;
-    private final List<Button> symbolButtons = new ArrayList<>();
     private final List<Button> ownerButtons = new ArrayList<>();
     private final List<Button> mapButtons = new ArrayList<>();
     private EditBox nameField;
     private EditBox radiusField;
     private EditBox heightField;
+    private Button symbolButton;
     private Button previousPage;
     private Button nextPage;
     private char selectedSymbol;
@@ -54,7 +52,6 @@ public final class TeamsCapturePointEditScreen extends Screen
     @Override
     protected void init()
     {
-        symbolButtons.clear();
         ownerButtons.clear();
         mapButtons.clear();
         int left = width / 2 - 128;
@@ -65,18 +62,9 @@ public final class TeamsCapturePointEditScreen extends Screen
         addRenderableWidget(nameField);
         setInitialFocus(nameField);
 
-        for (char symbol = CapturePointBlockEntity.FIRST_SYMBOL; symbol <= CapturePointBlockEntity.LAST_SYMBOL; symbol++)
-        {
-            char choice = symbol;
-            Button button = Button.builder(Component.literal(String.valueOf(symbol)), ignored ->
-            {
-                selectedSymbol = choice;
-                refreshButtons();
-            }).bounds(left + 6 + 50 * (symbol - CapturePointBlockEntity.FIRST_SYMBOL), top + 40, 46, 20).build();
-            symbolButtons.add(button);
-            addRenderableWidget(button);
-        }
-
+        addRenderableWidget(Button.builder(Component.literal("<"), ignored -> selectSymbol(-1)).bounds(left + 6, top + 40, 20, 20).build());
+        symbolButton = addRenderableWidget(Button.builder(Component.literal(String.valueOf(selectedSymbol)), ignored -> { }).bounds(left + 28, top + 40, 200, 20).build());
+        addRenderableWidget(Button.builder(Component.literal(">"), ignored -> selectSymbol(1)).bounds(left + 230, top + 40, 20, 20).build());
         radiusField = new EditBox(font, left + 50, top + 65, 36, 16, Component.translatable("gui.flansmod.teams.capture_point.radius"));
         radiusField.setMaxLength(3);
         radiusField.setFilter(value -> value.chars().allMatch(Character::isDigit));
@@ -124,6 +112,14 @@ public final class TeamsCapturePointEditScreen extends Screen
         refreshButtons();
     }
 
+    private void selectSymbol(int direction)
+    {
+        int symbolCount = CapturePointBlockEntity.LAST_SYMBOL - CapturePointBlockEntity.FIRST_SYMBOL + 1;
+        int symbolIndex = selectedSymbol - CapturePointBlockEntity.FIRST_SYMBOL;
+        selectedSymbol = (char)(CapturePointBlockEntity.FIRST_SYMBOL + Math.floorMod(symbolIndex + direction, symbolCount));
+        symbolButton.setMessage(Component.literal(String.valueOf(selectedSymbol)));
+    }
+
     private void selectMap(int slot)
     {
         int index = page * MAPS_PER_PAGE + slot;
@@ -134,8 +130,6 @@ public final class TeamsCapturePointEditScreen extends Screen
 
     private void refreshButtons()
     {
-        for (int i = 0; i < symbolButtons.size(); i++)
-            symbolButtons.get(i).active = selectedSymbol != CapturePointBlockEntity.FIRST_SYMBOL + i;
         for (int i = 0; i < ownerButtons.size(); i++)
             ownerButtons.get(i).active = selectedOwner != OWNER_IDS[i];
         for (int i = 0; i < mapButtons.size(); i++)

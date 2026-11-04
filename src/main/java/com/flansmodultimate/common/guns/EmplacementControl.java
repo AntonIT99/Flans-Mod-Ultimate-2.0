@@ -5,8 +5,10 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
@@ -18,6 +20,30 @@ public final class EmplacementControl
     private boolean firing;
     @Nullable
     private UUID firingOperator;
+    private long aimAt = Long.MIN_VALUE;
+    @Nullable
+    private UUID aimOperator;
+    @Nullable
+    private Vec3 aimDirection;
+
+    /** Keeps automated aim independent of the operator's look controller. Renew every server tick. */
+    public void aim(long now, Entity operator, Vec3 direction)
+    {
+        aimAt = now;
+        aimOperator = operator.getUUID();
+        aimDirection = direction;
+    }
+
+    public Optional<Vec3> aim(long now, Entity operator)
+    {
+        return aimAt >= now - 1 && operator.isAlive() && operator.getUUID().equals(aimOperator) ? Optional.ofNullable(aimDirection) : Optional.empty();
+    }
+
+    public void clearAim()
+    {
+        aimDirection = null;
+        aimOperator = null;
+    }
 
     public void firing(long now, @Nullable Entity operator, boolean value)
     {

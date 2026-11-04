@@ -457,13 +457,14 @@ public final class DriveableAmmoLoader
             boolean sameType = current.getItem() instanceof ShootableItem item && item.getConfigType() == ammoType;
             if (sameType)
             {
-                if (isFull(current))
+                if (isFull(current, data.getMaxStackSize()))
                 {
                     ++kept;
                     continue;
                 }
                 ItemStack toppedUpStack = current.copy();
                 topUp(toppedUpStack, ammoType);
+                toppedUpStack.setCount(Math.min(toppedUpStack.getMaxStackSize(), data.getMaxStackSize()));
                 data.setItem(slot, toppedUpStack);
                 ++toppedUp;
                 continue;
@@ -481,16 +482,12 @@ public final class DriveableAmmoLoader
                 displaced.add(current.copy());
                 ++replaced;
             }
-            data.setItem(slot, template.copy());
+            data.setItem(slot, template.copyWithCount(Math.min(template.getMaxStackSize(), data.getMaxStackSize())));
         }
         return new BankReport(label, slots.size(), ammoType.getName(), loaded, toppedUp, replaced, kept, null);
     }
 
-    /**
-     * Ammunition holding a single round carries it as the stack count, so the weapon slot
-     * limit of one item already makes such a stack full. Only a magazine tracks rounds in
-     * its own tag, and only that needs setting.
-     */
+    /** Creates a full ammunition item; the destination supplies its stack limit. */
     private static ItemStack createAmmoStack(ShootableType ammoType)
     {
         ItemStack stack = ModUtils.getItemStack(ammoType, 1).orElse(ItemStack.EMPTY);
@@ -507,9 +504,9 @@ public final class DriveableAmmoLoader
             stack.setCount(1);
     }
 
-    private static boolean isFull(ItemStack stack)
+    private static boolean isFull(ItemStack stack, int inventoryLimit)
     {
-        return ShootableItem.getRoundsRemaining(stack) >= Math.max(1, ShootableItem.getMaxRounds(stack));
+        return stack.getCount() >= Math.min(stack.getMaxStackSize(), inventoryLimit) && ShootableItem.getRoundsRemaining(stack) >= Math.max(1, ShootableItem.getMaxRounds(stack));
     }
 
     private static BankReport problem(String label, int slots, String problem)

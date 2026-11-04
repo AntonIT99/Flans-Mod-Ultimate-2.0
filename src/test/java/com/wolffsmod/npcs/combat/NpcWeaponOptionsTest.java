@@ -19,7 +19,7 @@ class NpcWeaponOptionsTest
     private static final Set<Feature> STARTS_DISABLED = EnumSet.of(Feature.SECONDARY_BANK, Feature.INVULNERABLE, Feature.TURRET_LOCKED, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED,
         Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO, Feature.HITBOX_OUTLINES, Feature.MELEE_DUAL_WIELD, Feature.ADVANCED_SEARCH_INTERVALS,
         Feature.STAGGER_NEAR_SEARCH, Feature.FITTING_SLOT_AMMO, Feature.AIM_DEBUG, Feature.UNMANNED_GUNS_FIRE, Feature.RETURN_WHEN_INACTIVE, Feature.WEAPON_FIRING_RANGE, Feature.NON_LETHAL,
-        Feature.SUPPRESSIBLE, Feature.ALLY_NAME_TAGS);
+        Feature.SUPPRESSIBLE, Feature.ALLY_NAME_TAGS, Feature.GUN_STABILISER);
 
     @Test
     void driverGunChoiceSurvivesSaveAndReload()

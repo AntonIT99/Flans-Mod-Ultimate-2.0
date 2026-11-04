@@ -4,6 +4,8 @@ import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.tactics.NpcCombatAdvance;
+import com.wolffsmod.npcs.tactics.NpcInfantryRole;
 import com.wolffsmod.npcs.tactics.NpcSafetyState.Action;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcWeaponRange;
@@ -37,17 +39,28 @@ final class BotSquadCombat
         if (now - sampledAt >= 5L || now < sampledAt || sampledTarget == null || sampledTarget != target)
         {
             sampledAt = now;
-            members = sample(observer, battle, squad, now);
+            members = observer.level() instanceof ServerLevel level ? sample(level, battle, squad, now) : List.of();
             targets.clear();
             members.forEach(member -> targets.put(member.id(), member.target()));
         }
         return members;
     }
 
-    private static List<SquadCombat.Member> sample(EntityNPCInterface observer, BotBattle battle, BotSquad squad, long now)
+    /** The commander reuses the combat cache instead of building a second set of member observations. */
+    List<SquadCombat.Member> commandMembers(ServerLevel level, BotBattle battle, BotSquad squad, long now)
     {
-        if (!(observer.level() instanceof ServerLevel level))
-            return List.of();
+        if (now - sampledAt >= 5L || now < sampledAt)
+        {
+            sampledAt = now;
+            members = sample(level, battle, squad, now);
+            targets.clear();
+            members.forEach(member -> targets.put(member.id(), member.target()));
+        }
+        return members;
+    }
+
+    private static List<SquadCombat.Member> sample(ServerLevel level, BotBattle battle, BotSquad squad, long now)
+    {
         List<SquadCombat.Member> sampled = new ArrayList<>();
         for (int slotId : squad.getSlots())
         {
@@ -66,9 +79,15 @@ final class BotSquadCombat
         boolean moving = state.getSafety().active(now) && state.getSafety().getAction() == Action.ADVANCE;
         boolean reloading = state.isReloading(now);
         boolean pinned = NpcSuppression.isPinned(npc);
-        boolean ready = !moving && !reloading && !pinned && enemy != null && enemy.isAlive() && enemy.level() == npc.level() && NpcEquipment.enabled(npc, Feature.COVERING_FIRE)
-            && NpcEquipmentRangedGoal.engages(npc) && npc.isInRange(enemy, NpcWeaponRange.firing(npc)) && npc.getSensing().hasLineOfSight(enemy) && loaded(npc);
-        return new SquadCombat.Member(npc.getUUID(), npc.position(), enemy == null ? -1 : enemy.getId(), ready, moving, reloading, pinned);
+        boolean visible = NpcEquipment.enabled(npc, Feature.COVERING_FIRE) && enemy != null && enemy.isAlive() && enemy.level() == npc.level() && npc.getSensing().hasLineOfSight(enemy);
+        boolean ready = !moving && !reloading && !pinned && visible && NpcEquipment.enabled(npc, Feature.COVERING_FIRE) && NpcEquipmentRangedGoal.engages(npc)
+            && npc.isInRange(enemy, NpcWeaponRange.firing(npc)) && loaded(npc);
+        var intent = NpcCombatAdvance.intent(npc, visible ? enemy.position() : null);
+        boolean wantsAdvance = NpcCombatAdvance.enabled(npc) && intent != null && !intent.reached(npc.position()) && (reloading || now >= state.getSafety().getAdvanceReadyAt());
+        BotSettings.ClassRole role = NpcInfantryRole.of(npc);
+        if (role != BotSettings.ClassRole.ASSAULT && NpcInfantryRole.support(npc))
+            role = BotSettings.ClassRole.SUPPORT;
+        return new SquadCombat.Member(npc.getUUID(), npc.position(), enemy == null ? -1 : enemy.getId(), ready, moving, reloading, pinned, role, wantsAdvance, visible ? enemy.position() : null);
     }
 
     private static boolean loaded(EntityNPCInterface npc)

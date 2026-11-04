@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
@@ -44,6 +45,29 @@ class EmplacementControlTest
         control.supplied(finite, owner, false);
         assertSame(finite, control.retain(finite, null));
         assertSame(finite, control.finite(finite));
+    }
+
+    @Test
+    void automatedAimExpiresAndBelongsOnlyToItsLivingOperator()
+    {
+        EmplacementControl control = new EmplacementControl();
+        Entity owner = mock(Entity.class);
+        when(owner.getUUID()).thenReturn(UUID.randomUUID());
+        when(owner.isAlive()).thenReturn(true);
+        Entity other = mock(Entity.class);
+        when(other.getUUID()).thenReturn(UUID.randomUUID());
+        when(other.isAlive()).thenReturn(true);
+        Vec3 direction = new Vec3(1D, 1D, 0D);
+        control.aim(100L, owner, direction);
+        assertEquals(direction, control.aim(100L, owner).orElseThrow());
+        assertEquals(direction, control.aim(101L, owner).orElseThrow());
+        assertTrue(control.aim(100L, other).isEmpty());
+        assertTrue(control.aim(102L, owner).isEmpty());
+        when(owner.isAlive()).thenReturn(false);
+        assertTrue(control.aim(100L, owner).isEmpty());
+        when(owner.isAlive()).thenReturn(true);
+        control.clearAim();
+        assertTrue(control.aim(100L, owner).isEmpty());
     }
 
     @Test

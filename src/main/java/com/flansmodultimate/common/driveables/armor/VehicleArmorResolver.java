@@ -27,19 +27,23 @@ public final class VehicleArmorResolver
                 ArmorPlate override = source.partOverrides().get(part);
                 for (EnumArmorFacing facing : EnumArmorFacing.values())
                 {
-                    ArmorPlate authored = override;
-                    if (authored == null && DriveableCollisionProfile.isTurretMountedPart(part))
-                        authored = source.turret().get(facing);
-                    if (authored == null)
-                        authored = source.hull().get(facing);
-                    if (authored == null)
-                        authored = ArmorPlate.UNARMOURED;
+                    ArmorPlate authored = selectPlate(source, part, facing, override);
                     facings.put(facing, new ResolvedArmorPlate(authored, virtualNormal(facing, authored.slopeDeg())));
                 }
                 result.put(part, Collections.unmodifiableMap(facings));
             }
         }
         return new ResolvedVehicleArmor(source, result);
+    }
+
+    private static ArmorPlate selectPlate(VehicleArmorSpec source, EnumDriveablePart part, EnumArmorFacing facing, ArmorPlate override)
+    {
+        ArmorPlate authored = override;
+        if (authored == null && DriveableCollisionProfile.isTurretMountedPart(part))
+            authored = source.turret().get(facing);
+        if (authored == null)
+            authored = source.hull().get(facing);
+        return authored == null ? ArmorPlate.UNARMOURED : authored;
     }
 
     /**

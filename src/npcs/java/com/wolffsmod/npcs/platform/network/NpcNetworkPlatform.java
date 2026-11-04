@@ -34,7 +34,7 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcNetworkPlatform
 {
-    private static final String VERSION = "7";
+    private static final String VERSION = "8";
     private static final List<Consumer<PayloadRegistrar>> registrations = new ArrayList<>();
     private static final Map<Class<?>, CustomPacketPayload.Type<NpcPayload>> types = new HashMap<>();
 

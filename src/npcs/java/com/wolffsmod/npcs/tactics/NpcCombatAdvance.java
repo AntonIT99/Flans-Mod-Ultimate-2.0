@@ -10,6 +10,7 @@ import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.NpcSafetyState.Action;
+import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -27,8 +28,11 @@ public final class NpcCombatAdvance
     /** Explicit tactics and Custom NPCs' specialist variants keep their movement decisions. */
     public static boolean enabled(EntityNPCInterface npc)
     {
-        return NpcEquipment.enabled(npc, Feature.COMBAT_ADVANCE) && NpcEquipmentRangedGoal.engages(npc) && NpcTuning.of(npc).tactic() == Tactic.CUSTOM_NPCS
-            && CustomNpcsPlatform.tacticalVariant(npc) == 0;
+        if (!NpcEquipment.enabled(npc, Feature.COMBAT_ADVANCE) || !NpcEquipmentRangedGoal.engages(npc) || NpcTuning.of(npc).tactic() != Tactic.CUSTOM_NPCS
+            || CustomNpcsPlatform.tacticalVariant(npc) != 0)
+            return false;
+        ClassRole role = NpcInfantryRole.of(npc);
+        return role != ClassRole.MELEE && role != ClassRole.SKIRMISHER;
     }
 
     /** Orders remain useful even while a target has interrupted ordinary objective or following goals. */
@@ -81,15 +85,7 @@ public final class NpcCombatAdvance
 
     public static int firePause(EntityNPCInterface npc)
     {
-        return NpcCombatPolicy.value(npc, Value.ADVANCE_FIRE_TICKS);
+        return NpcInfantryRole.firePause(NpcCombatPolicy.value(npc, Value.ADVANCE_FIRE_TICKS), NpcInfantryRole.of(npc), NpcTactics.role(npc) == WeaponRole.SUPPORT);
     }
 
-    /** The equipped weapon reloads during a dash but waits until the soldier stops to aim and fire. */
-    public static boolean holdsFire(EntityNPCInterface npc)
-    {
-        if (!(npc instanceof NpcTacticState.Holder holder))
-            return false;
-        NpcSafetyState state = holder.wolffsmodnpcsTacticState().getSafety();
-        return state.active(npc.level().getGameTime()) && state.getAction() == Action.ADVANCE;
-    }
 }

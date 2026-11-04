@@ -69,6 +69,8 @@ public class FlanModelEntityModel extends EntityModel<FlanModelEntity>
         poseStack.translate(0F, LIVING_MODEL_ORIGIN, 0F);
         poseStack.scale(-1F, -1F, 1F);
         FlanModelEntity owner = posed;
+        if (owner != null)
+            poseStack.translate(0F, owner.getAttitudeLift(), 0F);
         if (owner != null && (owner.getAttitudePitch() != 0F || owner.getAttitudeBank() != 0F))
         {
             // Forward is -Z and right +X here: pitched nose down about the width, banked right about the length, as NpcModels places muzzles.

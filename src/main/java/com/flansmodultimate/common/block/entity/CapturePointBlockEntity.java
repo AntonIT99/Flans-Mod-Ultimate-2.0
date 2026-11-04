@@ -38,7 +38,7 @@ public final class CapturePointBlockEntity extends FlanBlockEntity implements IT
     public static final int MAX_RADIUS = 256;
     public static final int MAX_NAME_LENGTH = 60;
     public static final char FIRST_SYMBOL = 'A';
-    public static final char LAST_SYMBOL = 'E';
+    public static final char LAST_SYMBOL = 'Z';
     private static final String NBT_OBJECT_ID = "object_id";
     private static final String NBT_DEFAULT_OWNER = "default_owner";
     private static final String NBT_OWNER = "owner";
@@ -204,6 +204,43 @@ public final class CapturePointBlockEntity extends FlanBlockEntity implements IT
         setBaseName(name);
         symbol = normaliseSymbol(String.valueOf(newSymbol));
         captureRadius = Mth.clamp(radius, 1, MAX_RADIUS);
+        setChangedAndSync();
+    }
+
+    /** Assigns the first free letter on this map only when a new point is placed. */
+    public void initialisePlacedSymbol()
+    {
+        if (!(level instanceof ServerLevel serverLevel))
+            return;
+        TeamsManager manager = TeamsManager.getInstance();
+        if (StringUtils.isBlank(mapId))
+            manager.getMaps().stream().filter(map -> map.getDimension().equals(getDimension())).findFirst().ifPresent(map -> setMapId(map.getShortName()));
+        Set<Character> used = new HashSet<>();
+        manager.getMap(mapId).ifPresent(map ->
+        {
+            // Registered positions survive chunk unloading and server restarts.
+            for (BlockPos position : List.copyOf(map.getBasePositions().values()))
+            {
+                serverLevel.getChunkAt(position);
+                if (serverLevel.getBlockEntity(position) instanceof ITeamCapturePoint point && !point.getObjectId().equals(objectId))
+                    used.add(point.getSymbol());
+            }
+        });
+        for (ITeamBase base : manager.getBases(getDimension()))
+        {
+            if (base instanceof ITeamCapturePoint point && !point.getObjectId().equals(objectId) && point.getMapId().equals(mapId))
+                used.add(point.getSymbol());
+        }
+        symbol = FIRST_SYMBOL;
+        for (char candidate = FIRST_SYMBOL; candidate <= LAST_SYMBOL; candidate++)
+        {
+            if (!used.contains(candidate))
+            {
+                symbol = candidate;
+                break;
+            }
+        }
+        manager.registerBase(this);
         setChangedAndSync();
     }
 

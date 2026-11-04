@@ -1,0 +1,32 @@
+version: "1.0"
+linter: qodana-jvm-community
+withinDocker: false
+plugins:
+  - id: com.demonwav.minecraft-dev
+profile:
+  name: Project Default
+  inspections:
+    - inspection: DuplicatedCode
+      enabled: false
+    - inspection: DuplicatedCode_lang
+      enabled: false
+    - inspection: unused
+      enabled: false
+    - inspection: SpellCheckingInspection
+      enabled: false
+    - inspection: GrazieInspection
+      enabled: false
+    - inspection: LanguageDetectionInspection
+      enabled: false
+    - inspection: VulnerableLibrariesLocal
+      enabled: false
+    - inspection: JavaDoc
+      enabled: false
+    - inspection: JavadocDeclaration
+      enabled: false
+    - inspection: MissingJavadoc
+      enabled: false
+    - inspection: EmptyDirectory
+      enabled: false
+    - inspection: AddedMixinMembersNamePattern
+      enabled: false

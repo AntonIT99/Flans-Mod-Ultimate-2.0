@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 
-/** Selects one sword addon deterministically, shared by model inheritance, combat and the synchronized right-arm tool. */
+/** Selects arm equipment deterministically, shared by model inheritance, combat and synchronized tools. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcMechaTools
 {
@@ -24,16 +24,53 @@ public final class NpcMechaTools
         return model != null && FlanModelKind.of(model.getInfoType()) == FlanModelKind.MECHA;
     }
 
-    /** The first sword: main hand, off hand, projectile slot, then the nine inventory slots; also available to inventory editor copies. */
+    /** Best reach, then damage per tick, then damage; inventory order breaks exact ties without moving any stack. */
     public static ItemStack findSword(EntityNPCInterface npc)
     {
         FlanModelEntity model = NpcModels.flan(npc);
         if (model == null || FlanModelKind.of(model.getInfoType()) != FlanModelKind.MECHA)
             return ItemStack.EMPTY;
-        for (ItemStack stack : java.util.List.of(npc.getMainHandItem(), npc.getOffhandItem(), NpcAmmunition.projectile(npc)))
-            if (FlansEquipment.getMechaMeleeProperties(model.getInfoType(), stack).isPresent())
+        ItemStack best = ItemStack.EMPTY;
+        MechaMeleeProperties chosen = null;
+        for (ItemStack stack : NpcAmmunition.supplies(npc))
+        {
+            var properties = FlansEquipment.getMechaMeleeProperties(model.getInfoType(), stack);
+            if (properties.isPresent() && (chosen == null || compare(properties.get(), chosen) > 0))
+            {
+                best = stack;
+                chosen = properties.get();
+            }
+        }
+        return best;
+    }
+
+    static int compare(MechaMeleeProperties first, MechaMeleeProperties second)
+    {
+        int reach = Double.compare(first.reach(), second.reach());
+        if (reach != 0)
+            return reach;
+        int rate = Double.compare(first.damage() / first.delay(), second.damage() / second.delay());
+        return rate != 0 ? rate : Float.compare(first.damage(), second.damage());
+    }
+
+    /** Both model arms have independent display stacks: sword on the right, ranged weapon or spare tool on the left. */
+    public static ItemStack hand(EntityNPCInterface npc, boolean left)
+    {
+        if (!isMecha(npc))
+            return ItemStack.EMPTY;
+        ItemStack sword = findSword(npc);
+        ItemStack right = sword;
+        if (right.isEmpty())
+            right = NpcAmmunition.supplies(npc).stream().filter(FlansEquipment::isMechaHandTool).findFirst().orElse(ItemStack.EMPTY);
+        if (!left)
+            return right;
+        ItemStack ranged = NpcEquipment.rangedWeapon(npc);
+        if (FlansEquipment.getWeaponKind(ranged).filter(kind -> kind.ranged() && !kind.throwable() && !kind.shield()).isPresent())
+            return ranged;
+        for (ItemStack stack : NpcAmmunition.supplies(npc))
+            if (FlansEquipment.isMechaHandTool(stack) && stack != right)
                 return stack;
-        return NpcAmmunition.inventory(npc).stream().filter(stack -> FlansEquipment.getMechaMeleeProperties(model.getInfoType(), stack).isPresent()).findFirst().orElse(ItemStack.EMPTY);
+        return ItemStack.EMPTY;
     }
 
     /** The synchronized sword's effective statistics, on either side. */

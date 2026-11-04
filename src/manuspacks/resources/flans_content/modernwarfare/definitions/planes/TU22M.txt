@@ -52,7 +52,7 @@ ReadWeaponsFromGunTypes true
 UseRealisticVehicleHealth true
 
 // Parts and Seats
-CameraDistance 10.0
+CameraDistance 62.0
 Propeller 0 0 0 0 core SMP_Part_Propeller_TurbineJet
 Propeller 1 0 0 0 core SMP_Part_Propeller_TurbineJet
 Pilot 230 42 -8

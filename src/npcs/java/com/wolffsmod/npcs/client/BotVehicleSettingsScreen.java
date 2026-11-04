@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.client;
 
 import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
+import com.wolffsmod.npcs.sim.NpcTuning.AircraftRole;
 import com.wolffsmod.npcs.teams.BotSettings;
 import com.wolffsmod.npcs.teams.SquadTemplate;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +29,7 @@ final class BotVehicleSettingsScreen extends Screen
     private final String[] keys = {"budget", "respawn", "tickets"};
     private final int[] values;
     private String carry;
+    private AircraftRole aircraftRole;
     private List<Integer> paintjobs;
 
     BotVehicleSettingsScreen(Screen parent, List<SquadTemplate> templates, BotSettings.VehicleEntry entry, Consumer<BotSettings.VehicleEntry> save)
@@ -38,6 +40,7 @@ final class BotVehicleSettingsScreen extends Screen
         this.save = save;
         values = new int[]{entry.budget(), entry.respawnSeconds(), entry.ticketCost()};
         carry = entry.carry();
+        aircraftRole = entry.aircraftRole();
         paintjobs = entry.paintjobs();
         this.templates.put("", "");
         templates.forEach(template -> this.templates.put(template.id(), template.name()));
@@ -63,9 +66,13 @@ final class BotVehicleSettingsScreen extends Screen
         addRenderableWidget(Button
             .builder(Component.translatable(PREFIX + "paintjobs"), button -> Minecraft.getInstance().setScreen(new BotPaintjobsScreen(this, entry.type(), paintjobs, selected -> paintjobs = selected)))
             .bounds(left, 160, 300, 20).build());
+        if (com.wolffsmod.npcs.model.FlanModelNpcs.type(entry.type()).filter(type -> com.wolffsmod.npcs.teams.BotRole.of(type.getKind(), type.getInfoType()).flies()).isPresent())
+            addRenderableWidget(
+                CycleButton.<AircraftRole>builder(role -> Component.translatable("wolffsmodnpcs.tuning.aircraft_role." + role.name().toLowerCase(Locale.ROOT))).withValues(AircraftRole.values())
+                    .withInitialValue(aircraftRole).create(left, 184, 300, 20, Component.translatable("wolffsmodnpcs.tuning.aircraft_role"), (button, value) -> aircraftRole = value));
         addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button ->
         {
-            save.accept(new BotSettings.VehicleEntry(entry.type(), entry.count(), values[0], values[1], values[2], entry.spawner(), carry, paintjobs));
+            save.accept(new BotSettings.VehicleEntry(entry.type(), entry.count(), values[0], values[1], values[2], entry.spawner(), carry, paintjobs, aircraftRole));
             onClose();
         }).bounds(left, height - 28, 145, 20).build());
         addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> onClose()).bounds(left + 155, height - 28, 145, 20).build());

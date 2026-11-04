@@ -84,7 +84,7 @@ BulletDetection 10
 UseRealisticVehicleHealth true
 
 // Seats and geometry
-CameraDistance 15.0
+CameraDistance 30.0
 WheelPosition 0 -47 -10 -32
 WheelPosition 1 -47 -10 32
 WheelPosition 2 75 -10 0
@@ -115,3 +115,9 @@ PropSound JetEngine2
 PropSoundLength 47
 ShootSoundPrimary MinigunShoot
 ShootSoundSecondary RocketFire2
+
+// Engine exhaust
+AddEmitter flansmod.afterburn 1 [147.56,30.94,-13.685] [1,1,1] [4,0,0] 0.65 8 0 1 tail
+AddEmitter flansmod.afterburn 1 [151.56,30.94,-13.685] [1,1,1] [6,0,0] 0.65 8 0 1 tail
+AddEmitter flansmod.afterburn 1 [147.56,30.94,13.685] [1,1,1] [4,0,0] 0.65 8 0 1 tail
+AddEmitter flansmod.afterburn 1 [151.56,30.94,13.685] [1,1,1] [6,0,0] 0.65 8 0 1 tail

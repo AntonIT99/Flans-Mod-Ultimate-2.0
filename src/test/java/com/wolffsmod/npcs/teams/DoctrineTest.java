@@ -7,9 +7,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,12 +31,131 @@ class DoctrineTest
     }
 
     @Test
+    void bothSidesKeepFightingWhileOtherSquadsTakeTheOuterObjectives()
+    {
+        var front = point('A', 60D, -1, -1, true);
+        var outer = point('B', 140D, -1, -1, false);
+        var far = point('C', 220D, -1, -1, false);
+        for (int side : new int[]{US, GERMANY})
+        {
+            var squads = List.of(squad(1, BotRole.INFANTRY, 0D), squad(2, BotRole.INFANTRY, 0D), squad(3, BotRole.INFANTRY, 0D));
+            var field = new Doctrine.Battlefield(side, -1, List.of(front, outer, far), List.of(), List.of(), List.of(), List.of());
+            var tasks = Doctrine.plan(field, squads);
+            assertEquals(3L, tasks.values().stream().map(SquadTask::target).distinct().count());
+            var committed = squads.stream().map(squad -> new Doctrine.SquadView(squad.id(), squad.role(), squad.posture(), squad.position(), squad.strength(), false, tasks.get(squad.id()).target()))
+                .toList();
+            assertEquals(tasks, Doctrine.plan(field, committed), "repeated planning must preserve the split");
+        }
+    }
+
+    @Test
+    void reinforcementsCannotAbsorbEveryReadySquadWhileNeutralPointsAreUnclaimed()
+    {
+        var held = point('A', 30D, US, -1, false);
+        var neutral = point('B', 100D, -1, -1, false);
+        var field = new Doctrine.Battlefield(US, -1, List.of(held, neutral), List.of(), List.of(), List.of(), List.of());
+        var pinned = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, held.position(), 4, false, held.position(), 0.3D, 0D, null, held.position());
+        var tasks = Doctrine.plan(field, List.of(pinned, squad(2, BotRole.INFANTRY, 0D), squad(3, BotRole.INFANTRY, 0D)));
+        assertEquals(held.position(), tasks.get(2).target());
+        assertEquals(neutral.position(), tasks.get(3).target());
+    }
+
+    @Test
+    void pinnedGarrisonCanRequestReinforcementWithoutKnowingTheShootersPosition()
+    {
+        var held = point('A', 100D, US, -1, false);
+        var other = point('B', 180D, -1, -1, false);
+        var field = new Doctrine.Battlefield(US, -1, List.of(held, other), List.of(), List.of(), List.of(), List.of());
+        var pinned = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, held.position(), 4, false, held.position(), 0.3D, 0D, null, held.position());
+        var ready = squad(2, BotRole.INFANTRY, 0D);
+        assertEquals(other.position(), Doctrine.plan(field, List.of(ready)).get(2).target());
+        assertEquals(held.position(), Doctrine.plan(field, List.of(pinned, ready)).get(2).target());
+        assertTrue(field.enemies().isEmpty());
+    }
+
+    @Test
+    void huntingSquadsRespondToLeaderRequestsUsingReportedPositionsOnly()
+    {
+        Vec3 requested = new Vec3(100D, 64D, 0D);
+        Vec3 nearest = new Vec3(30D, 64D, 0D);
+        var field = new Doctrine.Battlefield(US, -1, List.of(), List.of(requested, nearest), List.of(), List.of(), List.of());
+        var pinned = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, requested, 4, false, requested, 0.3D, 0D, null, requested);
+        var ready = squad(2, BotRole.INFANTRY, 0D);
+        assertEquals(nearest, Doctrine.plan(field, List.of(ready)).get(2).target());
+        assertEquals(requested, Doctrine.plan(field, List.of(pinned, ready)).get(2).target());
+        assertEquals(List.of(requested, nearest), field.enemies());
+    }
+
+    @Test
+    void repeatedRouteFailuresPreferAnAlternativeObjective()
+    {
+        var blocked = point('A', 30D, GERMANY, -1, false);
+        var alternative = point('B', 100D, GERMANY, -1, false);
+        var field = new Doctrine.Battlefield(US, -1, List.of(blocked, alternative), List.of(), List.of(), List.of(), List.of());
+        var squad = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, Vec3.ZERO, 4, false, blocked.position(), 1D, 0D, blocked.position(), null);
+        assertEquals(alternative.position(), Doctrine.plan(field, List.of(squad)).get(1).target());
+    }
+
+    @Test
+    void pinnedSquadReportsAttractReadyReinforcements()
+    {
+        var requested = point('A', 100D, GERMANY, -1, false);
+        var alternative = point('B', 180D, -1, -1, false);
+        var field = new Doctrine.Battlefield(US, -1, List.of(requested, alternative), List.of(), List.of(), List.of(), List.of());
+        var pinned = new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, requested.position(), 4, false, requested.position(), 0.3D, 0D, null, requested.position());
+        var ready = squad(2, BotRole.INFANTRY, 0D);
+        assertEquals(alternative.position(), Doctrine.plan(field, List.of(ready)).get(2).target());
+        assertEquals(requested.position(), Doctrine.plan(field, List.of(pinned, ready)).get(2).target());
+    }
+
+    @Test
     void withoutObjectivesSquadsHuntTheNearestEnemy()
     {
         Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, List.of(), List.of(new Vec3(100D, 64D, 0D), new Vec3(-30D, 64D, 0D)), List.of(), List.of(), List.of());
         Map<Integer, SquadTask> tasks = Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D)));
         assertEquals(SquadTask.Kind.HUNT, tasks.get(1).kind());
         assertEquals(-30D, tasks.get(1).target().x);
+    }
+
+    @Test
+    void huntingSquadsDivideNearbyEnemyGroupsAndKeepTheirAssignments()
+    {
+        Vec3 first = new Vec3(100D, 64D, 0D);
+        Vec3 clustered = first.add(2D, 0D, 0D);
+        Vec3 second = new Vec3(100D, 64D, 80D);
+        var field = new Doctrine.Battlefield(US, -1, List.of(), List.of(first, clustered, second), List.of(), List.of(), List.of());
+        var tasks = Doctrine.plan(field, List.of(squad(2, BotRole.INFANTRY, 0D), squad(1, BotRole.INFANTRY, 0D)));
+        assertEquals(first, tasks.get(1).target());
+        assertEquals(second, tasks.get(2).target());
+        var committed = List.of(new Doctrine.SquadView(1, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, new Vec3(20D, 64D, 0D), 4, false, first),
+            new Doctrine.SquadView(2, BotRole.INFANTRY, SquadTemplate.Posture.BALANCED, new Vec3(20D, 64D, 0D), 4, false, second));
+        assertEquals(tasks, Doctrine.plan(field, committed));
+    }
+
+    @Test
+    void huntingDoesNotSendASquadAcrossTheMapJustForVariety()
+    {
+        Vec3 nearby = new Vec3(30D, 64D, 0D);
+        var field = new Doctrine.Battlefield(US, -1, List.of(), List.of(nearby, new Vec3(2000D, 64D, 0D)), List.of(), List.of(), List.of());
+        var tasks = Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D), squad(2, BotRole.INFANTRY, 0D)));
+        assertTrue(tasks.values().stream().allMatch(task -> task.target().equals(nearby)));
+    }
+
+    @Test
+    void scoutingSquadsSplitBetweenEnemySpawns()
+    {
+        var field = new Doctrine.Battlefield(US, -1, List.of(), List.of(), List.of(new Vec3(100D, 64D, 0D), new Vec3(120D, 64D, 80D)), List.of(), List.of());
+        var tasks = Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D), squad(2, BotRole.INFANTRY, 0D)));
+        assertNotEquals(tasks.get(1).target(), tasks.get(2).target());
+    }
+
+    @Test
+    void spreadingTargetsDoesNotDrawSquadsAwayFromAnAssignedFront()
+    {
+        Vec3 nearby = new Vec3(30D, 64D, 0D);
+        var field = new Doctrine.Battlefield(US, -1, List.of(), List.of(nearby, new Vec3(100D, 64D, 0D)), List.of(), List.of(), List.of(), true, new Vec3(150D, 64D, 0D));
+        var tasks = Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D), squad(2, BotRole.INFANTRY, 0D)));
+        assertTrue(tasks.values().stream().allMatch(task -> task.target().equals(nearby)));
     }
 
     @Test
@@ -146,6 +263,38 @@ class DoctrineTest
     }
 
     @Test
+    void aShipAlreadyWithinReachOfTheObjectiveHoldsStationOffItAndShellsIt()
+    {
+        List<TeamsCapturePoint> points = List.of(point('A', 0D, -1, -1, false));
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, points, List.of(), List.of(), List.of(new Vec3(400D, 62D, 0D)), List.of());
+        SquadTask task = Doctrine.plan(field, List.of(squad(1, BotRole.NAVAL, 60D))).get(1);
+        assertEquals(SquadTask.Kind.OVERWATCH, task.kind(), "it stays in gun range rather than steaming back to a far patrol point");
+        assertTrue(task.target().x > points.get(0).position().x, "standing off on its own side of the objective");
+        assertTrue(task.target().distanceTo(points.get(0).position()) > 24D, "and far enough out to stay over its own water");
+    }
+
+    @Test
+    void aBatteredNavalSquadLeavesTheLineForThePatrolPointFarthestFromTheEnemy()
+    {
+        List<TeamsCapturePoint> points = List.of(point('A', 0D, -1, -1, false));
+        List<Vec3> navalPoints = List.of(new Vec3(40D, 62D, 0D), new Vec3(400D, 62D, 0D));
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, points, List.of(new Vec3(20D, 64D, 0D)), List.of(), navalPoints, List.of());
+        Doctrine.SquadView flooded = new Doctrine.SquadView(1, BotRole.NAVAL, SquadTemplate.Posture.BALANCED, new Vec3(60D, 64D, 0D), 3, false, null, 0.2D, 0D);
+        SquadTask task = Doctrine.plan(field, List.of(flooded)).get(1);
+        assertEquals(SquadTask.Kind.PATROL, task.kind());
+        assertEquals(400D, task.target().x, "away from the enemy rather than the nearest point");
+    }
+
+    @Test
+    void aNavalSquadIsGivenRoomForEveryHullInIt()
+    {
+        double small = Doctrine.navalRadius(squad(1, BotRole.NAVAL, 0D));
+        Doctrine.SquadView flotilla = new Doctrine.SquadView(2, BotRole.NAVAL, SquadTemplate.Posture.BALANCED, Vec3.ZERO, 8, false, null);
+        assertTrue(Doctrine.navalRadius(flotilla) > small, "more hulls need more water");
+        assertTrue(small >= 16D, "and one hull still gets a station of its own");
+    }
+
+    @Test
     void aSquadCarryingTheEnemyFlagTakesItHome()
     {
         List<Doctrine.FlagView> flags = List.of(new Doctrine.FlagView(US, US_FLAG, US_FLAG, true, -1), new Doctrine.FlagView(GERMANY, new Vec3(150D, 66D, 0D), GERMAN_FLAG, false, US));
@@ -217,5 +366,27 @@ class DoctrineTest
     {
         Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, List.of(), List.of(new Vec3(30D, 64D, 0D)), List.of(), List.of(), List.of(), false, new Vec3(150D, 64D, 0D));
         assertEquals(30D, Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D))).get(1).target().x);
+    }
+
+    @Test
+    void armourCoversAnObjectiveFromAStandoffWhileTheInfantryGoIn()
+    {
+        TeamsCapturePoint objective = point('A', 60D, GERMANY, -1, false);
+        Doctrine.Battlefield field = new Doctrine.Battlefield(US, -1, List.of(objective), List.of(), List.of(), List.of(), List.of());
+        Map<Integer, SquadTask> tasks = Doctrine.plan(field, List.of(squad(1, BotRole.INFANTRY, 0D), squad(2, BotRole.ARMOR, 0D)));
+        SquadTask infantry = tasks.get(1);
+        SquadTask armour = tasks.get(2);
+        assertEquals(SquadTask.Kind.ATTACK, infantry.kind());
+        assertEquals(objective.position(), infantry.target(), "only the infantry can take the point, so they go onto it");
+        assertEquals(SquadTask.Kind.OVERWATCH, armour.kind());
+        assertEquals(30D, armour.target().distanceTo(objective.position()), 1.0E-6D, "the point's radius plus the standoff");
+        assertTrue(armour.target().x < objective.position().x, "and it stands off on the side it is coming from");
+    }
+
+    @Test
+    void armourAlreadyOnAnObjectiveCoversItFromWhereItStands()
+    {
+        TeamsCapturePoint objective = point('A', 60D, GERMANY, -1, false);
+        assertEquals(objective.position(), Doctrine.standoff(objective.position(), objective.position(), objective.radius()));
     }
 }

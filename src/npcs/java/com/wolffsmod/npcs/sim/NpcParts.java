@@ -133,7 +133,6 @@ public final class NpcParts
             pendingPacket.applyTo(current);
             pendingPacket = null;
         }
-        current.setBrokenPartsSolid(!options.enabled(Feature.BROKEN_PARTS_PASS));
         current.setOutlined(options.enabled(Feature.HITBOX_OUTLINES));
         current.setSolid(options.enabled(Feature.SOLID_HITBOXES));
         // A plane in flight is drawn pitched nose down and banked right by its attitude; a driveable pitches nose up.
@@ -193,8 +192,19 @@ public final class NpcParts
         reconcile(npc, current, share, options.enabled(Feature.PART_REPAIR));
         repairs.tick(npc, current);
         effects = options.enabled(Feature.PART_EFFECTS) && kind != null ? NpcPartEffects.of(current.getParts(), kind) : NpcPartEffects.NONE;
-        if (effects.shotDown())
+        if (effects.shotDown() && !comesDown(npc))
             npc.setHealth(0F);
+    }
+
+    /**
+     * A shot-down aircraft in the air is brought down as an airframe, and lives until it strikes the ground; one that
+     * cannot fall dies where it is.
+     *
+     * @return whether it is coming down
+     */
+    private static boolean comesDown(EntityNPCInterface npc)
+    {
+        return NpcVehicleState.of(npc).getFlight().bringDown(npc);
     }
 
     /** @return NPC health per hit point of the body, or 0 when the body holds none */
@@ -317,8 +327,9 @@ public final class NpcParts
             return;
         repairs.damaged(part, npc.level().getGameTime());
         current.damage(part, dealt / share, source.is(DamageTypeTags.IS_FIRE));
-        boolean fatal = coreBroken(current)
-            || options.enabled(Feature.PART_EFFECTS) && bodyType != null && damageKind(bodyType) == FlanModelKind.PLANE && NpcPartEffects.of(current.getParts(), FlanModelKind.PLANE).shotDown();
+        boolean shotDown = options.enabled(Feature.PART_EFFECTS) && bodyType != null && damageKind(bodyType) == FlanModelKind.PLANE
+            && NpcPartEffects.of(current.getParts(), FlanModelKind.PLANE).shotDown();
+        boolean fatal = coreBroken(current) || shotDown && !comesDown(npc);
         npc.setHealth(fatal ? 0F : Math.min(before, current.getHealth() * share));
     }
 

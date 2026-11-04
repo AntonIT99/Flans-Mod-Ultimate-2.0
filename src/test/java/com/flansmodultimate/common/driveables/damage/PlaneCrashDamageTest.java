@@ -55,7 +55,7 @@ class PlaneCrashDamageTest
     @Test
     void fastHelicopterDescentRetainsCatastrophicImpactSpeed()
     {
-        HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(RealWorldVehicleSpec.EMPTY, 1F, 0.08F, 1F, 1D);
+        HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(RealWorldVehicleSpec.EMPTY, 0.08F, 1F, 1D);
         Vec3 velocity = HelicopterPhysics.step(new Vec3(0D, -3D, 0D), new Vec3(0D, 1D, 0D), performance, 0F, 1F, 1F);
         PlaneCrashDamage.Impact impact = PlaneCrashDamage.evaluate(velocity.length(), -velocity.y, 1D, 1F);
 

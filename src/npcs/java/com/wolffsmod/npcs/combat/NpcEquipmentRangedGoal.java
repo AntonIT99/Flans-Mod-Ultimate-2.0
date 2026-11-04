@@ -8,9 +8,10 @@ import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
-import com.wolffsmod.npcs.tactics.NpcCombatAdvance;
+import com.wolffsmod.npcs.tactics.NpcInfantryRole;
 import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.tactics.NpcWeaponRange;
+import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -50,6 +51,7 @@ public final class NpcEquipmentRangedGoal extends Goal
     {
         private final InteractionHand side;
         private final NpcItemCadence cadence = new NpcItemCadence();
+        private final NpcSupportBurst supportBurst = new NpcSupportBurst();
         private ItemStack lastWeapon;
         private Item lastItem;
         private boolean lastThrowable;
@@ -94,12 +96,14 @@ public final class NpcEquipmentRangedGoal extends Goal
     {
         LivingEntity target = npc.getTarget();
         return !com.wolffsmod.npcs.sim.NpcRepairs.active(npc) && !NpcCrew.holdsFire(npc) && !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive()
-            && target.level() == npc.level() && !rushes(npc) && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
+            && target.level() == npc.level() && !rushes(npc) && !NpcMeleeRoleGoal.committed(npc, target) && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
     }
 
     /** A throwable gun with a melee attack closes in while it waits for its next throw. */
     public static boolean rushes(EntityNPCInterface npc)
     {
+        if (NpcInfantryRole.of(npc) == ClassRole.SKIRMISHER)
+            return false;
         return of(npc).map(goal -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.ITEM_WEAPONS) && goal.main.lastThrowable && !goal.main.cadence.ready()
             && NpcEquipment.meleeWeapon(npc.getMainHandItem()) && FlansEquipment.getWeaponKind(NpcEquipment.rangedWeapon(npc)).filter(WeaponKind::throwable).isPresent()).orElse(false);
     }
@@ -162,15 +166,8 @@ public final class NpcEquipmentRangedGoal extends Goal
         }
         main.spinSpeed *= 0.9F;
         off.spinSpeed *= 0.9F;
-        if (NpcCombatAdvance.holdsFire(npc))
-        {
-            cancelUse();
-            reloadOnMove(main);
-            reloadOnMove(off);
-            return;
-        }
         npc.getLookControl().setLookAt(target, 30F, 30F);
-        if (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target))
+        if (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target) || NpcSupportFire.blocked(npc, target))
         {
             cancelUse();
             // A reload goes on out of sight, which is where an NPC fighting from cover goes to reload.
@@ -274,6 +271,10 @@ public final class NpcEquipmentRangedGoal extends Goal
     private void fire(Hand hand, LivingEntity target, ItemStack weapon, boolean automatic)
     {
         boolean mainHand = hand == main;
+        boolean support = automatic && NpcSupportFire.active(npc);
+        long now = npc.level().getGameTime();
+        if (!burstReady(hand, support, now))
+            return;
         do
         {
             // A successful throw can empty the stack, so read its cadence before consuming it.
@@ -285,9 +286,16 @@ public final class NpcEquipmentRangedGoal extends Goal
             if (!shot)
                 break;
             fired = true;
+            if (support)
+                hand.supportBurst.fired(now);
             NpcWatch.attack(npc);
             launched(target, hand.side);
-        } while (automatic && hand.cadence.ready() && npc.getItemInHand(hand.side) == weapon && FlansEquipment.hasLoadedRound(weapon));
+        } while (automatic && hand.cadence.ready() && npc.getItemInHand(hand.side) == weapon && FlansEquipment.hasLoadedRound(weapon) && burstReady(hand, support, now));
+    }
+
+    private static boolean burstReady(Hand hand, boolean support, long now)
+    {
+        return !support || hand.supportBurst.ready(now);
     }
 
     private boolean charge(ItemStack weapon)
@@ -316,6 +324,8 @@ public final class NpcEquipmentRangedGoal extends Goal
 
     private void launched(LivingEntity target, InteractionHand side)
     {
+        if (NpcInfantryRole.of(npc) == ClassRole.MELEE)
+            NpcTacticState.of(npc).setMeleeThrowTarget(target.getUUID());
         NpcItemAttacks.launched(npc, target, side);
         // Gunfire has its own shot animation. A native arm swing is reserved for throws and melee attacks.
         if (main.lastThrowable && side == InteractionHand.MAIN_HAND && NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.WEAPON_ANIMATIONS))
@@ -366,12 +376,6 @@ public final class NpcEquipmentRangedGoal extends Goal
             reload(hand, hand.lastWeapon);
         else
             hand.reset();
-    }
-
-    private void reloadOnMove(Hand hand)
-    {
-        if (hand.lastWeapon != null && hand.lastWeapon == npc.getItemInHand(hand.side))
-            reload(hand, hand.lastWeapon);
     }
 
     /** The reload loaded nothing. The main hand may take another weapon, which the next tick finds there. */

@@ -7,6 +7,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.AimOffsetDebugCommand;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.particle.WeaponShotEffects;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.PoseScaling;
 import com.flansmodultimate.client.render.effects.MuzzleFlashRenderer;
@@ -179,7 +180,7 @@ public final class GunItemRenderer
         renderCustomAttachments(model, stack, animations, poseStack, buffer, packedLight, packedOverlay);
         poseStack.popPose();
 
-        renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
+        renderFlash(model, stack, animations, ctx, poseStack, buffer, packedOverlay);
     }
 
     private static boolean shouldRenderGun(ModelGun model, ItemDisplayContext itemDisplayContext, ItemStack item)
@@ -1046,19 +1047,21 @@ public final class GunItemRenderer
         return reloadRotate;
     }
 
-    private static void renderFlash(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
+    private static void renderFlash(ModelGun model, ItemStack item, GunAnimations animations, @Nullable ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
     {
         AttachmentType barrelAttachment = model.getType().getBarrel(item);
+        ModelAttachment barrelModel = barrelAttachment != null && ModelCache.getOrLoadTypeModel(barrelAttachment) instanceof ModelAttachment attachment ? attachment : null;
+        boolean flashCoordinates = StringUtils.isNotBlank(model.getType().getFlashModelClassName());
+        Vector3f point = MuzzleFlashRenderer.muzzlePosition(model, barrelModel, flashCoordinates);
+        float modelScale = model.getType().getModelScale();
+        if (context != null && context.firstPerson())
+            WeaponShotEffects.firstPersonSmoke(model.getType(), context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND, poseStack, point.x * modelScale, point.y * modelScale, point.z * modelScale);
         if (animations.getMuzzleFlashTime() <= 0 || model.getType().getSecondaryFire(item) || barrelAttachment != null && barrelAttachment.isDisableMuzzleFlash())
             return;
 
         ModelBase flash = MuzzleFlashRenderer.select(model.getType(), false);
         if (flash == null)
             return;
-        ModelAttachment barrelModel = barrelAttachment != null && ModelCache.getOrLoadTypeModel(barrelAttachment) instanceof ModelAttachment attachment ? attachment : null;
-        boolean flashCoordinates = StringUtils.isNotBlank(model.getType().getFlashModelClassName());
-        Vector3f point = MuzzleFlashRenderer.muzzlePosition(model, barrelModel, flashCoordinates);
-        float modelScale = model.getType().getModelScale();
         poseStack.pushPose();
         poseStack.translate(point.x * modelScale, point.y * modelScale, point.z * modelScale);
         MuzzleFlashRenderer.render(flash, model.getType(), animations.getFlashInt(), modelScale * model.getFlashScale(), poseStack, buffer, packedOverlay);

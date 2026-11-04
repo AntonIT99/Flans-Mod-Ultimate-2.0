@@ -75,8 +75,12 @@ public final class CapturePointBlock extends TeamObjectBlock
     public void setPlacedBy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, @NotNull ItemStack stack)
     {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (!level.isClientSide && placer != null && level.getBlockEntity(pos) instanceof CapturePointBlockEntity point)
-            point.setYaw(placer.getYRot());
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof CapturePointBlockEntity point)
+        {
+            point.initialisePlacedSymbol();
+            if (placer != null)
+                point.setYaw(Math.round(placer.getYRot() / 45F) * 45F);
+        }
     }
 
     @Override

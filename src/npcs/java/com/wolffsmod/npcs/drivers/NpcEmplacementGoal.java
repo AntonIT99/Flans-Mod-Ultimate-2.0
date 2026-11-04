@@ -4,9 +4,7 @@ import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.FlansEmplacements;
 import com.flansmodultimate.api.driveables.IEmplacement;
 import com.flansmodultimate.api.equipment.FlansEquipment;
-import com.wolffsmod.npcs.combat.NpcAmmunition;
-import com.wolffsmod.npcs.combat.NpcEquipment;
-import com.wolffsmod.npcs.combat.NpcSkill;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
@@ -23,9 +21,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import java.util.*;
 
@@ -37,7 +33,7 @@ public final class NpcEmplacementGoal extends Goal
     private static final double FIRE_CONE = Math.cos(Math.toRadians(3D));
     private static final int SEARCH_INTERVAL = 40;
     private static final int BOARD_TIMEOUT = 200;
-    private static final int IDLE_TIMEOUT = 100;
+    private static final int IDLE_TIMEOUT = 300;
     private static final int REFUSAL_TICKS = 400;
 
     private final EntityNPCInterface npc;
@@ -165,6 +161,15 @@ public final class NpcEmplacementGoal extends Goal
             return;
         emplacement.reloadEmplacement(npc, () -> NpcAmmunition.takeEmplacementAmmo(npc, type), !NpcEquipment.enabled(npc, Feature.CONSUME_AMMO));
         LivingEntity target = npc.getTarget();
+        if ((npc.tickCount + npc.getId()) % 20 == 0)
+        {
+            LivingEntity air = TeamsBots.airDefenseTarget(npc, target, FIRE_RANGE, candidate -> usable(emplacement, candidate));
+            if (air != null && air != target)
+            {
+                npc.setTarget(air);
+                target = air;
+            }
+        }
         if (target == null || !usable(emplacement, target))
         {
             idle++;
@@ -174,8 +179,17 @@ public final class NpcEmplacementGoal extends Goal
         idle = 0;
         Vec3 point = target.getBoundingBox().getCenter();
         emplacement.aimEmplacement(npc, point);
-        boolean aligned = emplacement.getEmplacementDirection().dot(point.subtract(emplacement.getEmplacementOrigin()).normalize()) >= FIRE_CONE;
+        boolean aligned = aligned(emplacement, target, point);
         emplacement.setEmplacementFiring(aligned && clearOfAllies(emplacement.getEmplacementOrigin(), point) && !NpcSkill.holdsFire(npc, target));
+    }
+
+    /** Within a few degrees of the target, or with the barrel line through its box, so close and moving targets are not held back. */
+    private static boolean aligned(IEmplacement emplacement, LivingEntity target, Vec3 point)
+    {
+        Vec3 origin = emplacement.getEmplacementOrigin();
+        Vec3 direction = emplacement.getEmplacementDirection();
+        return direction.dot(point.subtract(origin).normalize()) >= FIRE_CONE
+            || target.getBoundingBox().inflate(0.25D).clip(origin, origin.add(direction.scale(origin.distanceTo(point) + 2D))).isPresent();
     }
 
     private boolean clearOfAllies(Vec3 origin, Vec3 point)
@@ -211,9 +225,13 @@ public final class NpcEmplacementGoal extends Goal
         if (mount instanceof IEmplacement emplacement)
         {
             emplacement.setEmplacementFiring(false);
-            refused.put(mount.getUUID(), npc.level().getGameTime() + REFUSAL_TICKS);
-            if (npc.getVehicle() == mount)
-                npc.stopRiding();
+            // A goal that only interrupts this one leaves the gunner at the gun; it resumes from canUse.
+            if (!canContinueToUse())
+            {
+                refused.put(mount.getUUID(), npc.level().getGameTime() + REFUSAL_TICKS);
+                if (npc.getVehicle() == mount)
+                    npc.stopRiding();
+            }
         }
         npc.getNavigation().stop();
         mount = null;

@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -24,6 +25,26 @@ public final class LegacyParticleRenderTypes
     private static final ResourceLocation PARTICLE_ATLAS = ResourceLocation.withDefaultNamespace("textures/atlas/particles.png");
     public static final ParticleRenderType TRANSLUCENT = create("FLAN_LEGACY_TRANSLUCENT", false);
     public static final ParticleRenderType PREMULTIPLIED = create("FLAN_LEGACY_PREMULTIPLIED", true);
+    /** Muzzle smoke must never write a depth silhouette over the gun or its flash. */
+    public static final ParticleRenderType GUN_SMOKE = new ParticleRenderType()
+    {
+        @Override
+        public BufferBuilder begin(Tesselator tesselator, TextureManager textureManager)
+        {
+            // drawBatch restores the depth mask after the batch, since 1.21 has no ParticleRenderType.end.
+            RenderSystem.depthMask(false);
+            RenderSystem.setShaderTexture(0, PARTICLE_ATLAS);
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            return tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
+        }
+
+        @Override
+        public String toString()
+        {
+            return "FLAN_GUN_SMOKE";
+        }
+    };
     public static final ParticleRenderType TERRAIN = new ParticleRenderType()
     {
         @Override
@@ -53,6 +74,29 @@ public final class LegacyParticleRenderTypes
     public static boolean usesDepthPass(ParticleRenderType type)
     {
         return type == TRANSLUCENT || type == PREMULTIPLIED || type == TERRAIN || type == FLARE;
+    }
+
+    /**
+     * Draws a completed particle batch of the given type. Legacy smoke gets its depth pass; muzzle smoke is drawn without depth
+     * writes and then restores the depth mask that its {@code begin} disabled.
+     */
+    public static void drawBatch(@Nullable ParticleRenderType type, MeshData mesh)
+    {
+        if (usesDepthPass(type))
+            drawWithDepth(mesh);
+        else if (type == GUN_SMOKE)
+        {
+            try
+            {
+                BufferUploader.drawWithShader(mesh);
+            }
+            finally
+            {
+                RenderSystem.depthMask(true);
+            }
+        }
+        else
+            BufferUploader.drawWithShader(mesh);
     }
 
     /** 1.21 removed ParticleRenderType.end; ParticleEngine's draw hook supplies the completed mesh instead. */

@@ -13,3 +13,4 @@ AddItem 44_MedicalBag
 AddItem 44_Bandage 4
 AddItem 44_Smokestielhandgranate 2
 AddItem 44_Parachute
+AddItem 44_German1915TrenchKnife

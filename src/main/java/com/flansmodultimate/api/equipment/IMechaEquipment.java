@@ -15,4 +15,16 @@ public interface IMechaEquipment
 {
     /** Returns the tool on the requested arm, or an empty stack; either side. The right arm is {@code left = false}. */
     ItemStack flansmodultimateMechaTool(boolean left);
+
+    /** @return synchronized addon block light, 0 to 15; either side */
+    default int flansmodultimateMechaLightLevel()
+    {
+        return 0;
+    }
+
+    /** @return synchronized addon sky-darkening state; either side */
+    default boolean flansmodultimateMechaForceDark()
+    {
+        return false;
+    }
 }

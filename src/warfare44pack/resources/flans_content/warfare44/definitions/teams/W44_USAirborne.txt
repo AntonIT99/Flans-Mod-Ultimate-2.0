@@ -40,6 +40,7 @@ AddClass W44_USAirborneScoutM1943
 
 // Anti-tank
 AddClass W44_USAirborneAntiTank
+AddClass W44_USAirborneAntiTankRifle
 AddClass W44_USAirborneAntiTankM1943
 
 // Engineers and military police

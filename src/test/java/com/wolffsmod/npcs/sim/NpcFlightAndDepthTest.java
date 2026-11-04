@@ -12,6 +12,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class NpcFlightAndDepthTest
 {
     @Test
+    void interceptionLeadsCrossingAircraftButStaysFiniteAgainstFasterEscapingTargets()
+    {
+        Vec3 target = new Vec3(0D, 0D, 40D);
+        Vec3 velocity = new Vec3(0.5D, 0D, 0D);
+        Vec3 intercept = NpcFlight.intercept(target, velocity, 1D);
+        double time = intercept.length();
+        assertTrue(target.add(velocity.scale(time)).distanceTo(intercept) < 1.0E-8D);
+        assertEquals(target, NpcFlight.intercept(target, new Vec3(0D, 0D, 2D), 1D));
+        assertEquals(target, NpcFlight.intercept(target, Vec3.ZERO, 0D));
+    }
+
+    @Test
     void anAircraftClimbsFirmlyWhenTooLowAndDescendsOnlyWhenFarTooHigh()
     {
         // Ten blocks too low: a plane climbs, harder the lower it is, up to its limit.

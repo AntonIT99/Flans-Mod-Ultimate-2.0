@@ -20,10 +20,7 @@ import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
-import com.wolffsmod.npcs.tactics.CustomNpcTacticGoal;
-import com.wolffsmod.npcs.tactics.NpcSafetyGoal;
-import com.wolffsmod.npcs.tactics.NpcTacticGoal;
-import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.tactics.*;
 import com.wolffsmod.npcs.teams.*;
 import noppes.npcs.Resistances;
 import noppes.npcs.ai.EntityAIAttackTarget;
@@ -33,10 +30,7 @@ import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
 import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -46,9 +40,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.*;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
@@ -59,6 +51,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -72,8 +65,10 @@ import java.util.*;
  * and it selects the ranged variant of Custom NPCs' tactic. The entity carries what its tactic remembers. An NPC wearing an AA
  * gun, vehicle or plane model strikes nothing in melee; a mecha requires a sword addon, synchronized for its model to draw.</li>
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
+ * <li>Infantry hold unsuitable ranged fire against airborne targets.</li>
  * <li>Model, equipment supply and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data; old simple-render Flan models migrate to normal rendering.</li>
+ * <li>Infantry roles coordinate assault, melee and skirmishing; temporary crouch/crawl postures synchronize through the native animation data with matching dimensions and speed.</li>
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling. The entity box always
  * has the size Custom NPCs works out for the NPC, on both sides, which it otherwise misses on several changes.</li>
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat;
@@ -182,6 +177,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_MECHA_TOOL = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
     @Unique
+    private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_MECHA_LEFT_TOOL = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
+    @Unique
+    private static final EntityDataAccessor<Integer> WOLFFSMODNPCS_MECHA_LIGHT = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.INT);
+    @Unique
+    private final NpcMechaSystems wolffsmodnpcsMechaSystems = new NpcMechaSystems();
+    @Unique
     private static final EntityDataAccessor<Integer> WOLFFSMODNPCS_CREW_SEAT = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.INT);
     @Unique
     private static final String WOLFFSMODNPCS_CREW_SEAT_KEY = "WolffsModCrewSeat";
@@ -197,6 +198,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Unique
     private NpcEquipmentRangedGoal wolffsmodnpcsItemGoal;
     @Unique
+    private NpcMeleeRoleGoal wolffsmodnpcsMeleeRoleGoal;
+    @Unique
     private final NpcExternalImpulses wolffsmodnpcsExternalImpulses = new NpcExternalImpulses();
     @Unique
     private NpcThrowGoal wolffsmodnpcsThrowGoal;
@@ -208,6 +211,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private NpcCombatApproachGoal wolffsmodnpcsApproachGoal;
     @Unique
     private BotObjectiveGoal wolffsmodnpcsObjectiveGoal;
+    @Unique @Nullable
+    private NpcBuildingClearGoal wolffsmodnpcsBuildingClearGoal;
     @Unique
     private NpcBoardingGoal wolffsmodnpcsBoardingGoal;
     @Unique
@@ -349,7 +354,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsEngineReplacesSteps(BlockPos pos, BlockState state, CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
-        if (NpcPresentation.of(npc).getVehicleSounds().resolve(npc, true).isPresent() || wolffsmodnpcsPlaysFlanSound(npc, 4))
+        if (NpcMechaSystems.stomp(npc) || NpcPresentation.of(npc).getVehicleSounds().resolve(npc, true).isPresent() || wolffsmodnpcsPlaysFlanSound(npc, 4))
             callback.cancel();
     }
 
@@ -518,11 +523,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         else
             wolffsmodnpcsSafetyGoal = new NpcSafetyGoal(npc);
         goalSelector.addGoal(0, wolffsmodnpcsSafetyGoal);
-        if (wolffsmodnpcsItemGoal != null)
-            goalSelector.removeGoal(wolffsmodnpcsItemGoal);
-        else
-            wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
-        goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
+        wolffsmodnpcsRegisterInfantryAttacks(npc);
         if (wolffsmodnpcsThrowGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsThrowGoal);
         else
@@ -539,6 +540,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         else
             wolffsmodnpcsObjectiveGoal = new BotObjectiveGoal(npc);
         goalSelector.addGoal(3, wolffsmodnpcsObjectiveGoal);
+        // It follows an enemy that slipped into a building, ahead of the objective it would otherwise return to.
+        if (wolffsmodnpcsBuildingClearGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsBuildingClearGoal);
+        else
+            wolffsmodnpcsBuildingClearGoal = new NpcBuildingClearGoal(npc);
+        goalSelector.addGoal(2, wolffsmodnpcsBuildingClearGoal);
         if (wolffsmodnpcsApproachGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsApproachGoal);
         wolffsmodnpcsApproachGoal = null;
@@ -564,7 +571,21 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         goalSelector.addGoal(taskCount++, new CustomNpcTacticGoal(npc));
     }
 
-    /** An equipped ranged weapon gets the ranged attack and the ranged form of the restored tactical movement. */
+    @Unique
+    private void wolffsmodnpcsRegisterInfantryAttacks(EntityNPCInterface npc)
+    {
+        if (wolffsmodnpcsItemGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsItemGoal);
+        else
+            wolffsmodnpcsItemGoal = new NpcEquipmentRangedGoal(npc);
+        goalSelector.addGoal(1, wolffsmodnpcsItemGoal);
+        if (wolffsmodnpcsMeleeRoleGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsMeleeRoleGoal);
+        else
+            wolffsmodnpcsMeleeRoleGoal = new NpcMeleeRoleGoal(npc);
+        goalSelector.addGoal(1, wolffsmodnpcsMeleeRoleGoal);
+    }
+
     // Teams owns passive healing during a round; explicit healing and vehicle repairs remain independent.
     @Redirect(method = "aiStep", at = @At(value = "FIELD", target = "Lnoppes/npcs/entity/data/DataStats;healthRegen:I", opcode = Opcodes.GETFIELD))
     private int wolffsmodnpcsRoundHealthRegen(noppes.npcs.entity.data.DataStats stats)
@@ -603,7 +624,34 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Inject(method = {"getSpeed", "m_6113_"}, at = @At("RETURN"), cancellable = true)
     private void wolffsmodnpcsSprintSpeed(CallbackInfoReturnable<Float> callback)
     {
-        callback.setReturnValue(NpcSprinting.movementSpeed((EntityNPCInterface) (Object) this, callback.getReturnValue()));
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        callback.setReturnValue(NpcTacticalPosture.speed(npc, NpcSprinting.movementSpeed(npc, callback.getReturnValue())));
+    }
+
+    @ModifyVariable(method = "setCurrentAnimation", at = @At("HEAD"), argsOnly = true)
+    private int wolffsmodnpcsTacticalAnimation(int requested)
+    {
+        return level().isClientSide ? requested : wolffsmodnpcsTacticState().getPosture().animation(requested);
+    }
+
+    /**
+     * Custom NPCs builds the NPC's box in getDimensions. Its crouch animation otherwise retains a standing box (crawl already has
+     * native dimensions), and Minecraft 1.21 takes the eye height from the final dimensions, so the driveable eye height
+     * applies after the posture scaling.
+     */
+    @Inject(method = "getDimensions", at = @At("RETURN"), cancellable = true)
+    private void wolffsmodnpcsDimensions(Pose pose, CallbackInfoReturnable<EntityDimensions> callback)
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        EntityDimensions dimensions = callback.getReturnValue();
+        if (!npc.isPassenger() && npc.currentAnimation == noppes.npcs.api.constants.AnimationType.CROUCH)
+            dimensions = dimensions.scale(1F, 0.8F);
+        // Custom NPCs gives every rider a seated 77% box; an operator standing at a deployed gun keeps its full height like a player.
+        else if (npc.deathTime <= 0 && npc.currentAnimation != noppes.npcs.api.constants.AnimationType.SLEEP && npc.currentAnimation != noppes.npcs.api.constants.AnimationType.CRAWL
+            && NpcDrivers.standsWhileRiding(npc))
+            dimensions = dimensions.scale(1F, 1F / 0.77F);
+        EntityDimensions sized = dimensions;
+        callback.setReturnValue(wolffsmodnpcsVehicleState().eyeHeight(npc, sized.height()).map(sized::withEyeHeight).orElse(sized));
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
@@ -615,6 +663,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return;
         NpcSkill.watch(npc);
         NpcDuties.tick(npc);
+        NpcTacticalPosture.update(npc);
         NpcSprinting.tick(npc, goalSelector.getAvailableGoals().stream().anyMatch(goal -> goal.isRunning() && goal.getGoal() == wolffsmodnpcsObjectiveGoal));
         NpcParachutes.tick(npc);
         if (npc.isKilled() || !npc.isAlive() || !NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))
@@ -738,11 +787,23 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return wolffsmodnpcsMelee;
     }
 
-    /** The selected sword is mounted on the right arm; inventory tools are synchronized independently of held items. */
+    /** Both arms synchronize independently of the humanoid held-item slots. */
     @Override
     public ItemStack flansmodultimateMechaTool(boolean left)
     {
-        return left ? ItemStack.EMPTY : getEntityData().get(WOLFFSMODNPCS_MECHA_TOOL);
+        return getEntityData().get(left ? WOLFFSMODNPCS_MECHA_LEFT_TOOL : WOLFFSMODNPCS_MECHA_TOOL);
+    }
+
+    @Override
+    public int flansmodultimateMechaLightLevel()
+    {
+        return getEntityData().get(WOLFFSMODNPCS_MECHA_LIGHT) & 15;
+    }
+
+    @Override
+    public boolean flansmodultimateMechaForceDark()
+    {
+        return (getEntityData().get(WOLFFSMODNPCS_MECHA_LIGHT) & 16) != 0;
     }
 
     @Override
@@ -794,7 +855,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Inject(method = "causeFallDamage", at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsArmorFall(float distance, float multiplier, DamageSource source, CallbackInfoReturnable<Boolean> callback)
     {
-        if (NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_FALL, EquippedArmorProperties::negatesFallDamage))
+        if (wolffsmodnpcsMechaSystems.getUpgrades().stopFallDamage()
+            || NpcEquipment.armorProtects((EntityNPCInterface) (Object) this, EquipmentProperty.ARMOR_FALL, EquippedArmorProperties::negatesFallDamage))
             callback.setReturnValue(false);
     }
 
@@ -864,7 +926,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         // A throw being wound up beside the NPC's other attacks holds them meanwhile.
         // A bot that has only just seen its target has not reacted yet.
         if (NpcRepairs.active(npc) || wolffsmodnpcsVehicleState().getFlight().holdsFire() || wolffsmodnpcsVehicleState().getParts().effects().gunDisabled() || NpcDrivers.holdsFire(npc)
-            || NpcCrew.holdsFire(npc) || NpcThrowGoal.throwing(npc) || NpcSkill.holdsFire(npc, target))
+            || NpcCrew.holdsFire(npc) || NpcThrowGoal.throwing(npc) || NpcSkill.holdsFire(npc, target) || NpcInfantryAirDefense.holdsFire(npc, target))
         {
             callback.cancel();
             return;
@@ -1061,7 +1123,13 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             wolffsmodnpcsExternalImpulses.absorb(npc);
             NpcProtection.updateKnockback(npc);
             NpcAmmunition.refillEmptySlots(npc);
-            ItemStack sword = NpcMechaTools.findSword(npc);
+            wolffsmodnpcsMechaSystems.refresh(npc);
+            MechaUpgrades upgrades = wolffsmodnpcsMechaSystems.getUpgrades();
+            getEntityData().set(WOLFFSMODNPCS_MECHA_LIGHT, upgrades.lightLevel() | (upgrades.forceDark() ? 16 : 0));
+            ItemStack left = NpcMechaTools.hand(npc, true);
+            if (!ItemStack.matches(left, getEntityData().get(WOLFFSMODNPCS_MECHA_LEFT_TOOL)))
+                getEntityData().set(WOLFFSMODNPCS_MECHA_LEFT_TOOL, left.copy());
+            ItemStack sword = NpcMechaTools.hand(npc, false);
             if (!ItemStack.matches(sword, getEntityData().get(WOLFFSMODNPCS_MECHA_TOOL)))
                 getEntityData().set(WOLFFSMODNPCS_MECHA_TOOL, sword.copy());
             NpcTypeProperties.of(npc).refresh(npc);
@@ -1161,6 +1229,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         if (server)
         {
             NpcMobility.tick(npc);
+            if (acting)
+                wolffsmodnpcsMechaSystems.tick(npc);
             state.getParts().body().ifPresent(body -> state.getParts().repairs().shipMotion(npc, body));
             NpcPathDebug.tick(npc, state);
             NpcAimDebug.tick(npc, state);
@@ -1238,14 +1308,6 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             super.jumpFromGround();
     }
 
-    /** Minecraft 1.21 takes the eye height from the entity's dimensions, which Custom NPCs builds in getDimensions. */
-    @Inject(method = "getDimensions", at = @At("RETURN"), cancellable = true)
-    private void wolffsmodnpcsEyeHeight(Pose pose, CallbackInfoReturnable<EntityDimensions> callback)
-    {
-        EntityDimensions dimensions = callback.getReturnValue();
-        wolffsmodnpcsVehicleState().eyeHeight((EntityNPCInterface) (Object) this, dimensions.height()).ifPresent(height -> callback.setReturnValue(dimensions.withEyeHeight(height)));
-    }
-
     @Override
     protected void positionRider(Entity passenger, Entity.MoveFunction move)
     {
@@ -1308,6 +1370,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsCrewOnDeath(DamageSource source, CallbackInfo callback)
     {
         if (!level().isClientSide)
+            NpcCrew.destroyed((EntityNPCInterface) (Object) this);
+    }
+
+    /** Custom NPCs can enter its killed state directly, ejecting passengers before deleting its body. */
+    @Inject(method = "remove", at = @At("HEAD"))
+    private void wolffsmodnpcsCrewOnKilledRemoval(Entity.RemovalReason reason, CallbackInfo callback)
+    {
+        if (!level().isClientSide && reason == Entity.RemovalReason.KILLED)
             NpcCrew.destroyed((EntityNPCInterface) (Object) this);
     }
 
@@ -1404,6 +1474,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         builder.define(WOLFFSMODNPCS_DISTANCE_DATA, false);
         builder.define(WOLFFSMODNPCS_THROW_DISPLAY, ItemStack.EMPTY);
         builder.define(WOLFFSMODNPCS_MECHA_TOOL, ItemStack.EMPTY);
+        builder.define(WOLFFSMODNPCS_MECHA_LEFT_TOOL, ItemStack.EMPTY);
+        builder.define(WOLFFSMODNPCS_MECHA_LIGHT, 0);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))

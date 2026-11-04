@@ -9,6 +9,7 @@ import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.driveables.physics.EpicShipPhysics;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.*;
@@ -25,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /** Shared repair rules for driveables and entities wearing their parts. Mutating methods require the level's server thread. */
 @ApiStatus.Experimental
@@ -162,6 +164,8 @@ public final class FlansRepairs
                 return driveable.repairFromTool(player, amount);
             return driveable.repairNearestPart(actor.getEyePosition(), amount);
         }
+        if (target instanceof AAGun aaGun)
+            return aaGun.repairFromTool(amount);
         return target instanceof IFlanRepairTarget repairable && repairable.flansmodultimateRepair(actor.getEyePosition(), amount);
     }
 
@@ -173,21 +177,21 @@ public final class FlansRepairs
             return false;
         if (target instanceof IFlanRepairTarget repairable)
             return repairable.flansmodultimatePartBody().filter(PartBody.class::isInstance).map(PartBody.class::cast).map(body -> body.repairDistanceSqr(origin) <= distance * distance).orElse(false);
-        return target instanceof Driveable && target.getBoundingBox().distanceToSqr(origin) <= distance * distance;
+        return (target instanceof Driveable || target instanceof AAGun) && target.getBoundingBox().distanceToSqr(origin) <= distance * distance;
     }
 
-    /** Chooses the first real driveable or part-body surface intersected by a world-space tool ray, including destroyed parts. Either side. */
+    /** Chooses the first driveable, AA gun hull or part-body surface intersected by a world-space tool ray, including destroyed parts. Either side. */
     public static Optional<Entity> toolTarget(Player player, Vec3 start, Vec3 end)
     {
         return player.level()
-            .getEntities(player, new net.minecraft.world.phys.AABB(start, end).inflate(64D), entity -> (entity instanceof IFlanRepairTarget || entity instanceof Driveable) && entity.isAlive())
+            .getEntities(player, new net.minecraft.world.phys.AABB(start, end).inflate(64D), entity -> (entity instanceof IFlanRepairTarget || entity instanceof Driveable || entity instanceof AAGun) && entity.isAlive())
             .stream().flatMap(entity -> toolHits(entity, start, end.subtract(start))).min(Comparator.comparingDouble(ToolHit::fraction)).map(ToolHit::entity);
     }
 
-    /** Where a world-space tool ray first meets one driveable or part-body target, including destroyed parts, or empty when it misses. Either side. */
+    /** Where a world-space tool ray first meets a driveable, AA gun hull or part-body target, including destroyed parts, or empty when it misses. Either side. */
     public static Optional<Vec3> toolHitPoint(Entity target, Vec3 start, Vec3 end)
     {
-        if (!(target instanceof IFlanRepairTarget || target instanceof Driveable))
+        if (!(target instanceof IFlanRepairTarget || target instanceof Driveable || target instanceof AAGun))
             return Optional.empty();
         Vec3 motion = end.subtract(start);
         return toolHits(target, start, motion).min(Comparator.comparingDouble(ToolHit::fraction)).map(hit -> start.add(motion.scale(hit.fraction())));
@@ -197,6 +201,14 @@ public final class FlansRepairs
     {
         if (entity instanceof Driveable driveable)
             return driveable.attackFromBullet(origin, motion, true).stream().map(hit -> new ToolHit(entity, hit.getIntersectTime()));
+        if (entity instanceof AAGun aaGun)
+        {
+            Vec3 point = aaGun.clipCollisionBox(origin, origin.add(motion), 0D);
+            if (point == null)
+                return java.util.stream.Stream.empty();
+            float fraction = motion.lengthSqr() <= 1.0E-8D ? 0F : (float) (origin.distanceTo(point) / motion.length());
+            return java.util.stream.Stream.of(new ToolHit(entity, fraction));
+        }
         return ((IFlanRepairTarget) entity).flansmodultimatePartBody().stream().filter(PartBody.class::isInstance).map(PartBody.class::cast)
             .flatMap(body -> body.trace(entity, origin, motion, true).stream()).map(hit -> new ToolHit(entity, hit.getIntersectTime()));
     }
@@ -246,12 +258,47 @@ public final class FlansRepairs
         return true;
     }
 
-    /** Naval motion in blocks/tick using shared driveable compartment physics. Either side; does not mutate the entity. */
-    public static Vec3 navalVelocity(IPartBody body, Vec3 previous, Vec3 healthy, double depth)
+    /** The trim and list, in degrees, that a flooding hull settles into, as Minecraft counts an entity's pitch and roll. */
+    public record NavalAttitude(float pitch, float roll)
+    {}
+
+    /**
+     * Naval motion in blocks/tick using shared driveable compartment physics. Either side; does not mutate the entity.
+     *
+     * @param atSea
+     *            whether open water deep enough to make way surrounds the hull, as {@link #atSea} tests it: one that is
+     *            not makes only a fraction of its way, as a driveable ship does in a river or a pond
+     */
+    public static Vec3 navalVelocity(IPartBody body, Vec3 previous, Vec3 healthy, double depth, boolean atSea)
     {
         EpicShipPhysics.Damage damage = navalDamage(body);
-        float limit = EpicShipPhysics.throttleLimit(damage, true, depth);
+        float limit = EpicShipPhysics.throttleLimit(damage, atSea, depth);
         return new Vec3(healthy.x * limit, EpicShipPhysics.verticalVelocity(previous.y, healthy.y, depth > 1D, damage), healthy.z * limit);
+    }
+
+    /**
+     * Whether open water deep enough for a ship to make way surrounds a position, by the same samples a driveable ship
+     * takes. Either side.
+     *
+     * @param water
+     *            whether the given point is inside water
+     */
+    public static boolean atSea(Vec3 origin, Predicate<Vec3> water)
+    {
+        return EpicShipPhysics.atSea(origin, water);
+    }
+
+    /**
+     * The trim and list a flooding hull settles into: bow or stern down as either floods, heeling to the flooded side, and
+     * levelling out again once the compartments hold. Either side; does not mutate the entity.
+     *
+     * @param pitch
+     *            the trim it holds now, in degrees, likewise the roll
+     */
+    public static NavalAttitude navalAttitude(IPartBody body, float pitch, float roll)
+    {
+        EpicShipPhysics.Damage damage = navalDamage(body);
+        return new NavalAttitude(EpicShipPhysics.pitch(pitch, damage), EpicShipPhysics.roll(roll, damage));
     }
 
     /** Whether shared naval compartment rules consider a ship irrecoverably sunk at the given water depth in blocks. Either side. */

@@ -139,7 +139,7 @@ class PartBodyTest
     }
 
     @Test
-    void aBrokenPartLetsRoundsThroughUnlessBrokenPartsStaySolid()
+    void aBrokenPartAlwaysLetsRoundsThrough()
     {
         PartBody body = body();
         Vec3 above = new Vec3(7.5D, 70D, 10D);
@@ -151,7 +151,9 @@ class PartBodyTest
         // Its box can still be pointed at, as the debug readout does.
         assertEquals(EnumDriveablePart.RIGHT_SKIRT, ((PartBodyHit) body.trace(null, above, down, true).get(0)).getPart());
         body.setBrokenPartsSolid(true);
-        assertEquals(EnumDriveablePart.RIGHT_SKIRT, first(body, above, down).getPart());
+        assertTrue(body.trace(null, above, down).isEmpty());
+        // The destroyed skirt cannot shield the hull behind it, even through the old API.
+        assertEquals(EnumDriveablePart.CORE, first(body, new Vec3(5D, 64.5D, 10D), new Vec3(10D, 0D, 0D)).getPart());
         // A broken part takes nothing more.
         assertEquals(0F, body.damage("rightSkirt", 10F, false), 0F);
     }

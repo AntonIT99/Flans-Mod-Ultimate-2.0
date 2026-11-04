@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.drivers;
 
 import com.flansmodultimate.api.driveables.DriveControl;
+import com.flansmodultimate.api.driveables.MechaWalking;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -30,10 +31,12 @@ final class DriveSteering
     static final double REVERSE_DISTANCE = 12D;
     /** Ticks of travel at its speed before the goal at which a vehicle stops accelerating; it brakes at half of them. */
     static final double BRAKE_LEAD = 20D;
+    /** Ticks of travel at its speed before its goal at which a ship stops driving: a hull carries its way far longer than wheels. */
+    static final double SHIP_BRAKE_LEAD = 90D;
+    /** Share of that run within which a ship brakes as well, rather than only coasting down. */
+    static final double SHIP_BRAKE_SHARE = 0.35D;
     /** Speed under which a driveable counts as standing still. */
     static final double STOPPED = 0.02D;
-    /** Share of a mecha's walk, as a cosine, beyond which it steps along an axis: up to 67.5 degrees off it. */
-    static final double STEP_SHARE = 0.38D;
 
     /**
      * Where a vehicle stands with respect to its goal.
@@ -100,6 +103,44 @@ final class DriveSteering
     }
 
     /**
+     * Steams a ship toward its goal. A ship differs from a vehicle in three ways: its rudder only bites while it has way
+     * on, so it never stops driving to get round a turn however sharp it is; it carries its way for a long run, so it
+     * takes that way off well before its goal instead of braking at it, and puts its engines astern for the last of it;
+     * and it has no three-point turn, so a goal behind it is reached by steaming its turning circle rather than in
+     * reverse.
+     *
+     * @param length
+     *            blocks the hull measures, which it needs over and above its run to come to a stand
+     */
+    static Decision ship(Situation situation, double length)
+    {
+        Set<DriveControl> controls = EnumSet.noneOf(DriveControl.class);
+        steer(controls, situation.off(), situation.speed(), false);
+        double remaining = situation.distance() - situation.arrival();
+        if (remaining <= 0D)
+        {
+            // Engines astern take the last of a hull's way off; a ship does not stop on its brakes.
+            if (situation.speed() > STOPPED)
+                controls.add(DriveControl.BACKWARD);
+            else
+                controls.addAll(brake(situation.speed()));
+            return new Decision(controls, false);
+        }
+        double stopping = stoppingDistance(Math.abs(situation.speed()), length);
+        if (remaining < stopping * SHIP_BRAKE_SHARE)
+            controls.add(DriveControl.BRAKE);
+        else if (remaining >= stopping)
+            controls.add(DriveControl.FORWARD);
+        return new Decision(controls, false);
+    }
+
+    /** @return blocks a ship needs to come to a stand: the run it makes at its speed, and its own length of slack */
+    static double stoppingDistance(double speed, double length)
+    {
+        return speed * SHIP_BRAKE_LEAD + Math.max(0D, length);
+    }
+
+    /**
      * Backs a stuck vehicle away from what holds it, or drives it on when it got stuck in reverse, turning its front
      * toward the goal on the way: a three-point turn.
      *
@@ -116,21 +157,7 @@ final class DriveSteering
     /** Walks a mecha toward its goal along its heading, to its side or both; it does not have to turn to go anywhere. */
     static Set<DriveControl> mecha(float off, double distance, double arrival)
     {
-        Set<DriveControl> controls = EnumSet.noneOf(DriveControl.class);
-        if (distance <= arrival)
-            return controls;
-        double radians = Math.toRadians(off);
-        double ahead = Math.cos(radians);
-        double side = Math.sin(radians);
-        if (ahead > STEP_SHARE)
-            controls.add(DriveControl.FORWARD);
-        else if (ahead < -STEP_SHARE)
-            controls.add(DriveControl.BACKWARD);
-        if (side > STEP_SHARE)
-            controls.add(DriveControl.RIGHT);
-        else if (side < -STEP_SHARE)
-            controls.add(DriveControl.LEFT);
-        return controls;
+        return MechaWalking.toward(off, distance, arrival);
     }
 
     /**
@@ -156,6 +183,19 @@ final class DriveSteering
     static Set<DriveControl> brake(double speed)
     {
         return Math.abs(speed) > STOPPED ? EnumSet.of(DriveControl.BRAKE) : EnumSet.noneOf(DriveControl.class);
+    }
+
+    /**
+     * Brings the driveable to a stand without letting go of the wheel, for a vehicle that stops to shoot: it stops driving
+     * and brakes, while the steering keeps turning its hull along its path.
+     */
+    static Set<DriveControl> halt(Set<DriveControl> controls, double speed)
+    {
+        Set<DriveControl> held = EnumSet.copyOf(controls);
+        held.remove(DriveControl.FORWARD);
+        held.remove(DriveControl.BACKWARD);
+        held.addAll(brake(speed));
+        return held;
     }
 
     /**
