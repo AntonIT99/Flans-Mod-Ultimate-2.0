@@ -20,13 +20,18 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor
 public class BulletType extends ShootableType
 {
+    /** Tyrants and Plebeians {@code AmmoModelType <gun> <variant>}: which of a gun model's ammo variants shows this round, by lowercase gun shortname */
+    protected final Map<String, Integer> ammoModelTypeByGun = new HashMap<>();
     public static final float DEFAULT_BULLET_SPEED = 3F;
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
 
@@ -298,10 +303,27 @@ public class BulletType extends ShootableType
         proNavGain = Math.max(0F, Math.min(10F, proNavGain));
     }
 
+    private void readAmmoModelTypes(TypeFile file)
+    {
+        readValuesInLines("AmmoModelType", file, 2).ifPresent(lines -> lines.forEach(split ->
+        {
+            try
+            {
+                ammoModelTypeByGun.put(split[0].toLowerCase(Locale.ROOT), Mth.clamp(Integer.parseInt(split[1]), 1, 10));
+            }
+            catch (NumberFormatException e)
+            {
+                logError("Incorrect format for 'AmmoModelType " + split[0] + " " + split[1] + "': Not an integer", file);
+            }
+        }));
+    }
+
     @Override
     protected void read(TypeFile file)
     {
         super.read(file);
+
+        readAmmoModelTypes(file);
 
         explicitBulletSpeed = file.hasConfigLine("BulletSpeed") || file.hasConfigLine("MuzzleVelocity");
         bulletSpeed = readValue("BulletSpeed", bulletSpeed, file);
@@ -767,5 +789,14 @@ public class BulletType extends ShootableType
         flyBySoundRange = Float.isFinite(flyBySoundRange) ? Mth.clamp(flyBySoundRange, 0F, 32F) : 5F;
         suppression = Float.isFinite(suppression) ? Mth.clamp(suppression, 0F, 160F) : 0F;
         suppressionRange = Float.isFinite(suppressionRange) ? Mth.clamp(suppressionRange, 0F, 32F) : 0F;
+    }
+
+    /** The gun model's ammo variant (1 to 10) this round shows in the given gun; 1 is the plain {@code ammoModel}. */
+    public int getAmmoModelTypeForGun(GunType gun)
+    {
+        Integer variant = ammoModelTypeByGun.get(gun.getOriginalShortName().toLowerCase(Locale.ROOT));
+        if (variant == null)
+            variant = ammoModelTypeByGun.get(gun.getShortName().toLowerCase(Locale.ROOT));
+        return variant == null ? 1 : variant;
     }
 }

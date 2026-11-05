@@ -142,6 +142,18 @@ public final class ModelCache
         return null;
     }
 
+    /** A Tyrants and Plebeians smoke puff model of a gun, by its class name. */
+    @Nullable
+    public static ModelMuzzleSmoke getOrLoadSmokeModel(GunType gunType, String modelClassName, @Nullable ResourceLocation texture)
+    {
+        if (StringUtils.isNotBlank(modelClassName)
+            && getOrLoadModel(new ModelCacheKey(modelClassName, null, gunType.getContentPack().getName()), gunType, null, texture) instanceof ModelMuzzleSmoke smoke)
+        {
+            return smoke;
+        }
+        return null;
+    }
+
     @Nullable
     public static ModelFlash getOrLoadFlashModel(GunType gunType)
     {

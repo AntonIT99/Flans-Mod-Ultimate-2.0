@@ -117,7 +117,11 @@ public class ClientGunHooksImpl implements IClientGunHooks
     private static void doShoot(GunType type, GunAnimations animations)
     {
         if (ModelCache.getOrLoadTypeModel(type) instanceof ModelGun modelGun)
+        {
             animations.doShoot(modelGun.getPumpDelay(), modelGun.getPumpTime(), modelGun.getHammerDelay(), modelGun.getHammerAngle(), modelGun.getAlthammerAngle(), modelGun.getCasingDelay());
+            if (type.getKeyframes().isEnabled())
+                animations.startKeyframeRecoil(modelGun.getRecoilTime());
+        }
         else
             animations.doShoot(0, 1, 0, 0F, 0F, 0);
     }
@@ -133,7 +137,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
     }
 
     @Override
-    public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
+    public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo, boolean tactical, int loopRounds)
     {
         PlayerData data = PlayerData.getInstance(player);
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
@@ -154,7 +158,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             chargeTime = modelGun.getChargeTime();
         }
 
-        animations.doReload(reloadTime, pumpDelay, pumpTime, chargeDelay, chargeTime, reloadCount, hasMultipleAmmo);
+        animations.doReload(reloadTime, pumpDelay, pumpTime, chargeDelay, chargeTime, reloadCount, hasMultipleAmmo, tactical, loopRounds);
     }
 
     @Override

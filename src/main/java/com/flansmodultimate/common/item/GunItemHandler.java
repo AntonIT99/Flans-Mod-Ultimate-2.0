@@ -342,6 +342,9 @@ public class GunItemHandler
         UUID reloadSoundUUID = UUID.randomUUID();
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
         float reloadTime = item.getActualReloadTime(gunStack, level.registryAccess(), otherHand, player);
+        // Read before the reload replaces the ammunition: they pick the reload animation clients play
+        boolean tactical = item.hasLiveRounds(gunStack, level.registryAccess());
+        int loopRounds = item.getLoopReloadRounds(gunStack, level.registryAccess());
 
         // The first reload after respawning into a running teams round is instant, so players are not defenceless on spawn
         boolean instantRespawnReload = !data.isReloadedAfterRespawn() && TeamsManager.getInstance().isRoundRunning();
@@ -363,7 +366,7 @@ public class GunItemHandler
 
             data.getGunSoundPermissions().reload(hand, gunStack, level.getGameTime(), reloadTime, reloadCount);
             data.doGunReload(hand, reloadTime);
-            PacketHandler.sendToTracking(new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo), player);
+            PacketHandler.sendToTracking(new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo, tactical, loopRounds), player);
 
             String reloadSound = item.configType.getReloadSound(gunStack);
             // Play reload sound

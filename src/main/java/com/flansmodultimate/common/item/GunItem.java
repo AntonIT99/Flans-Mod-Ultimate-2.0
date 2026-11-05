@@ -760,6 +760,26 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         return emptySlots;
     }
 
+    /** Whether the gun still holds live rounds, which makes its next reload a tactical one. */
+    public boolean hasLiveRounds(ItemStack gunStack, HolderLookup.Provider registries)
+    {
+        return !getBulletItemStackList(gunStack, registries).isEmpty();
+    }
+
+    /**
+     * Rounds a round-by-round reload loads (Tyrants and Plebeians {@code UseLoopReloadAnimation}): a single-magazine gun
+     * that still holds rounds only tops up the missing ones. Zero when the next reload is an ordinary one.
+     */
+    public int getLoopReloadRounds(ItemStack gunStack, HolderLookup.Provider registries)
+    {
+        if (!configType.getKeyframes().isLoopReloadAnimation() || configType.getNumAmmoItemsInGun(gunStack) != 1 || configType.getSecondaryFire(gunStack))
+            return 0;
+        ItemStack loaded = getAmmoItemStack(gunStack, 0, registries);
+        if (loaded == null || !(loaded.getItem() instanceof ShootableItem) || !ShootableItem.hasRoundsLeft(loaded))
+            return 0;
+        return Math.max(0, ShootableItem.getMaxRounds(loaded) - ShootableItem.getRoundsRemaining(loaded));
+    }
+
     public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand)
     {
         return getActualReloadTime(gunStack, registries, otherHand, null);
@@ -772,6 +792,12 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         boolean tactical = getBulletItemStackList(gunStack, registries).stream()
             .anyMatch(ammo -> GunHandlingTiming.tacticalReload(true, maxAmmo, ShootableItem.getMaxRounds(ammo), configType.getTacticalReloadTime()));
         float baseTime = configType.getReloadTime(gunStack, tactical);
+        int loopRounds = getLoopReloadRounds(gunStack, registries);
+        if (loopRounds > 0)
+        {
+            ItemStack loaded = getAmmoItemStack(gunStack, 0, registries);
+            baseTime = configType.getStagedReloadTime(gunStack) / Math.max(1, ShootableItem.getMaxRounds(loaded)) * loopRounds;
+        }
         float reloadTime = (maxAmmo <= 1) ? baseTime : (baseTime / maxAmmo) * getReloadCount(gunStack, registries);
         reloadTime = EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
         if (holder != null)

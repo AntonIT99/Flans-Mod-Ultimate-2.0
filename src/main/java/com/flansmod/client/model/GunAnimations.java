@@ -2,6 +2,8 @@ package com.flansmod.client.model;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.render.effects.FirstPersonGunEffects;
+import com.flansmodultimate.client.render.effects.GunSmokePuff;
 import com.flansmodultimate.common.types.GunType;
 import lombok.*;
 
@@ -49,6 +51,26 @@ public class GunAnimations
     protected float lastReloadAnimationProgress;
     protected int reloadAmmoCount = 1;
     protected boolean singlesReload;
+    /** The gun still held live rounds when this reload began */
+    protected boolean tacticalReload;
+    /** A single-magazine gun reloading round by round, playing its start, loop and end keyframe animations */
+    protected boolean loopReload;
+
+    /** Keyframe shoot animation progress, 0 to 1; at rest once it reaches 1 */
+    protected float keyframeRecoilProgress = 1F;
+    protected float lastKeyframeRecoilProgress = 1F;
+    protected float keyframeRecoilStep;
+
+    /** Ammo variant ({@code AmmoModelType}) last drawn, and the one drawn when the current reload began */
+    protected int lastAmmoModelType = 1;
+    protected int preReloadAmmoModelType = 1;
+
+    /** Tyrants and Plebeians smoke and casing effects, consumed by the first-person renderer */
+    protected boolean createMuzzleSmoke;
+    protected boolean createChamberSmoke;
+    protected boolean createCasing;
+    protected final GunSmokePuff[] muzzleSmoke = FirstPersonGunEffects.createSmoke(16);
+    protected int nextMuzzleSmokeIndex;
 
     protected float minigunBarrelRotation;
     protected float minigunBarrelRotationSpeed;
@@ -207,12 +229,20 @@ public class GunAnimations
         {
             timeUntilCasing--;
             if (timeUntilCasing == 0)
+            {
                 casingStage++;
+                createCasing = true;
+            }
         }
         else
         {
             casingStage++;
+            if (casingStage == 1)
+                createCasing = true;
         }
+
+        for (GunSmokePuff puff : muzzleSmoke)
+            puff.tick(0F, 0F, 0F);
 
         if (muzzleFlashTime > 0)
             muzzleFlashTime--;
@@ -253,6 +283,10 @@ public class GunAnimations
             gunSlide -= 0.1F;
         else if (gunSlide > 0 && !isGunEmpty)
             gunSlide *= 0.5F;
+
+        lastKeyframeRecoilProgress = keyframeRecoilProgress;
+        if (keyframeRecoilProgress < 1F)
+            keyframeRecoilProgress = Math.min(1F, keyframeRecoilProgress + keyframeRecoilStep);
 
         // Reload
         lastReloadAnimationProgress = reloadAnimationProgress;
@@ -341,13 +375,40 @@ public class GunAnimations
         casingRandom.y = ((random.nextFloat() * 2) - 1);
         casingRandom.z = ((random.nextFloat() * 2) - 1);
         casingStage = 0;
+        createCasing = false;
+        createMuzzleSmoke = true;
+        createChamberSmoke = true;
 
         if (pumpDelay == 0)
             ModClient.setShotState(1);
     }
 
+    /**
+     * Restart the keyframe shoot animation. Like Tyrants and Plebeians it lasts {@code 20 * 0.56667 * (recoilTime / 20)}
+     * ticks with whole-number division, so models authored for it keep their timing; under 20 ticks it ends at once.
+     */
+    // Whole-number division is deliberate: it matches the Tyrants and Plebeians timing
+    @SuppressWarnings("java:S2184")
+    public void startKeyframeRecoil(int recoilTime)
+    {
+        float duration = 20F * 0.56667F * (recoilTime / 20);
+        keyframeRecoilStep = duration > 0F ? 1F / duration : 1F;
+        lastKeyframeRecoilProgress = keyframeRecoilProgress = duration > 0F ? 0F : 1F;
+    }
+
     public void doReload(float reloadTime, int pumpDelay, int pumpTime, int chargeDelay, int chargeTime, int ammoCount, boolean hasMultipleAmmo)
     {
+        doReload(reloadTime, pumpDelay, pumpTime, chargeDelay, chargeTime, ammoCount, hasMultipleAmmo, false, 0);
+    }
+
+    /** @param loopRounds rounds loaded one at a time by a round-by-round reload, or 0 for any other reload */
+    // Extends the existing overload with the reload kind that the server sends along
+    @SuppressWarnings("java:S107")
+    public void doReload(float reloadTime, int pumpDelay, int pumpTime, int chargeDelay, int chargeTime, int ammoCount, boolean hasMultipleAmmo, boolean tactical, int loopRounds)
+    {
+        tacticalReload = tactical;
+        loopReload = loopRounds > 0;
+        preReloadAmmoModelType = lastAmmoModelType;
         reloading = true;
         lastReloadAnimationProgress = reloadAnimationProgress = 0F;
         reloadAnimationTime = reloadTime;
@@ -355,14 +416,46 @@ public class GunAnimations
         timeToPumpFor = pumpTime;
         timeUntilCharge = chargeDelay;
         timeToChargeFor = chargeTime;
-        reloadAmmoCount = ammoCount;
+        reloadAmmoCount = loopReload ? loopRounds : ammoCount;
         singlesReload = hasMultipleAmmo;
         ModClient.setLastBulletReload(ammoCount - 1);
+    }
+
+    /** The muzzle puff slot to reuse for the next shot. */
+    public GunSmokePuff nextMuzzleSmoke()
+    {
+        GunSmokePuff puff = muzzleSmoke[nextMuzzleSmokeIndex];
+        nextMuzzleSmokeIndex = (nextMuzzleSmokeIndex + 1) % muzzleSmoke.length;
+        return puff;
+    }
+
+    /** Takes a pending effect request, so each shot spawns it once. */
+    public boolean consumeMuzzleSmoke()
+    {
+        boolean pending = createMuzzleSmoke;
+        createMuzzleSmoke = false;
+        return pending;
+    }
+
+    public boolean consumeChamberSmoke()
+    {
+        boolean pending = createChamberSmoke;
+        createChamberSmoke = false;
+        return pending;
+    }
+
+    public boolean consumeCasing()
+    {
+        boolean pending = createCasing;
+        createCasing = false;
+        return pending;
     }
 
     public void cancelReload()
     {
         reloading = false;
+        tacticalReload = false;
+        loopReload = false;
         lastReloadAnimationProgress = reloadAnimationProgress = 0F;
         reloadAnimationTime = 0;
     }

@@ -6,6 +6,7 @@ import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.*;
+import com.flansmodultimate.common.types.keyframe.GunKeyframeConfig;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.item.ItemStackData;
@@ -171,6 +172,12 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected float tacticalReloadTime = -1F;
     @Getter
     protected float tacticalReloadMultiplier = 0.8F;
+    /**
+     * Ticks to load a full magazine round by round (Tyrants and Plebeians). With {@code UseLoopReloadAnimation}, a
+     * single-magazine gun that still holds rounds only loads the missing ones and takes this share of the time.
+     */
+    @Getter
+    protected float stagedReloadTime = -1F;
     @Getter
     protected float secondarySwitchTime = 8F;
     @Getter
@@ -686,6 +693,22 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected String casingModelClassName = StringUtils.EMPTY;
     @Getter
     protected ResourceLocation casingTexture;
+    /*
+     * Tyrants and Plebeians smoke puffs. Its parser swaps the two settings, so MuzzleSmokeModel and MuzzleSmokeTexture
+     * pick the chamber smoke and ChamberSmokeModel and ChamberSmokeTexture the muzzle smoke; packs made for it rely on that.
+     */
+    protected String muzzleSmokeModelName = StringUtils.EMPTY;
+    protected String muzzleSmokeTextureName = StringUtils.EMPTY;
+    protected String chamberSmokeModelName = StringUtils.EMPTY;
+    protected String chamberSmokeTextureName = StringUtils.EMPTY;
+    @Getter
+    protected String muzzleSmokeModelClassName = StringUtils.EMPTY;
+    @Getter
+    protected ResourceLocation muzzleSmokeTexture;
+    @Getter
+    protected String chamberSmokeModelClassName = StringUtils.EMPTY;
+    @Getter
+    protected ResourceLocation chamberSmokeTexture;
     /** Class of the built-in flash selected by {@code FlashModel DefaultFlash}; named here so common code need not load it. */
     public static final String DEFAULT_FLASH_MODEL_CLASS = "com.flansmod.client.model.ModelDefaultFlash";
 
@@ -789,6 +812,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
     @Getter
     protected final GunAnimationConfig animationConfig = new GunAnimationConfig();
+    @Getter
+    protected final GunKeyframeConfig keyframes = new GunKeyframeConfig();
 
     @Override
     protected void read(TypeFile file)
@@ -811,6 +836,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         canForceReload = readValue("CanForceReload", canForceReload, file);
         reloadTime = readValue("ReloadTime", reloadTime, file);
         readHandling(file);
+        keyframes.read(file);
         consumeBulletType = readValue("ConsumeBulletType", consumeBulletType, file);
         bulletsPerReload = readValue("BulletsPerReload", bulletsPerReload, file);
 
@@ -1055,6 +1081,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         ejectCasings = readValue("EjectCasings", ejectCasings, file);
         casingModelName = readValue("CasingModel", casingModelName, file);
         casingTextureName = readResource("CasingTexture", casingTextureName, file);
+        muzzleSmokeModelName = readValue("ChamberSmokeModel", muzzleSmokeModelName, file);
+        muzzleSmokeTextureName = readResource("ChamberSmokeTexture", muzzleSmokeTextureName, file);
+        chamberSmokeModelName = readValue("MuzzleSmokeModel", chamberSmokeModelName, file);
+        chamberSmokeTextureName = readResource("MuzzleSmokeTexture", chamberSmokeTextureName, file);
         flashModelName = readValue("FlashModel", flashModelName, file);
         flashTextureName = readResource("FlashTexture", flashTextureName, file);
         muzzleFlashModelName = readValue("MuzzleFlashModel", muzzleFlashModelName, file);
@@ -1146,11 +1176,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected void readClient(TypeFile file)
     {
         animationConfig.read(file);
+        keyframes.loadAnimations(contentPack, file);
         super.readClient(file);
         deployableModelClassName = findModelClass(deployableModelName, contentPack);
         deployableTexture = loadTexture(deployableTextureName, this);
         casingModelClassName = findModelClass(casingModelName, contentPack);
         casingTexture = loadTexture(casingTextureName, this);
+        muzzleSmokeModelClassName = findModelClass(muzzleSmokeModelName, contentPack);
+        muzzleSmokeTexture = loadTexture(muzzleSmokeTextureName, this);
+        chamberSmokeModelClassName = findModelClass(chamberSmokeModelName, contentPack);
+        chamberSmokeTexture = loadTexture(chamberSmokeTextureName, this);
         flashModelClassName = findModelClass(flashModelName, contentPack);
         flashTexture = StringUtils.isBlank(flashTextureName) && DEFAULT_FLASH_MODEL_CLASS.equalsIgnoreCase(flashModelClassName)
             ? FlansModTextures.TEXTURE_DEFAULTFLASH
@@ -2020,7 +2055,19 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /** Tactical selection is made from the ammunition present before a reload is queued. */
     public float getReloadTime(ItemStack stack, boolean tactical)
     {
-        float stackReloadTime = GunHandlingTiming.reloadTime(reloadTime, tacticalReloadTime, tacticalReloadMultiplier, tactical);
+        return applyReloadTimeModifiers(stack, GunHandlingTiming.reloadTime(reloadTime, tacticalReloadTime, tacticalReloadMultiplier, tactical));
+    }
+
+    /** Time to load a whole magazine round by round; falls back to the tactical reload time without {@code StagedReloadTime}. */
+    public float getStagedReloadTime(ItemStack stack)
+    {
+        float baseTime = stagedReloadTime > 0F ? stagedReloadTime : GunHandlingTiming.reloadTime(reloadTime, tacticalReloadTime, tacticalReloadMultiplier, true);
+        return applyReloadTimeModifiers(stack, baseTime);
+    }
+
+    private float applyReloadTimeModifiers(ItemStack stack, float baseTime)
+    {
+        float stackReloadTime = baseTime;
 
         if (getGrip(stack) != null && getSecondaryFire(stack))
             stackReloadTime = getGrip(stack).secondaryReloadTime;
@@ -2411,6 +2458,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         tacticalReloadTime = Float.isFinite(tacticalReloadTime) ? Mth.clamp(tacticalReloadTime, -1F, 72000F) : -1F;
         tacticalReloadMultiplier = readValue("TacticalReloadMultiplier", tacticalReloadMultiplier, file);
         tacticalReloadMultiplier = Float.isFinite(tacticalReloadMultiplier) ? Mth.clamp(tacticalReloadMultiplier, 0F, 2F) : 0.8F;
+        stagedReloadTime = readValue("StagedReloadTime", stagedReloadTime, file);
+        stagedReloadTime = Float.isFinite(stagedReloadTime) ? Mth.clamp(stagedReloadTime, -1F, 72000F) : -1F;
         secondarySwitchTime = GunHandlingTiming.switchTicks(readValue("SecondarySwitchTime", secondarySwitchTime, file));
         secondaryUnSwitchTime = GunHandlingTiming.switchTicks(readValue("SecondaryUnSwitchTime", secondaryUnSwitchTime, file));
         secondarySwitchMovement = readValue("SecondarySwitchMovement", secondarySwitchMovement, file);

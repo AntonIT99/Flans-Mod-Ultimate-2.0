@@ -7,6 +7,7 @@ import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.effects.FirstPersonGunEffects;
 import com.flansmodultimate.client.render.effects.InstantBulletRenderer;
 import com.flansmodultimate.client.render.hud.*;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
@@ -397,6 +398,7 @@ public class ModClient
 
         updateRecoil(player);
         updateGunAnimations();
+        FirstPersonGunEffects.tick(player);
         updateScopeState(mc, player);
         updateZoom();
         updateSprintTransition(player, InteractionHand.MAIN_HAND);

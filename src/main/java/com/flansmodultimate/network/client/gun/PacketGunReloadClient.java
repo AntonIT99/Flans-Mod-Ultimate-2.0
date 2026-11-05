@@ -21,14 +21,18 @@ public class PacketGunReloadClient implements IClientPacket
     private float reloadTime;
     private int reloadCount;
     private boolean hasMultipleAmmo;
+    private boolean tactical;
+    private int loopRounds;
 
-    public PacketGunReloadClient(UUID playerUUID, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
+    public PacketGunReloadClient(UUID playerUUID, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo, boolean tactical, int loopRounds)
     {
         this.playerUUID = playerUUID;
         this.hand = hand;
         this.reloadTime = reloadTime;
         this.reloadCount = reloadCount;
         this.hasMultipleAmmo = hasMultipleAmmo;
+        this.tactical = tactical;
+        this.loopRounds = loopRounds;
     }
 
     @Override
@@ -39,6 +43,8 @@ public class PacketGunReloadClient implements IClientPacket
         data.writeFloat(reloadTime);
         data.writeInt(reloadCount);
         data.writeBoolean(hasMultipleAmmo);
+        data.writeBoolean(tactical);
+        data.writeInt(loopRounds);
     }
 
     @Override
@@ -49,6 +55,8 @@ public class PacketGunReloadClient implements IClientPacket
         reloadTime = data.readFloat();
         reloadCount = data.readInt();
         hasMultipleAmmo = data.readBoolean();
+        tactical = data.readBoolean();
+        loopRounds = data.readInt();
     }
 
     @Override
@@ -57,7 +65,7 @@ public class PacketGunReloadClient implements IClientPacket
         Player reloadingPlayer = level.getPlayerByUUID(playerUUID);
         if (reloadingPlayer != null && reloadingPlayer.getItemInHand(hand).getItem() instanceof GunItem gunItem)
         {
-            ClientHooks.GUN.reloadGunItem(gunItem, reloadingPlayer, hand, reloadTime, reloadCount, hasMultipleAmmo);
+            ClientHooks.GUN.reloadGunItem(gunItem, reloadingPlayer, hand, reloadTime, reloadCount, hasMultipleAmmo, tactical, loopRounds);
         }
     }
 }

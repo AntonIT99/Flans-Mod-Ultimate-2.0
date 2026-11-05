@@ -86,7 +86,11 @@ public class AttachmentType extends PaintableType implements IScope
 
     // Underbarrel functions
     /** This variable controls whether the underbarrel is enabled */
+    @Getter
     protected boolean secondaryFire;
+    /** Tyrants and Plebeians: the gun plays its secondary-mode keyframe animations with this grip, which then animates itself and its ammo */
+    @Getter
+    protected boolean hasSecondaryModeAnimations;
     @Getter
     protected boolean bayonet;
     @Getter
@@ -166,6 +170,7 @@ public class AttachmentType extends PaintableType implements IScope
         // Secondary Stuff
         secondaryFire = readValue("SecondaryMode", secondaryFire, file);
         renderOnlyOnMode = readValue("RenderOnlyOnMode", renderOnlyOnMode, file);
+        hasSecondaryModeAnimations = readValue("HasSecondaryModeAnimations", hasSecondaryModeAnimations, file);
 
         String ammo = readValue("SecondaryAmmo", StringUtils.EMPTY, file);
         if (!ammo.isBlank())
