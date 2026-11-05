@@ -229,7 +229,7 @@ public class ModelSpringfieldSniper extends ModelGun // Same as Filename
         untiltGunTime = 0.4F;
 
         translateAll(0F, -9F, 0F);
-        thirdPersonOffset = new Vector3f(-0.2F, -0.2F, 0.01F);
+        thirdPersonOffset = new Vector3f(-0.2F, -0.2F, 0F);
 
         flipAll();
     }

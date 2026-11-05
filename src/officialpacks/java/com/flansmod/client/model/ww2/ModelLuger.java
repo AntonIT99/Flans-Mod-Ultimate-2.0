@@ -217,8 +217,8 @@ public class ModelLuger extends ModelGun // Same as Filename
         gunSlideDistance = 0.8F;
         animationType = EnumAnimationType.ALT_PISTOL_CLIP;
 
-        translateAll(0F, -13F, 0.6F);
-        thirdPersonOffset = new Vector3f(-0.1F, -0.18F, 0.01F);
+        translateAll(0F, -13F, 0F);
+        thirdPersonOffset = new Vector3f(-0.1F, -0.18F, 0.00475F);
 
         flipAll();
     }

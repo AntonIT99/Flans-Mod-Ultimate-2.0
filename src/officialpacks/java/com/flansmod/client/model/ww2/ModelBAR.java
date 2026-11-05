@@ -229,8 +229,8 @@ public class ModelBAR extends ModelGun // Same as Filename
         gunSlideDistance = 0.5F;
         animationType = EnumAnimationType.BOTTOM_CLIP;
 
-        translateAll(0F, -5F, 0.3F);
-        thirdPersonOffset = new Vector3f(-0.06F, -0.13F, 0.01F);
+        translateAll(0F, -5F, 0F);
+        thirdPersonOffset = new Vector3f(-0.06F, -0.13F, 0.0034375F);
 
         flipAll();
     }

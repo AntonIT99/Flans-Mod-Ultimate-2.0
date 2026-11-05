@@ -441,10 +441,10 @@ public class ModelMG34 extends ModelGun // Same as Filename
         ammoModel[30].setRotationPoint(2.6F, -2.95F, -0.2F);
 
         animationType = EnumAnimationType.SIDE_CLIP;
-        translateAll(0F, -1.2F, 0.07F);
-        thirdPersonOffset = new Vector3f(-0.08F, -0.18F, 0.01F);
+        translateAll(0F, -1.2F, 0F);
+        thirdPersonOffset = new Vector3f(-0.08F, -0.18F, 0.0043125F);
 
         flipAll();
-        muzzleFlashPoint = new Vector3f(1.03125F, 0.209375F, -0.004375F);
+        muzzleFlashPoint = new Vector3f(1.03125F, 0.209375F, 0F);
     }
 }

@@ -161,8 +161,8 @@ public class ModelTrenchgun extends ModelGun // Same as Filename
         pumpDelay = 6;
         pumpTime = 5;
         gripIsOnPump = true;
-        translateAll(0F, -6F, 0.3F);
-        thirdPersonOffset = new Vector3f(-0.05F, -0.14F, 0.01F);
+        translateAll(0F, -6F, 0F);
+        thirdPersonOffset = new Vector3f(-0.05F, -0.14F, 0.0034375F);
 
         numBulletsInReloadAnimation = 8;
         tiltGunTime = 0.204F;

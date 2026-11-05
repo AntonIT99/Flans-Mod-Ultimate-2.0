@@ -123,9 +123,9 @@ public class ModelThompson extends ModelGun // Same as Filename
         gunSlideDistance = 0.6F;
         animationType = EnumAnimationType.BOTTOM_CLIP;
 
-        translateAll(0F, -6.2F, 0.3F);
-        thirdPersonOffset = new Vector3f(-0.2F, -0.1F, 0.02F);
+        translateAll(0F, -6.2F, 0F);
+        thirdPersonOffset = new Vector3f(-0.2F, -0.1F, 0.014375F);
         flipAll();
-        muzzleFlashPoint = new Vector3f(2.875F, 1.1375F, -0.01875F);
+        muzzleFlashPoint = new Vector3f(2.875F, 1.1375F, 0F);
     }
 }

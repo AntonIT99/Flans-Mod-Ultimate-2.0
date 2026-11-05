@@ -357,8 +357,8 @@ public class ModelMp44 extends ModelGun // Same as Filename
         gunSlideDistance = 5.17F;
         animationType = EnumAnimationType.PISTOL_CLIP;
 
-        translateAll(-80F, -25F, 1.4F);
-        thirdPersonOffset = new Vector3f(0.25F, -0.15F, 0.01F);
+        translateAll(-80F, -25F, 0F);
+        thirdPersonOffset = new Vector3f(0.25F, -0.15F, 0.00475F);
 
         flipAll();
     }

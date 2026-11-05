@@ -177,10 +177,10 @@ public class ModelGreaseGun extends ModelGun // Same as Filename
 
         animationType = EnumAnimationType.BOTTOM_CLIP;
 
-        translateAll(-6F, -2.2F, 0.1F);
-        thirdPersonOffset = new Vector3f(0F, -0.1F, 0.01F);
+        translateAll(-6F, -2.2F, 0F);
+        thirdPersonOffset = new Vector3f(0F, -0.1F, 0.0046875F);
 
         flipAll();
-        muzzleFlashPoint = new Vector3f(0.53125F, 0.34375F, -0.00625F);
+        muzzleFlashPoint = new Vector3f(0.53125F, 0.34375F, 0F);
     }
 }

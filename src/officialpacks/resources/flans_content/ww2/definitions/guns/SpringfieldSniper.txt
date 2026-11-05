@@ -7,7 +7,6 @@ Icon springfieldsniper
 Colour 255 255 255
 DeployedModel None
 Model ww2.SpringfieldSniper
-FirstPersonFrame 1.12.2
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.37329 0.39001 0
