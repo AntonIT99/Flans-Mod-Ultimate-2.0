@@ -390,6 +390,13 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         writeToModel(this.type.getAnimationConfig());
     }
 
+    /** Adds the content-pack translation to the Java model's third-person offset without modifying either vector. */
+    public Vector3f getThirdPersonOffset()
+    {
+        Vector3f configured = type == null ? null : type.getAnimationConfig().getThirdPersonOffset();
+        return configured == null ? thirdPersonOffset : Vector3f.add(thirdPersonOffset, configured, null);
+    }
+
     @Override
     public Class<GunType> typeClass()
     {
@@ -650,7 +657,6 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         setMeleeAnimation(Optional.ofNullable(config.getMeleeAnimation()).orElse(getMeleeAnimation()));
 
         setAimOffset(Optional.ofNullable(config.getAimOffset()).orElse(getAimOffset()));
-        setThirdPersonOffset(Optional.ofNullable(config.getThirdPersonOffset()).orElse(getThirdPersonOffset()));
         setItemFrameOffset(Optional.ofNullable(config.getItemFrameOffset()).orElse(getItemFrameOffset()));
         setStillRenderGunWhenScopedOverlay(Optional.ofNullable(config.getStillRenderGunWhenScopedOverlay()).orElse(isStillRenderGunWhenScopedOverlay()));
         setAdsEffectMultiplier(Optional.ofNullable(config.getAdsEffectMultiplier()).orElse(getAdsEffectMultiplier()));
