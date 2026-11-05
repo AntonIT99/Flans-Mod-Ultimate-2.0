@@ -603,7 +603,9 @@ public final class NpcCrew
     @Nullable
     private static EntityNPCInterface fromClass(ServerLevel level, Vec3 position, CrewSource source)
     {
-        FlanSoldierSelection selection = FlanSoldierSelection.resolve(source.team(), source.playerClass()).orElse(null);
+        var available = source.classes().stream().filter(name -> FlanSoldierSelection.resolve(source.team(), name).isPresent()).toList();
+        String playerClass = source.chooseClass(available, level.random);
+        FlanSoldierSelection selection = FlanSoldierSelection.resolve(source.team(), playerClass).orElse(null);
         if (selection == null)
         {
             NpcsMod.log.warn("Cannot crew a vehicle with unknown class {} of team {}", source.playerClass(), source.team());

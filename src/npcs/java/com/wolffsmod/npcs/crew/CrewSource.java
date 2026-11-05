@@ -4,6 +4,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 
 import java.util.Locale;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Who crews the seats of one post of a vehicle NPC: nobody, a Custom NPCs clone, or a new NPC equipped with the loadout
@@ -14,7 +16,7 @@ import java.util.Locale;
  * @param team
  *            short name of the team whose class it is, empty for a class looked up on its own
  * @param playerClass
- *            short name of the class
+ *            pipe-separated short names of the selected classes
  */
 public record CrewSource(Kind kind, int cloneTab, String cloneName, String team, String playerClass, int skin)
 {
@@ -80,6 +82,19 @@ public record CrewSource(Kind kind, int cloneTab, String cloneName, String team,
         return new CrewSource(kind, cloneTab, cloneName, team, playerClass, variant);
     }
 
+    /** The saved class pool; a legacy single class is a pool of one. */
+    public List<String> classes()
+    {
+        return Arrays.stream(playerClass.split("\\|")).map(String::strip).filter(name -> !name.isEmpty()).distinct().toList();
+    }
+
+    /** Chooses an available class once per recruit, preserving the configured team and skin policy. */
+    public String chooseClass(List<String> available, RandomSource random)
+    {
+        List<String> choices = classes().stream().filter(available::contains).toList();
+        return choices.isEmpty() ? "" : choices.get(choices.size() == 1 ? 0 : random.nextInt(choices.size()));
+    }
+
     /** Chooses once per recruit on the server; the resulting index is synchronized with that NPC. */
     public int chooseSkin(int variants, RandomSource random)
     {
@@ -97,7 +112,7 @@ public record CrewSource(Kind kind, int cloneTab, String cloneName, String team,
         {
             case NONE -> false;
             case CLONE -> !cloneName.isEmpty();
-            case CLASS -> !playerClass.isEmpty();
+            case CLASS -> !classes().isEmpty();
         };
     }
 

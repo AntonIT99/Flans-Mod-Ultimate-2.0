@@ -14,6 +14,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class BotSettingsTextTest
 {
     @Test
+    void crewClassListsPreserveTextAndRecognizeExclusiveModes()
+    {
+        assertEquals(List.of("driver", "engineer"), BotSettingsText.crewClasses("driver| engineer |driver||"));
+        assertEquals(List.of(), BotSettingsText.crewClasses(null));
+        assertEquals(List.of(), BotSettingsText.crewClasses(""));
+        assertEquals(List.of(), BotSettingsText.crewClasses("Any"));
+        assertEquals(List.of(), BotSettingsText.crewClasses("NONE"));
+        BotSettings.TeamForce force = new BotSettings.TeamForce();
+        force.setCrewClass(CrewPost.DRIVER, BotSettingsText.parseCrewClass("driver|engineer"));
+        assertEquals("driver:driver|engineer, gunner:any, passenger:any", BotSettingsText.formatCrew(force));
+    }
+
+    @Test
     void aircraftRolesSurviveAllocationEditingAndNbtRoundTrips()
     {
         var role = com.wolffsmod.npcs.sim.NpcTuning.AircraftRole.BOMBER;

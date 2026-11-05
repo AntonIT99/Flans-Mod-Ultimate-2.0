@@ -20,6 +20,24 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BotSettingsTest
 {
+    @Test
+    void multipleCrewClassesSurviveSavesAndScopeInheritance()
+    {
+        BotSettings settings = new BotSettings();
+        var force = settings.team("red");
+        String planes = BotSettings.TeamForce.crewScope(FlanModelKind.PLANE);
+        String bomber = BotSettings.TeamForce.crewDefinitionScope("bomber");
+        force.setCrewClass(CrewPost.DRIVER, "driver|engineer");
+        force.setCrewClass(planes, CrewPost.DRIVER, "pilot|ace");
+        force.setCrewClass(bomber, CrewPost.GUNNER, "gunner|engineer");
+        var loaded = BotSettings.load(settings.save()).team("red");
+        assertEquals("driver|engineer", loaded.effectiveCrewClass("tank", FlanModelKind.VEHICLE, CrewPost.DRIVER));
+        assertEquals("pilot|ace", loaded.effectiveCrewClass("bomber", FlanModelKind.PLANE, CrewPost.DRIVER));
+        assertEquals("gunner|engineer", loaded.effectiveCrewClass("bomber", FlanModelKind.PLANE, CrewPost.GUNNER));
+        loaded.setCrewClass(bomber, CrewPost.DRIVER, "");
+        assertEquals("", loaded.effectiveCrewClass("bomber", FlanModelKind.PLANE, CrewPost.DRIVER));
+    }
+
     @BeforeAll
     static void bootstrap() throws ReflectiveOperationException
     {

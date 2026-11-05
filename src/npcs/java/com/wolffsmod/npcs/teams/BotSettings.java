@@ -358,7 +358,7 @@ public final class BotSettings
             return force;
         }
 
-        /** @return the class that crews a kind of seat: a short name, {@link #NO_CREW}, or empty for one picked by weight */
+        /** @return the class that crews a kind of seat: pipe-separated short names, {@link #NO_CREW}, or empty for one picked by weight */
         public String crewClass(CrewPost post)
         {
             return crewClasses.getOrDefault(post, "");

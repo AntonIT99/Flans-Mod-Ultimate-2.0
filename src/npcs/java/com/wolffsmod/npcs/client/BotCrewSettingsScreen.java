@@ -5,6 +5,7 @@ import com.flansmodultimate.api.teams.IPlayerClass;
 import com.wolffsmod.npcs.crew.CrewPost;
 import com.wolffsmod.npcs.platform.client.NpcClientPlatform;
 import com.wolffsmod.npcs.teams.BotSettings;
+import com.wolffsmod.npcs.teams.BotSettingsText;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 
 /** Edits each seat role for a single crew scope; Cancel discards this scope's draft. Client side. */
 final class BotCrewSettingsScreen extends Screen
@@ -54,7 +56,8 @@ final class BotCrewSettingsScreen extends Screen
             else if (value.isEmpty() || BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(value))
                 name = Component.translatable(PREFIX + (value.isEmpty() ? "crew.any" : "crew.none"));
             else
-                name = FlansModApi.getPlayerClass(value).map(IPlayerClass::getNameComponent).orElse(Component.literal(value));
+                name = ComponentUtils.formatList(BotSettingsText.crewClasses(value), playerClass ->
+                    FlansModApi.getPlayerClass(playerClass).map(IPlayerClass::getNameComponent).orElse(Component.literal(playerClass)));
             Component label = Component.translatable("wolffsmodnpcs.editor.crew_button." + post.id(), name);
             addRenderableWidget(Button.builder(label, button -> Minecraft.getInstance().setScreen(new BotCrewPicker(editor, this, team, draft, scope, post, crewsOn)))
                 .bounds(left, top + post.ordinal() * 24, panelWidth, 20).tooltip(Tooltip.create(Component.translatable(PREFIX + "crew.hint." + post.id()))).build());
