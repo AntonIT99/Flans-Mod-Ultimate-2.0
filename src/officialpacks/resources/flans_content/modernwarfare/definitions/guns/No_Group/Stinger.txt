@@ -8,7 +8,6 @@ Icon Stinger
 Colour 255 255 255
 DeployedModel None
 Model mw.Stinger
-FirstPersonFrame 1.12.2
 Texture Stinger
 ModelScale 0.18
 Paintjob stinger_stoic_blue stinger_stoic_blue blue 4

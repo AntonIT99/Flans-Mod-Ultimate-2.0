@@ -4,7 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-/** Legacy RenderGun first-person placement a gun model was authored against. */
+/** Legacy RenderGun view frames and authored-model alignment categories. */
 public enum EnumGunFirstPersonFrame
 {
     /** Ultimate 1.7.10: vanilla and Forge equipped-item frames, then the 1.7.10 aiming movement. */
@@ -35,7 +35,7 @@ public enum EnumGunFirstPersonFrame
         return aimCentreZ - authored.aimCentreZ;
     }
 
-    /** Parses a definition value such as {@code 1.12.2} or {@code Tap}; returns null when unknown. */
+    /** Parses an authored frame; old Tap values normalize to 1.7.10. Returns null when unknown. */
     @Nullable
     public static EnumGunFirstPersonFrame parse(@Nullable String value)
     {
@@ -45,13 +45,13 @@ public enum EnumGunFirstPersonFrame
         for (EnumGunFirstPersonFrame frame : values())
         {
             if (frame.displayName.toLowerCase(Locale.ROOT).equals(normalized) || frame.name().toLowerCase(Locale.ROOT).equals(normalized))
-                return frame;
+                return frame == FLANS_TAP ? FLANS_1710 : frame;
         }
         return switch (normalized)
         {
             case "1710", "1.7", "legacy" -> FLANS_1710;
             case "1122", "1.12" -> FLANS_1122;
-            case "labjac" -> FLANS_TAP;
+            case "labjac" -> FLANS_1710;
             default -> null;
         };
     }

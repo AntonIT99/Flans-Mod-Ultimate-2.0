@@ -199,7 +199,7 @@
 ## Rendering & Performance
 
 * Standing up after going prone or crawling clears the sideways head and hat tilt
-* Guns can set `FirstPersonFrame` (`1.7.10`, `1.12.2` or `Tap`) to pick the first-person placement their model was made for; the new `preferredGunFirstPersonFrame` client option (also in the quick settings) picks the placement for every gun and shifts guns made for another placement sideways while aiming so their sights stay centred, and `/flansdebug frame` previews each placement
+* Guns can set `FirstPersonFrame` (`1.7.10` or `1.12.2`; old `Tap` values alias `1.7.10`) to pick the first-person placement their model was made for; the new `preferredGunFirstPersonFrame` client option (also in the quick settings) picks the placement for every gun and shifts guns made for another placement sideways while aiming so their sights stay centred, `/flansdebug viewFrame` previews each placement, and `/flansdebug authoredFrame [1.7.10 | 1.12.2 | reset | clear]` previews the held gun's authored property locally
 * GPU mesh caching and size culling draw only visible ranges and skip hidden batches
 * Flan armour is drawn through the GPU mesh cache like vehicles and guns, each body part as one batch, which is what a battle of hundreds of uniformed soldiers spent most of its frame time on
 * Armour level of detail leaves out uniform parts too small to see, with `Enable Armor LOD` and `Armor LOD Strength` in quick options and `minimumArmorPartPixelSize` / `maximumArmorLodPartPixelSize` in the client config. Parts are measured by the size they project to, so a scope brings a distant soldier's full detail back, and no armour piece is ever hidden

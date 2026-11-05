@@ -486,7 +486,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected Vector3f ironSightOffset = new Vector3f();
     @Getter
     protected float ironSightPitch;
-    /** First-person placement from FirstPersonFrame; null uses the client default. */
+    /** Authored model alignment from FirstPersonFrame; null uses 1.7.10. */
     @Getter @Nullable
     protected EnumGunFirstPersonFrame firstPersonFrame;
     @Getter
@@ -982,7 +982,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         {
             EnumGunFirstPersonFrame parsedFrame = EnumGunFirstPersonFrame.parse(configuredFrame);
             if (parsedFrame == null)
-                FlansLog.log.warn("Unknown FirstPersonFrame '{}' in {}; expected 1.7.10, 1.12.2 or Tap", configuredFrame, originalShortName);
+                FlansLog.log.warn("Unknown FirstPersonFrame '{}' in {}; expected 1.7.10 or 1.12.2", configuredFrame, originalShortName);
             firstPersonFrame = parsedFrame;
         }
         bow = readValue("Bow", bow, file);

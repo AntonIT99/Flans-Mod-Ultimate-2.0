@@ -7,7 +7,6 @@ Icon Flamethrower
 Colour 255 255 255
 DeployedModel None
 Model mw.Flamethrower
-FirstPersonFrame 1.12.2
 Texture Flamethrower
 ModelScale 0.18
 Paintjob flamethrower_stoic_blue flamethrower_stoic_blue blue 4
