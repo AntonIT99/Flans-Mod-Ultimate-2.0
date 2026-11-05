@@ -98,7 +98,7 @@ public final class DetachedPieces
     {
         private final Capture capture = new Capture();
         private DriveableVisual visual;
-        /** Part-box corners and face centres, relative to the pivot, in world axes at the moment it left. */
+        /** Drawn geometry, relative to the pivot, in world axes at the moment it left. */
         private Vector3f[] corners = new Vector3f[0];
         /** The point the piece spins around, relative to the capture's origin. */
         private Vector3f pivot;
@@ -184,13 +184,25 @@ public final class DetachedPieces
             Vec3 corner = corners.get(index).subtract(pivot);
             piece.corners[index] = new Vector3f((float) corner.x, (float) corner.y, (float) corner.z);
         }
+        PieceGeometry geometry = new PieceGeometry();
+        PoseStack pose = new PoseStack();
+        pose.last().pose().set(capture.relative);
+        pose.last().normal().set(new Matrix3f(capture.relative).invert().transpose());
+        for (EnumRenderPass pass : ModelCache.getRenderPasses(capture.model))
+            capture.model.render(piece.visual, capture.state, pose, geometry, 0, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F, 1F, pass);
+        Vector3f[] drawn = geometry.relativeTo(piece.pivot);
+        if (drawn.length > 0)
+            piece.corners = drawn;
         piece.velocity = velocity;
         piece.spinAxis = new Vector3f(random.nextFloat() - 0.5F, random.nextFloat() - 0.5F, random.nextFloat() - 0.5F);
         if (piece.spinAxis.lengthSquared() < 1.0E-4F)
             piece.spinAxis.set(0F, 1F, 0F);
         piece.spinAxis.normalize();
         piece.spin = spin;
-        shapeAsPlate(piece, corners, pivot, random);
+        List<Vec3> drawnCorners = new ArrayList<>();
+        for (Vector3f corner : piece.corners)
+            drawnCorners.add(pivot.add(corner.x, corner.y, corner.z));
+        shapeAsPlate(piece, drawnCorners, pivot, random);
         piece.lifetime = MIN_LIFETIME + random.nextInt(LIFETIME_SPREAD);
         piece.burning = burning;
         if (entity.level() instanceof ClientLevel level)
