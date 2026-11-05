@@ -7,7 +7,7 @@ Icon mp44
 Colour 255 255 255
 DeployedModel None
 Model ww2.Mp44
-animAimOffset 0 12.78522674 0
+animAimOffset 0 9 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 0.96429 0.3817 0.08047
