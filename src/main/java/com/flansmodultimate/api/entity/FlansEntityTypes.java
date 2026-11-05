@@ -261,6 +261,20 @@ public final class FlansEntityTypes
     }
 
     /**
+     * Reads how much room a vehicle, plane or mecha's hull takes up, from the collision shapes of its definition and
+     * without its turret and barrels, for instance to find whether it fits between two walls. Either side after content
+     * loading.
+     *
+     * @param type
+     *            selected definition
+     * @return the hull's footprint, or empty for anything but a driveable, or one without hull shapes
+     */
+    public static Optional<HullFootprint> getHullFootprint(IContentType type)
+    {
+        return type instanceof DriveableType driveable ? driveable.getCollisionProfile().getHullFootprint() : Optional.empty();
+    }
+
+    /**
      * Reads how a plane or helicopter flies when a player flies it, without creating an entity, so that something flying
      * in its place can match it. Either side after content loading. Aircraft that fly freely in six degrees are not
      * covered.

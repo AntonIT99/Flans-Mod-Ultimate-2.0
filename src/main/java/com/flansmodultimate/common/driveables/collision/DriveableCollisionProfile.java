@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.driveables.collision;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.api.driveables.HullFootprint;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.types.DriveableType;
@@ -30,11 +31,42 @@ public final class DriveableCollisionProfile
 
     private final List<Shape> shapes;
     private final boolean usingFancyMeshes;
+    /** The room the hull takes up, or null without hull shapes. */
+    private final HullFootprint footprint;
 
     private DriveableCollisionProfile(List<Shape> shapes, boolean usingFancyMeshes)
     {
         this.shapes = List.copyOf(shapes);
         this.usingFancyMeshes = usingFancyMeshes;
+        footprint = footprint(this.shapes);
+    }
+
+    /**
+     * Measures the hull without its turret and barrels, about the driveable's position. Local X runs from side to side
+     * and local Z from bow to stern.
+     */
+    private static HullFootprint footprint(List<Shape> shapes)
+    {
+        double side = 0D;
+        double end = 0D;
+        double bottom = Double.POSITIVE_INFINITY;
+        double top = Double.NEGATIVE_INFINITY;
+        for (Shape shape : shapes)
+        {
+            if (shape.isTurret() || shape.isBarrel())
+                continue;
+            side = Math.max(side, Math.max(-shape.getMinX(), shape.getMaxX()));
+            end = Math.max(end, Math.max(-shape.getMinZ(), shape.getMaxZ()));
+            bottom = Math.min(bottom, shape.getMinY());
+            top = Math.max(top, shape.getMaxY());
+        }
+        return side > 0D && end > 0D && top > bottom ? new HullFootprint(end * 2D, side * 2D, top - bottom) : null;
+    }
+
+    /** @return the room the hull takes up without its turret and barrels, or empty for a definition without hull shapes */
+    public Optional<HullFootprint> getHullFootprint()
+    {
+        return Optional.ofNullable(footprint);
     }
 
     public static DriveableCollisionProfile compile(DriveableType type)

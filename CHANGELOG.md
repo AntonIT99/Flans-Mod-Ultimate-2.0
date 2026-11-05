@@ -8,6 +8,8 @@
 
 * API-spawned driveables and wrecks now face the requested Minecraft yaw, correcting a 90-degree offset
 
+* Addon API: `FlansEntityTypes.getHullFootprint` reads the length, width and height of a driveable definition's hull from its collision shapes, without its turret and barrels
+
 ## Highlights
 
 * HEAT charges apply full jet damage to unarmoured vehicles and aircraft regardless of `UseRealisticVehicleHealth` (legacy-health vehicles use the higher of their authored damage and the jet damage; armoured faces still require penetration); ammunition and launcher vehicle/plane damage stats show the HEAT jet range
