@@ -176,6 +176,8 @@
 
 ## Weapons
 
+* Disposable guns such as the Panzerfaust are no longer removed after firing in creative mode (`ConsumeGunOnUse`)
+
 * New gun parameter `EjectCasings` turns off casing ejection for a single gun; blasters, energy and rail weapons, rocket and missile launchers, flamethrowers, revolvers, bows, Nerf blasters, the caseless HK G11 and muzzle-loaders no longer throw out casings
 
 * `/rearm` and Teams vehicle spawning fill vehicle weapon ammunition slots to their item and inventory stack limits, including partially filled stacks; shell, bomb and missile banks receive a mix of every declared round of the bank's kind instead of a single type, and Teams spare vehicle supplies and `/defaultammo` include every such round too; rounds come from the driveable's own content pack whenever it has any, including the vehicle ammunition issued to NPC crews

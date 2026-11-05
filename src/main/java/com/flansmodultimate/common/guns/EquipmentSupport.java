@@ -1,11 +1,6 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.equipment.EquippedArmorProperties;
-import com.flansmodultimate.api.equipment.EquippedShieldProperties;
-import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
-import com.flansmodultimate.api.equipment.WeaponKind;
-import com.flansmodultimate.api.equipment.WeaponOverrides;
-import com.flansmodultimate.api.equipment.WeaponTraits;
+import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.flansmodultimate.common.entity.ProneSupport;
 import com.flansmodultimate.common.entity.ThrownGun;
@@ -344,7 +339,7 @@ public final class EquipmentSupport
             holder.setDeltaMovement(holder.getDeltaMovement().subtract(holder.getLookAngle().scale(type.getKnockback() * 0.1D)));
         ShootableItem.consumeRound(loaded.stack());
         item.setBulletItemStack(stack, loaded.stack(), loaded.slot(), holder.level().registryAccess());
-        if (type.isConsumeGunUponUse())
+        if (type.isConsumeGunUponUse() && !(holder instanceof Player player && player.getAbilities().instabuild))
             holder.setItemInHand(hand, ItemStack.EMPTY);
     }
 

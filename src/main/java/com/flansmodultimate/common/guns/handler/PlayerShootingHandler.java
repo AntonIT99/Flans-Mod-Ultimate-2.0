@@ -68,7 +68,7 @@ public final class PlayerShootingHandler implements ShootingHandler
 
         gunItem.setBulletItemStack(gunStack, bulletStack, ammoIndex, level.registryAccess());
 
-        if (gunType.isConsumeGunUponUse())
+        if (gunType.isConsumeGunUponUse() && !player.getAbilities().instabuild)
             player.setItemInHand(hand, ItemStack.EMPTY);
 
         PlayerData data = PlayerData.getInstance(player);
