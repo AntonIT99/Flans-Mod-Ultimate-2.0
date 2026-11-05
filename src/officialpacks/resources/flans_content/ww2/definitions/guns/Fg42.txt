@@ -7,6 +7,7 @@ Icon fg42
 Colour 255 255 255
 DeployedModel None
 Model ww2.Fg42
+animAimOffset 0 -0.95829471 0
 FirstPersonFrame 1.12.2
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash

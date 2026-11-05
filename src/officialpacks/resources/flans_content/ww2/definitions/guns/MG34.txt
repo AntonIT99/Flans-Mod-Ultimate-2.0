@@ -6,6 +6,7 @@ ShortName MG34
 Icon MG34
 Colour 255 255 255
 Model ww2.MG34
+animAimOffset 0 0.44334337 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.5082 0.30621 -0.002025

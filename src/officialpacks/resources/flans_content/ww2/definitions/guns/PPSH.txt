@@ -7,6 +7,7 @@ Icon PPSH
 Colour 255 255 255
 DeployedModel None
 Model ww2.PPSH
+animAimOffset 0 0.45719508 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 2.00893 0.4721 0

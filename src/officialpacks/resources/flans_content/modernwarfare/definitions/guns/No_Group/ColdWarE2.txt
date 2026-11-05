@@ -8,6 +8,7 @@ Icon ColdWarE2
 Colour 255 255 255
 DeployedModel None
 Model mw.ColdWarE2
+animAimOffset 0 -6.22552581 0
 Texture ColdWarE2
 ModelScale 0.18
 Paintjob coldware2_stoic_blue coldware2_stoic_blue blue 3

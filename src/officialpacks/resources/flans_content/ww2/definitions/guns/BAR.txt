@@ -7,6 +7,7 @@ Icon bar
 Colour 255 255 255
 DeployedModel None
 Model ww2.BAR
+animAimOffset 0 1.49478006 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.575 0.36914 0.01137

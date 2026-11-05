@@ -7,6 +7,7 @@ Icon m3a1
 Colour 255 255 255
 DeployedModel None
 Model ww2.GreaseGun
+animAimOffset 0 0.6339418 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 0.72573 0.46959 -0.00229

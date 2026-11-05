@@ -8,6 +8,7 @@ Icon AA12
 Colour 255 255 255
 DeployedModel None
 Model mw.AA12
+animAimOffset 0 0.10193543 0
 Texture AA12
 ModelScale 0.18
 Paintjob aa12_stoic_blue aa12_stoic_blue blue 3

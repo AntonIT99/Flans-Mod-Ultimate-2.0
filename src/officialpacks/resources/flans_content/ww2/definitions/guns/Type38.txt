@@ -7,6 +7,7 @@ Icon Type38
 Colour 255 255 255
 DeployedModel None
 Model ww2.Type38
+animAimOffset 0 0.18994532 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.82059 0.32645 0

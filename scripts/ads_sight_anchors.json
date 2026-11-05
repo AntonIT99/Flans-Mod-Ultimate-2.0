@@ -1,0 +1,1258 @@
+{
+  "guns": [
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/AKs/AK47.txt",
+      "front": {
+        "part": "gunModel[14]",
+        "point": [
+          15.25,
+          -5.4,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/AKs/AK74.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/AKs/RPD.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          14.0,
+          -16.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/AKs/RPK.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          14.0,
+          -16.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/ACR.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/ADAR15.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/AN94.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/ASH12.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/AUG.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/FAMAS.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/FNSCAR.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/G36.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/Galil.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/HCAR.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/HK416.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/KCASmartcarbine.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/L86.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          20.0,
+          -16.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/M16A4.txt",
+      "front": {
+        "part": "gunModel[19]",
+        "point": [
+          12.75,
+          -5.5,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Assaults/MTAR.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Bullet_Revolvers/Jury.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/HMGs/GAU19.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          14.0,
+          -16.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/LMGs/DevotionX55.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          13.0,
+          -15.0,
+          2.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/LMGs/M249.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          14.0,
+          -16.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/LMGs/M60E4.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          12.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/LMGs/Pr3.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          14.0,
+          -16.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/Bizon.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          0.5,
+          -17.0,
+          2.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/ColdWarE2.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          17.0,
+          -16.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/KrissVector.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/P90.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          10.0,
+          -16.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/PAW20.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          12.0,
+          -15.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/SideWinder7.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          14.0,
+          -16.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/VoltV3.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Pistols/DesertEagle.txt",
+      "front": {
+        "part": "gunModel[5]",
+        "point": [
+          11.0,
+          5.2,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Pistols/Glock.txt",
+      "front": {
+        "part": "slideModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Pistols/M1911.txt",
+      "front": {
+        "part": "slideModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Pistols/M9.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Pistols/Makarov.txt",
+      "front": {
+        "part": "slideModel[3]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Pistols/SIGP226.txt",
+      "front": {
+        "part": "slideModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Pistols/SIGP232.txt",
+      "front": {
+        "part": "slideModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Pistols/USP.txt",
+      "front": {
+        "part": "slideModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Rifle/Dragunov.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          12.0,
+          -16.0,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Rifle/G3.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Rifle/M14.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Rifle/SG550.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          5.0,
+          -16.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Shotguns/AA12.txt",
+      "front": {
+        "part": "defaultScopeModel[1]",
+        "point": [
+          13.0,
+          -15.0,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Shotguns/Executioner.txt",
+      "front": {
+        "part": "breakActionModel[8]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Shotguns/Judge.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Shotguns/M1014.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          8.0,
+          -15.0,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Shotguns/PeaceKeeper.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          10.0,
+          -15.0,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Shotguns/R870.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          12.0,
+          -15.0,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Shotguns/SPAS.txt",
+      "front": {
+        "part": "gunModel[8]",
+        "point": [
+          11.0,
+          -15.0,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Shotguns/W1200.txt",
+      "front": {
+        "part": "defaultScopeModel[0]",
+        "point": [
+          10.0,
+          -15.0,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/SMGs/FMG-9.txt",
+      "front": {
+        "part": "defaultScopeModel[5]",
+        "point": [
+          0.5,
+          0.0,
+          1.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/SMGs/HoneyBadger.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/SMGs/MP5.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/SMGs/MP7.txt",
+      "front": {
+        "part": "defaultScopeModel[2]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/SMGs/Skorpion.txt",
+      "front": {
+        "part": "gunModel[7]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/BAR.txt",
+      "front": {
+        "part": "gunModel[23]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Browning.txt",
+      "front": {
+        "part": "gunModel[5]",
+        "point": [
+          0.85,
+          -3.0,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/C96.txt",
+      "front": {
+        "part": "gunModel[53]",
+        "point": [
+          1.0,
+          0.3,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Colt.txt",
+      "front": {
+        "part": "slideModel[8]",
+        "point": [
+          0.5,
+          0.0,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Fg42.txt",
+      "front": {
+        "part": "gunModel[67]",
+        "point": [
+          0.5,
+          2.25,
+          2.5
+        ],
+        "reason": "Top center of the small front-sight tip above Box 68; excludes the receiver-mounted rear sight."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/G43.txt",
+      "front": {
+        "part": "gunModel[4]",
+        "point": [
+          0.5,
+          -2,
+          0.5
+        ],
+        "reason": "Top center of the unrotated Import Sightfront post; shape-box Y corners are unchanged."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Greasegun.txt",
+      "front": {
+        "part": "gunModel[18]",
+        "point": [
+          0.5,
+          0.2,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Kar98k.txt",
+      "front": {
+        "part": "gunModel[21]",
+        "point": [
+          0.5,
+          -2,
+          0.5
+        ],
+        "reason": "Top center of the unrotated Import Sightfront post, inside its protective hood."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/LeeEnfield.txt",
+      "front": {
+        "part": "gunModel[4]",
+        "point": [
+          0.5,
+          -2,
+          0.5
+        ],
+        "reason": "Top center of Shape5, the one-unit front-sight post above the barrel."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Luger.txt",
+      "front": {
+        "part": "gunModel[25]",
+        "point": [
+          1.4,
+          -0.3,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/M1Carbine.txt",
+      "front": {
+        "part": "gunModel[18]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/M1Garand.txt",
+      "front": {
+        "part": "gunModel[30]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/MG34.txt",
+      "front": {
+        "part": "gunModel[45]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top of the narrow front-sight cap (Box 140) above the front post, not the rear aperture."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/MG42.txt",
+      "front": {
+        "part": "gunModel[7]",
+        "point": [
+          12.5,
+          -2.3,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/MosinNagant.txt",
+      "front": {
+        "part": "gunModel[6]",
+        "point": [
+          16.5,
+          3.5,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Mp34.txt",
+      "front": {
+        "part": "gunModel[41]",
+        "point": [
+          0.5,
+          0.35,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Mp40.txt",
+      "front": {
+        "part": "gunModel[18]",
+        "point": [
+          0.5,
+          -1.2,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/PPSH.txt",
+      "front": {
+        "part": "gunModel[9]",
+        "point": [
+          1.0,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Springfield.txt",
+      "front": {
+        "part": "gunModel[26]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/STG44.txt",
+      "front": {
+        "part": "gunModel[44]",
+        "point": [
+          3.0,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Thompson.txt",
+      "front": {
+        "part": "gunModel[9]",
+        "point": [
+          0.5,
+          0.0,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/TrenchGun.txt",
+      "front": {
+        "part": "gunModel[21]",
+        "point": [
+          0.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/TT33.txt",
+      "front": {
+        "part": "slideModel[1]",
+        "point": [
+          6.45,
+          5.5,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Type100.txt",
+      "front": {
+        "part": "gunModel[22]",
+        "point": [
+          0.25,
+          -0.6,
+          1.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Type14.txt",
+      "front": {
+        "part": "gunModel[11]",
+        "point": [
+          0.5,
+          0.0,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Type38.txt",
+      "front": {
+        "part": "gunModel[16]",
+        "point": [
+          0.5,
+          0.0,
+          -0.5
+        ],
+        "reason": "Upper midpoint between the two GN.Ironsight1 faces; their shared sight line is midway in Z."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Webley.txt",
+      "front": {
+        "part": "gunModel[8]",
+        "point": [
+          1.5,
+          0.0,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/Glock 17.txt",
+      "front": {
+        "part": "slideModel[1]",
+        "point": [
+          0.7,
+          0.2,
+          0.5
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/M4Carbine.txt",
+      "front": {
+        "part": "gunModel[4]",
+        "point": [
+          12.5,
+          5.5,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/MP5K.txt",
+      "front": {
+        "part": "gunModel[5]",
+        "point": [
+          7.5,
+          6.0,
+          0.0
+        ],
+        "reason": "Top center of the front sight post; excludes protective ears, hood and receiver."
+      }
+    }
+  ],
+  "excluded": [
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/50cals/Barrett.txt",
+      "reason": "No identifiable front-sight post in the unscoped model; intended for an attached optic."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/50cals/KCASmart50.txt",
+      "reason": "No identifiable front-sight post in the unscoped model; intended for an attached optic."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Bullet_Snipers/ElDiablo.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Bullet_Snipers/M40A3.txt",
+      "reason": "No identifiable front-sight post in the unscoped model; intended for an attached optic."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Bullet_Snipers/R700.txt",
+      "reason": "No identifiable front-sight post in the unscoped model; intended for an attached optic."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Grenade_Launchers/GL1.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Grenade_Launchers/GL6.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/HMGs/Minigun.txt",
+      "reason": "No identifiable iron-sight aiming post."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/AT4.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/B4CrossBow.txt",
+      "reason": "Integrated sight frame has no unambiguous front post or reticle point."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/Binoculars.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/EMP4.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/Flamethrower.txt",
+      "reason": "No identifiable iron-sight aiming post."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/M72LAW.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/Mastiff1218.txt",
+      "reason": "Integrated sight frame has no unambiguous front post or reticle point."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/MLRS6.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/Panzerfaust3.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/RiotShield.txt",
+      "reason": "Melee weapon or shield; no iron-sight ADS target."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/RPG.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/No_Group/Stinger.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Pistols/KCASmartpistol.txt",
+      "reason": "Only one central sight blade near the receiver; forward aiming reference is ambiguous."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Rifle/L96.txt",
+      "reason": "No identifiable front-sight post in the unscoped model; intended for an attached optic."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Rifle/M21.txt",
+      "reason": "No identifiable front-sight post in the unscoped model; intended for an attached optic."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Rifle/NTW20.txt",
+      "reason": "No identifiable front-sight post in the unscoped model; intended for an attached optic."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Rifle/TripleTake.txt",
+      "reason": "Integrated sight frame has no unambiguous front post or reticle point."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/Shotguns/M1887.txt",
+      "reason": "No separate front-sight post in this simplified model; needs a visually selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/modernwarfare/definitions/guns/SMGs/Uzi.txt",
+      "reason": "Central blade and forward guards are at different longitudinal positions; needs visual anchor confirmation."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Bazooka.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Binoculars.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Flamethrower.txt",
+      "reason": "No identifiable iron-sight aiming post."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Kar98kSniper.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/LeeEnfieldSniper.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/MosinNagantSniper.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Panzerfaust.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Panzerschreck.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/PIAT.txt",
+      "reason": "Launcher sight is absent, offset, or range-marked; needs a separately selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/SpringfieldSniper.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Sten.txt",
+      "reason": "Model has no separate front-sight post; leave the existing placement intact."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/ww2/definitions/guns/Type38Sniper.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/BaseballBat.txt",
+      "reason": "Melee weapon or shield; no iron-sight ADS target."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/ColtPython.txt",
+      "reason": "No separate front-sight post in this simplified model; needs a visually selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/CombatKnife.txt",
+      "reason": "Melee weapon or shield; no iron-sight ADS target."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/DoubleBarrelledShotgun.txt",
+      "reason": "No separate front-sight post in this simplified model; needs a visually selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/FlareGun.txt",
+      "reason": "No separate front-sight post in this simplified model; needs a visually selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/Machete.txt",
+      "reason": "Melee weapon or shield; no iron-sight ADS target."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/Olympia.txt",
+      "reason": "No separate front-sight post in this simplified model; needs a visually selected aiming reference."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/RiotShield.txt",
+      "reason": "Melee weapon or shield; no iron-sight ADS target."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/SamuraiSword.txt",
+      "reason": "Melee weapon or shield; no iron-sight ADS target."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/Screwdriver.txt",
+      "reason": "Melee weapon or shield; no iron-sight ADS target."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/Sledgehammer.txt",
+      "reason": "Melee weapon or shield; no iron-sight ADS target."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/SurgicalAxe.txt",
+      "reason": "Melee weapon or shield; no iron-sight ADS target."
+    },
+    {
+      "definition": "src/officialpacks/resources/flans_content/zombie/definitions/guns/WinchesterModel70.txt",
+      "reason": "Scope overlay; excluded from this iron-sight pass."
+    }
+  ]
+}

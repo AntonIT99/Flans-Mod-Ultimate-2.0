@@ -8,6 +8,7 @@ Icon ASH12
 Colour 255 255 255
 DeployedModel None
 Model mw.ASH12
+animAimOffset 0 2.5561667 0
 Texture ASH12
 ModelScale 0.18
 Paintjob ash12_stoic_blue ash12_stoic_blue blue 3

@@ -7,6 +7,7 @@ Icon thompson
 Colour 255 255 255
 DeployedModel None
 Model ww2.Thompson
+animAimOffset 0 0.7149808 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.38616 0.54844 0.00971

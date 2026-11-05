@@ -7,6 +7,7 @@ Icon g43
 Colour 255 255 255
 DeployedModel None
 Model ww2.G43
+animAimOffset 0 0.32294148 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.35603 0.35972 -0.00188

@@ -8,6 +8,7 @@ Icon HK416
 Colour 255 255 255
 DeployedModel None
 Model mw.HK416
+animAimOffset 0 2.97179058 0
 Texture HK416
 ModelScale 0.18
 Paintjob hk416_stoic_blue hk416_stoic_blue blue 3

@@ -8,6 +8,7 @@ Icon PAW20
 Colour 255 255 255
 DeployedModel None
 Model mw.PAW20
+animAimOffset 0 0.79126707 0
 Texture PAW20
 ModelScale 0.18
 

@@ -8,6 +8,7 @@ Icon M60E4
 Colour 255 255 255
 DeployedModel None
 Model mw.M60E4
+animAimOffset 0 4.30345005 0
 Texture M60E4
 ModelScale 0.18
 Paintjob m60e4_stoic_blue m60e4_stoic_blue blue 3

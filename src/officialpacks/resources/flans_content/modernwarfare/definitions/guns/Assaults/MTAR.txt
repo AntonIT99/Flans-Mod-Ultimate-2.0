@@ -8,6 +8,7 @@ Icon MTAR
 Colour 255 255 255
 DeployedModel None
 Model mw.MTAR
+animAimOffset 0 2.86683506 0
 Texture MTAR
 ModelScale 0.18
 Paintjob mtar_stoic_blue mtar_stoic_blue blue 3

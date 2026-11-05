@@ -8,6 +8,7 @@ Icon L86
 Colour 255 255 255
 DeployedModel None
 Model mw.L86
+animAimOffset 0 -4.04920052 0
 Texture L86
 ModelScale 0.18
 Paintjob l86_stoic_blue l86_stoic_blue blue 3

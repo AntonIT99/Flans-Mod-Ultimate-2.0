@@ -8,6 +8,7 @@ Icon FNSCAR
 Colour 255 255 255
 DeployedModel None
 Model mw.FNSCAR
+animAimOffset 0 3.10193544 0
 Texture FNSCAR
 ModelScale 0.18
 Paintjob fnscar_stoic_blue fnscar_stoic_blue blue 3

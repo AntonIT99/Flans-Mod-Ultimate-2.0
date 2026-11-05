@@ -8,6 +8,7 @@ Icon VoltV3
 Colour 255 255 255
 DeployedModel None
 Model mw.VoltV3
+animAimOffset 0 8.23858342 0
 Texture VoltV3
 ModelScale 0.18
 FlashModel DefaultFlash

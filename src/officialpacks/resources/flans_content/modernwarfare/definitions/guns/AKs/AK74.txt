@@ -8,6 +8,7 @@ Icon AK74
 Colour 255 255 255
 DeployedModel None
 Model mw.AK74
+animAimOffset 0 3.29505361 0
 Texture AK74
 ModelScale 0.18
 Paintjob ak74_stoic_blue ak74_stoic_blue blue 3
