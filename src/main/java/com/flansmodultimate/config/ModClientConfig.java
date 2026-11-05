@@ -106,6 +106,28 @@ public final class ModClientConfig
     public final boolean enableArmorLod;
     public final double maximumArmorLodPartPixelSize;
     public final double armorLodDetailMultiplier;
+    public final double explosionFlashScale;
+    public final double explosionAfterglowScale;
+    public final double explosionFireballScale;
+    public final double explosionEjectaScale;
+    public final double explosionLayerScale;
+    public final double explosionShockwaveScale;
+    public final double explosionFragSparkScale;
+    public final double explosionSmokeScale;
+    public final double explosionDustScale;
+    public final double explosionStemScale;
+    public final double explosionCapScale;
+    public final double explosionBlockParticleScale;
+    public final double explosionSplashScale;
+    public final double explosionFireballDensity;
+    public final double explosionEjectaDensity;
+    public final double explosionLayerDensity;
+    public final double explosionShockwaveDensity;
+    public final double explosionSmokeDensity;
+    public final double explosionDustDensity;
+    public final double explosionStemDensity;
+    public final double explosionCapDensity;
+    public final double explosionParticleLifetime;
     public final double particleDistanceScale;
     public final double fullParticleDensityShare;
     public final double distantParticleDensity;
@@ -248,6 +270,28 @@ public final class ModClientConfig
     public static final BooleanValue ENABLE_ARMOR_LOD;
     private static final DoubleValue MAXIMUM_ARMOR_LOD_PART_PIXEL_SIZE;
     public static final DoubleValue ARMOR_LOD_DETAIL_MULTIPLIER;
+    public static final DoubleValue EXPLOSION_FLASH_SCALE;
+    public static final DoubleValue EXPLOSION_AFTERGLOW_SCALE;
+    public static final DoubleValue EXPLOSION_FIREBALL_SCALE;
+    public static final DoubleValue EXPLOSION_EJECTA_SCALE;
+    public static final DoubleValue EXPLOSION_LAYER_SCALE;
+    public static final DoubleValue EXPLOSION_SHOCKWAVE_SCALE;
+    public static final DoubleValue EXPLOSION_FRAG_SPARK_SCALE;
+    public static final DoubleValue EXPLOSION_SMOKE_SCALE;
+    public static final DoubleValue EXPLOSION_DUST_SCALE;
+    public static final DoubleValue EXPLOSION_STEM_SCALE;
+    public static final DoubleValue EXPLOSION_CAP_SCALE;
+    public static final DoubleValue EXPLOSION_BLOCK_PARTICLE_SCALE;
+    public static final DoubleValue EXPLOSION_SPLASH_SCALE;
+    public static final DoubleValue EXPLOSION_FIREBALL_DENSITY;
+    public static final DoubleValue EXPLOSION_EJECTA_DENSITY;
+    public static final DoubleValue EXPLOSION_LAYER_DENSITY;
+    public static final DoubleValue EXPLOSION_SHOCKWAVE_DENSITY;
+    public static final DoubleValue EXPLOSION_SMOKE_DENSITY;
+    public static final DoubleValue EXPLOSION_DUST_DENSITY;
+    public static final DoubleValue EXPLOSION_STEM_DENSITY;
+    public static final DoubleValue EXPLOSION_CAP_DENSITY;
+    public static final DoubleValue EXPLOSION_PARTICLE_LIFETIME;
     private static final Supplier<Double> PARTICLE_DISTANCE_SCALE;
     private static final Supplier<Double> FULL_PARTICLE_DENSITY_SHARE;
     private static final Supplier<Double> DISTANT_PARTICLE_DENSITY;
@@ -543,6 +587,53 @@ public final class ModClientConfig
             .defineInRange("maxDetachedDriveablePieces", 24, 0, 128);
         builder.pop();
 
+        builder.push("Explosion Visual Settings");
+        EXPLOSION_FLASH_SCALE = builder.comment("Size of the initial white flash. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionFlashScale", 1D, 0D, 4D);
+        EXPLOSION_AFTERGLOW_SCALE = builder.comment("Size of the warm glow after the flash. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionAfterglowScale", 1D, 0D, 4D);
+        EXPLOSION_FIREBALL_SCALE = builder.comment("Size of fireball particles, including fire in the rising stem. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionFireballScale", 1D, 0D, 4D);
+        EXPLOSION_EJECTA_SCALE = builder.comment("Size of burning ejecta and debris particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionEjectaScale", 1D, 0D, 4D);
+        EXPLOSION_LAYER_SCALE = builder.comment("Size of the extra burst layers around the fireball. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionLayerScale", 1D, 0D, 4D);
+        EXPLOSION_SHOCKWAVE_SCALE = builder.comment("Size of shockwave dust particles; does not change the ring radius. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionShockwaveScale", 1D, 0D, 4D);
+        EXPLOSION_FRAG_SPARK_SCALE = builder.comment("Size of fragmentation sparks; count uses fragSparkMultiplier and maxFragSparks. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionFragSparkScale", 1D, 0D, 4D);
+        EXPLOSION_SMOKE_SCALE = builder.comment("Size of the initial smoke column particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionSmokeScale", 1D, 0D, 4D);
+        EXPLOSION_DUST_SCALE = builder.comment("Size of staged ground dust skirt particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionDustScale", 1D, 0D, 4D);
+        EXPLOSION_STEM_SCALE = builder.comment("Size of rising smoke stem particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionStemScale", 1D, 0D, 4D);
+        EXPLOSION_CAP_SCALE = builder.comment("Size of mushroom cap particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionCapScale", 1D, 0D, 4D);
+        EXPLOSION_BLOCK_PARTICLE_SCALE = builder.comment("Size of crater block-burst smoke and puffs. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionBlockParticleScale", 1D, 0D, 4D);
+        EXPLOSION_SPLASH_SCALE = builder.comment("Size of explosion water splashes. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionSplashScale", 1D, 0D, 4D);
+        EXPLOSION_FIREBALL_DENSITY = builder.comment("Number of fireball particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionFireballDensity", 1D, 0D, 4D);
+        EXPLOSION_EJECTA_DENSITY = builder.comment("Number of burning ejecta and debris particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionEjectaDensity", 1D, 0D, 4D);
+        EXPLOSION_LAYER_DENSITY = builder.comment("Number of extra burst layer particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionLayerDensity", 1D, 0D, 4D);
+        EXPLOSION_SHOCKWAVE_DENSITY = builder.comment("Number of shockwave ring particles; does not change its radius. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionShockwaveDensity", 1D, 0D, 4D);
+        EXPLOSION_SMOKE_DENSITY = builder.comment("Number of initial smoke column particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionSmokeDensity", 1D, 0D, 4D);
+        EXPLOSION_DUST_DENSITY = builder.comment("Number of particles in each staged dust skirt wave. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionDustDensity", 1D, 0D, 4D);
+        EXPLOSION_STEM_DENSITY = builder.comment("Number of rising stem particles, including its fire overlays. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionStemDensity", 1D, 0D, 4D);
+        EXPLOSION_CAP_DENSITY = builder.comment("Number of mushroom cap particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionCapDensity", 1D, 0D, 4D);
+        EXPLOSION_PARTICLE_LIFETIME = builder.comment("Lifetime of explosion puffs, fire, smoke, dust, debris and sparks; does not change the staged emission timing or water splash lifetime. Multiplier: 1 keeps the original look. Client visuals only; particle budgets still apply.")
+            .defineInRange("explosionParticleLifetime", 1D, 0.1D, 4D);
+        builder.pop();
+
         builder.push("Input Settings");
         SHOOT_BUTTON = builder.comment("Main Hand Gun shooting / primary function button").defineEnum("shootButton", EnumMouseButton.MOUSE_LEFT);
         SHOOT_BUTTON_OFFHAND = builder.comment("Offhand Gun shooting / primary function button").defineEnum("shootButtonOffhand", EnumMouseButton.MOUSE_RIGHT);
@@ -726,6 +817,28 @@ public final class ModClientConfig
         enableArmorLod = ENABLE_ARMOR_LOD.get();
         maximumArmorLodPartPixelSize = MAXIMUM_ARMOR_LOD_PART_PIXEL_SIZE.get();
         armorLodDetailMultiplier = ARMOR_LOD_DETAIL_MULTIPLIER.get();
+        explosionFlashScale = EXPLOSION_FLASH_SCALE.get();
+        explosionAfterglowScale = EXPLOSION_AFTERGLOW_SCALE.get();
+        explosionFireballScale = EXPLOSION_FIREBALL_SCALE.get();
+        explosionEjectaScale = EXPLOSION_EJECTA_SCALE.get();
+        explosionLayerScale = EXPLOSION_LAYER_SCALE.get();
+        explosionShockwaveScale = EXPLOSION_SHOCKWAVE_SCALE.get();
+        explosionFragSparkScale = EXPLOSION_FRAG_SPARK_SCALE.get();
+        explosionSmokeScale = EXPLOSION_SMOKE_SCALE.get();
+        explosionDustScale = EXPLOSION_DUST_SCALE.get();
+        explosionStemScale = EXPLOSION_STEM_SCALE.get();
+        explosionCapScale = EXPLOSION_CAP_SCALE.get();
+        explosionBlockParticleScale = EXPLOSION_BLOCK_PARTICLE_SCALE.get();
+        explosionSplashScale = EXPLOSION_SPLASH_SCALE.get();
+        explosionFireballDensity = EXPLOSION_FIREBALL_DENSITY.get();
+        explosionEjectaDensity = EXPLOSION_EJECTA_DENSITY.get();
+        explosionLayerDensity = EXPLOSION_LAYER_DENSITY.get();
+        explosionShockwaveDensity = EXPLOSION_SHOCKWAVE_DENSITY.get();
+        explosionSmokeDensity = EXPLOSION_SMOKE_DENSITY.get();
+        explosionDustDensity = EXPLOSION_DUST_DENSITY.get();
+        explosionStemDensity = EXPLOSION_STEM_DENSITY.get();
+        explosionCapDensity = EXPLOSION_CAP_DENSITY.get();
+        explosionParticleLifetime = EXPLOSION_PARTICLE_LIFETIME.get();
         particleDistanceScale = PARTICLE_DISTANCE_SCALE.get();
         fullParticleDensityShare = FULL_PARTICLE_DENSITY_SHARE.get();
         distantParticleDensity = DISTANT_PARTICLE_DENSITY.get();

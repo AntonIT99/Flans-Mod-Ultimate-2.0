@@ -387,6 +387,9 @@ public class FlanExplosion extends Explosion
             Driveable driveable = driveableOf(e);
             if (driveable != null)
             {
+                // A seat or wheel can put the blast's excluded source hull back into the query.
+                if (!canDamageSelf && driveable == explosive)
+                    continue;
                 if (handledDriveables.add(driveable) && driveable.getConfigType() != null)
                     applyVehicleDamage(new DriveableBody(driveable, driveable.getConfigType()));
                 continue;

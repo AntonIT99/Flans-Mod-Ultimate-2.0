@@ -5,7 +5,11 @@ import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.api.parts.IFlanPartTarget;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.DriveablePart;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.armor.ResolvedVehicleArmor;
+import com.flansmodultimate.common.driveables.damage.VehicleProjectileImpact;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
@@ -223,9 +227,7 @@ public final class ShootingHelper
         }
         else if (bulletHit instanceof PartBodyHit partHit)
         {
-            // A stand-in hit by the part meets the armour of the part and face the round struck.
-            HitData entityHitData = onEntityHit(level, shot, bullet, partHit.getEntity(), partHit, hit, shootingMotion, ModelArmourDamage.resolve(partHit, shot, bulletType, penetratingPower),
-                new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot));
+            HitData entityHitData = onPartBodyHit(level, shot, bullet, partHit, shootingMotion, hitData);
             penetratingPower = entityHitData.penetratingPower();
             lastHitPenAmount = entityHitData.lastHitPenAmount();
 
@@ -259,6 +261,98 @@ public final class ShootingHelper
             PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), playerOwner.get());
 
         return new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot, hitData.resolvedDriveableParts());
+    }
+
+    private static HitData onPartBodyHit(Level level, FiredShot shot, @Nullable Bullet bullet, PartBodyHit hit, Vec3 motion, HitData data)
+    {
+        Optional<DriveableType> type = ModelArmourDamage.type(hit.getEntity());
+        if (type.isPresent())
+            return VehicleProjectileImpact.hit(new ModelProjectileTarget(shot, bullet, hit, motion, type.get()), shot, shot.getBulletType(), hit, data);
+        return onEntityHit(level, shot, bullet, hit.getEntity(), hit, hit.getHitPosition(), motion, Optional.empty(), data);
+    }
+
+    private static final class ModelProjectileTarget implements VehicleProjectileImpact.Target<PartBodyHit>
+    {
+        private final FiredShot shot;
+        private final Bullet bullet;
+        private final PartBodyHit first;
+        private final Vec3 motion;
+        private final DriveableType type;
+        private final PartBody body;
+
+        private ModelProjectileTarget(FiredShot shot, @Nullable Bullet bullet, PartBodyHit first, Vec3 motion, DriveableType type)
+        {
+            this.shot = shot;
+            this.bullet = bullet;
+            this.first = first;
+            this.motion = motion;
+            this.type = type;
+            body = first.getBody();
+        }
+
+        @Override
+        public DriveableType type()
+        {
+            return type;
+        }
+
+        @Override
+        public ResolvedVehicleArmor armor()
+        {
+            return body.armor();
+        }
+
+        @Override
+        public DriveablePart part(EnumDriveablePart part)
+        {
+            return body.partState(part);
+        }
+
+        @Override
+        public boolean active(EnumDriveablePart part)
+        {
+            return body.isIntact(part);
+        }
+
+        @Override
+        public boolean finished()
+        {
+            return !first.getEntity().isAlive() || body.isShotOff(EnumDriveablePart.CORE);
+        }
+
+        @Override
+        public boolean shotOff(EnumDriveablePart part)
+        {
+            return body.isShotOff(part);
+        }
+
+        @Override
+        public float resistance(EnumDriveablePart part)
+        {
+            return Math.max(1F, body.penetrationResistance(part));
+        }
+
+        @Override
+        public List<PartBodyHit> traceBehind(PartBodyHit hit)
+        {
+            return body.traceBehind(hit);
+        }
+
+        @Override
+        public float apply(PartBodyHit hit, VehicleProjectileImpact.Impact impact, float damage, Vec3 detonation, HitData data)
+        {
+            PartBody.DamageReceipt previous = body.getLastDamage();
+            ModelArmourDamage.Result resolved = new ModelArmourDamage.Result(damage, impact.blocked(), impact.blocked() ? 0F : impact.remainingPower(), impact.damage().shapedCharge(),
+                impact.armor(), impact.damage().penetration());
+            onEntityHit(hit.getEntity().level(), shot, bullet, hit.getEntity(), hit, hit.getHitPosition(), motion, Optional.of(resolved), data);
+            if (impact.damage().shapedCharge())
+                body.markShapedCharge(hit.getPart(), detonation, hit.getEntity().level().getGameTime());
+            PartBody.DamageReceipt receipt = body.getLastDamage();
+            if (receipt == null || receipt == previous || receipt.part() != hit.getPart() || receipt.damage() <= 0F)
+                return 0F;
+            // Preserve NPC resistances, scripts and health scaling: translate its actual unspent share back to the incoming budget.
+            return damage * Math.min(1F, receipt.overflow() / receipt.damage());
+        }
     }
 
     /**

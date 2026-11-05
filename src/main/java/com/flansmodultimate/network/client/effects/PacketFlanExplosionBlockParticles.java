@@ -2,6 +2,7 @@ package com.flansmodultimate.network.client.effects;
 
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.explosions.ExplosionVisuals;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
@@ -74,13 +75,15 @@ public class PacketFlanExplosionBlockParticles implements IClientPacket
         // FlanExplosion.sampleBlockBurstPositions), so scale up their size here to match
         // how much crater they are meant to represent.
         float t = Mth.clamp((radius - MIN_SCALE_RADIUS) / (MAX_SCALE_RADIUS - MIN_SCALE_RADIUS), 0.0F, 1.0F);
-        float particleScale = 1.0F + t * (MAX_PARTICLE_SCALE - 1.0F);
+        float particleScale = (1.0F + t * (MAX_PARTICLE_SCALE - 1.0F)) * (float) ModClientConfig.get().explosionBlockParticleScale;
+        if (particleScale <= 0F)
+            return;
         String smokeParticle = radius >= BIG_SMOKE_RADIUS ? FlanParticles.LARGE_SMOKE : FlanParticles.SMOKE;
 
         // The debris thrown out of the crater clears on the same schedule as the rest of the
         // explosion: a cannon round kicking up a single block should not leave smoke hanging
         // around for as long as a demolition charge does.
-        float lifetimeScale = ExplosionVisuals.lifetimeScale(radius);
+        float lifetimeScale = ExplosionVisuals.lifetimeScale(radius) * (float) ModClientConfig.get().explosionParticleLifetime;
 
         for (long l : blockPosLongs)
         {
