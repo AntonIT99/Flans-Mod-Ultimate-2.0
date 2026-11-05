@@ -27,6 +27,8 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 
 ## Soldiers
 
+* Class previews use Steve when no usable class skin is available instead of a random Custom NPCs skin
+
 * Infantry keep their ground orders instead of chasing airborne enemies, reserve fire for plausible weapon engagements, seek overhead cover or spread sideways during observed air attacks, stay sheltered briefly after a pass, and report attacking aircraft for friendly fighter and AA interception, including player-piloted aircraft
 
 * Teams soldiers automatically reserve and crew real Flan driveables for squad travel, keep objective orders while driving, and unload transport passengers safely near their task; Vehicles > Real vehicles and `teams ai round <round> driverealvehicles|gunrealvehicles|riderealvehicles on|off` separately control driving, gunners and passengers (all on by default); `/teams ai board` uses the same ownership and crew rules, and dismount orders prevent immediate reboarding
