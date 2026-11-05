@@ -249,18 +249,52 @@ public final class GunItemRenderer
 
         // The left gun mirrors the right one, which also brings its sights to the center while aiming
         LegacyHeldItemFrames.beginHand(poseStack, leftHand);
-        LegacyHeldItemFrames.firstPerson(poseStack);
-
-        // 1.7.10 RenderGun resting and aiming movement
-        poseStack.mulPose(Axis.ZP.rotationDegrees(25F - 5F * adsSwitch));
-        poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
-        poseStack.translate(0.15F, 0.2F + 0.175F * adsSwitch, -0.6F - 0.405F * adsSwitch);
-        if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
+        EnumGunFirstPersonFrame frame = AimOffsetDebugCommand.resolveFrame();
+        if (frame == EnumGunFirstPersonFrame.FLANS_TAP)
         {
-            poseStack.translate(-0.3F * adsSwitch, 0F, 0F);
+            // Tyrants and Plebeians (Labjac fork) RenderGun frame (1.7.10 base, retuned; its per-model offsets are zero here)
+            LegacyHeldItemFrames.firstPerson(poseStack);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(25F - 5F * adsSwitch));
+            poseStack.mulPose(Axis.XP.rotationDegrees(-5F));
+            poseStack.mulPose(Axis.XP.rotationDegrees(5F));
+            poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
+            poseStack.translate(0F, -0.03F * adsSwitch, 0F);
+            poseStack.translate(0.15F, 0.2F + 0.205F * adsSwitch, -0.8F - 0.205F * adsSwitch);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
+            poseStack.translate(model.getCrouchZoom() * adsSwitch, -0.03F * adsSwitch, 0F);
+            if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
+                poseStack.translate(-0.35F * adsSwitch, -0.05F * adsSwitch, 0F);
         }
-        poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
-        poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
+        else if (frame == EnumGunFirstPersonFrame.FLANS_1122)
+        {
+            // Flan's Mod 1.12.2 RenderGun first-person frame (no Forge 1.5x equipped-item frame)
+            poseStack.mulPose(Axis.YP.rotationDegrees(45F));
+            poseStack.scale(0.4F, 0.4F, 0.4F);
+            poseStack.mulPose(Axis.YP.rotationDegrees(45F));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(-5F * adsSwitch));
+            poseStack.translate(-1F, 0.675F + 0.180F * adsSwitch, -1F - 0.395F * adsSwitch);
+            if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
+                poseStack.translate(-0.7F * adsSwitch, -0.12F * adsSwitch, -0.05F * adsSwitch);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
+            poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
+        }
+        else
+        {
+            LegacyHeldItemFrames.firstPerson(poseStack);
+
+            // 1.7.10 RenderGun resting and aiming movement
+            poseStack.mulPose(Axis.ZP.rotationDegrees(25F - 5F * adsSwitch));
+            poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
+            poseStack.translate(0.15F, 0.2F + 0.175F * adsSwitch, -0.6F - 0.405F * adsSwitch);
+            if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
+                poseStack.translate(-0.3F * adsSwitch, 0F, 0F);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
+            poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
+        }
+
+        // Keep sights authored for another placement centred sideways while aiming
+        poseStack.translate(0F, 0F, frame.aimZCorrectionFrom(AimOffsetDebugCommand.authoredFrame(model)) * adsSwitch);
+
         Vector3f aimOffset = AimOffsetDebugCommand.resolve(model);
         float aimOffsetScale = aimProgress * model.getType().getModelScale() / 16F;
         poseStack.translate(aimOffset.x * aimOffsetScale, aimOffset.y * aimOffsetScale, aimOffset.z * aimOffsetScale);

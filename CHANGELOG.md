@@ -199,6 +199,7 @@
 ## Rendering & Performance
 
 * Standing up after going prone or crawling clears the sideways head and hat tilt
+* Guns can set `FirstPersonFrame` (`1.7.10`, `1.12.2` or `Tap`) to pick the first-person placement their model was made for; the new `preferredGunFirstPersonFrame` client option (also in the quick settings) picks the placement for every gun and shifts guns made for another placement sideways while aiming so their sights stay centred, and `/flansdebug frame` previews each placement
 * GPU mesh caching and size culling draw only visible ranges and skip hidden batches
 * Flan armour is drawn through the GPU mesh cache like vehicles and guns, each body part as one batch, which is what a battle of hundreds of uniformed soldiers spent most of its frame time on
 * Armour level of detail leaves out uniform parts too small to see, with `Enable Armor LOD` and `Armor LOD Strength` in quick options and `minimumArmorPartPixelSize` / `maximumArmorLodPartPixelSize` in the client config. Parts are measured by the size they project to, so a scope brings a distant soldier's full detail back, and no armour piece is ever hidden
@@ -250,6 +251,7 @@
 
 ## Content Packs
 
+* Official Modern Warfare, WW2 and Zombie guns whose models were made or retuned for the 1.12.2 placement are marked `FirstPersonFrame 1.12.2`, and their models now use the original 1.12.2 sources
 * Added a crafting-table recipe for the Manus Ships German 20 cm Ship Gun used by Prinz Eugen
 
 * Modern Warfare teams gain dedicated marksman, shotgun, anti-tank, ammunition bearer, demolition, MP5, HK416, MP7, AK74, RPK and pistol-and-shield loadouts, including suppressed MP5 and balaclava variants

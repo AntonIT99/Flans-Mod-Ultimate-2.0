@@ -12,9 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
@@ -87,7 +85,7 @@ public class FlansOptionsScreen extends Screen
                 ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER, ModClientConfig.SHOW_WEAPON_SMOKE, ModClientConfig.SHOW_BLOOD_EFFECTS, ModClientConfig.SHOW_CASING_EJECTIONS,
                 ModClientConfig.DRIVEABLE_DAMAGE_EFFECT_DENSITY, ModClientConfig.MAX_DETACHED_DRIVEABLE_PIECES)),
         new QuickSection("gameplay",
-            List.of(ModClientConfig.AIM_TYPE, ModClientConfig.AIM_POSE, ModClientConfig.HOLD_TO_PRONE, ModClientConfig.GUN_BLOCK_INTERACTION, ModClientConfig.DRIVEABLE_SPEED_UNIT,
+            List.of(ModClientConfig.AIM_TYPE, ModClientConfig.AIM_POSE, ModClientConfig.PREFERRED_GUN_FIRST_PERSON_FRAME, ModClientConfig.HOLD_TO_PRONE, ModClientConfig.GUN_BLOCK_INTERACTION, ModClientConfig.DRIVEABLE_SPEED_UNIT,
                 ModClientConfig.DRIVEABLE_VERTICAL_SPEED_UNIT, ModClientConfig.ENABLE_UNCENSORED_CONTENT, ModClientConfig.OPTIONS_BUTTON_PLACEMENT)),
         new QuickSection(DISTANT_HORIZONS_SECTION, List.of(ModClientConfig.DISTANT_HORIZONS_INTEGRATION, ModClientConfig.DISTANT_HORIZONS_RANGEFINDER, ModClientConfig.DISTANT_HORIZONS_CONTACTS,
             ModClientConfig.DISTANT_HORIZONS_EXPLOSIONS, ModClientConfig.DISTANT_HORIZONS_DRIVEABLE_RENDERING)));

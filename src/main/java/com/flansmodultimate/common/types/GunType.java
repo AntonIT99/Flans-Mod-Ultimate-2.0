@@ -9,6 +9,7 @@ import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -485,6 +486,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected Vector3f ironSightOffset = new Vector3f();
     @Getter
     protected float ironSightPitch;
+    /** First-person placement from FirstPersonFrame; null uses the client default. */
+    @Getter @Nullable
+    protected EnumGunFirstPersonFrame firstPersonFrame;
     @Getter
     protected float aimTimeConstant = 0.66F;
     /** Negative means use the original model sprint animation. Zero switches instantly. */
@@ -973,6 +977,14 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         ironSightPitch = readValue("IronSightPitch", ironSightPitch, file);
         if (!Float.isFinite(ironSightPitch))
             ironSightPitch = 0F;
+        String configuredFrame = readValue("FirstPersonFrame", firstPersonFrame == null ? StringUtils.EMPTY : firstPersonFrame.getDisplayName(), file);
+        if (!configuredFrame.isBlank())
+        {
+            EnumGunFirstPersonFrame parsedFrame = EnumGunFirstPersonFrame.parse(configuredFrame);
+            if (parsedFrame == null)
+                FlansLog.log.warn("Unknown FirstPersonFrame '{}' in {}; expected 1.7.10, 1.12.2 or Tap", configuredFrame, originalShortName);
+            firstPersonFrame = parsedFrame;
+        }
         bow = readValue("Bow", bow, file);
         oldGun = readValue("OldGun", oldGun, file);
         repeatingGun = readValue("RepeatingGun", repeatingGun, file);

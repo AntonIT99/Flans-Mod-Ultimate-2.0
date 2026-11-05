@@ -10,6 +10,7 @@ import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
+import com.flansmodultimate.common.types.EnumGunFirstPersonFrame;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
@@ -128,6 +129,7 @@ public final class ModClientConfig
     public final boolean enableArms;
     public final EnumAimPose aimPose;
     public final boolean enableGunAnimationsInThirdPerson;
+    public final EnumGunFirstPersonFrame preferredGunFirstPersonFrame;
     public final boolean enableWeaponSprintStance;
     public final boolean enableRandomSprintStance;
     public final boolean showCasingEjections;
@@ -269,6 +271,7 @@ public final class ModClientConfig
     private static final Supplier<Boolean> ENABLE_ARMS;
     public static final EnumValue<EnumAimPose> AIM_POSE;
     private static final Supplier<Boolean> ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
+    public static final EnumValue<EnumGunFirstPersonFrame> PREFERRED_GUN_FIRST_PERSON_FRAME;
     private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
     private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
     public static final BooleanValue SHOW_CASING_EJECTIONS;
@@ -577,6 +580,11 @@ public final class ModClientConfig
         ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON = builder
             .comment("This will display gun animations such as melee and reloading, not only in first person view but also in third person view including animations from other players")
             .define("enableGunAnimationsInThirdPerson", true);
+        PREFERRED_GUN_FIRST_PERSON_FRAME = builder.comment("""
+            First-person gun placement used for every gun. Each gun's FirstPersonFrame (1.7.10 when unset) names the placement its model was made for,
+            and the gun is shifted sideways while aiming so its sights stay centred in any placement.
+            FLANS_1710: Flan's Mod 1.7.10 placement. FLANS_1122: Flan's Mod 1.12.2 placement. FLANS_TAP: Tyrants and Plebeians (Labjac fork) placement.
+            """).defineEnum("preferredGunFirstPersonFrame", EnumGunFirstPersonFrame.FLANS_1710);
         ENABLE_WEAPON_SPRINT_STANCE = builder.comment("This will move weapons to a lowered position when sprinting").define("enableWeaponSprintStance", true);
         ENABLE_RANDOM_SPRINT_STANCE = builder.comment("This will randomly generate unique positions for each weapon using the weapon name as a seed").define("enableRandomSprintStance", false);
         SHOW_CASING_EJECTIONS = builder.comment("Render animated casing ejections for guns that provide a casing model").define("showCasingEjections", true);
@@ -737,6 +745,7 @@ public final class ModClientConfig
         enableArms = ENABLE_ARMS.get();
         aimPose = AIM_POSE.get();
         enableGunAnimationsInThirdPerson = ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON.get();
+        preferredGunFirstPersonFrame = PREFERRED_GUN_FIRST_PERSON_FRAME.get();
         enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
         enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
         showCasingEjections = SHOW_CASING_EJECTIONS.get();
