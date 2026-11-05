@@ -12783,9 +12783,22 @@
         ]
     },
 
+    "Blaster Bolt, Carbine (Fictional)": {
+        "properties": {
+            "Damage": 16,
+            "MuzzleVelocity": 260,
+            "FallSpeed": 0.0,
+            "RoundsPerItem": 50
+        },
+        "items": [
+            "dc15sammo"
+        ]
+    },
+
     "Blaster Bolt, Droid (Fictional)": {
         "properties": {
-            "Damage": 8,
+            "Damage": 16,
+            "MuzzleVelocity": 280,
             "FallSpeed": 0.0
         },
         "items": [
@@ -12793,9 +12806,22 @@
         ]
     },
 
-    "Blaster Bolt, Full-Power (Fictional)": {
+    "Blaster Bolt, Droid Support (Fictional)": {
         "properties": {
             "Damage": 16,
+            "MuzzleVelocity": 280,
+            "FallSpeed": 0.0,
+            "RoundsPerItem": 100
+        },
+        "items": [
+            "droidekaammo"
+        ]
+    },
+
+    "Blaster Bolt, Full-Power (Fictional)": {
+        "properties": {
+            "Damage": 24,
+            "MuzzleVelocity": 300,
             "FallSpeed": 0.0
         },
         "items": [
@@ -12803,9 +12829,22 @@
         ]
     },
 
+    "Blaster Bolt, Rotary (Fictional)": {
+        "properties": {
+            "Damage": 16,
+            "MuzzleVelocity": 280,
+            "FallSpeed": 0.0,
+            "RoundsPerItem": 200
+        },
+        "items": [
+            "z6ammo"
+        ]
+    },
+
     "Blaster Bolt, Sidearm (Fictional)": {
         "properties": {
-            "Damage": 5,
+            "Damage": 12,
+            "MuzzleVelocity": 250,
             "FallSpeed": 0.0
         },
         "items": [
@@ -12813,15 +12852,43 @@
         ]
     },
 
+    "Blaster Bolt, Sniper (Fictional)": {
+        "properties": {
+            "Damage": 36,
+            "MuzzleVelocity": 420,
+            "FallSpeed": 0.0,
+            "RoundsPerItem": 20
+        },
+        "items": [
+            "dc15xammo",
+            "e-5sammo"
+        ]
+    },
+
     "Blaster Bolt, Standard (Fictional)": {
         "properties": {
-            "Damage": 10,
+            "Damage": 16,
+            "MuzzleVelocity": 300,
             "FallSpeed": 0.0
         },
         "items": [
             "dc15ammo",
             "dc19invisibleammo",
             "e-11ammo"
+        ],
+        "exceptions": {
+            "MuzzleVelocity": [
+                "dc19invisibleammo"
+            ]
+        }
+    },
+
+    "Blaster Bolt, Stealth Velocity (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 260
+        },
+        "items": [
+            "dc19invisibleammo"
         ]
     },
 

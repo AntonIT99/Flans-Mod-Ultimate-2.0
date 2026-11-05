@@ -10494,11 +10494,18 @@
             "RecoilWalkingMultiplierYaw": 1.1,
             "RecoilSprintingMultiplier": 1.35,
             "RecoilSprintingMultiplierYaw": 1.2,
+            "AmmoMuzzleVelocity": [
+                "Dc15Ammo 260",
+                "Dc19invisibleAmmo 260"
+            ],
             "Damage": 1,
             "MuzzleVelocity": 260.0,
             "RoundsPerMin": 700.0,
             "Dispersion": 0.2,
             "EjectCasings": "false"
+        },
+        "propertyModes": {
+            "AmmoMuzzleVelocity": "replace"
         },
         "items": [
             "blasterdc-19"
