@@ -129,7 +129,7 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
             if (!level.isClientSide)
             {
                 LivingEntity target = pickLivingTarget(level, player, start, end);
-                target.heal(configType.getHealAmount());
+                ToolHealing.apply(configType, target);
                 spawnHealParticles(level, target);
                 consumeUse(stack, player);
                 return InteractionResultHolder.consume(stack);

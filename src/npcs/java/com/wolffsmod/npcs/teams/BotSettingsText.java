@@ -144,6 +144,14 @@ public final class BotSettingsText
         return ANY_CLASS.equalsIgnoreCase(value) ? "" : value;
     }
 
+    /** Named crew choices, separated by pipes to preserve existing single-class saves and text entries. */
+    public static List<String> crewClasses(String value)
+    {
+        if (value == null || value.isBlank() || ANY_CLASS.equalsIgnoreCase(value) || BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(value))
+            return List.of();
+        return Arrays.stream(value.split("\\|")).map(String::strip).filter(name -> !name.isEmpty()).distinct().toList();
+    }
+
     /** {@code class:count} members of a squad template, a count left out being 1. */
     public static List<SquadTemplate.Member> parseMembers(String text)
     {

@@ -8,6 +8,7 @@ Icon MP5K
 Colour 255 255 255
 DeployedModel None
 Model zombie.MP5K
+animAimOffset 0 0.53041292 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 0.95424 0.45201 0

@@ -8,6 +8,7 @@ Icon Judge
 Colour 255 255 255
 DeployedModel None
 Model mw.Judge
+animAimOffset 0 -2.59538101 0
 Texture Judge
 ModelScale 0.18
 Paintjob judge_stoic_blue judge_stoic_blue blue 2

@@ -7,6 +7,8 @@ Icon m1carbine
 Colour 255 255 255
 DeployedModel None
 Model ww2.M1Carbine
+animAimOffset 0 0.88088985 0
+FirstPersonFrame 1.12.2
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.47949 0.47974 -0.00586

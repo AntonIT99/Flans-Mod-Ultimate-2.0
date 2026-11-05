@@ -8,6 +8,7 @@ Icon PeaceKeeper
 Colour 255 255 255
 DeployedModel None
 Model mw.PeaceKeeper
+animAimOffset 0 4.73249198 0
 Texture PeaceKeeper
 ModelScale 0.18
 Paintjob peacekeeper_stoic_blue peacekeeper_stoic_blue blue 3

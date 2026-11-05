@@ -7,6 +7,7 @@ Icon luger
 Colour 255 255 255
 DeployedModel None
 Model ww2.Type14
+animAimOffset 0 0.75108968 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.16016 0.62227 0

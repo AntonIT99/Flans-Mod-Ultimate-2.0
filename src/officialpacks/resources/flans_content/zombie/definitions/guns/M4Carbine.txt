@@ -8,6 +8,7 @@ Icon M4Carbine
 Colour 255 255 255
 DeployedModel None
 Model zombie.M4Carbine
+animAimOffset 0 1.07239513 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.33929 0.33482 0

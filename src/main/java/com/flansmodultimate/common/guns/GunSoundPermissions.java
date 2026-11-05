@@ -11,10 +11,11 @@ public final class GunSoundPermissions
 {
     public enum Kind
     {
-        ACTION, INSERT
+        ACTION, INSERT, ACTION_END
     }
 
     private final Map<InteractionHand, Allowance> actions = new EnumMap<>(InteractionHand.class);
+    private final Map<InteractionHand, Allowance> actionEnds = new EnumMap<>(InteractionHand.class);
     private final Map<InteractionHand, Allowance> inserts = new EnumMap<>(InteractionHand.class);
 
     private static final class Allowance
@@ -37,23 +38,32 @@ public final class GunSoundPermissions
     {
         // One pump/bolt cycle per accepted shot. Slow content-pack animations may finish well after the shot cooldown.
         actions.put(hand, new Allowance(gun, now + 1200L, 1));
+        actionEnds.put(hand, new Allowance(gun, now + 1200L, 1));
     }
 
     public void reload(InteractionHand hand, ItemStack gun, long now, float duration, int count)
     {
         // Animation boundaries can add a start/end click beside the individual insertions.
         inserts.put(hand, new Allowance(gun, now + (long) Math.ceil(duration) + 40L, Math.max(0, count) + 2));
+        actionEnds.put(hand, new Allowance(gun, now + (long) Math.ceil(duration) + 1200L, 1));
     }
 
     public void clear(InteractionHand hand)
     {
         actions.remove(hand);
+        actionEnds.remove(hand);
         inserts.remove(hand);
     }
 
     public boolean take(InteractionHand hand, Kind kind, ItemStack gun, long now)
     {
-        Allowance allowance = (kind == Kind.ACTION ? actions : inserts).get(hand);
+        Map<InteractionHand, Allowance> allowances = switch (kind)
+        {
+            case ACTION -> actions;
+            case INSERT -> inserts;
+            case ACTION_END -> actionEnds;
+        };
+        Allowance allowance = allowances.get(hand);
         if (allowance == null || allowance.gun != gun || now > allowance.expires || allowance.remaining <= 0)
             return false;
         if (allowance.lastPlayed != now)

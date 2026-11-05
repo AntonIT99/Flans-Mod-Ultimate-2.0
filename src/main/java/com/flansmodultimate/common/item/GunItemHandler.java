@@ -147,6 +147,26 @@ public class GunItemHandler
         return true;
     }
 
+    /** Uses the grip's authored short-lived secondary projectile without loading or consuming a magazine. */
+    public void doBayonetAttack(Level level, ServerPlayer player, PlayerData data, ItemStack stack, InteractionHand hand)
+    {
+        GunType type = item.configType;
+        if (!type.isBayonetMode(stack) || type.isDeployable() || !gunCanBeHandled(player) || type.isPoweredOff(stack)
+            || data.getShootTime(hand) > 0F || data.getShootClickDelay() > 0 || data.isReloading(hand) || data.isSecondaryModeSwitching(hand) || data.getPendingReload().isPresent())
+            return;
+        if (!type.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode()))
+            return;
+        ShootableType ammunition = type.getBayonetAmmo(stack).orElse(null);
+        if (ammunition == null)
+            return;
+        TeamsSpawnProtection.end(player);
+        ShootingHelper.fireGun(level, player, type, ammunition, stack, ItemStack.EMPTY,
+            hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem(), () -> {});
+        data.setShootTime(hand, ShotCooldown.clampDelay(type.getShootDelay(stack)));
+        playShootSound(level, player, stack, false);
+        PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand), player);
+    }
+
     public void doCustomMelee(ServerPlayer player, PlayerData data, InteractionHand hand)
     {
         if (item.configType.isDeployable() || !gunCanBeHandled(player) || data.getMeleeLength() > 0)
@@ -160,7 +180,7 @@ public class GunItemHandler
             PacketPlaySound.sendSoundPacket(player, item.configType.getMeleeSoundRange(), item.configType.getMeleeSound(), item.configType.isDistortSound());
 
         TeamsSpawnProtection.end(player);
-        data.doMelee(player, item.configType.getMeleeTime(), item.configType);
+        data.doMelee(player, item.configType.getMeleeTime(player.getItemInHand(hand)), item.configType);
         PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand), player);
     }
 
@@ -321,7 +341,10 @@ public class GunItemHandler
             return false;
         UUID reloadSoundUUID = UUID.randomUUID();
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
-        float reloadTime = item.getActualReloadTime(gunStack, level.registryAccess(), otherHand);
+        float reloadTime = item.getActualReloadTime(gunStack, level.registryAccess(), otherHand, player);
+        // Read before the reload replaces the ammunition: they pick the reload animation clients play
+        boolean tactical = item.hasLiveRounds(gunStack, level.registryAccess());
+        int loopRounds = item.getLoopReloadRounds(gunStack, level.registryAccess());
 
         // The first reload after respawning into a running teams round is instant, so players are not defenceless on spawn
         boolean instantRespawnReload = !data.isReloadedAfterRespawn() && TeamsManager.getInstance().isRoundRunning();
@@ -343,7 +366,7 @@ public class GunItemHandler
 
             data.getGunSoundPermissions().reload(hand, gunStack, level.getGameTime(), reloadTime, reloadCount);
             data.doGunReload(hand, reloadTime);
-            PacketHandler.sendToTracking(new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo), player);
+            PacketHandler.sendToTracking(new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo, tactical, loopRounds), player);
 
             String reloadSound = item.configType.getReloadSound(gunStack);
             // Play reload sound

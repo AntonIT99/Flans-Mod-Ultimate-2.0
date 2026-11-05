@@ -7,6 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DriveableTypeWeaponSoundTest
 {
+    @org.junit.jupiter.api.BeforeAll
+    static void bootstrap() throws ReflectiveOperationException
+    {
+        com.flansmodultimate.platform.entity.EntityTestBootstrap.initialize();
+    }
+
     @Test
     void explicitPrimarySoundOutranksTypedAndGenericSounds()
     {
@@ -65,6 +71,22 @@ class DriveableTypeWeaponSoundTest
         DriveableType secondary = sounds(EnumWeaponType.NONE, EnumWeaponType.GUN);
         secondary.shootSoundSecondary = "";
         assertEquals("generic", secondary.shootSound(true));
+    }
+
+    @Test
+    void distantSoundsAreOptionalAndBanksRemainIndependent()
+    {
+        VehicleType type = new VehicleType();
+        org.junit.jupiter.api.Assertions.assertTrue(type.getDistantShootSoundPrimary().isBlank());
+        org.junit.jupiter.api.Assertions.assertTrue(type.getDistantShootSoundSecondary().isBlank());
+        var pack = new com.flansmodultimate.content.ContentPack("test", java.nio.file.Path.of("build", "test-packs", "weapon-sounds"));
+        type.read(new TypeFile("synthetic", EnumType.VEHICLE, pack, java.util.List.of("Driver 0 0 0", "farSound distant_main", "DistantSoundSecondary distant_coax", "farSoundRange 350")));
+        org.junit.jupiter.api.Assertions.assertTrue(type.getDistantShootSoundPrimary().endsWith("distant_main"));
+        org.junit.jupiter.api.Assertions.assertTrue(type.getDistantShootSoundSecondary().endsWith("distant_coax"));
+        assertEquals(350, type.getDistantSoundRange());
+        type.read(new TypeFile("synthetic", EnumType.VEHICLE, pack, java.util.List.of("Driver 0 0 0", "DistantSoundPrimary cannon", "DistantSoundRange 400")));
+        org.junit.jupiter.api.Assertions.assertTrue(type.getDistantShootSoundPrimary().endsWith("cannon"));
+        assertEquals(400, type.getDistantSoundRange());
     }
 
     private static DriveableType sounds(EnumWeaponType primary, EnumWeaponType secondary)

@@ -60,6 +60,7 @@ class GrenadeDeviceSupportTest
         when(type.getNumUses()).thenReturn(5);
         Grenade source = savedGrenade();
         source.shortname = "medicalBag";
+        source.axes.setAngles(35F, -75F, 90F);
         source.numUsesRemaining = 1;
         source.stuck = true;
         source.stuckPos = new BlockPos(3, 64, 7);
@@ -71,11 +72,41 @@ class GrenadeDeviceSupportTest
             Grenade restored = savedGrenade();
             restored.readAdditionalSaveData(saved);
             assertEquals(1, restored.numUsesRemaining);
+            assertEquals(90F, restored.axes.getRoll(), 0.001F);
             assertTrue(restored.stuck);
             assertEquals(source.stuckPos, restored.stuckPos);
             saved.remove(Grenade.NBT_USES);
             restored.readAdditionalSaveData(saved);
             assertEquals(5, restored.numUsesRemaining);
+        }
+    }
+
+    @Test
+    void spawnDataCarriesTheChosenDirectionSpeedAndRoll() throws ReflectiveOperationException
+    {
+        Grenade source = savedGrenade();
+        source.shortname = "debris";
+        source.velocity = new Vec3(0.1D, 0.8D, -0.2D);
+        source.axes.setAngles(35F, -75F, 90F);
+        Grenade target = spy(savedGrenade());
+        doNothing().when(target).refreshDimensions();
+        GrenadeType type = mock(GrenadeType.class);
+        var bytes = com.flansmodultimate.platform.network.TestPacketBuffers.buffer();
+        try (var types = mockStatic(InfoType.class))
+        {
+            types.when(() -> InfoType.getInfoType("debris")).thenReturn(type);
+            source.writeSpawnData(new com.flansmodultimate.platform.network.PacketBuffer(bytes));
+            target.readSpawnData(new com.flansmodultimate.platform.network.PacketBuffer(bytes));
+            assertEquals(0, bytes.readableBytes());
+            assertEquals(source.velocity, target.getDeltaMovement());
+            assertEquals(35F, target.axes.getYaw(), 0.001F);
+            assertEquals(-75F, target.axes.getPitch(), 0.001F);
+            assertEquals(90F, target.axes.getRoll(), 0.001F);
+            verify(target, never()).discard();
+        }
+        finally
+        {
+            bytes.release();
         }
     }
 

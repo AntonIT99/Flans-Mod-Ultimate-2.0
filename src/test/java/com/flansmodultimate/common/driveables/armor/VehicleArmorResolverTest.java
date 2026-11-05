@@ -115,6 +115,38 @@ class VehicleArmorResolverTest
             .authored().thicknessMm());
     }
 
+    @Test
+    void shotOffFrontalArmorOpensTheHullFrontButNothingElse()
+    {
+        VehicleArmorSpec spec = new VehicleArmorSpec(
+            Map.of(EnumArmorFacing.FRONT, new ArmorPlate(100F, 9F), EnumArmorFacing.LEFT, new ArmorPlate(80F, 0F)),
+            Map.of(EnumArmorFacing.FRONT, new ArmorPlate(100F, 0F)),
+            Map.of(EnumDriveablePart.LEFT_TRACK, new ArmorPlate(15F, 0F)));
+        ResolvedVehicleArmor armor = VehicleArmorResolver.resolve(spec, List.of(EnumDriveablePart.CORE, EnumDriveablePart.TURRET,
+            EnumDriveablePart.LEFT_TRACK, EnumDriveablePart.FRONTAL_ARMOR, EnumDriveablePart.LEFT_SKIRT));
+        Vec3 headOn = new Vec3(0D, 0D, 1D);
+        java.util.function.Predicate<EnumDriveablePart> frontGone = part -> part == EnumDriveablePart.FRONTAL_ARMOR;
+        java.util.function.Predicate<EnumDriveablePart> nothingGone = part -> false;
+
+        assertFalse(armor.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, headOn, 80D, false, frontGone).isArmoured());
+        assertFalse(armor.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, headOn, 80D, true, frontGone).isArmoured());
+        assertEquals(0F, armor.plate(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, frontGone).authored().thicknessMm());
+        assertTrue(armor.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, headOn, 80D, false, nothingGone).isArmoured());
+        // Other faces, the turret, parts with their own plate and other armour parts keep their plates.
+        assertEquals(80F, armor.plate(EnumDriveablePart.CORE, EnumArmorFacing.LEFT, frontGone).authored().thicknessMm());
+        assertEquals(100F, armor.plate(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT, frontGone).authored().thicknessMm());
+        assertEquals(15F, armor.plate(EnumDriveablePart.LEFT_TRACK, EnumArmorFacing.FRONT, frontGone).authored().thicknessMm());
+        assertEquals(100F, armor.plate(EnumDriveablePart.LEFT_SKIRT, EnumArmorFacing.FRONT, frontGone).authored().thicknessMm());
+    }
+
+    @Test
+    void aDriveableWithoutTheArmourPartIsNeverBreached()
+    {
+        ResolvedVehicleArmor armor = resolved(new ArmorPlate(100F, 0F));
+        assertFalse(armor.isBreached(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, part -> true));
+        assertEquals(100F, armor.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, new Vec3(0D, 0D, 1D), 80D, false, part -> true).effectiveArmorMm(), 1.0E-3F);
+    }
+
     private static ResolvedVehicleArmor resolved(ArmorPlate front)
     {
         return VehicleArmorResolver.resolve(new VehicleArmorSpec(

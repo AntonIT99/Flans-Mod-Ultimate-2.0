@@ -7,6 +7,7 @@ Icon Type100
 Colour 255 255 255
 DeployedModel None
 Model ww2.Type100
+animAimOffset 0 11.6962565 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.56948 0.29506 0

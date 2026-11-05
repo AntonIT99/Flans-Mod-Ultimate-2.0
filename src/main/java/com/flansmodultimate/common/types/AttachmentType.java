@@ -86,7 +86,15 @@ public class AttachmentType extends PaintableType implements IScope
 
     // Underbarrel functions
     /** This variable controls whether the underbarrel is enabled */
+    @Getter
     protected boolean secondaryFire;
+    /** Tyrants and Plebeians: the gun plays its secondary-mode keyframe animations with this grip, which then animates itself and its ammo */
+    @Getter
+    protected boolean hasSecondaryModeAnimations;
+    @Getter
+    protected boolean bayonet;
+    @Getter
+    protected int bayonetMeleeTime = 10;
     @Getter
     protected boolean renderOnlyOnMode;
     /** The list of bullet types that can be used in the secondary mode */
@@ -162,6 +170,7 @@ public class AttachmentType extends PaintableType implements IScope
         // Secondary Stuff
         secondaryFire = readValue("SecondaryMode", secondaryFire, file);
         renderOnlyOnMode = readValue("RenderOnlyOnMode", renderOnlyOnMode, file);
+        hasSecondaryModeAnimations = readValue("HasSecondaryModeAnimations", hasSecondaryModeAnimations, file);
 
         String ammo = readValue("SecondaryAmmo", StringUtils.EMPTY, file);
         if (!ammo.isBlank())
@@ -184,6 +193,8 @@ public class AttachmentType extends PaintableType implements IScope
         toggleSound = readSound("ModeSwitchSound", toggleSound, file);
 
         // Multipliers
+        bayonet = readValue("Bayonet", bayonet, file);
+        bayonetMeleeTime = Math.max(1, Math.min(1200, readValue("BayonetMeleeTime", bayonetMeleeTime, file)));
         meleeDamageMultiplier = readValue("MeleeDamageMultiplier", meleeDamageMultiplier, file);
         damageMultiplier = readValue("DamageMultiplier", damageMultiplier, file);
         spreadMultiplier = readValue("SpreadMultiplier", spreadMultiplier, file);

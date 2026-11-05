@@ -10,6 +10,7 @@ import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
+import com.flansmodultimate.common.types.EnumGunFirstPersonFrame;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
@@ -128,11 +129,13 @@ public final class ModClientConfig
     public final boolean enableArms;
     public final EnumAimPose aimPose;
     public final boolean enableGunAnimationsInThirdPerson;
+    public final EnumGunFirstPersonFrame preferredGunFirstPersonFrame;
     public final boolean enableWeaponSprintStance;
     public final boolean enableRandomSprintStance;
     public final boolean showCasingEjections;
     public final boolean showWeaponSmoke;
     public final boolean showBloodEffects;
+    public final int bloodSplatterSeconds;
     public final EnumMuzzleFlashStyle muzzleFlashStyle;
 
     public final boolean enableFastTranslucentRendering;
@@ -254,6 +257,7 @@ public final class ModClientConfig
     public static final DoubleValue DRIVEABLE_DAMAGE_EFFECT_DENSITY;
     public static final IntValue MAX_DETACHED_DRIVEABLE_PIECES;
     public static final BooleanValue SHOW_BLOOD_EFFECTS;
+    public static final IntValue BLOOD_SPLATTER_SECONDS;
 
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -269,6 +273,7 @@ public final class ModClientConfig
     private static final Supplier<Boolean> ENABLE_ARMS;
     public static final EnumValue<EnumAimPose> AIM_POSE;
     private static final Supplier<Boolean> ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
+    public static final EnumValue<EnumGunFirstPersonFrame> PREFERRED_GUN_FIRST_PERSON_FRAME;
     private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
     private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
     public static final BooleanValue SHOW_CASING_EJECTIONS;
@@ -514,6 +519,8 @@ public final class ModClientConfig
 
         builder.push("Particle Rendering Settings");
         SHOW_BLOOD_EFFECTS = builder.comment("Show airborne blood and ground splatters when enabled by the server; disabling this hides blood on this client only").define("showBloodEffects", true);
+        BLOOD_SPLATTER_SECONDS = builder.comment("Seconds ground blood splatters stay before fading. A Teams round can set its own time with the bloodLife rule, which then takes precedence")
+            .defineInRange("bloodSplatterSeconds", 35, 1, 3600);
         PARTICLE_DISTANCE_SCALE = builder.comment(
             "Multiplies how far Flan's Mod particles are drawn. Every effect has its own natural drawing distance: 128 blocks for ordinary particles, and further for large effects such as an explosion's rising column, which grows with the charge up to 256 blocks. 0.5 halves every distance; 2 doubles it.")
             .defineInRange("particleDistanceScale", 1.0D, 0.125D, 4.0D);
@@ -577,6 +584,11 @@ public final class ModClientConfig
         ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON = builder
             .comment("This will display gun animations such as melee and reloading, not only in first person view but also in third person view including animations from other players")
             .define("enableGunAnimationsInThirdPerson", true);
+        PREFERRED_GUN_FIRST_PERSON_FRAME = builder.comment("""
+            First-person gun placement used for every gun. Each gun's FirstPersonFrame (1.7.10 when unset) names the placement its model was made for,
+            and the gun is shifted sideways while aiming so its sights stay centred in any placement.
+            FLANS_1710: Flan's Mod 1.7.10 placement. FLANS_1122: Flan's Mod 1.12.2 placement. FLANS_TAP: Tyrants and Plebeians (Labjac fork) placement.
+            """).defineEnum("preferredGunFirstPersonFrame", EnumGunFirstPersonFrame.FLANS_1710);
         ENABLE_WEAPON_SPRINT_STANCE = builder.comment("This will move weapons to a lowered position when sprinting").define("enableWeaponSprintStance", true);
         ENABLE_RANDOM_SPRINT_STANCE = builder.comment("This will randomly generate unique positions for each weapon using the weapon name as a seed").define("enableRandomSprintStance", false);
         SHOW_CASING_EJECTIONS = builder.comment("Render animated casing ejections for guns that provide a casing model").define("showCasingEjections", true);
@@ -737,11 +749,13 @@ public final class ModClientConfig
         enableArms = ENABLE_ARMS.get();
         aimPose = AIM_POSE.get();
         enableGunAnimationsInThirdPerson = ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON.get();
+        preferredGunFirstPersonFrame = PREFERRED_GUN_FIRST_PERSON_FRAME.get();
         enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
         enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
         showCasingEjections = SHOW_CASING_EJECTIONS.get();
         showWeaponSmoke = SHOW_WEAPON_SMOKE.get();
         showBloodEffects = SHOW_BLOOD_EFFECTS.get();
+        bloodSplatterSeconds = BLOOD_SPLATTER_SECONDS.get();
         muzzleFlashStyle = MUZZLE_FLASH_STYLE.get();
 
         enableFastTranslucentRendering = ENABLE_FAST_TRANSLUCENT_RENDERING.get();

@@ -4,6 +4,8 @@ import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.types.EnumGunFirstPersonFrame;
+import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import lombok.AccessLevel;
@@ -23,9 +25,14 @@ import java.util.Map;
 public final class AimOffsetDebugCommand
 {
     private static final Map<String, Vector3f> overrides = new HashMap<>();
+    /** Client-local preview overriding every gun's first-person frame; null uses definitions and the client default. */
+    @Nullable
+    private static EnumGunFirstPersonFrame frameOverride;
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
+        ThirdPersonOffsetDebugCommand.register(dispatcher);
+        FirstPersonFrameDebugCommand.register(dispatcher);
         dispatcher.register(Commands.literal("flansdebug").then(Commands.literal("aimoffset").executes(context -> apply(context.getSource(), null, false))
             .then(Commands.literal("reset").executes(context -> apply(context.getSource(), null, true))).then(Commands.literal("clear").executes(context ->
             {
@@ -36,7 +43,31 @@ public final class AimOffsetDebugCommand
             .then(Commands.argument("x", FloatArgumentType.floatArg())
                 .then(Commands.argument("y", FloatArgumentType.floatArg()).then(Commands.argument("z", FloatArgumentType.floatArg()).executes(context -> apply(context.getSource(),
                     new Vector3f(FloatArgumentType.getFloat(context, "x"), FloatArgumentType.getFloat(context, "y"), FloatArgumentType.getFloat(context, "z")), false)))))));
+        dispatcher.register(Commands.literal("flansdebug")
+            .then(Commands.literal("viewFrame").then(Commands.literal("1.7.10").executes(context -> setFrame(context.getSource(), EnumGunFirstPersonFrame.FLANS_1710)))
+                .then(Commands.literal("1.12.2").executes(context -> setFrame(context.getSource(), EnumGunFirstPersonFrame.FLANS_1122)))
+                .then(Commands.literal("tap").executes(context -> setFrame(context.getSource(), EnumGunFirstPersonFrame.FLANS_TAP)))
+                .then(Commands.literal("reset").executes(context -> setFrame(context.getSource(), null)))));
         dispatcher.register(Commands.literal("flansmodultimate").then(Commands.literal("debug").redirect(dispatcher.getRoot().getChild("flansdebug"))));
+    }
+
+    private static int setFrame(CommandSourceStack source, @Nullable EnumGunFirstPersonFrame selected)
+    {
+        frameOverride = selected;
+        source.sendSuccess(() -> Component.literal(selected == null ? "First-person gun frame preview cleared; using preferredGunFirstPersonFrame" : "First-person gun frame preview: " + selected.getDisplayName()), false);
+        return 1;
+    }
+
+    /** First-person placement to render with: the preview, else the client's preferred placement. */
+    public static EnumGunFirstPersonFrame resolveFrame()
+    {
+        return frameOverride != null ? frameOverride : ModClientConfig.get().preferredGunFirstPersonFrame;
+    }
+
+    /** Placement the gun's model was made for, from FirstPersonFrame; 1.7.10 when unset. */
+    public static EnumGunFirstPersonFrame authoredFrame(ModelGun model)
+    {
+        return FirstPersonFrameDebugCommand.resolve(model);
     }
 
     public static Vector3f resolve(ModelGun model)

@@ -2,10 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
-import com.flansmodultimate.api.driveables.CrashMode;
-import com.flansmodultimate.api.driveables.CrashMotion;
-import com.flansmodultimate.api.driveables.DriveableAttitude;
-import com.flansmodultimate.api.driveables.WeaponTriggerState;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.equipment.WeaponBallistics;
 import com.flansmodultimate.api.projectiles.AmmunitionArmor;
 import com.flansmodultimate.api.projectiles.DetonationRadii;
@@ -148,6 +145,10 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final int FLAG_AIR_BRAKE = 1 << 8;
     protected static final int FLAG_REPAIR = 1 << 9;
 
+    protected static final EntityDataAccessor<Integer> DATA_WEAPON_HEAT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Boolean> DATA_WEAPON_OVERHEATED = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.BOOLEAN);
+    private final VehicleWeaponHeat weaponHeat = new VehicleWeaponHeat();
+
     protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_YAW = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
     protected static final EntityDataAccessor<Float> DATA_PITCH = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
@@ -174,6 +175,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final EntityDataAccessor<Integer> DATA_PRIMARY_RELOAD_TICKS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Component> DATA_PRIMARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
     protected static final EntityDataAccessor<Component> DATA_SECONDARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
+    protected static final EntityDataAccessor<Component> DATA_NEXT_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
     protected static final EntityDataAccessor<Integer> DATA_SECONDARY_RELOAD_TICKS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     /** Rounds each bank has left before its next reload, and what a full magazine holds. */
     protected static final EntityDataAccessor<Integer> DATA_PRIMARY_MAGAZINE_LEFT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
@@ -323,6 +325,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      * feeds from its gun's own slot and has nothing to choose between.
      */
     protected final int[] loadedOrdnanceSlot = {-1, -1};
+    /** The round type each bank last chambered, so reloading after a shot keeps firing the same type while any is left. */
+    private final Item[] chamberedOrdnanceItem = new Item[2];
     /** Rounds each bank has put out since its last full reload, counted whether or not the item was consumed. */
     protected final int[] bankRoundsFired = {0, 0};
     /** The same count for each seat gun, so a gunner reloads on schedule in creative too. */
@@ -838,12 +842,35 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return entityData.get(DATA_SECONDARY_AMMO_NAME);
     }
 
+    /** The round the ammunition-switch key would load next, or empty when there is no other round to switch to. */
+    public Component getNextAmmoName()
+    {
+        return entityData.get(DATA_NEXT_AMMO_NAME);
+    }
+
+    private Component findNextAmmoName()
+    {
+        boolean secondary = switchableOrdnanceBank();
+        if (!isOrdnanceBank(secondary))
+            return Component.empty();
+        int slot = loadedOrdnanceSlot[secondary ? 1 : 0];
+        int next = nextOtherRoundSlot(secondary, slot);
+        return next < 0 ? Component.empty() : getWeaponSlot(ordnanceBankFor(initializedType().weaponType(secondary)), next).getHoverName();
+    }
+
+    /** The ordnance bank the ammunition-switch key works: the primary one, unless only the secondary bank fires ordnance. */
+    private boolean switchableOrdnanceBank()
+    {
+        return !isOrdnanceBank(false) && isOrdnanceBank(true);
+    }
+
     private void updateCurrentAmmoNames()
     {
         if (level().isClientSide || driveableData == null || !ammoNameCache.needsRefresh(driveableData, driveableData.getInventoryRevision(), loadedOrdnanceSlot[0], loadedOrdnanceSlot[1], tickCount))
             return;
         entityData.set(DATA_PRIMARY_AMMO_NAME, findCurrentAmmoName(false));
         entityData.set(DATA_SECONDARY_AMMO_NAME, findCurrentAmmoName(true));
+        entityData.set(DATA_NEXT_AMMO_NAME, findNextAmmoName());
     }
 
     private Component findCurrentAmmoName(boolean secondary)
@@ -1077,6 +1104,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         data.define(DATA_FLIGHT_ROLL, 0F);
         data.define(DATA_MOUSE_CONTROL, false);
         data.define(DATA_RECOIL_PROGRESS, 0F);
+        data.define(DATA_WEAPON_HEAT, 0);
+        data.define(DATA_WEAPON_OVERHEATED, false);
         data.define(DATA_IT1_DOOR_ANGLE, 0F);
         data.define(DATA_PREV_IT1_DOOR_ANGLE, 0F);
         data.define(DATA_IT1_ARM_ANGLE, 0F);
@@ -1092,6 +1121,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         data.define(DATA_PRIMARY_RELOAD_TICKS, 0);
         data.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
         data.define(DATA_SECONDARY_AMMO_NAME, Component.empty());
+        data.define(DATA_NEXT_AMMO_NAME, Component.empty());
         data.define(DATA_SECONDARY_RELOAD_TICKS, 0);
         data.define(DATA_PRIMARY_MAGAZINE_LEFT, 0);
         data.define(DATA_PRIMARY_MAGAZINE_SIZE, 0);
@@ -1487,6 +1517,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return;
         }
 
+        weaponHeat.tick(type.getOverheatLimit(), type.getCoolingBonus());
+        publishWeaponHeat();
         expireInput();
 
         int previousPrimaryShootDelay = ShotCooldown.displayTicks(primaryShootDelay);
@@ -1898,7 +1930,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected boolean canFireWeaponBank(boolean secondary)
     {
-        if (ticksRepairing > 0 || !epicShipWeaponsAllowed())
+        if (configType != null && weaponHeat.locked(configType.getOverheatLimit()) || ticksRepairing > 0 || !epicShipWeaponsAllowed())
             return false;
         if (configType == null || !configType.isWorksUnderWater() && isUnderWater())
             return false;
@@ -2395,6 +2427,37 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return absolute >= 0 && absolute < weaponSlotLoadOrder.length ? weaponSlotLoadOrder[absolute] : 0;
     }
 
+    /**
+     * The round a bank reloads after a shot or an emptied slot: the round type it was firing, from its current slot while
+     * that holds any, otherwise from the slot of that type that went aboard first. Only once that type has run out does it
+     * move on to whatever went aboard first, so firing never changes the round the crew chose.
+     */
+    private int sameRoundSlot(boolean secondary)
+    {
+        int index = secondary ? 1 : 0;
+        Item round = chamberedOrdnanceItem[index];
+        if (round == null)
+            return oldestChamberableSlot(secondary);
+        AmmoBank bank = ordnanceBankFor(initializedType().weaponType(secondary));
+        int current = loadedOrdnanceSlot[index];
+        if (canChamber(secondary, current) && getWeaponSlot(bank, current).getItem() == round)
+            return current;
+        int best = -1;
+        int bestOrder = Integer.MAX_VALUE;
+        for (int slot = 0; slot < ordnanceSlotCount(bank); slot++)
+        {
+            if (!canChamber(secondary, slot) || getWeaponSlot(bank, slot).getItem() != round)
+                continue;
+            int order = loadOrderOf(bank, slot);
+            if (best < 0 || order > 0 && order < bestOrder)
+            {
+                best = slot;
+                bestOrder = order > 0 ? order : bestOrder;
+            }
+        }
+        return best >= 0 ? best : oldestChamberableSlot(secondary);
+    }
+
     /** The round this bank should chamber next: the one that went aboard first. */
     private int oldestChamberableSlot(boolean secondary)
     {
@@ -2417,18 +2480,24 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return best;
     }
 
-    /** The next round the crew can swap to, walking the magazine in slot order. */
-    private int nextChamberableSlot(boolean secondary, int from)
+    /**
+     * The next chamberable slot holding a different round from the one loaded, so switching ammunition
+     * never reloads the same shell type from another slot.
+     *
+     * @return the slot, or -1 when every other chamberable slot holds the loaded round
+     */
+    private int nextOtherRoundSlot(boolean secondary, int from)
     {
         AmmoBank bank = ordnanceBankFor(initializedType().weaponType(secondary));
         int count = ordnanceSlotCount(bank);
+        Item loaded = canChamber(secondary, from) ? getWeaponSlot(bank, from).getItem() : null;
         for (int step = 1; step <= count; step++)
         {
             int slot = Math.floorMod(from + step, count);
-            if (canChamber(secondary, slot))
+            if (slot != from && canChamber(secondary, slot) && getWeaponSlot(bank, slot).getItem() != loaded)
                 return slot;
         }
-        return from;
+        return -1;
     }
 
     /** Puts a round in the breech without charging anything for it. */
@@ -2437,6 +2506,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int index = secondary ? 1 : 0;
         loadedOrdnanceSlot[index] = slot;
         bankRoundsFired[index] = 0;
+        if (slot >= 0)
+            chamberedOrdnanceItem[index] = getWeaponSlot(ordnanceBankFor(initializedType().weaponType(secondary)), slot).getItem();
     }
 
     /**
@@ -2449,12 +2520,32 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     private void loadOrdnance(boolean secondary, int slot)
     {
+        loadOrdnance(secondary, slot, false);
+    }
+
+    /**
+     * @param restart
+     *            replace whatever reload is running with a fresh one for the new round, as a crew changing rounds
+     *            mid-reload does, instead of keeping the longer of the two
+     */
+    private void loadOrdnance(boolean secondary, int slot, boolean restart)
+    {
         DriveableType type = initializedType();
         chamberOrdnance(secondary, slot);
         if (slot < 0)
             return;
 
-        beginBankReload(secondary, type.reloadTime(secondary, magazineSize(getWeaponSlot(ordnanceBankFor(type.weaponType(secondary)), slot), type.reloadRounds(secondary))));
+        float reload = type.reloadTime(secondary, magazineSize(getWeaponSlot(ordnanceBankFor(type.weaponType(secondary)), slot), type.reloadRounds(secondary)));
+        if (restart)
+        {
+            int index = secondary ? 1 : 0;
+            bankReloadTicks[index] = 0F;
+            if (secondary)
+                setSecondaryShootDelay(0F);
+            else
+                setPrimaryShootDelay(0F);
+        }
+        beginBankReload(secondary, reload);
 
         String sound = type.reloadSound(secondary);
         if (StringUtils.isNotBlank(sound))
@@ -2469,7 +2560,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int index = secondary ? 1 : 0;
         if (canChamber(secondary, loadedOrdnanceSlot[index]))
             return;
-        int next = oldestChamberableSlot(secondary);
+        int next = sameRoundSlot(secondary);
         if (next < 0)
         {
             loadedOrdnanceSlot[index] = -1;
@@ -2519,11 +2610,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int size = magazineSize(chambered, type.reloadRounds(secondary));
         if (!magazineSpent(++bankRoundsFired[index], size, chambered))
             return;
-        loadOrdnance(secondary, oldestChamberableSlot(secondary));
+        loadOrdnance(secondary, sameRoundSlot(secondary));
     }
 
     /**
-     * Swaps the bank's chambered round for the next one in slot order.
+     * Swaps the bank's chambered round for the next different round type, in slot order.
      *
      * <p>
      * Swapping a shell means working one out of the breech and another in, so
@@ -2536,15 +2627,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         if (configType == null || driveableData == null || level().isClientSide)
             return;
-        boolean secondary = !isOrdnanceBank(false) && isOrdnanceBank(true);
+        boolean secondary = switchableOrdnanceBank();
         if (!isOrdnanceBank(secondary))
             return;
         int index = secondary ? 1 : 0;
-        int next = nextChamberableSlot(secondary, loadedOrdnanceSlot[index]);
-        if (next < 0 || next == loadedOrdnanceSlot[index])
+        int next = nextOtherRoundSlot(secondary, loadedOrdnanceSlot[index]);
+        if (next < 0)
             return;
         if (configType.weaponType(secondary) == EnumWeaponType.SHELL)
-            loadOrdnance(secondary, next);
+            loadOrdnance(secondary, next, true);
         else
             chamberOrdnance(secondary, next);
     }
@@ -2682,6 +2773,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
         if (!fired.isEmpty())
         {
+            recordWeaponHeat(fired.size());
             playBankEffects(secondary, fired);
             DriveableType.ScreenShake shake = type.screenShake(secondary);
             if (shake != null)
@@ -3235,9 +3327,36 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return this instanceof Plane ? -pitch : pitch;
     }
 
+    public int getWeaponHeat()
+    {
+        return entityData.get(DATA_WEAPON_HEAT);
+    }
+
+    public boolean isWeaponOverheated()
+    {
+        return entityData.get(DATA_WEAPON_OVERHEATED);
+    }
+
+    private void publishWeaponHeat()
+    {
+        entityData.set(DATA_WEAPON_HEAT, weaponHeat.getHeat());
+        entityData.set(DATA_WEAPON_OVERHEATED, weaponHeat.locked(initializedType().getOverheatLimit()));
+    }
+
+    private void recordWeaponHeat(int rounds)
+    {
+        DriveableType type = initializedType();
+        if (weaponHeat.fired(rounds, type.getOverheatLimit(), type.getOverheatPenalty()) && StringUtils.isNotBlank(type.getOverheatSound()))
+            PacketPlaySound.sendSoundPacket(this, 15D, type.getOverheatSound(), false);
+        publishWeaponHeat();
+    }
+
     protected void playBankEffects(boolean secondary, List<FiredMuzzle> fired)
     {
         DriveableType type = initializedType();
+        String distantSound = secondary ? type.getDistantShootSoundSecondary() : type.getDistantShootSoundPrimary();
+        if (StringUtils.isNotBlank(distantSound) && type.getDistantSoundRange() > 0)
+            PacketPlaySound.sendSoundPacket(this, type.getDistantSoundRange(), distantSound, false);
         String sound = type.shootSound(secondary);
         double soundRange = ModCommonConfig.get().gunFireSoundRange();
         if (type.isReadWeaponsFromGunTypes() && isGunBank(secondary))
@@ -3316,7 +3435,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         {
             Vec3 localDirection = configuredModelLocal(new Vec3(particle.x(), particle.y(), particle.z()));
             Vec3 direction = modelLocalDirectionToWorld(rotateTurretLocalDirection(localDirection, seat.getHullAimYaw(), localAimPitch(seat.getAimPitch())));
-            ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, 1F);
+            Vec3 localOffset = configuredModelLocal(new Vec3(particle.forward(), particle.up(), 0D));
+            Vec3 position = origin.add(modelLocalDirectionToWorld(rotateTurretLocalDirection(localOffset, seat.getHullAimYaw(), localAimPitch(seat.getAimPitch()))));
+            ClientHooks.RENDER.spawnParticle(particle.name(), position.x, position.y, position.z, direction.x, direction.y, direction.z, 1F);
         }
     }
 
@@ -3426,7 +3547,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
     private boolean firePassengerGun(Seat seat, SeatInfo info, GunType gun, int index)
     {
-        if (ticksRepairing > 0 || !epicShipWeaponsAllowed())
+        if (configType != null && weaponHeat.locked(configType.getOverheatLimit()) || ticksRepairing > 0 || !epicShipWeaponsAllowed())
             return false;
         DriveableData data = initializedData();
         int ammoSlot = info.getGunnerID();
@@ -3465,6 +3586,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
         PacketHandler.sendToAllAround(new PacketDriveablePassengerFired(getId(), index, barrel), position(), 128D, level().dimension());
+        recordWeaponHeat(1);
         reloadPassengerGun(index, gun, ammo);
         return true;
     }
@@ -3543,6 +3665,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         Vec3 muzzle = gunOriginModelLocal(info.getGunOrigin(barrel));
         Vec3 pivot = passengerGunPivotLocal(seat.getSeatIndex());
+        if (info.getAuthoredBarrels() > 0)
+            pivot = gunOriginModelLocal(info.getGunOrigin());
         if (pivot == null)
             return modelLocalToWorld(muzzle);
 
@@ -3823,21 +3947,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             if (seat != null)
                 currentRiders.addAll(seat.getPassengers());
         }
-        if (configType.isSetPlayerInvisible())
+        for (Entity rider : currentRiders)
         {
-            for (Entity rider : currentRiders)
+            if (isRiderHiddenByDriveable(rider) && !rider.isInvisible())
             {
-                if (!rider.isInvisible())
-                {
-                    ridersHiddenByDriveable.put(rider.getUUID(), rider);
-                    rider.setInvisible(true);
-                }
+                ridersHiddenByDriveable.put(rider.getUUID(), rider);
+                rider.setInvisible(true);
             }
         }
         ridersHiddenByDriveable.entrySet().removeIf(entry ->
         {
             Entity rider = entry.getValue();
-            if (configType.isSetPlayerInvisible() && currentRiders.contains(rider) && rider.isAlive())
+            if (isRiderHiddenByDriveable(rider) && currentRiders.contains(rider) && rider.isAlive())
                 return false;
             if (!rider.isRemoved())
                 rider.setInvisible(false);
@@ -3855,7 +3976,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (driveable == null)
             return false;
         DriveableType type = driveable.getConfigType();
-        return type != null && type.isSetPlayerInvisible();
+        int seatIndex = vehicle instanceof Seat seat && seat.getSeatInfo() != null ? seat.getSeatInfo().getId() : 0;
+        return type != null && type.hidesOccupants(driveable.isDoorOpen(), seatIndex);
     }
 
     protected void restoreRiderVisibility()
@@ -4921,7 +5043,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return defined == 0 ? 0F : (float) destroyedCount / defined;
     }
 
-    private boolean isDefinedAndDestroyed(@NotNull EnumDriveablePart part)
+    /** Whether a part with health of its own has been shot off; it also opens the hull face it carried. */
+    public boolean isDefinedAndDestroyed(@NotNull EnumDriveablePart part)
     {
         DriveablePart state = initializedData().getPart(part);
         return state != null && state.getMaxHealth() > 0F && state.isDestroyed();
@@ -4942,7 +5065,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
         int shotIndex = shot == null ? 0 : shot.getShot();
         boolean heat = bulletType.isHeat();
-        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat);
+        // A face whose armour part has been shot off is open: the hull behind it no longer has that plate.
+        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat,
+            this::isDefinedAndDestroyed);
         float authoredFixedDamage = bulletType.getDamage().getDamageAgainstEntity(this);
         boolean normalizedHealth = configType.getResolvedHealth().enabled();
         float selectedFixedDamage = normalizedHealth ? authoredFixedDamage : authoredFixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
@@ -4954,6 +5079,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(normalizedHealth, projectileMass, selectedFixedDamage, muzzleVelocity, armorHit,
             p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired() && !resolvedDamage.penetration().penetrated();
+        ArmourImpactSounds.send(level(), hit.getHitPosition(), bulletType, resolvedDamage.penetration());
         ArmorImpactHandler.dispatch(shot, this, hit.getPart().getShortName(), hit.getFacing().outwardNormal(), armourBlocked);
         Vec3 impactNormal = modelLocalDirectionToWorld(
             DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(armorHit.virtualNormal()), hit.getPart(), getTurretYaw(), getTurretPitch()));
@@ -4977,7 +5103,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             {
                 // The jet has already done the warhead's work on this part; its blast is left to the others.
                 shapedChargeImpact = new ShapedChargeImpact(hit.getPart(), hit.getHitPosition(), level().getGameTime());
-                applyHeatSpall(shot, hit.getPart(), resolvedDamage.penetration().overmatch());
+                applyHeatSpall(shot, hit.getPart(), armorHit.isArmoured() ? resolvedDamage.penetration().overmatch() : 2F);
             }
             if (part.isDestroyed())
                 onPartDestroyed(part.getType());

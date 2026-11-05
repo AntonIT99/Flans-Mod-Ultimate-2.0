@@ -52,9 +52,10 @@ public class ClientGunHooksImpl implements IClientGunHooks
     public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
     {
         PlayerData data = PlayerData.getInstance(player);
-        data.doMelee(player, gunItem.getConfigType().getMeleeTime(), gunItem.getConfigType());
+        if (!gunItem.getConfigType().isBayonetMode(player.getItemInHand(hand)))
+            data.doMelee(player, gunItem.getConfigType().getMeleeTime(player.getItemInHand(hand)), gunItem.getConfigType());
         GunAnimations anim = ModClient.getGunAnimations(player, hand);
-        anim.doMelee(gunItem.getConfigType().getMeleeTime());
+        anim.doMelee(gunItem.getConfigType().getMeleeTime(player.getItemInHand(hand)));
     }
 
     @Override
@@ -109,14 +110,18 @@ public class ClientGunHooksImpl implements IClientGunHooks
     public void animateRemoteMelee(LivingEntity holder, InteractionHand hand)
     {
         if (holder.getItemInHand(hand).getItem() instanceof GunItem gunItem)
-            ModClient.getGunAnimations(holder, hand).doMelee(gunItem.getConfigType().getMeleeTime());
+            ModClient.getGunAnimations(holder, hand).doMelee(gunItem.getConfigType().getMeleeTime(holder.getItemInHand(hand)));
     }
 
     /** Starts one shot of the gun's model animation: pump, hammer, casing and muzzle flash. */
     private static void doShoot(GunType type, GunAnimations animations)
     {
         if (ModelCache.getOrLoadTypeModel(type) instanceof ModelGun modelGun)
+        {
             animations.doShoot(modelGun.getPumpDelay(), modelGun.getPumpTime(), modelGun.getHammerDelay(), modelGun.getHammerAngle(), modelGun.getAlthammerAngle(), modelGun.getCasingDelay());
+            if (type.getKeyframes().isEnabled())
+                animations.startKeyframeRecoil(modelGun.getRecoilTime());
+        }
         else
             animations.doShoot(0, 1, 0, 0F, 0F, 0);
     }
@@ -132,7 +137,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
     }
 
     @Override
-    public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
+    public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo, boolean tactical, int loopRounds)
     {
         PlayerData data = PlayerData.getInstance(player);
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
@@ -153,7 +158,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             chargeTime = modelGun.getChargeTime();
         }
 
-        animations.doReload(reloadTime, pumpDelay, pumpTime, chargeDelay, chargeTime, reloadCount, hasMultipleAmmo);
+        animations.doReload(reloadTime, pumpDelay, pumpTime, chargeDelay, chargeTime, reloadCount, hasMultipleAmmo, tactical, loopRounds);
     }
 
     @Override

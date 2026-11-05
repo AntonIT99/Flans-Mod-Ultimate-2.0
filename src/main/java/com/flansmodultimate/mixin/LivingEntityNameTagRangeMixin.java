@@ -4,6 +4,7 @@ import com.flansmodultimate.api.client.NameTagRanges;
 import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.api.entity.ILivingVisualEffects;
 import com.flansmodultimate.common.driveables.physics.PlaneRiderRotation;
+import com.flansmodultimate.api.entity.FlansCorpses;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -44,7 +45,8 @@ public abstract class LivingEntityNameTagRangeMixin
     @Inject(method = "getOverlayCoords", at = @At("HEAD"), cancellable = true)
     private static void flansmodultimateHurtOverlay(LivingEntity entity, float whiteOverlay, CallbackInfoReturnable<Integer> callback)
     {
-        if (entity instanceof ILivingVisualEffects effects && !effects.flansmodultimateHurtFlash())
+        // A corpse kept after its death animation is drawn without the red tint.
+        if (entity instanceof ILivingVisualEffects effects && !effects.flansmodultimateHurtFlash() || !FlansCorpses.hurtFlashing(entity))
             callback.setReturnValue(OverlayTexture.pack(OverlayTexture.u(whiteOverlay), OverlayTexture.v(false)));
     }
 

@@ -18,6 +18,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.phys.Vec3;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -101,6 +102,24 @@ class BulletTracerDataTest
             assertSame(type, saved.getType());
             assertEquals(40F, saved.getBulletSpeed());
             assertEquals(hasMultiplier ? 1.5F : 1F, saved.getBulletSpeedMultiplier());
+        }
+    }
+
+    @org.junit.jupiter.api.Test
+    void navigationAcceptsServerMotionWhileLegacyProjectilesKeepPrediction()
+    {
+        try (EntityTestWorld world = new EntityTestWorld())
+        {
+            Bullet bullet = bullet(world);
+            Vec3 before = bullet.getDeltaMovement();
+            bullet.lerpMotion(1, 2, 3);
+            assertEquals(before, bullet.getDeltaMovement());
+            bullet.configType = org.mockito.Mockito.mock(BulletType.class);
+            org.mockito.Mockito.when(bullet.configType.isProportionalNavigation()).thenReturn(true);
+            bullet.lerpMotion(1, 2, 3);
+            assertEquals(new Vec3(1, 2, 3), bullet.getDeltaMovement());
+            bullet.lerpMotion(Double.NaN, 2, 3);
+            assertEquals(new Vec3(1, 2, 3), bullet.getDeltaMovement());
         }
     }
 

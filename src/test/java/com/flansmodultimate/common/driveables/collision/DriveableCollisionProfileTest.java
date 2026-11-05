@@ -98,6 +98,25 @@ class DriveableCollisionProfileTest
         assertFalse(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.COMPOSITE));
     }
 
+    @Test
+    void measuresTheHullFootprintWithoutTurretAndBarrel()
+    {
+        // A hull 2.4 wide (local X) and 5 long (local Z), tracks reaching 0.2 further out on the left, a turret and a long barrel.
+        DriveableCollisionProfile profile = DriveableCollisionProfile.of(List.of(
+            DriveableCollisionProfile.compilePartBox(EnumDriveablePart.CORE, CollisionBox.inWorldUnits(1F, -1.2F, 0F, -2.5F, 2.4F, 1.5F, 5F, 0F, 0F)),
+            DriveableCollisionProfile.compilePartBox(EnumDriveablePart.LEFT_TRACK, CollisionBox.inWorldUnits(1F, -1.4F, -0.2F, -2.5F, 0.4F, 1F, 5F, 0F, 0F)),
+            DriveableCollisionProfile.compilePartBox(EnumDriveablePart.TURRET, CollisionBox.inWorldUnits(1F, -1F, 1.5F, -1F, 2F, 1F, 2F, 0F, 0F)),
+            DriveableCollisionProfile.compilePartBox(EnumDriveablePart.BARREL, CollisionBox.inWorldUnits(1F, -0.1F, 2F, 0F, 0.2F, 0.2F, 6F, 0F, 0F))));
+
+        var footprint = profile.getHullFootprint().orElseThrow();
+
+        // The left track reaches 1.4 out; the hull counts it to both sides of its centre.
+        assertEquals(2.8D, footprint.width(), EPSILON);
+        assertEquals(5D, footprint.length(), EPSILON);
+        assertEquals(1.7D, footprint.height(), EPSILON);
+        assertTrue(DriveableCollisionProfile.of(List.of()).getHullFootprint().isEmpty());
+    }
+
     private static CollisionMesh mesh(Vector3f position, Vector3f size, List<Vector3f> modifiers)
     {
         return new CollisionMesh(position, size, modifiers, EnumDriveablePart.CORE);

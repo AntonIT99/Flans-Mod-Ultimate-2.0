@@ -9,6 +9,7 @@ DeployedModel None
 Model ww2.Flamethrower
 Texture Flamethrower_3
 ModelScale 1.0
+EjectCasings False
 
 // Ammunition
 Ammo flamethrowerww2Ammo

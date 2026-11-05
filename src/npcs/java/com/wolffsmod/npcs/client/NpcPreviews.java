@@ -26,6 +26,7 @@ final class NpcPreviews
     static EntityCustomNpc ofClass(Level level, FlanSoldierSelection selection)
     {
         EntityCustomNpc model = new EntityCustomNpc(CustomEntities.entityCustomNpc, level);
+        model.display.setSkinTexture(NpcSkinResolver.STEVE);
         FlanSoldierLoadout.Equipment equipment = FlanSoldierLoadout.equipment(selection);
         model.inventory.armor = equipment.armour();
         model.inventory.weapons = equipment.weapons();

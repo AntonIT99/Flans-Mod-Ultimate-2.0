@@ -124,16 +124,16 @@ public final class EquipmentSupport
         return Optional.of(new WeaponTraits(Math.max(scope.getZoomFactor(), scope.getFovFactor()), capacity));
     }
 
-    private static EquippedWeaponProperties.Impact impact(@Nullable ShootableType ammo)
+    static EquippedWeaponProperties.Impact impact(@Nullable ShootableType ammo)
     {
         if (ammo == null)
             return EquippedWeaponProperties.Impact.NONE;
         if (!(ammo instanceof com.flansmodultimate.common.types.BulletType bullet))
             return new EquippedWeaponProperties.Impact(1D, ammo.getHitBoxSize(), ammo.getFallSpeed(), ammo.getExplosionRadius(), "", "", false);
-        // Mirrors ShootingHelper: entity and block impacts are gated separately; blocks fall back to material sounds.
+        // Mirrors ShootingHelper: block material feedback can accompany the authored block impact sound.
         String sound = StringUtils.defaultString(bullet.getHitSound());
         return new EquippedWeaponProperties.Impact(bullet.getKnockbackModifier(), bullet.getHitBoxSize(), bullet.getFallSpeed(), bullet.getExplosionRadius(),
-            bullet.isEntityHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() && sound.isBlank());
+            bullet.isEntityHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() && bullet.usesMaterialImpactSounds());
     }
 
     public static Optional<EquippedShieldProperties> shield(ItemStack stack)

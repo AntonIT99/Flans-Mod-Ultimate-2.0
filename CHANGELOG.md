@@ -1,6 +1,50 @@
 # Flan's Mod Ultimate 2.2
 
+* Wolff's Star Wars Pack blasters hit harder, sniper rifles use dedicated high-power bolts, the DC-15S and DC-17 use 50-shot power packs, and the Z-6 has a separate 200-shot supply; class loadouts carry the matching ammunition
+
+* `animThirdPersonOffset x y z` overrides the Java gun model's third-person offset when specified; `/flansdebug thirdPersonOffset [x y z | reset | clear]` previews the final offset locally without editing content packs
+
+* Driveable occupants can be hidden according to door state using `SetPlayerInvisibleOnDoorOpen` and `SetPlayerInvisibleOnDoorClose`
+
+* API-spawned driveables and wrecks now face the requested Minecraft yaw, correcting a 90-degree offset
+
+* Addon API: `FlansEntityTypes.getHullFootprint` reads the length, width and height of a driveable definition's hull from its collision shapes, without its turret and barrels
+
 ## Highlights
+
+* HEAT charges apply full jet damage to unarmoured vehicles and aircraft regardless of `UseRealisticVehicleHealth` (legacy-health vehicles use the higher of their authored damage and the jet damage; armoured faces still require penetration); ammunition and launcher vehicle/plane damage stats show the HEAT jet range
+
+* Driveable `FlashModel DefaultFlash` applies to `GUN` banks by default; `ShellMuzzleFlash true` also enables flashes for `SHELL` banks
+
+* Passenger weapons support authored `barrels` / `SeatGuns`, `barrelSpread` / `SeatGunSpread`, and offset `PassengerShootParticles` gated by `PassengerHasParticles`, including NPC vehicle crews
+* `PassengerZoom` enables passenger optics unless scope support is explicitly disabled; configured per-sight zooms retain priority
+* Legacy `cannonRecoil` enables main-gun camera kick, with explicit `FancyScreenShake` settings taking priority
+* Grip attachments support toggleable `Bayonet` mode and `BayonetMeleeTime`, using the gun's existing stabbing animation and the grip's secondary damage projectile without consuming cartridges
+* Ammunition supports server-steered `ProportionalNavigation` and `ProNavGain`, retaining missile speed and existing seeker and turn limits
+* Aircraft support speed-triggered `StukaSound` sirens with `StukaSpeed` in mph, `StukaSoundLength` and `StukaSoundRange`
+* Addon muzzle particles can carry an optional model-space position offset through `WeaponMuzzle.Particle`, retaining the existing two-argument constructor
+
+* Ammunition `DynamicHitSoundEnable` adds material-specific block impacts alongside authored `HitSound`; an explicit false disables material feedback while unconfigured packs retain the existing fallback
+* Healing tools with `HealStrength` apply regeneration using `HealAmount` as duration in ticks and `HealStrength` as amplifier; tools without it keep instant healing, and repair amounts are unchanged
+* Grenade `RandomDirection` selects server-side scatter direction, roll and speed for debris/effect launches; grenade roll is synchronized on spawn and saved with the entity
+
+* Gun `RPM` is accepted as a fallback alias of `RoundsPerMin`; category-provided `RoundsPerMin` retains priority over pack `RPM`
+* Content definitions accept `Descriptions` as an alias of `Description`, with the canonical spelling taking priority
+* Gun `ActionEndSound` plays once when the native bolt or pump closes, with separate server-validated sound allowances for accepted shots and reloads
+* Bullets and grenades support `DistantDetonateSound` and `DistantDetonateSoundRange` (default 900 blocks), heard outside the near explosion sound range
+
+* Legacy `speedMultiplier` aliases `BulletSpeedMultiplier` for ammunition fallback speed; declared bullet `MuzzleVelocity` / `BulletSpeed`, belt-round velocities and ammunition-specific weapon speed overrides now bypass the ammunition multiplier
+* Guns accept `CanLockOnAngle` and guns and bullets accept singular `LockOnToVehicle` as aliases; existing canonical spellings take precedence when both are present
+* Gun `AimTimeConstant` controls aiming transition smoothing, and authored `RunPosTime` controls smooth entry into and recovery from the sprint pose; zero timing switches instantly and unset fields preserve existing behavior
+
+* Legacy packs can hide individual occupants with `invisiblePassenger <seat> <true|false>` or `SetPassengerInvisible`, including NPC vehicle crews
+* Guns support first-person `IronSightOffset` and `IronSightPitch` corrections without changing projectile aim
+* Armor pouches support `reloadMultiplier` / `pouchMultiplier` and general or weapon-specific pouch flags for players and NPCs; the fastest matching worn pouch applies without stacking
+* Ammunition supports `ricochetSound`, `minorPenSound`, `penetrateSound` and `overPenSound` for resolved armor hits on driveables and NPC vehicle models, with `bounceSoundRange` for ricochets
+
+* Driveable weapons support opt-in shared overheating (`OverheatLimit`, `OverheatPenalty`, `CoolingBonus`, `OverheatSound`), with server-enforced lockouts, cooling and a heat HUD for drivers
+
+* Guns support optional `EquipSound` on weapon switches; driveable weapon banks support `DistantSoundPrimary`, `DistantSoundSecondary` and `DistantSoundRange` (including legacy `farSound` and `farSoundRange` aliases)
 
 * Modern Warfare aircraft in the Classic and Manus packs use wider rear camera views where needed; both F-22 models gain dense afterburner exhaust from 0.65 throttle that follows aircraft motion
 
@@ -16,7 +60,7 @@
 * Driveable repairs and carrier servicing, with repair tools, the Blowtorch, a repair progress display and an operator command to fully repair a driveable
 * New Teams command centre for operators (F7, `/teams admin` or `/teams gui`) covering rounds, rotation, maps, rules, game type variables and server settings; global Teams rules can be saved as named presets, previewed and imported/exported as JSON files alongside built-in Arena and Survival presets, with preset management pinned to the bottom of the Rules tabs; the Protection and Combat rule lists scroll (mouse wheel or scroll bar) when they do not fit the window
 * Reimplemented missing features of Flan's Mod Ultimate 1.7.10, including Teams rule commands, lag compensation settings, death drop rules, item spawners, `ShootWithOpenDoor`, kill messages with distance and hit markers
-* Airborne wound puffs and severe-injury spray accompany temporary ground blood splatters on player and opted-in NPC injuries and deaths, controlled by the default-on Teams `Blood Effects` rule (`/teams bloodEffects true|false`); blocked hits do not bleed and fatal heavy hits do not duplicate splatters
+* Airborne wound puffs and severe-injury spray accompany temporary ground blood splatters on player and opted-in NPC injuries and deaths, controlled by the default-on Teams `Blood Effects` rule (`/teams bloodEffects true|false`); blocked hits do not bleed and fatal heavy hits do not duplicate splatters; splatters last for the client `bloodSplatterSeconds` setting (35 by default), which the Teams `Ground blood time` rule (`/teams bloodLife <seconds>`, 0 = each client's own) overrides during rounds
 * New combat effects: screen shake and camera recoil, tracer beams and mixed belts, hold-to-throw grenades with realistic weight-based category speeds (up to 27 m/s) and weaker underhand tosses (hold and release attack for overhand, use for underhand); a quick click throws at full speed, holding longer charges the throw like a bow with a progress bar under the crosshair (`ThrowChargeTime`), thermal vision scopes, hot rounds and team IFF strobes, explosion shake, fly-by sounds and suppression
 * Large rendering performance improvements and shader pack compatibility (Oculus/Iris)
 * Faster content loading and startup, including reuse of model muzzle measurements after equivalent pack rebuilds and unrelated definition edits, with logged cache invalidation reasons
@@ -26,6 +70,8 @@
 ## Teams
 
 * `Deployed guns break` (`canBreakGuns`) now defaults to off; saved settings are preserved
+
+* The default-off `Keep corpses` rule in Rules > Cleanup (`/teams corpses true|false`) keeps the bodies of fallen bots for its `Corpse time` (`/teams corpseLife <seconds>`, 0 = until the round ends); kept bodies lie in their death pose without the red hurt tint
 
 * Capture point letters and names render clearly over their label backgrounds
 
@@ -47,7 +93,7 @@
 
 * During Teams rounds, spawners, capture points and team banners are protected from weapons, explosions, mobs and other indirect destruction; operators can remove them only by directly breaking them or using the Operator Stick, while flags and flagpoles remain damage-proof
 
-* Addon API 1.21 adds server-side blood-effect opt-in through `ILivingVisualEffects` and exposes nominal per-face vehicle armour, turret facing, loaded seat ammunition performance including weapon overrides, projectile mass, per-bank barrel recoil eligibility and confirmed armour-impact callbacks for target-aware AI, plus shared operator preset libraries and client file import/export through the command centre API, mass-scaled external impulses for model entities, server-authored mounted firing effects through `FlansProjectiles.firingEffects`, shared terrain-following model suspension through `FlansEntityTypes.sampleTerrainAttitude`, and shared vehicle spawner cooldown queries and spawn notifications through `FlansTeams`, and lists every default round of a gun, an AA gun or a driveable weapon bank through `FlansEquipment.createDefaultAmmunitionChoices`, exposes grenade purpose and additional flash/gas reach through `FlansProjectiles.getGrenadeProperties`, without changing damage, and shared naval compartment trim, list and open-water speed limiting through `FlansRepairs.navalAttitude`, `FlansRepairs.atSea` and an `atSea` argument on `FlansRepairs.navalVelocity`, which replaces its four-argument form, and supports server-controlled living operators of placed deployable and AA guns through `IEmplacement`, retaining automated aim independently of operator look updates, with validated deployment through `FlansEmplacements`, with grenade-device placement, owned remote detonation and supply-bag use through `FlansGrenadeDevices` and living machine proximity routing through `IProximityTarget` and cooperative allied-player seat handoff through `IFlanSeatOccupant`, plus mecha hand-tool, trigger-state, rocket-pack, walking, passive-addon, lighting, landing and stomp contracts for autonomous controllers
+* Addon API 1.21 adds server-side blood-effect opt-in through `ILivingVisualEffects`, the Teams bot corpse rule through `FlansTeams.getBotCorpseLife` and untinted corpse rendering through `FlansCorpses` and exposes nominal per-face vehicle armour, turret facing, loaded seat ammunition performance including weapon overrides, projectile mass, per-bank barrel recoil eligibility and confirmed armour-impact callbacks for target-aware AI, plus shared operator preset libraries and client file import/export through the command centre API, mass-scaled external impulses for model entities, server-authored mounted firing effects through `FlansProjectiles.firingEffects`, shared terrain-following model suspension through `FlansEntityTypes.sampleTerrainAttitude`, and shared vehicle spawner cooldown queries and spawn notifications through `FlansTeams`, and lists every default round of a gun, an AA gun or a driveable weapon bank through `FlansEquipment.createDefaultAmmunitionChoices`, exposes grenade purpose and additional flash/gas reach through `FlansProjectiles.getGrenadeProperties`, without changing damage, and shared naval compartment trim, list and open-water speed limiting through `FlansRepairs.navalAttitude`, `FlansRepairs.atSea` and an `atSea` argument on `FlansRepairs.navalVelocity`, which replaces its four-argument form, and supports server-controlled living operators of placed deployable and AA guns through `IEmplacement`, retaining automated aim independently of operator look updates, with validated deployment through `FlansEmplacements`, with grenade-device placement, owned remote detonation and supply-bag use through `FlansGrenadeDevices` and living machine proximity routing through `IProximityTarget` and cooperative allied-player seat handoff through `IFlanSeatOccupant`, plus mecha hand-tool, trigger-state, rocket-pack, walking, passive-addon, lighting, landing and stomp contracts for autonomous controllers
 
 * All spawners offer a base-assignment menu and immediately show their assigned base's team color, including before a round starts and when changing bases; item and vehicle spawners have a spawn delay in seconds (default 20), shared with NPC deployments on vehicle spawners, while vehicle spawners support AA guns, wait for their previous vehicle to be destroyed or leave the map by default, offer a nearby-only replacement mode, allow NPC vehicles by all, none, multiple categories or exact definitions, and select between spawning all ready NPC vehicles into clear nearby spaces (default) or deploying them one after another
 
@@ -94,12 +140,15 @@
 
 ## Vehicles, Aircraft & Ships
 
+* Shooting off `frontalArmor`, `leftsideArmor` or `rightsideArmor` opens that face of the hull: the core and other hull parts behind it no longer keep the inherited `ArmorFrontMm`/`ArmorSideMm` plate, so shells, HEAT rockets and blasts reach them through the hole, on driveables and on NPCs wearing vehicle part boxes alike; turret parts, parts with their own `PartArmor` plate and other armour parts keep theirs, and the debug armour readout marks a breached face
+
 * Aircraft damage is progressive (`enableRealisticAircraftDamage`, on by default): worn wings lose lift and pull the aircraft toward the weaker side, a shot-up tail answers more slowly, hit engines lose power and misfire, holed wing tanks leak fuel, and worn rotors lift less; a helicopter that loses its engine or runs dry can autorotate down and flare to land, and a plane down without its gear slides to a stop on its belly
 * Crippled and dead aircraft come down as airframes instead of tumbling: nose into the wind, spiralling over a lost wing, flat-spinning without a tail, spinning about the mast without a tail rotor or dropping without a rotor; one blown apart in the air may lose its tail or a wing as a separate piece
 * Going down: burning aircraft trail black smoke visible from up to 320 blocks, wing, tail and blade pieces flutter down like leaves, rotor strikes shed blade fragments, crashes into water throw up a spray column instead of a fireball, belly slides and sliding wrecks plough scorched furrows with dust and sparks, falling aircraft scream louder as they speed up, and crash booms arrive with a delay over distance
 * The pilot of a damaged aircraft sees blinking warnings on the HUD (fire, engine, fuel leak, wing, tail, rotor, autorotation, mayday) with an alarm, feels the airframe shake, and gets oil streaked across the view by a badly hit engine
+* Driveables that name mounted guns in `ShootPointPrimary` or `ShootPointSecondary` without a `Primary` or `Secondary` line fire those guns again, as in 1.7.10
 * Wheels and tracks throw up dust in the colour of the ground they run on, a helicopter hovering low blows a ring of dust, or of ripples over water, out from under itself, and ground vehicles smoke from their exhaust while under power; ships keep their bow spray and funnel smoke
-* The vehicle HUD shows the current ammunition-switch key below the ammunition display for drivers with shells, bombs or missiles
+* The vehicle HUD shows the current ammunition-switch key below the ammunition display for drivers with shells, bombs or missiles; the switch key always moves to a different round type and restarts the reload with it at once, even mid-reload, and the HUD shows the next round it would load; after a shot the bank reloads the same round type while any is left instead of switching on its own
 * Driveables with real-world engine data take their power only from that data, no longer multiplied by the installed engine's `EngineSpeed`, so the same vehicle category performs alike in every pack; induced drag now matches the playability-scaled lift, so aircraft such as the Ju 87 Stuka no longer stall out around 45 km/h on the runway or in slow flight
 
 * Armour hits on driveables and NPC vehicle models show outward sparks and metallic impacts when blocked, and tighter flashes, metal fragments and smoke when large shells penetrate, with effects scaled to projectile mass
@@ -127,7 +176,9 @@
 
 ## Weapons
 
-* `/rearm` and Teams vehicle spawning fill vehicle weapon ammunition slots to their item and inventory stack limits, including partially filled stacks
+* New gun parameter `EjectCasings` turns off casing ejection for a single gun; blasters, energy and rail weapons, rocket and missile launchers, flamethrowers, revolvers, bows, Nerf blasters, the caseless HK G11 and muzzle-loaders no longer throw out casings
+
+* `/rearm` and Teams vehicle spawning fill vehicle weapon ammunition slots to their item and inventory stack limits, including partially filled stacks; shell, bomb and missile banks receive a mix of every declared round of the bank's kind instead of a single type, and Teams spare vehicle supplies and `/defaultammo` include every such round too; rounds come from the driveable's own content pack whenever it has any, including the vehicle ammunition issued to NPC crews
 
 * Full ammunition stacks now merge with freshly created ammunition after refilling or cycling to the next magazine; older full stacks are repaired when carried in a player inventory
 
@@ -159,6 +210,8 @@
 
 ## Rendering & Performance
 
+* Standing up after going prone or crawling clears the sideways head and hat tilt
+* Guns can set `FirstPersonFrame` (`1.7.10` or `1.12.2`; old `Tap` values alias `1.7.10`) to pick the first-person placement their model was made for; the new `preferredGunFirstPersonFrame` client option (also in the quick settings) picks the placement for every gun and shifts guns made for another placement sideways while aiming so their sights stay centred, `/flansdebug viewFrame` previews each placement, and `/flansdebug authoredFrame [1.7.10 | 1.12.2 | reset | clear]` previews the held gun's authored property locally
 * GPU mesh caching and size culling draw only visible ranges and skip hidden batches
 * Flan armour is drawn through the GPU mesh cache like vehicles and guns, each body part as one batch, which is what a battle of hundreds of uniformed soldiers spent most of its frame time on
 * Armour level of detail leaves out uniform parts too small to see, with `Enable Armor LOD` and `Armor LOD Strength` in quick options and `minimumArmorPartPixelSize` / `maximumArmorLodPartPixelSize` in the client config. Parts are measured by the size they project to, so a scope brings a distant soldier's full detail back, and no armour piece is ever hidden
@@ -211,6 +264,12 @@
 
 ## Content Packs
 
+* Tyrants and Plebeians gun models that previously fell back to their item icon (Kar98k, Lee-Enfield, M16, MP40 and others) now load, and their keyframe animations play in first person: `UseGLTFAnimation`, `UseRightArmGLTFAnimation`, `UseLeftArmGLTFAnimation`, `GLTFAnimation <name> <file>` (read from `assets/flansmod/animations/<file>.json`), `SwitchAnimation`, `ShootAnimation`, `AimingShootAnimation`, `ActionAnimation`, `TacticalReloadGLTFAnimation` and the round-by-round `UseLoopReloadAnimation` with `StartReloadAnimation`, `LoopReloadAnimation` and `EndReloadAnimation`; with `UseLoopReloadAnimation`, a single-magazine gun that still holds rounds only loads the missing ones, taking that share of `StagedReloadTime` (the tactical reload time when unset); grips with `HasSecondaryModeAnimations` play `SecondarySwitchAnimation`, `SecondaryUnSwitchAnimation` and `SecondaryReloadAnimation` and animate themselves and their ammo
+* Tyrants and Plebeians gun models also show their first-person effects: ammo variants picked by the bullet's `AmmoModelType <gun> <variant>`, rotating magazines, feed strips, ammo counters, muzzle and drifting chamber smoke (`MuzzleSmokeModel`, `ChamberSmokeModel` and their textures, which that pack's parser swaps, as here), and `fancyCasings` that throw casings and the empty en-bloc clip with simple physics
+
+* Official Modern Warfare, WW2 and Zombie guns with identifiable iron sights use geometry-derived vertical ADS offsets, preserving existing X/Z offsets and prioritizing the 1.7.10 view frame
+
+* Official gun models use the original 1.12.2 sources where appropriate; `FirstPersonFrame 1.12.2` is retained for models requiring the legacy frame correction, while Z-centered Modern Warfare models and WW2 Type 100 use the default 1.7.10 authored frame; G43, Kar98k, Kar98kSniper, MG34, Thompson, Greasegun, BAR, TrenchGun, Luger, STG44, Springfield and Springfield Sniper use centered model Z placement with matching muzzle flashes and the default 1.7.10 authored frame; Springfield geometry is recentered to match the sniper rifle in third person; both variants use zero third-person Z offsets and geometry-derived `animAimOffset` corrections for horizontal ADS alignment
 * Added a crafting-table recipe for the Manus Ships German 20 cm Ship Gun used by Prinz Eugen
 
 * Modern Warfare teams gain dedicated marksman, shotgun, anti-tank, ammunition bearer, demolition, MP5, HK416, MP7, AK74, RPK and pistol-and-shield loadouts, including suppressed MP5 and balaclava variants

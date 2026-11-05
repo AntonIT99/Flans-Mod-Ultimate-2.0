@@ -701,9 +701,10 @@ public final class ClientHudOverlays
         for (InteractionHand hand : InteractionHand.values())
         {
             ItemStack stack = player.getItemInHand(hand);
-            if (stack.isEmpty() || !(stack.getItem() instanceof GunItem gunItem))
+            if (!isAmmoHudGun(stack))
                 continue;
 
+            GunItem gunItem = (GunItem) stack.getItem();
             GunType gunType = gunItem.getConfigType();
 
             EnumFireMode currentMode = gunType.getFireMode(stack);
@@ -797,6 +798,11 @@ public final class ClientHudOverlays
         }
     }
 
+    private static boolean isAmmoHudGun(ItemStack stack)
+    {
+        return !stack.isEmpty() && stack.getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isBayonetMode(stack);
+    }
+
     private static void renderLegacyPlayerAmmo(GuiGraphics g, int sw, int sh, EnumAmmoHudLayout layout)
     {
         Minecraft mc = Minecraft.getInstance();
@@ -817,6 +823,8 @@ public final class ClientHudOverlays
     private static void renderLegacyAmmoHand(GuiGraphics g, Font font, ItemStack gunStack, GunItem gunItem, InteractionHand hand, EnumAmmoHudLayout layout, int sw, int sh)
     {
         GunType gunType = gunItem.getConfigType();
+        if (gunType.isBayonetMode(gunStack))
+            return;
         EnumAmmoHudLayout.Placement placement = layout.placement(hand);
         int x = 0;
 
@@ -1158,6 +1166,14 @@ public final class ClientHudOverlays
             }
         }
 
+        if (driveable.getConfigType().getOverheatLimit() > 0)
+        {
+            int heatPercent = (int) Math.min(100L, 100L * driveable.getWeaponHeat() / driveable.getConfigType().getOverheatLimit());
+            Component heatText = driveable.isWeaponOverheated() ? Component.translatable("hud.flansmodultimate.driveable.overheated")
+                : Component.translatable("hud.flansmodultimate.driveable.heat", heatPercent);
+            g.drawString(font, heatText, leftX, y, driveable.isWeaponOverheated() ? 0xFF5555 : HUD_WHITE, false);
+            y += LEGACY_HUD_LINE_HEIGHT;
+        }
         int throttlePercent = DriveableControlPhysics.throttlePercent(driveable.getThrottle());
         double speed = ModClientConfig.get().driveableSpeedUnit.convert(driveable.getDeltaMovement().length() * 20D);
         Component throttleText = driveable.isEngineActive()
@@ -1230,6 +1246,8 @@ public final class ClientHudOverlays
         boolean canSwitchAmmo = atDriverControls
             && (EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(driveable.getConfigType().weaponType(false)) || EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(driveable.getConfigType().weaponType(true)));
         Component switchAmmoText = Component.translatable("hud.flansmodultimate.driveable.switch_ammo", KeyInputHandler.getPreferredAmmoKeyName());
+        Component nextAmmoName = canSwitchAmmo ? driveable.getNextAmmoName() : Component.empty();
+        Component nextAmmoText = nextAmmoName.getString().isEmpty() ? null : Component.translatable("hud.flansmodultimate.driveable.next_ammo", nextAmmoName);
         String idleSmokeKey = driveable.isCountermeasureReloading() ? "hud.flansmodultimate.driveable.smoke.reloading" : "hud.flansmodultimate.driveable.smoke.ready";
         Component smokeText = Component.translatable(driveable.isVarFlare() ? "hud.flansmodultimate.driveable.smoke.deploying" : idleSmokeKey);
         int idleSmokeColor = driveable.isCountermeasureReloading() ? HUD_GOLD : HUD_GREEN;
@@ -1243,6 +1261,8 @@ public final class ClientHudOverlays
         int rightWidth = maxWidth(font, yawText, pitchText, smokeText, ammoHeading, rollText, altitudeText, compassText);
         if (canSwitchAmmo)
             rightWidth = Math.max(rightWidth, font.width(switchAmmoText));
+        if (nextAmmoText != null)
+            rightWidth = Math.max(rightWidth, font.width(nextAmmoText));
         if (weaponArmingText != null)
             rightWidth = Math.max(rightWidth, font.width(weaponArmingText));
         for (OrdnanceLine line : ordnanceLines)
@@ -1274,6 +1294,8 @@ public final class ClientHudOverlays
                 g.drawString(font, ammoName, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_AMMO_GREEN, false);
         }
 
+        if (nextAmmoText != null)
+            g.drawString(font, nextAmmoText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_GOLD, false);
         if (canSwitchAmmo)
             g.drawString(font, switchAmmoText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine, HUD_WHITE, false);
 

@@ -8,6 +8,7 @@ Icon SG550
 Colour 255 255 255
 DeployedModel None
 Model mw.SG550
+animAimOffset 0 3.16071053 0
 Texture SG550
 ModelScale 0.18
 Paintjob sg550_stoic_blue sg550_stoic_blue blue 3

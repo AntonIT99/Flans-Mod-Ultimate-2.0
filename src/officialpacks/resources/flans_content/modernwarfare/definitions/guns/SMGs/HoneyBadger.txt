@@ -8,6 +8,7 @@ Icon HoneyBadger
 Colour 255 255 255
 DeployedModel None
 Model mw.HoneyBadger
+animAimOffset 0 7.48858342 0
 Texture HoneyBadger
 ModelScale 0.18
 Paintjob honeybadger_stoic_blue honeybadger_stoic_blue blue 3

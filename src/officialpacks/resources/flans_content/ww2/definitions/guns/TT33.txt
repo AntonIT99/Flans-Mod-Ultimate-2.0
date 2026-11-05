@@ -7,6 +7,7 @@ Icon TT33
 Colour 255 255 255
 DeployedModel None
 Model ww2.TT33
+animAimOffset 0 1.02159665 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.05469 0.52734 0

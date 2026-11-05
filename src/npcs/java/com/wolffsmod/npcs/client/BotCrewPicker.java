@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Chooses the class that crews one kind of seat of a team's vehicles: one of its classes, any class by the class
+ * Chooses the classes that crew one kind of seat of a team's vehicles: selected classes, any class by the class
  * weights, or nobody. Client side.
  */
 final class BotCrewPicker extends BotClassPicker
@@ -22,8 +22,9 @@ final class BotCrewPicker extends BotClassPicker
     private final CrewPost post;
     private final String scope;
     private final boolean crewsOn;
-    /** The choice as the editor shows it: a class, {@code any} or {@code none}. */
-    private String chosen;
+    /** Exclusive mode, or empty when individual classes are selected. */
+    private String mode;
+    private final List<String> chosen = new ArrayList<>();
 
     BotCrewPicker(BotEditorScreen editor, Screen parent, String team, BotSettings.TeamForce force, String scope, CrewPost post, boolean crewsOn)
     {
@@ -34,7 +35,8 @@ final class BotCrewPicker extends BotClassPicker
         this.scope = scope;
         this.crewsOn = crewsOn;
         String value = force.crewClass(scope, post);
-        chosen = value == null ? INHERIT : BotSettingsText.crewClass(value);
+        chosen.addAll(BotSettingsText.crewClasses(value));
+        mode = chosen.isEmpty() ? (value == null ? INHERIT : BotSettingsText.crewClass(value)) : "";
         setChoices(crewChoices());
     }
 
@@ -45,27 +47,33 @@ final class BotCrewPicker extends BotClassPicker
             choices.add(new Choice(INHERIT, Component.translatable(PREFIX + "crew.inherit"), List.of(Component.translatable(PREFIX + "crew.inherit.tip")), false));
         choices.add(new Choice(BotSettingsText.ANY_CLASS, Component.translatable(PREFIX + "crew.any"), List.of(Component.translatable(PREFIX + "crew.any.tip")), false));
         choices.add(new Choice(BotSettings.TeamForce.NO_CREW, Component.translatable(PREFIX + "crew.none"), List.of(Component.translatable(PREFIX + "crew.none.tip")), false));
-        boolean named = !chosen.equals(INHERIT) && !chosen.equals(BotSettingsText.ANY_CLASS) && !chosen.equalsIgnoreCase(BotSettings.TeamForce.NO_CREW);
-        choices.addAll(classChoices(named ? List.of(chosen) : List.of()));
+        choices.addAll(classChoices(chosen));
         return choices;
     }
 
     @Override
     protected boolean isChosen(Choice choice)
     {
-        return choice.id().equalsIgnoreCase(chosen);
+        return choice.id().equalsIgnoreCase(mode) || chosen.contains(choice.id());
     }
 
     @Override
     protected void clicked(Choice choice)
     {
-        chosen = choice.id();
-    }
-
-    @Override
-    protected boolean doubleClickIsDone()
-    {
-        return true;
+        String id = choice.id();
+        if (INHERIT.equals(id) || BotSettingsText.ANY_CLASS.equals(id) || BotSettings.TeamForce.NO_CREW.equals(id))
+        {
+            chosen.clear();
+            mode = id;
+        }
+        else
+        {
+            mode = "";
+            if (!chosen.remove(id))
+                chosen.add(id);
+            if (chosen.isEmpty())
+                mode = BotSettingsText.ANY_CLASS;
+        }
     }
 
     @Override
@@ -80,6 +88,6 @@ final class BotCrewPicker extends BotClassPicker
     @Override
     protected void apply()
     {
-        force.setCrewClass(scope, post, INHERIT.equals(chosen) ? null : BotSettingsText.parseCrewClass(chosen));
+        force.setCrewClass(scope, post, INHERIT.equals(mode) ? null : mode.isEmpty() ? String.join("|", chosen) : BotSettingsText.parseCrewClass(mode));
     }
 }

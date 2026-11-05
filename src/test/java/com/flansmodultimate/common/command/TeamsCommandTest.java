@@ -66,6 +66,11 @@ class TeamsCommandTest
         assertRuns("teams bodyPartDamageModifiers false");
         assertRuns("teams bloodEffects true");
         assertRuns("teams bloodEffects false");
+        assertRuns("teams corpses true");
+        assertRuns("teams corpseLife 0");
+        assertRuns("teams corpseLife 300");
+        assertRuns("teams bloodLife 120");
+        assertTrue(parse("teams bloodLife 3601").getReader().canRead());
         assertRuns("teams playerHealth 40");
         assertRuns("teams botHealth 80");
         assertRuns("teams playerHealth 0");

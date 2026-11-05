@@ -133,6 +133,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected EnumWeaponType secondary = EnumWeaponType.NONE;
     /** Opt-in for the built-in three-frame flash on every fired gun or shell muzzle. */
     protected boolean defaultMuzzleFlash;
+    protected boolean shellMuzzleFlash;
     protected boolean alternatePrimary;
     protected boolean alternateSecondary;
     protected float shootDelayPrimary = -1F;
@@ -151,6 +152,14 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected EnumFireMode modeSecondary = EnumFireMode.FULLAUTO;
     protected String shootSoundPrimary = StringUtils.EMPTY;
     protected String shootSoundSecondary = StringUtils.EMPTY;
+    protected String distantShootSoundPrimary = StringUtils.EMPTY;
+    protected String distantShootSoundSecondary = StringUtils.EMPTY;
+    protected int distantSoundRange = 200;
+    /** Zero disables weapon overheating for legacy packs that do not opt in. */
+    protected int overheatLimit;
+    protected int overheatPenalty = 75;
+    protected int coolingBonus = 1;
+    protected String overheatSound = StringUtils.EMPTY;
     /** Legacy generic and weapon-type sounds used when a bank has no explicit modern sound. */
     protected String shootSound = StringUtils.EMPTY;
     protected String shellSound = StringUtils.EMPTY;
@@ -206,8 +215,19 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean filterAmmunition;
     protected boolean worksUnderWater;
 
-    public record ShootParticle(String name, float x, float y, float z)
-    {}
+    public record ShootParticle(String name, float x, float y, float z, float forward, float up)
+    {
+        public ShootParticle
+        {
+            if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z) || !Float.isFinite(forward) || !Float.isFinite(up))
+                throw new IllegalArgumentException("Non-finite shooting particle");
+        }
+
+        public ShootParticle(String name, float x, float y, float z)
+        {
+            this(name, x, y, z, 0F, 0F);
+        }
+    }
     protected final List<ShootParticle> shootParticlesPrimary = new ArrayList<>();
     protected final List<ShootParticle> shootParticlesSecondary = new ArrayList<>();
     private final Map<Integer, List<ShootParticle>> shootParticlesPassenger = new HashMap<>();
@@ -384,6 +404,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean fixedSecondaryFire;
     protected Vector3f secondaryFireAngle = new Vector3f();
     protected boolean setPlayerInvisible;
+    protected boolean setPlayerInvisibleOnDoorOpen;
+    protected boolean setPlayerInvisibleOnDoorClose;
     protected float maxThrottleInWater = 0.5F;
     protected int maxDepth = 3;
     protected final List<Vector3f> leftTrackPoints = new ArrayList<>();
@@ -560,6 +582,21 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readSeatVectorLines("RotatedPassengerOffset", file, SeatInfo::setRotatedOffset, true);
         readSeatVectorLines("PassengerAimSpeed", file, SeatInfo::setAimingSpeed, false);
         readSeatVectorLines("GunOrigin", file, SeatInfo::setGunOrigin, true);
+        readSeatBooleanLines("invisiblePassenger", file, SeatInfo::setInvisiblePassenger);
+        readSeatBooleanLines("SetPassengerInvisible", file, SeatInfo::setInvisiblePassenger);
+        readSeatIntLines("barrels", file, (seat, count) -> seat.setAuthoredBarrels(Math.max(1, Math.min(64, count))));
+        readSeatIntLines("SeatGuns", file, (seat, count) -> seat.setAuthoredBarrels(Math.max(1, Math.min(64, count))));
+        readSeatBooleanLines("PassengerHasParticles", file, SeatInfo::setPassengerHasParticles);
+        for (String key : List.of("barrelSpread", "SeatGunSpread"))
+            forEachLine(key, file, 2, values ->
+            {
+                SeatInfo seat = getSeat(Integer.parseInt(values[0]));
+                float value = Float.parseFloat(values[1]);
+                if (seat != null && Float.isFinite(value))
+                {
+                    seat.setBarrelSpread(value);
+                }
+            });
         readSeatBooleanLines("PassengerLegacyAiming", file, SeatInfo::setLegacyAiming);
         readSeatBooleanLines("PassengerYawBeforePitch", file, SeatInfo::setYawBeforePitch);
         readSeatBooleanLines("PassengerLatePitch", file, SeatInfo::setLatePitch);
@@ -728,6 +765,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         primary = EnumWeaponType.parse(readOptionalValue("Primary", primary.name(), file), primary);
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);
         defaultMuzzleFlash = "DefaultFlash".equalsIgnoreCase(readValue("FlashModel", StringUtils.EMPTY, file));
+        shellMuzzleFlash = readValue("ShellMuzzleFlash", shellMuzzleFlash, file);
         damageMultiplierPrimary = readValue("DamageMultiplierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DamageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
@@ -760,7 +798,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         bulletSpread = readValue("BulletSpread", bulletSpread, file);
         rangingGun = readValue("RangingGun", rangingGun, file);
         recoilTime = Math.max(0F, readValue("RecoilTime", recoilTime, file));
-        fancyScreenShake = readValue("FancyScreenShake", fancyScreenShake, file);
+        float legacyRecoil = Math.max(0F, Math.min(599F, readValue("cannonRecoil", 0F, file)));
+        if (!Float.isFinite(legacyRecoil))
+            legacyRecoil = 0F;
+        fancyScreenShake = readValue("FancyScreenShake", legacyRecoil > 0F || fancyScreenShake, file);
+        fancyScreenShakePrimaryIntensity = legacyRecoil > 0F ? legacyRecoil : fancyScreenShakePrimaryIntensity;
         coaxRecoil = readValue("CoaxRecoil", coaxRecoil, file);
         fancyScreenShakePrimaryIntensity = Math.max(0F, readValue("FancyScreenShakePrimaryIntensity", fancyScreenShakePrimaryIntensity, file));
         fancyScreenShakePrimaryDuration = Math.max(0F, readValue("FancyScreenShakePrimaryDuration", fancyScreenShakePrimaryDuration, file));
@@ -780,11 +822,24 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>())
                     .add(new ShootParticle(values[1], Float.parseFloat(values[2]), Float.parseFloat(values[3]), Float.parseFloat(values[4])));
         });
+        forEachLine("PassengerShootParticles", file, 7, values ->
+        {
+            int seat = Integer.parseInt(values[0]);
+            if (seat > 0 && getSeat(seat) != null && getSeat(seat).isPassengerHasParticles())
+                shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>()).add(new ShootParticle(values[1],
+                    Float.parseFloat(values[4]), Float.parseFloat(values[5]), Float.parseFloat(values[6]), Float.parseFloat(values[2]), Float.parseFloat(values[3])));
+        });
         readLegacyGuns(file);
         readLegacyWeaponPosition("BombPosition", EnumDriveablePart.CORE, EnumWeaponType.BOMB, file);
         readLegacyWeaponPosition("BarrelPosition", EnumDriveablePart.TURRET, EnumWeaponType.SHELL, file);
+        // 1.7.10 fires a bank's mounted guns whatever weapon type the bank declares, so a definition naming guns in
+        // ShootPointPrimary/Secondary without a Primary/Secondary line still fires them; treat such a bank as a gun bank.
+        primary = inferGunBank(primary, shootPointsPrimary);
+        secondary = inferGunBank(secondary, shootPointsSecondary);
 
         setPlayerInvisible = readValue("SetPlayerInvisible", setPlayerInvisible, file);
+        setPlayerInvisibleOnDoorOpen = readValue("SetPlayerInvisibleOnDoorOpen", setPlayerInvisibleOnDoorOpen, file);
+        setPlayerInvisibleOnDoorClose = readValue("SetPlayerInvisibleOnDoorClose", setPlayerInvisibleOnDoorClose, file);
         it1 = readValue("IT1", it1, file);
         fixedPrimaryFire = readValue("FixedPrimary", fixedPrimaryFire, file);
         fixedSecondaryFire = readValue("FixedSecondary", fixedSecondaryFire, file);
@@ -935,6 +990,14 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         exitSound = readSound("ExitSound", exitSound, file);
         backSound = readSound("BackSound", backSound, file);
         shootSound = readSound("ShootSound", shootSound, file);
+        overheatLimit = Math.max(0, readValue("OverheatLimit", overheatLimit, file));
+        overheatPenalty = Math.max(0, readValue("OverheatPenalty", overheatPenalty, file));
+        coolingBonus = Math.max(0, readValue("CoolingBonus", coolingBonus, file));
+        overheatSound = readSound("OverheatSound", overheatSound, file);
+        distantShootSoundPrimary = aliasSound(distantShootSoundPrimary, file, "farSound", "DistantSoundPrimary");
+        distantShootSoundSecondary = readSound("DistantSoundSecondary", distantShootSoundSecondary, file);
+        distantSoundRange = readValue("DistantSoundRange", distantSoundRange, file);
+        distantSoundRange = readValue("farSoundRange", distantSoundRange, file);
         shellSound = readSound("ShellSound", shellSound, file);
         bombSound = readSound("BombSound", bombSound, file);
         shootSoundPrimary = aliasSound(shootSoundPrimary, file, "ShootMainSound", "ShootSoundPrimary");
@@ -1407,7 +1470,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public boolean applyMeasuredGunOrigin(int seatIndex, Vector3f modelPixels)
     {
         SeatInfo seat = getSeat(seatIndex);
-        if (seat == null || seat.getGunType() == null)
+        if (seat == null || seat.getGunType() == null || seat.getAuthoredBarrels() > 0)
             return false;
         seat.setGunOrigin(new Vector3f(modelPixels.x / 16F, modelPixels.y / 16F, modelPixels.z / 16F));
         return true;
@@ -1635,6 +1698,17 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return null;
     }
 
+    public boolean hidesOccupants(boolean doorsOpen)
+    {
+        return setPlayerInvisible || (doorsOpen ? setPlayerInvisibleOnDoorOpen : setPlayerInvisibleOnDoorClose);
+    }
+
+    public boolean hidesOccupants(boolean doorsOpen, int seatIndex)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        return hidesOccupants(doorsOpen) || seat != null && seat.isInvisiblePassenger();
+    }
+
     public String shootSound(boolean secondaryWeapon)
     {
         String bankSound = secondaryWeapon ? shootSoundSecondary : shootSoundPrimary;
@@ -1803,6 +1877,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
+    }
+
+    static EnumWeaponType inferGunBank(EnumWeaponType declared, List<ShootPoint> points)
+    {
+        if (declared == EnumWeaponType.NONE && points.stream().anyMatch(point -> point.getRootPos() instanceof PilotGun))
+            return EnumWeaponType.GUN;
+        return declared;
     }
 
     private void readLegacyGuns(TypeFile file)

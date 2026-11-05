@@ -8,6 +8,7 @@ Icon FAMAS
 Colour 255 255 255
 DeployedModel None
 Model mw.FAMAS
+animAimOffset 0 2.88362794 0
 Texture FAMAS
 ModelScale 0.18
 Paintjob famas_stoic_blue famas_stoic_blue blue 3

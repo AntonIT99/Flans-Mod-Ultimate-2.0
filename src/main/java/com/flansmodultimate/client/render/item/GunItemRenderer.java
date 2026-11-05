@@ -5,17 +5,23 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.AimOffsetDebugCommand;
+import com.flansmodultimate.client.debug.ThirdPersonOffsetDebugCommand;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.WeaponShotEffects;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.PoseScaling;
+import com.flansmodultimate.client.render.effects.FirstPersonGunEffects;
 import com.flansmodultimate.client.render.effects.MuzzleFlashRenderer;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.common.guns.*;
+import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.common.types.keyframe.EnumKeyframeBone;
+import com.flansmodultimate.common.types.keyframe.GunKeyframeConfig;
+import com.flansmodultimate.common.types.keyframe.KeyframeAnimation;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -136,13 +142,15 @@ public final class GunItemRenderer
 
         boolean firstPerson = ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
         boolean firstPersonRight = ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+        // Keyframe animations play in first person only, like in Tyrants and Plebeians
+        GunKeyframeAnimator.Frame keyframes = firstPerson ? GunKeyframeAnimator.frame(model, animations, stack, ClientPlatform.partialTick()) : null;
         poseStack.pushPose();
         if (firstPerson)
         {
-            handleGunRecoil(model, animations, stack, poseStack);
+            applyFirstPersonRecoil(model, animations, stack, firstPersonRight, poseStack);
 
             if (firstPersonRight)
-                renderFirstPersonArm(model, animations, poseStack, buffer, packedLight);
+                renderFirstPersonArm(model, animations, keyframes, poseStack, buffer, packedLight);
 
             // This allows you to offset your gun with a sight attached to properly align the aiming reticle
             AttachmentType scopeAttachment = model.getType().getScope(stack);
@@ -163,24 +171,81 @@ public final class GunItemRenderer
             var consumer = GpuModelCache.begin(buffer, renderPass, gunTexture, translucent, cull, ctx != ItemDisplayContext.GUI && !stack.hasFoil());
             try
             {
-                renderGunAndComponents(model, stack, animations, numRounds, poseStack, consumer, packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+                renderGunAndComponents(model, stack, animations, keyframes, numRounds, poseStack, consumer, packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
             }
             finally
             {
                 GpuModelCache.end(consumer);
             }
         }
-        if (firstPersonRight)
-            renderAnimArm(model, animations, poseStack, buffer, packedLight);
-        renderAttachmentAmmo(model, stack, animations, numRounds, poseStack, buffer, packedLight, packedOverlay);
-        renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
+        renderScaledEffects(model, stack, animations, keyframes, numRounds, firstPerson, firstPersonRight, poseStack, buffer, packedLight, packedOverlay);
         poseStack.popPose();
 
         // Attachments apply the gun's model scale themselves, but must still follow the recoil and sight offset
-        renderCustomAttachments(model, stack, animations, poseStack, buffer, packedLight, packedOverlay);
+        renderUnscaledEffects(model, stack, animations, keyframes, numRounds, firstPerson, gunTexture, poseStack, buffer, packedLight, packedOverlay);
         poseStack.popPose();
+        renderChamberSmoke(model, stack, animations, firstPerson, poseStack, buffer, packedLight);
 
         renderFlash(model, stack, animations, ctx, poseStack, buffer, packedOverlay);
+    }
+
+    /** Arm, attachment ammo, muzzle smoke and casing ejection, drawn in the gun's scaled space. */
+    @SuppressWarnings("java:S107") // Matches the other render helpers, which pass the render state explicitly
+    private static void renderScaledEffects(ModelGun model, ItemStack stack, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, int numRounds, boolean firstPerson,
+        boolean firstPersonRight, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    {
+        if (firstPersonRight)
+            renderAnimArm(model, animations, keyframes, poseStack, buffer, packedLight);
+        renderAttachmentAmmo(model, stack, animations, numRounds, poseStack, buffer, packedLight, packedOverlay);
+        renderMuzzleSmoke(model, stack, animations, firstPerson, poseStack, buffer, packedLight);
+        if (!firstPerson || !model.isFancyCasings())
+            renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
+    }
+
+    /** Custom attachments and fancy casings, drawn outside the gun's scaled space. */
+    @SuppressWarnings("java:S107") // Matches the other render helpers, which pass the render state explicitly
+    private static void renderUnscaledEffects(ModelGun model, ItemStack stack, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, int numRounds, boolean firstPerson,
+        ResourceLocation gunTexture, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    {
+        renderCustomAttachments(model, stack, animations, keyframes, poseStack, buffer, packedLight, packedOverlay);
+        if (firstPerson && model.isFancyCasings())
+            renderFancyCasings(model, stack, animations, numRounds, gunTexture, poseStack, buffer, packedLight);
+    }
+
+    /** Tyrants and Plebeians muzzle smoke: a puff per shot that stays on the muzzle, in the gun's scaled space (first person only). */
+    private static void renderMuzzleSmoke(ModelGun model, ItemStack stack, GunAnimations animations, boolean firstPerson, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    {
+        if (!firstPerson || model.getType().getSecondaryFire(stack))
+            return;
+        if (animations.consumeMuzzleSmoke())
+        {
+            AttachmentType barrel = model.getType().getBarrel(stack);
+            ModelAttachment barrelModel = barrel != null && ModelCache.getOrLoadTypeModel(barrel) instanceof ModelAttachment attachment ? attachment : null;
+            FirstPersonGunEffects.spawnMuzzleSmoke(model, animations, MuzzleFlashRenderer.muzzlePosition(model, barrelModel, StringUtils.isNotBlank(model.getType().getFlashModelClassName())));
+        }
+        if (model.isHasSmoke())
+            FirstPersonGunEffects.renderMuzzleSmoke(animations, poseStack, buffer, packedLight);
+    }
+
+    /** Tyrants and Plebeians chamber smoke: puffs that drift away from the chamber after each shot (first person only). */
+    private static void renderChamberSmoke(ModelGun model, ItemStack stack, GunAnimations animations, boolean firstPerson, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    {
+        if (!firstPerson)
+            return;
+        if (animations.consumeChamberSmoke() && !model.getType().getSecondaryFire(stack))
+            FirstPersonGunEffects.spawnChamberSmoke(model);
+        if (model.isHasChamberSmoke() && !model.getType().getSecondaryFire(stack))
+            FirstPersonGunEffects.renderDetachedSmoke(poseStack, buffer, packedLight);
+    }
+
+    /** Tyrants and Plebeians {@code fancyCasings}: casings, and the en-bloc clip with the last round, thrown with simple physics. */
+    @SuppressWarnings("java:S107") // Matches the other render helpers, which pass the render state explicitly
+    private static void renderFancyCasings(ModelGun model, ItemStack stack, GunAnimations animations, int numRounds, ResourceLocation gunTexture, PoseStack poseStack, MultiBufferSource buffer,
+        int packedLight)
+    {
+        if (animations.consumeCasing() && ModClientConfig.get().showCasingEjections && model.getType().isEjectCasings() && !model.getType().getSecondaryFire(stack))
+            FirstPersonGunEffects.spawnCasing(model, animations, numRounds, gunTexture);
+        FirstPersonGunEffects.renderCasings(poseStack, buffer, packedLight);
     }
 
     private static boolean shouldRenderGun(ModelGun model, ItemDisplayContext itemDisplayContext, ItemStack item)
@@ -224,7 +289,8 @@ public final class GunItemRenderer
         poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
         poseStack.translate(0.75F, -0.22F, -0.08F);
         PoseScaling.scale(poseStack, 1F, 1F, -1F);
-        poseStack.translate(model.getThirdPersonOffset().x, model.getThirdPersonOffset().y, model.getThirdPersonOffset().z);
+        Vector3f thirdPersonOffset = ThirdPersonOffsetDebugCommand.resolve(model);
+        poseStack.translate(thirdPersonOffset.x, thirdPersonOffset.y, thirdPersonOffset.z);
 
         if (ModClientConfig.get().enableGunAnimationsInThirdPerson)
         {
@@ -247,24 +313,66 @@ public final class GunItemRenderer
 
         // The left gun mirrors the right one, which also brings its sights to the center while aiming
         LegacyHeldItemFrames.beginHand(poseStack, leftHand);
-        LegacyHeldItemFrames.firstPerson(poseStack);
-
-        // 1.7.10 RenderGun resting and aiming movement
-        poseStack.mulPose(Axis.ZP.rotationDegrees(25F - 5F * adsSwitch));
-        poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
-        poseStack.translate(0.15F, 0.2F + 0.175F * adsSwitch, -0.6F - 0.405F * adsSwitch);
-        if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
+        EnumGunFirstPersonFrame frame = AimOffsetDebugCommand.resolveFrame();
+        if (frame == EnumGunFirstPersonFrame.FLANS_TAP)
         {
-            poseStack.translate(-0.3F * adsSwitch, 0F, 0F);
+            // Tyrants and Plebeians (Labjac fork) RenderGun frame (1.7.10 base, retuned; its per-model offsets are zero here)
+            LegacyHeldItemFrames.firstPerson(poseStack);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(25F - 5F * adsSwitch));
+            poseStack.mulPose(Axis.XP.rotationDegrees(-5F));
+            poseStack.mulPose(Axis.XP.rotationDegrees(5F));
+            poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
+            poseStack.translate(0F, -0.03F * adsSwitch, 0F);
+            poseStack.translate(0.15F, 0.2F + 0.205F * adsSwitch, -0.8F - 0.205F * adsSwitch);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
+            poseStack.translate(model.getCrouchZoom() * adsSwitch, -0.03F * adsSwitch, 0F);
+            if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
+                poseStack.translate(-0.35F * adsSwitch, -0.05F * adsSwitch, 0F);
         }
-        poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
-        poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
+        else if (frame == EnumGunFirstPersonFrame.FLANS_1122)
+        {
+            // Flan's Mod 1.12.2 RenderGun first-person frame (no Forge 1.5x equipped-item frame)
+            poseStack.mulPose(Axis.YP.rotationDegrees(45F));
+            poseStack.scale(0.4F, 0.4F, 0.4F);
+            poseStack.mulPose(Axis.YP.rotationDegrees(45F));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(-5F * adsSwitch));
+            poseStack.translate(-1F, 0.675F + 0.180F * adsSwitch, -1F - 0.395F * adsSwitch);
+            if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
+                poseStack.translate(-0.7F * adsSwitch, -0.12F * adsSwitch, -0.05F * adsSwitch);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
+            poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
+        }
+        else
+        {
+            LegacyHeldItemFrames.firstPerson(poseStack);
+
+            // 1.7.10 RenderGun resting and aiming movement
+            poseStack.mulPose(Axis.ZP.rotationDegrees(25F - 5F * adsSwitch));
+            poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
+            poseStack.translate(0.15F, 0.2F + 0.175F * adsSwitch, -0.6F - 0.405F * adsSwitch);
+            if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
+                poseStack.translate(-0.3F * adsSwitch, 0F, 0F);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
+            poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
+        }
+
+        // Keep sights authored for another placement centred sideways while aiming
+        poseStack.translate(0F, 0F, frame.aimZCorrectionFrom(AimOffsetDebugCommand.authoredFrame(model)) * adsSwitch);
+
         Vector3f aimOffset = AimOffsetDebugCommand.resolve(model);
         float aimOffsetScale = aimProgress * model.getType().getModelScale() / 16F;
         poseStack.translate(aimOffset.x * aimOffsetScale, aimOffset.y * aimOffsetScale, aimOffset.z * aimOffsetScale);
 
-        renderWeaponSwitchMovement(animations, poseStack);
-        if (model.getType().isSecondarySwitchMovement())
+        com.flansmod.common.vector.Vector3f sightOffset = model.getType().getIronSightOffset();
+        poseStack.translate(sightOffset.x, sightOffset.y, sightOffset.z);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(model.getType().getIronSightPitch() * aimProgress));
+
+        GunKeyframeConfig keyframes = model.getType().getKeyframes();
+        // A keyframe draw animation replaces the legacy weapon switch movement
+        if (!keyframes.isEnabled() || !GunKeyframeAnimator.isSwitching(keyframes, animations))
+            renderWeaponSwitchMovement(animations, poseStack);
+        // A keyframe secondary-mode switch replaces the legacy dip
+        if (model.getType().isSecondarySwitchMovement() && !(keyframes.isEnabled() && GunKeyframeAnimator.isSecondarySwitching(model, animations, stack)))
         {
             float movement = GunHandlingTiming.switchMovement(animations.getSecondarySwitchRemaining(), animations.getSecondarySwitchLength(), ClientPlatform.partialTick());
             poseStack.translate(0D, -0.1D * movement, 0D);
@@ -274,7 +382,17 @@ public final class GunItemRenderer
         renderMeleeMovement(model.getType(), animations, poseStack);
         renderLookAtGunMovement(animations, poseStack);
         renderSpinningCocking(model, animations, poseStack);
-        renderReloadMovement(model, animations, stack, poseStack);
+        if (keyframes.isEnabled())
+        {
+            // Keyframe draw and reload animations replace the legacy reload movement
+            GunKeyframeAnimator.Playback playback = GunKeyframeAnimator.playback(keyframes, model, animations, stack, ClientPlatform.partialTick());
+            if (playback != null)
+                GunKeyframeAnimator.applyGun(poseStack, playback, model.getType().getModelScale());
+        }
+        else
+        {
+            renderReloadMovement(model, animations, stack, poseStack);
+        }
         LegacyHeldItemFrames.endHand(poseStack, leftHand);
     }
 
@@ -294,7 +412,10 @@ public final class GunItemRenderer
 
     private static void renderSprintingMovement(ModelGun model, GunAnimations animations, boolean sprinting, PoseStack poseStack)
     {
-        if (sprinting && animations.getStanceTimer() == 0 && ModClientConfig.get().enableWeaponSprintStance)
+        boolean timed = model.getType().getRunPosTime() >= 0F;
+        float timedProgress = Mth.lerp(ClientPlatform.partialTick(), animations.getLastSprintTransitionProgress(), animations.getSprintTransitionProgress());
+        boolean visible = timed ? timedProgress > 0F && model.isFancyStance() : sprinting && animations.getStanceTimer() == 0;
+        if (visible && ModClientConfig.get().enableWeaponSprintStance)
         {
             if (animations.getRunningStanceAnimationProgress() == 0F)
                 animations.setRunningStanceAnimationProgress(1F);
@@ -306,6 +427,8 @@ public final class GunItemRenderer
             float progress = (animations.getRunningStanceAnimationProgress() + frameTime) / animations.getRunningStanceAnimationLength();
             if (animations.getRunningStanceAnimationProgress() == animations.getRunningStanceAnimationLength())
                 progress = 1;
+            if (timed)
+                progress = timedProgress;
 
             Vector3f translateToUse = VEC3_SPRINT_DEFAULT_TRANSLATE;
             Vector3f rotationToUse = VEC3_SPRINT_DEFAULT_ROTATION;
@@ -502,6 +625,40 @@ public final class GunItemRenderer
         }
     }
 
+    private static void applyFirstPersonRecoil(ModelGun model, GunAnimations animations, ItemStack stack, boolean rightHand, PoseStack poseStack)
+    {
+        if (!playShootAnimation(model, animations, rightHand, poseStack))
+            handleGunRecoil(model, animations, stack, poseStack);
+    }
+
+    /**
+     * Plays the keyframe shoot animation in place of the legacy recoil movement, using the aiming variant while aimed.
+     *
+     * @return false when the gun has no shoot animation and recoils the legacy way
+     */
+    private static boolean playShootAnimation(ModelGun model, GunAnimations animations, boolean rightHand, PoseStack poseStack)
+    {
+        GunKeyframeConfig keyframes = model.getType().getKeyframes();
+        KeyframeAnimation shoot = keyframes.isEnabled() ? keyframes.getAnimation(keyframes.getShootAnimation()) : null;
+        if (shoot == null)
+            return false;
+
+        boolean aimed = isScopeGun(!rightHand) && ModClient.getZoomProgress() > 0.5F;
+        KeyframeAnimation aimingShoot = keyframes.getAnimation(keyframes.getAimingShootAnimation());
+        float smoothing = ClientPlatform.partialTick();
+        float progress = animations.getLastKeyframeRecoilProgress() + (animations.getKeyframeRecoilProgress() - animations.getLastKeyframeRecoilProgress()) * smoothing;
+        GunKeyframeAnimator.apply(poseStack, aimed && aimingShoot != null ? aimingShoot : shoot, EnumKeyframeBone.GUN, progress, true, 1F, null);
+
+        // Keep the legacy pump tilt once the shot has played out
+        if (model.getAnimationType() == EnumAnimationType.SHOTGUN && !animations.isReloading() && progress >= 1F)
+        {
+            float pumped = animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * smoothing;
+            poseStack.mulPose(Axis.YP.rotationDegrees(-(1 - Math.abs(pumped)) * -5F));
+            poseStack.mulPose(Axis.XP.rotationDegrees(-(1 - Math.abs(pumped)) * 5F));
+        }
+        return true;
+    }
+
     private static void handleGunRecoil(ModelGun model, GunAnimations animations, ItemStack stack, PoseStack poseStack)
     {
         float recoilDistance = getRecoilDistance(model, stack);
@@ -554,8 +711,8 @@ public final class GunItemRenderer
     }
 
     /** Render the gun and default attachment models */
-    private static void renderGunAndComponents(ModelGun model, ItemStack stack, GunAnimations animations, int numRounds, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
-        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderGunAndComponents(ModelGun model, ItemStack stack, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, int numRounds, PoseStack poseStack,
+        VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
 
@@ -587,16 +744,23 @@ public final class GunItemRenderer
             model.render(model.getDefaultGadgetModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         renderBulletCounterModels(model, numRounds, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderSlideModels(model, stack, animations, slideAttachment, scopeAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderBreakAction(model, scopeAttachment, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderHammer(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderPumpAction(model, animations, pumpAttachment, gripAttachment, gadgetAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderBoltAction(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderSlideModels(model, stack, animations, keyframes, slideAttachment, scopeAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderBreakAction(model, keyframes, scopeAttachment, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderHammer(model, animations, keyframes, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPumpAction(model, animations, keyframes, pumpAttachment, gripAttachment, gadgetAttachment, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+            renderPass);
+        renderBoltAction(model, animations, keyframes, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderChargeHandle(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderMinigunBarrels(model, animations, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderRevolverBarrel(model, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderAmmo(model, animations, stack, numRounds, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderRevolverBarrel(model, keyframes, getReloadRotate(model, animations), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderAmmo(model, animations, keyframes, stack, numRounds, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderStaticAmmo(model, stack, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        int displayedRounds = displayedFeedRounds(model, animations, numRounds, maxRoundsInGun(stack));
+        if (model.isHasFeedStrip())
+            renderFeedStrip(model, keyframes, displayedRounds, maxRoundsInGun(stack), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderAmmoCounter(model, keyframes, displayedRounds, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (animations.isReloading())
+            renderReloadOnlyAmmo(model, keyframes, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         poseStack.popPose();
     }
@@ -648,6 +812,103 @@ public final class GunItemRenderer
         }
     }
 
+    /** Capacity of the ammunition currently in the gun. */
+    private static int maxRoundsInGun(ItemStack gunStack)
+    {
+        final GunItem gunItem = (GunItem) gunStack.getItem();
+        int rounds = 0;
+        for (int i = 0; i < gunItem.getConfigType().getNumAmmoItemsInGun(gunStack); i++)
+        {
+            ItemStack bullet = gunItem.getAmmoItemStack(gunStack, i, Minecraft.getInstance().level.registryAccess());
+            if (bullet != null)
+                rounds += ShootableItem.getMaxRounds(bullet);
+        }
+        return rounds;
+    }
+
+    /** The ammo variant the loaded rounds show in this gun ({@code AmmoModelType}), or 0 when nothing is loaded. */
+    private static int loadedAmmoVariant(GunType type, ItemStack gunStack)
+    {
+        final GunItem gunItem = (GunItem) gunStack.getItem();
+        for (int i = 0; i < type.getNumAmmoItemsInGun(gunStack); i++)
+        {
+            ItemStack bullet = gunItem.getAmmoItemStack(gunStack, i, Minecraft.getInstance().level.registryAccess());
+            if (bullet != null && bullet.getItem() instanceof ShootableItem && ShootableItem.hasRoundsLeft(bullet))
+                return bullet.getItem() instanceof BulletItem bulletItem ? bulletItem.getConfigType().getAmmoModelTypeForGun(type) : 1;
+        }
+        return 0;
+    }
+
+    /**
+     * The ammo variant to draw: an emptied gun keeps showing the last one, and a reload shows the outgoing variant
+     * until the magazines swap.
+     */
+    private static int ammoVariant(ModelGun model, GunAnimations animations, ItemStack stack, int numRounds, boolean swapped)
+    {
+        int loaded = loadedAmmoVariant(model.getType(), stack);
+        int variant;
+        if (animations.isReloading() && !swapped)
+            variant = animations.getPreReloadAmmoModelType();
+        else
+            variant = loaded > 0 && (numRounds > 0 || animations.isReloading()) ? loaded : animations.getLastAmmoModelType();
+        animations.setLastAmmoModelType(variant);
+        return variant;
+    }
+
+    /** Rounds the feed strip and ammo counter show: a reload shows the full load once the magazines swap, or at once from empty. */
+    private static int displayedFeedRounds(ModelGun model, GunAnimations animations, int numRounds, int maxRounds)
+    {
+        int capacity = Math.max(maxRounds, model.getAmmoCounterModel().length);
+        if (capacity <= 0 || !animations.isReloading())
+            return numRounds;
+        float progress = animations.getLastReloadAnimationProgress() + (animations.getReloadAnimationProgress() - animations.getLastReloadAnimationProgress()) * ClientPlatform.partialTick();
+        return numRounds <= 0 || progress >= model.getAmmoSwapAnimationTime() ? capacity : numRounds;
+    }
+
+    /** A feed strip that moves along {@code feedStripMoveVector} by {@code feedStripMovePerRound} for every round fired. */
+    @SuppressWarnings("java:S107") // Matches the other part renderers, which pass the render state explicitly
+    private static void renderFeedStrip(ModelGun model, @Nullable GunKeyframeAnimator.Frame keyframes, int numRounds, int maxRounds, PoseStack poseStack, VertexConsumer vertexConsumer,
+        int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        int capacity = Math.max(maxRounds, model.getAmmoCounterModel().length);
+        if (numRounds <= 0 || capacity <= 0)
+            return;
+        float distance = model.getFeedStripMovePerRound() * Math.max(0, capacity - numRounds);
+        poseStack.pushPose();
+        if (keyframes != null && keyframes.partsAnimated())
+            keyframes.applyPart(poseStack, EnumKeyframeBone.AMMO, model.getRevolverFlipPoint());
+        poseStack.translate(model.getFeedStripMoveVector().x * distance, model.getFeedStripMoveVector().y * distance, model.getFeedStripMoveVector().z * distance);
+        model.render(model.getFeedStripModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        poseStack.popPose();
+    }
+
+    /**
+     * One {@code ammoCounterModel} entry per round left, counted from the first entry, or from the last with
+     * {@code countOnRightHandSide}.
+     */
+    @SuppressWarnings("java:S107") // Matches the other part renderers, which pass the render state explicitly
+    private static void renderAmmoCounter(ModelGun model, @Nullable GunKeyframeAnimator.Frame keyframes, int numRounds, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
+        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        ModelRendererTurbo[][] counter = model.getAmmoCounterModel();
+        int shown = Math.min(Math.max(0, numRounds), counter.length);
+        if (shown == 0)
+            return;
+        poseStack.pushPose();
+        if (keyframes != null && keyframes.partsAnimated())
+            keyframes.applyPart(poseStack, EnumKeyframeBone.AMMO, model.getRevolverFlipPoint());
+        int first = model.isCountOnRightHandSide() ? counter.length - shown : 0;
+        for (int i = first; i < first + shown; i++)
+        {
+            if (counter[i] == null)
+                continue;
+            for (ModelRendererTurbo part : counter[i])
+                if (part != null)
+                    part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        }
+        poseStack.popPose();
+    }
+
     private static int countRoundsInGun(ItemStack gunStack)
     {
         final GunItem gunItem = (GunItem) gunStack.getItem();
@@ -667,8 +928,9 @@ public final class GunItemRenderer
         return rounds;
     }
 
-    private static void renderSlideModels(ModelGun model, ItemStack stack, GunAnimations animations, AttachmentType slideAttachment, AttachmentType scopeAttachment, PoseStack poseStack,
-        VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderSlideModels(ModelGun model, ItemStack stack, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, AttachmentType slideAttachment,
+        AttachmentType scopeAttachment, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        EnumRenderPass renderPass)
     {
         if (slideAttachment == null)
         {
@@ -679,6 +941,8 @@ public final class GunItemRenderer
                 poseStack.translate(
                     -(1 - Math.abs(animations.getLastCharged() + (animations.getCharged() - animations.getLastCharged()) * ClientPlatform.partialTick())) * model.getChargeHandleDistance(), 0F, 0F);
             }
+            if (keyframes != null)
+                keyframes.applyPart(poseStack, EnumKeyframeBone.SLIDE, model.getSlideAttachPoint());
             model.render(model.getSlideModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (scopeAttachment == null && model.isScopeIsOnSlide())
                 model.render(model.getDefaultScopeModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -695,13 +959,20 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderBreakAction(ModelGun model, AttachmentType scopeAttachment, float reloadRotate, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderBreakAction(ModelGun model, @Nullable GunKeyframeAnimator.Frame keyframes, AttachmentType scopeAttachment, float reloadRotate, PoseStack poseStack,
+        VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
-        poseStack.translate(model.getBarrelBreakPoint().x, model.getBarrelBreakPoint().y, model.getBarrelBreakPoint().z);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(reloadRotate * -model.getBreakAngle()));
-        poseStack.translate(-model.getBarrelBreakPoint().x, -model.getBarrelBreakPoint().y, -model.getBarrelBreakPoint().z);
+        if (keyframes != null && keyframes.partsAnimated())
+        {
+            keyframes.applyPart(poseStack, EnumKeyframeBone.BREAK_ACTION, model.getBarrelBreakPoint());
+        }
+        else
+        {
+            poseStack.translate(model.getBarrelBreakPoint().x, model.getBarrelBreakPoint().y, model.getBarrelBreakPoint().z);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(reloadRotate * -model.getBreakAngle()));
+            poseStack.translate(-model.getBarrelBreakPoint().x, -model.getBarrelBreakPoint().y, -model.getBarrelBreakPoint().z);
+        }
         model.render(model.getBreakActionModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (scopeAttachment == null && model.isScopeIsOnBreakAction())
             model.render(model.getDefaultScopeModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -715,13 +986,20 @@ public final class GunItemRenderer
         poseStack.popPose();
     }
 
-    private static void renderHammer(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderHammer(ModelGun model, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
+        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
-        poseStack.translate(model.getHammerSpinPoint().x, model.getHammerSpinPoint().y, model.getHammerSpinPoint().z);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.getHammerRotation()));
-        poseStack.translate(-model.getHammerSpinPoint().x, -model.getHammerSpinPoint().y, -model.getHammerSpinPoint().z);
+        if (keyframes != null && keyframes.partsAnimated())
+        {
+            keyframes.applyPart(poseStack, EnumKeyframeBone.HAMMER, model.getHammerSpinPoint());
+        }
+        else
+        {
+            poseStack.translate(model.getHammerSpinPoint().x, model.getHammerSpinPoint().y, model.getHammerSpinPoint().z);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(-animations.getHammerRotation()));
+            poseStack.translate(-model.getHammerSpinPoint().x, -model.getHammerSpinPoint().y, -model.getHammerSpinPoint().z);
+        }
         model.render(model.getHammerModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
 
@@ -733,14 +1011,16 @@ public final class GunItemRenderer
         poseStack.popPose();
     }
 
-    private static void renderPumpAction(ModelGun model, GunAnimations animations, AttachmentType pumpAttachment, AttachmentType gripAttachment, AttachmentType gadgetAttachment, PoseStack poseStack,
-        VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderPumpAction(ModelGun model, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, AttachmentType pumpAttachment, AttachmentType gripAttachment,
+        AttachmentType gadgetAttachment, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        EnumRenderPass renderPass)
     {
         if (pumpAttachment == null)
         {
             poseStack.pushPose();
-            poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * ClientPlatform.partialTick())) * model.getPumpHandleDistance(), 0F,
-                0F);
+            if (keyframes == null || !keyframes.applyAction(poseStack, EnumKeyframeBone.PUMP, model.getPumpHandlePoint()))
+                poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * ClientPlatform.partialTick())) * model.getPumpHandleDistance(),
+                    0F, 0F);
             model.render(model.getPumpModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             if (gripAttachment == null && model.isGripIsOnPump())
                 model.render(model.getDefaultGripModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -750,15 +1030,18 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderBoltAction(ModelGun model, GunAnimations animations, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderBoltAction(ModelGun model, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
+        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
-        poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * ClientPlatform.partialTick())) * model.getBoltCycleDistance(), 0F, 0F);
-        poseStack.translate(model.getBoltRotationOffset().x, model.getBoltRotationOffset().y, model.getBoltRotationOffset().z);
-        poseStack.mulPose(
-            Axis.XP.rotationDegrees(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * ClientPlatform.partialTick())) * model.getBoltRotationAngle()));
-        poseStack.translate(-model.getBoltRotationOffset().x, -model.getBoltRotationOffset().y, -model.getBoltRotationOffset().z);
+        if (keyframes == null || !keyframes.applyAction(poseStack, EnumKeyframeBone.BOLT, model.getBoltRotationOffset()))
+        {
+            float cycle = 1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * ClientPlatform.partialTick());
+            poseStack.translate(-cycle * model.getBoltCycleDistance(), 0F, 0F);
+            poseStack.translate(model.getBoltRotationOffset().x, model.getBoltRotationOffset().y, model.getBoltRotationOffset().z);
+            poseStack.mulPose(Axis.XP.rotationDegrees(-cycle * model.getBoltRotationAngle()));
+            poseStack.translate(-model.getBoltRotationOffset().x, -model.getBoltRotationOffset().y, -model.getBoltRotationOffset().z);
+        }
         model.render(model.getBoltActionModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
     }
@@ -791,13 +1074,15 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderRevolverBarrel(ModelGun model, float reloadRotate, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderRevolverBarrel(ModelGun model, @Nullable GunKeyframeAnimator.Frame keyframes, float reloadRotate, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
+        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
         poseStack.translate(model.getRevolverFlipPoint().x, model.getRevolverFlipPoint().y, model.getRevolverFlipPoint().z);
         poseStack.mulPose(Axis.XP.rotationDegrees(reloadRotate * model.getRevolverFlipAngle()));
         poseStack.translate(-model.getRevolverFlipPoint().x, -model.getRevolverFlipPoint().y, -model.getRevolverFlipPoint().z);
+        if (keyframes != null && keyframes.partsAnimated())
+            keyframes.applyPart(poseStack, EnumKeyframeBone.REVOLVER_BARREL, model.getRevolverFlipPoint());
         model.render(model.getRevolverBarrelModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
 
@@ -820,8 +1105,8 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderAmmo(ModelGun model, GunAnimations animations, ItemStack stack, int numRounds, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderAmmo(ModelGun model, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, ItemStack stack, int numRounds, PoseStack poseStack,
+        VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
 
@@ -834,8 +1119,12 @@ public final class GunItemRenderer
 
         boolean shouldRender = shouldRenderAmmo(animations, anim, numRounds);
 
-        // If it should be rendered, do the transformations required
-        if (shouldRender && animations.isReloading())
+        // If it should be rendered, do the transformations required; a keyframe reload animation replaces them
+        if (shouldRender && animations.isReloading() && keyframes != null)
+        {
+            keyframes.applyPart(poseStack, EnumKeyframeBone.AMMO, model.getRevolverFlipPoint());
+        }
+        else if (shouldRender && animations.isReloading())
         {
             // Calculate the amount of tilt required for the reloading animation
             float effectiveReloadAnimationProgress = animations.getLastReloadAnimationProgress()
@@ -973,15 +1262,49 @@ public final class GunItemRenderer
             }
         }
 
-        if (shouldRender && gripAttachment == null || !model.getType().getSecondaryFire(stack))
-            model.render(model.getAmmoModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-
-        // Renders fullammo model for 2nd half of reload animation
         float effectiveReloadAnimationProgress = animations.getLastReloadAnimationProgress()
             + (animations.getReloadAnimationProgress() - animations.getLastReloadAnimationProgress()) * ClientPlatform.partialTick();
-        if (effectiveReloadAnimationProgress > 0.5)
-            model.render(model.getFullammoModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        boolean swapped = animations.isReloading() && effectiveReloadAnimationProgress >= Mth.clamp(model.getAmmoSwapAnimationTime(), 0F, 1F);
+        int variant = ammoVariant(model, animations, stack, numRounds, swapped);
+        if (model.isRotateAmmo())
+        {
+            // Tyrants and Plebeians rotating magazines turn as they empty and reset once the new one is in
+            int maxRounds = maxRoundsInGun(stack);
+            float rotation = maxRounds > 0 && !swapped ? (1F - (float) numRounds / maxRounds) * 360F * model.getRotateAmmoRevolutions() : 0F;
+            poseStack.translate(model.getRevolverFlipPoint().x, model.getRevolverFlipPoint().y, model.getRevolverFlipPoint().z);
+            poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
+            poseStack.translate(-model.getRevolverFlipPoint().x, -model.getRevolverFlipPoint().y, -model.getRevolverFlipPoint().z);
+        }
 
+        if (shouldRender && gripAttachment == null || !model.getType().getSecondaryFire(stack) || gripAttachment != null && gripAttachment.isHasSecondaryModeAnimations())
+            model.render(model.getAmmoModel(variant), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+
+        // Renders fullammo model for the rest of the reload animation once the magazines swap; keyframe-animated
+        // (Tyrants and Plebeians) guns also keep it while loaded
+        boolean keyframed = model.getType().getKeyframes().isEnabled();
+        if (effectiveReloadAnimationProgress > Mth.clamp(model.getAmmoSwapAnimationTime(), 0F, 1F) && (animations.isReloading() || !keyframed)
+            || keyframed && !animations.isReloading() && !animations.isGunEmpty() && numRounds > 0)
+            model.render(model.getFullammoModel(variant), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+
+        poseStack.popPose();
+    }
+
+    /** Ammo parts only shown while reloading (Tyrants and Plebeians), moved by their own keyframe bones. */
+    // Passes the render state like the other part renderers in this class
+    @SuppressWarnings("java:S107")
+    private static void renderReloadOnlyAmmo(ModelGun model, @Nullable GunKeyframeAnimator.Frame keyframes, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        poseStack.pushPose();
+        if (keyframes != null)
+            keyframes.applyPart(poseStack, EnumKeyframeBone.EXTRA_AMMO, model.getRevolverFlipPoint());
+        model.render(model.getExtraAmmoModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        poseStack.popPose();
+
+        poseStack.pushPose();
+        if (keyframes != null)
+            keyframes.applyPart(poseStack, EnumKeyframeBone.PARTIAL_AMMO, model.getRevolverFlipPoint());
+        model.render(model.getPartialAmmoModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
     }
 
@@ -1074,7 +1397,8 @@ public final class GunItemRenderer
         AttachmentType gripAttachment = model.getType().getGrip(stack);
         ItemStack gripItemStack = model.getType().getGripItemStack(stack);
 
-        if (gripAttachment != null && GunHandlingTiming.attachmentVisible(gripAttachment.isRenderOnlyOnMode(), model.getType().getSecondaryFire(stack), animations.getSecondarySwitchRemaining() > 0)
+        if (gripAttachment != null && !gripAttachment.isHasSecondaryModeAnimations()
+            && GunHandlingTiming.attachmentVisible(gripAttachment.isRenderOnlyOnMode(), model.getType().getSecondaryFire(stack), animations.getSecondarySwitchRemaining() > 0)
             && ModelCache.getOrLoadTypeModel(gripAttachment) instanceof ModelAttachment gripModel)
         {
             int color = gripAttachment.getColour();
@@ -1097,7 +1421,7 @@ public final class GunItemRenderer
 
     private static void renderCasingEjection(ModelGun model, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
-        if (!ModClientConfig.get().showCasingEjections)
+        if (!ModClientConfig.get().showCasingEjections || model.getType() == null || !model.getType().isEjectCasings())
             return;
 
         ModelCasing casing = ModelCache.getOrLoadCasingModel(model.getType());
@@ -1122,7 +1446,9 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderCustomAttachments(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
+    @SuppressWarnings("java:S107") // Matches the other render helpers, which pass the render state explicitly
+    private static void renderCustomAttachments(ModelGun model, ItemStack item, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, PoseStack poseStack,
+        MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         float smoothing = ClientPlatform.partialTick();
 
@@ -1149,7 +1475,13 @@ public final class GunItemRenderer
             {
                 case SIGHTS :
                     preRenderAttachment(attachment, model.getScopeAttachPoint(), poseStack, model.getType().getModelScale());
-                    if (model.isScopeIsOnBreakAction())
+                    if (model.isScopeIsOnBreakAction() && keyframes != null && keyframes.partsAnimated())
+                    {
+                        // Tyrants and Plebeians pivots the scope bone about the break point, offset by two units
+                        keyframes.applyPart(poseStack, EnumKeyframeBone.ATTACHMENT_SCOPE, new Vector3f(model.getBarrelBreakPoint().x - model.getScopeAttachPoint().x + 2F,
+                            model.getBarrelBreakPoint().y - model.getScopeAttachPoint().y, model.getBarrelBreakPoint().z - model.getScopeAttachPoint().z));
+                    }
+                    else if (model.isScopeIsOnBreakAction())
                     {
                         poseStack.translate(model.getBarrelBreakPoint().x, model.getBarrelBreakPoint().y, model.getBarrelBreakPoint().z);
                         poseStack.mulPose(Axis.ZP.rotationDegrees(getReloadRotate(model, animations) * -model.getBreakAngle()));
@@ -1161,6 +1493,8 @@ public final class GunItemRenderer
                     break;
                 case GRIP :
                     preRenderAttachment(attachment, model.getGripAttachPoint(), poseStack, model.getType().getModelScale());
+                    if (attachment.isHasSecondaryModeAnimations() || model.getType().isBayonetMode(item))
+                        renderAnimatedGrip(model, keyframes, attachment, gripItemStack, poseStack, buffer, packedLight, packedOverlay);
                     if (model.isGripIsOnPump())
                         poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * smoothing)) * model.getPumpHandleDistance(), 0F, 0F);
                     renderAttachment(attachment, gripItemStack, poseStack, buffer, packedLight, packedOverlay, toggledOn);
@@ -1200,6 +1534,34 @@ public final class GunItemRenderer
         }
     }
 
+    /**
+     * A grip with secondary-mode animations, or a mounted bayonet: the grip moves by its keyframe bone, and its ammo is drawn here,
+     * in the grip's space, moved by its own bone, instead of with the gun's ammo.
+     */
+    @SuppressWarnings("java:S107") // Matches the other render helpers, which pass the render state explicitly
+    private static void renderAnimatedGrip(ModelGun model, @Nullable GunKeyframeAnimator.Frame keyframes, AttachmentType grip, ItemStack gripStack, PoseStack poseStack, MultiBufferSource buffer,
+        int packedLight, int packedOverlay)
+    {
+        if (keyframes != null)
+            keyframes.applyPart(poseStack, EnumKeyframeBone.ATTACHMENT_GRIP, model.getGripAttachPoint());
+        if (!grip.isHasSecondaryModeAnimations() || !(ModelCache.getOrLoadTypeModel(grip) instanceof ModelAttachment gripModel))
+            return;
+
+        poseStack.pushPose();
+        if (keyframes != null)
+            keyframes.applyPart(poseStack, EnumKeyframeBone.ATTACHMENT_AMMO, model.getGripAttachPoint());
+        int color = grip.getColour();
+        float red = (color >> 16 & 255) / 255F;
+        float green = (color >> 8 & 255) / 255F;
+        float blue = (color & 255) / 255F;
+        ResourceLocation ammoTexture = grip.getPaintjob(gripStack).getTexture();
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(grip);
+        boolean cull = useCulling(grip, poseStack);
+        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(gripModel))
+            gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(renderPass.getRenderType(ammoTexture, translucent, cull)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+        poseStack.popPose();
+    }
+
     private static void preRenderAttachment(AttachmentType attachment, Vector3f attachPoint, PoseStack poseStack, float gunModelScale)
     {
         float modelScale = attachment.getModelScale();
@@ -1230,7 +1592,7 @@ public final class GunItemRenderer
         }
     }
 
-    private static void renderFirstPersonArm(ModelGun model, GunAnimations anim, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderFirstPersonArm(ModelGun model, GunAnimations anim, @Nullable GunKeyframeAnimator.Frame keyframes, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         if (!ModClientConfig.get().enableArms || !model.isHasArms())
             return;
@@ -1257,14 +1619,18 @@ public final class GunItemRenderer
         playerModel.setupAnim(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
         poseStack.pushPose();
-        if (!anim.isReloading() && model.isRighthandPump())
+        if (placeKeyframeArm(keyframes, true, poseStack))
+        {
+            // Placed by its keyframe animation
+        }
+        else if (!anim.isReloading() && model.isRighthandPump())
             renderArmPump(model, anim, smoothing, model.getRightArmRot(), model.getRightArmPos(), poseStack);
         else if (anim.getCharged() < 0.9 && model.isLeftHandAmmo() && model.isRightHandCharge() && anim.getCharged() != -1.0F)
             renderArmCharge(model, anim, smoothing, model.getRightArmChargeRot(), model.getRightArmChargePos(), poseStack);
         else if (anim.getPumped() < 0.9 && model.isRightHandBolt() && model.isLeftHandAmmo())
             renderArmBolt(model, anim, smoothing, model.getRightArmChargeRot(), model.getRightArmChargePos(), poseStack);
         else if (!anim.isReloading())
-            renderArmDefault(model, model.getRightArmRot(), model.getRightArmPos(), poseStack);
+            renderArmRest(model, keyframes, true, model.getRightArmRot(), model.getRightArmPos(), poseStack);
         else
             renderArmDefault(model, model.getRightArmReloadRot(), model.getRightArmReloadPos(), poseStack);
         poseStack.scale(model.getRightArmScale().x, model.getRightArmScale().y, model.getRightArmScale().z);
@@ -1273,14 +1639,18 @@ public final class GunItemRenderer
         poseStack.popPose();
 
         poseStack.pushPose();
-        if (!anim.isReloading() && model.isLefthandPump())
+        if (placeKeyframeArm(keyframes, false, poseStack))
+        {
+            // Placed by its keyframe animation
+        }
+        else if (!anim.isReloading() && model.isLefthandPump())
             renderArmPump(model, anim, smoothing, model.getLeftArmRot(), model.getLeftArmPos(), poseStack);
         else if (anim.getCharged() < 0.9 && model.isRightHandCharge() && model.isLeftHandAmmo() && anim.getCharged() != -1.0F)
             renderArmCharge(model, anim, smoothing, model.getLeftArmChargeRot(), model.getLeftArmChargePos(), poseStack);
         else if (anim.getPumped() < 0.9 && model.isRightHandBolt() && model.isLeftHandAmmo())
             renderArmBolt(model, anim, smoothing, model.getLeftArmChargeRot(), model.getLeftArmChargePos(), poseStack);
         else if (!anim.isReloading())
-            renderArmDefault(model, model.getLeftArmRot(), model.getLeftArmPos(), poseStack);
+            renderArmRest(model, keyframes, false, model.getLeftArmRot(), model.getLeftArmPos(), poseStack);
         else
             renderArmDefault(model, model.getLeftArmReloadRot(), model.getLeftArmReloadPos(), poseStack);
         poseStack.scale(model.getLeftArmScale().x, model.getLeftArmScale().y, model.getLeftArmScale().z);
@@ -1289,7 +1659,7 @@ public final class GunItemRenderer
         poseStack.popPose();
     }
 
-    private static void renderAnimArm(ModelGun model, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderAnimArm(ModelGun model, GunAnimations animations, @Nullable GunKeyframeAnimator.Frame keyframes, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         if (!ModClientConfig.get().enableArms || !model.isHasArms())
             return;
@@ -1320,12 +1690,16 @@ public final class GunItemRenderer
 
         poseStack.pushPose();
         float effectiveReloadAnimationProgress = animations.getLastReloadAnimationProgress() + (animations.getReloadAnimationProgress() - animations.getLastReloadAnimationProgress()) * smoothing;
-        if (animations.getCharged() < 0.9 && model.isRightHandCharge() && model.isRightHandAmmo() && animations.getCharged() != -1.0F)
+        if (placeKeyframeArm(keyframes, true, poseStack))
+        {
+            // Placed by its keyframe animation
+        }
+        else if (animations.getCharged() < 0.9 && model.isRightHandCharge() && model.isRightHandAmmo() && animations.getCharged() != -1.0F)
             renderArmPump(model, animations, smoothing, model.getRightArmRot(), model.getRightArmPos(), poseStack);
         else if (animations.getPumped() < 0.9 && model.isRightHandBolt() && model.isRightHandAmmo())
             renderArmBolt(model, animations, smoothing, model.getRightArmChargeRot(), model.getRightArmChargePos(), poseStack);
         else if (!animations.isReloading())
-            renderArmDefault(model, model.getRightArmRot(), model.getRightArmPos(), poseStack);
+            renderArmRest(model, keyframes, true, model.getRightArmRot(), model.getRightArmPos(), poseStack);
         else
             renderArmDefault(model, model.getRightArmReloadRot(), model.getRightArmReloadPos(), poseStack);
         poseStack.scale(model.getRightArmScale().x, model.getRightArmScale().y, model.getRightArmScale().z);
@@ -1334,12 +1708,16 @@ public final class GunItemRenderer
         poseStack.popPose();
 
         poseStack.pushPose();
-        if (animations.getCharged() < 0.9 && model.isLeftHandCharge() && model.isLeftHandAmmo() && animations.getCharged() != -1.0F)
+        if (placeKeyframeArm(keyframes, false, poseStack))
+        {
+            // Placed by its keyframe animation
+        }
+        else if (animations.getCharged() < 0.9 && model.isLeftHandCharge() && model.isLeftHandAmmo() && animations.getCharged() != -1.0F)
             renderArmCharge(model, animations, smoothing, model.getLeftArmChargeRot(), model.getLeftArmChargePos(), poseStack);
         else if (!animations.isReloading() && model.isLefthandPump())
             renderArmPump(model, animations, smoothing, model.getLeftArmRot(), model.getLeftArmPos(), poseStack);
         else if (!animations.isReloading())
-            renderArmDefault(model, model.getLeftArmRot(), model.getLeftArmPos(), poseStack);
+            renderAmmoHandLeftArmRest(model, keyframes, poseStack);
         else if (effectiveReloadAnimationProgress < 0.5 && model.getStagedleftArmReloadPos().x != 0)
             renderArmDefault(model, model.getLeftArmReloadRot(), model.getLeftArmReloadPos(), poseStack);
         else if (effectiveReloadAnimationProgress > 0.5 && model.getStagedleftArmReloadPos().x != 0)
@@ -1488,6 +1866,55 @@ public final class GunItemRenderer
         poseStack.popPose();
 
         poseStack.popPose();
+    }
+
+    /**
+     * Places an arm by the gun's keyframe animations: the draw or reload animation while one plays, else the bolt or
+     * pump action animation while the action cycles.
+     *
+     * @return false when the arm is not keyframe animated right now and keeps its legacy placement
+     */
+    private static boolean placeKeyframeArm(@Nullable GunKeyframeAnimator.Frame keyframes, boolean rightArm, PoseStack poseStack)
+    {
+        if (keyframes == null)
+            return false;
+        if (keyframes.partsAnimated() && keyframes.armAnimated(rightArm))
+        {
+            // A reload, draw or mode switch owns the arm even when its animation is missing, like in Tyrants and Plebeians
+            if (keyframes.playback() != null)
+                GunKeyframeAnimator.applyArm(poseStack, keyframes.playback().animation(), rightArm, keyframes.playback().progress());
+            return true;
+        }
+        if (keyframes.state() == GunKeyframeAnimator.Kind.RELOAD || !(rightArm ? keyframes.config().isRightArmAnimated() : keyframes.config().isLeftArmAnimated()))
+            return false;
+        KeyframeAnimation action = keyframes.config().getAnimation(keyframes.config().getActionAnimation());
+        if (action == null || keyframes.actionProgress() < 0F)
+            return false;
+        GunKeyframeAnimator.applyArm(poseStack, action, rightArm, keyframes.actionProgress());
+        return true;
+    }
+
+    /** The resting arm pose; keyframe-animated arms of models with {@code enableNewArm} use the keyframe convention. */
+    private static void renderArmRest(ModelGun model, @Nullable GunKeyframeAnimator.Frame keyframes, boolean rightArm, Vector3f rotationPoint, Vector3f armPosition, PoseStack poseStack)
+    {
+        boolean animated = keyframes != null && (rightArm ? keyframes.config().isRightArmAnimated() : keyframes.config().isLeftArmAnimated());
+        if (animated && model.isEnableNewArm())
+            GunKeyframeAnimator.applyNewArmRest(poseStack, rotationPoint, armPosition, rightArm);
+        else
+            renderArmDefault(model, rotationPoint, armPosition, poseStack);
+    }
+
+    /**
+     * Resting pose of a left arm attached to the ammo. Tyrants and Plebeians swaps the two conventions here compared with
+     * every other arm; models made for it expect that, so it is kept.
+     */
+    private static void renderAmmoHandLeftArmRest(ModelGun model, @Nullable GunKeyframeAnimator.Frame keyframes, PoseStack poseStack)
+    {
+        boolean animated = keyframes != null && keyframes.config().isLeftArmAnimated();
+        if (!animated && model.isEnableNewArm())
+            GunKeyframeAnimator.applyNewArmRest(poseStack, model.getLeftArmRot(), model.getLeftArmPos(), false);
+        else
+            renderArmDefault(model, model.getLeftArmRot(), model.getLeftArmPos(), poseStack);
     }
 
     // right hand pump action animation

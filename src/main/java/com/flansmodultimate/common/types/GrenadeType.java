@@ -129,6 +129,8 @@ public class GrenadeType extends ShootableType
     /** Whether the grenade should spin when thrown. Generally false for mines or things that should lie flat */
     @Getter
     protected boolean spinWhenThrown = true;
+    @Getter
+    protected boolean randomDirection;
 
     // Deployed bag functionality
     /** If true, then right clicking this "grenade" will give the player health or buffs or ammo as defined below */
@@ -193,6 +195,7 @@ public class GrenadeType extends ShootableType
         stickSound = readSound("StickSound", stickSound, file);
 
         spinWhenThrown = readValue("SpinWhenThrown", spinWhenThrown, file);
+        randomDirection = readValue("RandomDirection", randomDirection, file);
         remote = readValue("Remote", remote, file);
 
         flashBang = readValue("FlashBang", flashBang, file);

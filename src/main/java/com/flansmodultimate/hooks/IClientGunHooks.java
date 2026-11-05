@@ -31,7 +31,13 @@ public interface IClientGunHooks
     /** Plays the melee animation of a gun swung by a mob. */
     void animateRemoteMelee(LivingEntity holder, InteractionHand hand);
 
-    void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo);
+    /**
+     * @param tactical whether the gun still held live rounds when the reload began
+     * @param loopRounds rounds loaded one at a time by a round-by-round reload, or 0
+     */
+    // Mirrors the reload packet fields
+    @SuppressWarnings("java:S107")
+    void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo, boolean tactical, int loopRounds);
 
     void cancelReloadGunItem(Player player, InteractionHand hand);
 

@@ -148,10 +148,10 @@ public record AmmoOverride(@Nullable Float massGrams, @Nullable Float bulletSpee
     public float resolveBulletSpeed(BulletType bulletType, int shotsFired, float weaponBulletSpeedBlocksPerTick, boolean useDefaultFallback)
     {
         if (bulletSpeedBlocksPerTick != null)
-            return bulletType.applySpeedMultiplier(bulletSpeedBlocksPerTick);
+            return bulletSpeedBlocksPerTick;
         BulletType.RoundStats stats = statsForShot(shotsFired);
         if (stats != null && stats.bulletSpeed() > 0F)
-            return bulletType.applySpeedMultiplier(stats.bulletSpeed());
+            return stats.bulletSpeed();
         return bulletType.getBulletSpeed(shotsFired, weaponBulletSpeedBlocksPerTick, useDefaultFallback);
     }
 

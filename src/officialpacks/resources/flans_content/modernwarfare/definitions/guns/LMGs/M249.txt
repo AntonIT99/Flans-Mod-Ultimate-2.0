@@ -8,6 +8,7 @@ Icon M249
 Colour 255 255 255
 DeployedModel None
 Model mw.M249
+animAimOffset 0 2.15231409 0
 Texture M249
 ModelScale 0.18
 Paintjob m249_stoic_blue m249_stoic_blue blue 3

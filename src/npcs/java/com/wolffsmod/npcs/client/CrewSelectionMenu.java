@@ -51,6 +51,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
     private boolean loading;
     private boolean clonesRequested;
     private String chosenClass;
+    private final List<String> chosenClasses = new ArrayList<>();
     private int chosenSkin;
     private CrewSource selected;
     @Nullable
@@ -62,14 +63,15 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
     {
         this.entityId = entityId;
         original = source;
-        chosenClass = source.playerClass();
+        chosenClasses.addAll(source.classes());
+        chosenClass = chosenClasses.isEmpty() ? "" : chosenClasses.get(0);
         chosenSkin = source.skin();
         cloneTab = source.cloneTab();
         imageWidth = 400;
         imageHeight = 222;
         setBackground("menubg.png");
         choices = new GuiCustomScrollNop(this, 0);
-        classes = new GuiCustomScrollNop(this, 1);
+        classes = new GuiCustomScrollNop(this, 1, true);
         teams = FlansModApi.getTeams().stream().filter(team -> !team.getClasses().isEmpty())
             .sorted(Comparator.comparing(ITeam::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(ITeam::getShortName)).toList();
         teamIndex = -1;
@@ -134,10 +136,12 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         playerClasses = (teamIndex < 0 ? FlansModApi.getPlayerClasses() : teams.get(teamIndex).getClasses()).stream()
             .sorted(Comparator.comparing(IPlayerClass::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(IPlayerClass::getShortName)).toList();
         classes.clear();
-        classes.setUnsortedList(playerClasses.stream().map(playerClass -> playerClass.getNameComponent().getString() + " [" + playerClass.getShortName() + "]").toList());
+        classes.setUnsortedList(playerClasses.stream().map(CrewSelectionMenu::classLabel).toList());
         for (int i = 0; i < playerClasses.size(); i++)
             if (playerClasses.get(i).getShortName().equals(chosenClass))
                 classes.setSelectedIndex(i);
+        classes.setSelectedList(playerClasses.stream().filter(playerClass -> chosenClasses.contains(playerClass.getShortName()))
+            .map(CrewSelectionMenu::classLabel).toList());
     }
 
     private void showSkins()
@@ -157,13 +161,13 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         Component name = Component.translatable(PREFIX + "skin", labels.get(chosenSkin + 1));
         skin.setMessage(name);
         skin.setTooltip(Tooltip.create(name.copy().append("\n").append(Component.translatable(PREFIX + "skin.help"))));
-        skin.setEnabled(index >= 0 && index < playerClasses.size() && playerClasses.get(index).getSkinOverrideVariants().size() > 1);
+        skin.setEnabled(chosenClasses.size() == 1 && index >= 0 && index < playerClasses.size() && playerClasses.get(index).getSkinOverrideVariants().size() > 1);
     }
 
     private void updateButtons()
     {
         if (getButton(DONE) != null)
-            getButton(DONE).setEnabled(original.kind() == CrewSource.Kind.CLONE ? !loading && choices.getSelected() != null : classes.getSelected() != null);
+            getButton(DONE).setEnabled(original.kind() == CrewSource.Kind.CLONE ? !loading && choices.getSelected() != null : !chosenClasses.isEmpty());
         if (getButton(TAB) != null)
             getButton(TAB).setEnabled(!loading);
         if (loading || choices.getList().isEmpty() || original.kind() == CrewSource.Kind.CLASS && playerClasses.isEmpty())
@@ -215,10 +219,9 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         }
         else
         {
-            int index = classes.getSelectedIndex();
-            if (index < 0 || index >= playerClasses.size())
+            if (chosenClasses.isEmpty())
                 return;
-            selected = original.withClass(teamIndex < 0 ? "" : teams.get(teamIndex).getShortName(), playerClasses.get(index).getShortName()).withSkin(chosenSkin);
+            selected = original.withClass(teamIndex < 0 ? "" : teams.get(teamIndex).getShortName(), String.join("|", chosenClasses)).withSkin(chosenSkin);
         }
         close();
     }
@@ -246,11 +249,29 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
         if (original.kind() == CrewSource.Kind.CLASS && scroll == choices)
         {
             teamIndex = choices.getSelectedIndex() - 1;
+            List<? extends IPlayerClass> available = teamIndex < 0 ? FlansModApi.getPlayerClasses().stream().toList() : teams.get(teamIndex).getClasses();
+            chosenClasses.removeIf(name -> available.stream().noneMatch(playerClass -> playerClass.getShortName().equals(name)));
+            if (!chosenClasses.contains(chosenClass))
+                chosenClass = chosenClasses.isEmpty() ? "" : chosenClasses.get(0);
             showClasses();
             showSkins();
         }
         else if (original.kind() == CrewSource.Kind.CLASS && scroll == classes)
         {
+            List<String> selectedNames = classes.getSelectedList();
+            String focused = playerClasses.stream().filter(playerClass -> selectedNames.contains(classLabel(playerClass)))
+                .map(IPlayerClass::getShortName).filter(name -> !chosenClasses.contains(name)).findFirst().orElse(chosenClass);
+            chosenClasses.clear();
+            for (int i = 0; i < playerClasses.size(); i++)
+                if (selectedNames.contains(classLabel(playerClasses.get(i))))
+                    chosenClasses.add(playerClasses.get(i).getShortName());
+            if (!chosenClasses.contains(focused))
+                focused = chosenClasses.isEmpty() ? "" : chosenClasses.get(0);
+            for (int i = 0; i < playerClasses.size(); i++)
+                if (playerClasses.get(i).getShortName().equals(focused))
+                    classes.setSelectedIndex(i);
+            if (focused.isEmpty())
+                classes.setSelectedIndex(-1);
             int index = classes.getSelectedIndex();
             if (index >= 0 && index < playerClasses.size())
             {
@@ -259,10 +280,17 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
                     chosenSkin = CrewSource.RANDOM_SKIN;
                 chosenClass = name;
             }
+            if (chosenClasses.size() != 1)
+                chosenSkin = CrewSource.RANDOM_SKIN;
             showSkins();
         }
         updateButtons();
         updatePreview();
+    }
+
+    private static String classLabel(IPlayerClass playerClass)
+    {
+        return playerClass.getNameComponent().getString() + " [" + playerClass.getShortName() + "]";
     }
 
     /** Builds an isolated client entity. Browsing never equips or spawns the NPC being edited. */
@@ -324,7 +352,7 @@ final class CrewSelectionMenu extends GuiBasic implements IGuiData, ICustomScrol
     @Override
     public void scrollDoubleClicked(String selection, GuiCustomScrollNop scroll)
     {
-        if (original.kind() == CrewSource.Kind.CLONE || scroll == classes)
+        if (original.kind() == CrewSource.Kind.CLONE)
             buttonEvent(getButton(DONE));
     }
 

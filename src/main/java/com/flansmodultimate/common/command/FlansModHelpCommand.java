@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.*;
 
 import java.util.List;
 
@@ -43,6 +40,9 @@ public final class FlansModHelpCommand
         new Topic("client", "Client tools", "Render counters, model reloads and aim previews", false,
             List.of(new Entry("renderstats", "Inspect client rendering", "[start | stop | reset | bridge [indices]]", "/flansrenderstats", false),
                 new Entry("reloadModels", "Reload client model caches", "", "", false),
+                new Entry("debug thirdPersonOffset", "Preview held-gun third-person offsets", "[x y z | reset | clear]", "/flansdebug thirdPersonOffset", false),
+                new Entry("debug viewFrame", "Preview the rendering frame for all guns", "<1.7.10 | 1.12.2 | tap | reset>", "/flansdebug viewFrame", false),
+                new Entry("debug authoredFrame", "Preview the held gun's authored frame", "[1.7.10 | 1.12.2 | reset | clear]", "/flansdebug authoredFrame", false),
                 new Entry("debug aimoffset", "Preview held-gun aim offsets", "[x y z | reset | clear]", "/flansdebug aimoffset", false))));
 
     private record Topic(String id, String title, String description, boolean operator, List<Entry> entries)

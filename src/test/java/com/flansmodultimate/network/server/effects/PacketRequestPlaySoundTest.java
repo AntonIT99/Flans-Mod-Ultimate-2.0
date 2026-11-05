@@ -12,7 +12,6 @@ import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.TestPacketBuffers;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -33,8 +32,9 @@ class PacketRequestPlaySoundTest
         EntityTestBootstrap.initialize();
     }
 
-    @Test
-    void registeredAnimationIntentRoundTripsAndBroadcastsOnlyAfterAnAcceptedShot()
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(value = Kind.class, names = {"ACTION", "ACTION_END"})
+    void registeredAnimationIntentRoundTripsAndBroadcastsOnlyAfterAnAcceptedShot(Kind kind)
     {
         assertTrue(PacketHandler.serverPacketTypes().contains(PacketRequestPlaySound.class));
         ServerPlayer player = mock(ServerPlayer.class);
@@ -45,6 +45,7 @@ class PacketRequestPlaySoundTest
         when(player.position()).thenReturn(new Vec3(12, 64, 8));
         GunType type = mock(GunType.class);
         when(type.getActionSound()).thenReturn("bolt");
+        when(type.getActionEndSound()).thenReturn("bolt_close");
         GunItem gun = mock(GunItem.class);
         when(gun.getConfigType()).thenReturn(type);
         ItemStack stack = mock(ItemStack.class);
@@ -54,7 +55,7 @@ class PacketRequestPlaySoundTest
         var buffer = TestPacketBuffers.buffer();
         try
         {
-            new PacketRequestPlaySound(InteractionHand.MAIN_HAND, Kind.ACTION).encodeInto(new PacketBuffer(buffer));
+            new PacketRequestPlaySound(InteractionHand.MAIN_HAND, kind).encodeInto(new PacketBuffer(buffer));
             decoded.decodeInto(new PacketBuffer(buffer));
             assertEquals(0, buffer.readableBytes());
         }

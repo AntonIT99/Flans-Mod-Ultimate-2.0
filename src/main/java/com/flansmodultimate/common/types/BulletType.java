@@ -20,13 +20,18 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor
 public class BulletType extends ShootableType
 {
+    /** Tyrants and Plebeians {@code AmmoModelType <gun> <variant>}: which of a gun model's ammo variants shows this round, by lowercase gun shortname */
+    protected final Map<String, Integer> ammoModelTypeByGun = new HashMap<>();
     public static final float DEFAULT_BULLET_SPEED = 3F;
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
 
@@ -61,6 +66,7 @@ public class BulletType extends ShootableType
     protected boolean hesh;
     @Getter
     protected float speedMultiplier = 1F;
+    private boolean explicitBulletSpeed;
     /** The number of flak particles to spawn upon exploding */
     @Getter
     protected int flak;
@@ -78,6 +84,16 @@ public class BulletType extends ShootableType
 
     @Getter
     protected String hitSound;
+    @Getter
+    protected String ricochetSound = "";
+    @Getter
+    protected String minorPenSound = "";
+    @Getter
+    protected String penetrateSound = "";
+    @Getter
+    protected String overPenSound = "";
+    @Getter
+    protected float bounceSoundRange = 25F;
     /** Null keeps the generic fly-by; an empty string explicitly disables it. */
     @Getter @Nullable
     protected String flyBySound;
@@ -91,6 +107,9 @@ public class BulletType extends ShootableType
     protected float hitSoundRange = -1F;
     @Getter
     protected boolean hitSoundEnable;
+    @Getter
+    protected boolean dynamicHitSoundEnable;
+    private boolean dynamicHitSoundConfigured;
     @Getter
     protected boolean entityHitSoundEnable;
 
@@ -136,6 +155,10 @@ public class BulletType extends ShootableType
     /** Lock on force that pulls the bullet towards its prey. 1 is 10G */
     @Getter
     protected float lockOnForce = 1F;
+    @Getter
+    protected boolean proportionalNavigation;
+    @Getter
+    protected float proNavGain = 3.5F;
     @Getter
     protected String trailTexture = StringUtils.EMPTY;
     @Getter
@@ -249,9 +272,50 @@ public class BulletType extends ShootableType
     @Getter
     protected int alternateTrailParticleCount = 10;
 
+    /** Unconfigured packs retain the old material fallback; an explicit flag controls the extra layer. */
+    public boolean usesMaterialImpactSounds()
+    {
+        return dynamicHitSoundConfigured ? dynamicHitSoundEnable : StringUtils.isBlank(hitSound);
+    }
+
     public float getHitSoundRange()
     {
         return ModCommonConfig.packSoundRange(hitSoundRange, ModCommonConfig.get().bulletHitSoundRange());
+    }
+
+    private void readArmourImpactSounds(TypeFile file)
+    {
+        ricochetSound = readSound("ricochetSound", ricochetSound, file);
+        minorPenSound = readSound("minorPenSound", minorPenSound, file);
+        penetrateSound = readSound("penetrateSound", penetrateSound, file);
+        overPenSound = readSound("overPenSound", overPenSound, file);
+        bounceSoundRange = readValue("bounceSoundRange", bounceSoundRange, file);
+        if (!Float.isFinite(bounceSoundRange) || bounceSoundRange < 0F)
+            bounceSoundRange = 25F;
+    }
+
+    private void readProportionalNavigation(TypeFile file)
+    {
+        proportionalNavigation = readValue("ProportionalNavigation", proportionalNavigation, file);
+        proNavGain = readValue("ProNavGain", proNavGain, file);
+        if (!Float.isFinite(proNavGain))
+            proNavGain = 3.5F;
+        proNavGain = Math.max(0F, Math.min(10F, proNavGain));
+    }
+
+    private void readAmmoModelTypes(TypeFile file)
+    {
+        readValuesInLines("AmmoModelType", file, 2).ifPresent(lines -> lines.forEach(split ->
+        {
+            try
+            {
+                ammoModelTypeByGun.put(split[0].toLowerCase(Locale.ROOT), Mth.clamp(Integer.parseInt(split[1]), 1, 10));
+            }
+            catch (NumberFormatException e)
+            {
+                logError("Incorrect format for 'AmmoModelType " + split[0] + " " + split[1] + "': Not an integer", file);
+            }
+        }));
     }
 
     @Override
@@ -259,11 +323,17 @@ public class BulletType extends ShootableType
     {
         super.read(file);
 
+        readAmmoModelTypes(file);
+
+        explicitBulletSpeed = file.hasConfigLine("BulletSpeed") || file.hasConfigLine("MuzzleVelocity");
         bulletSpeed = readValue("BulletSpeed", bulletSpeed, file);
         float muzzleVelocity = readValue("MuzzleVelocity", 0F, file);
         if (muzzleVelocity > 0F)
             bulletSpeed = muzzleVelocity / 20F;
+        speedMultiplier = readValue("speedMultiplier", speedMultiplier, file);
         speedMultiplier = readValue("BulletSpeedMultiplier", speedMultiplier, file);
+        if (!Float.isFinite(speedMultiplier) || speedMultiplier <= 0F)
+            speedMultiplier = 1F;
         penetrationAt100m = readValue("PenetrationAt100m", penetrationAt100m, file);
         if (!Float.isFinite(penetrationAt100m) || penetrationAt100m < 0F)
         {
@@ -277,7 +347,10 @@ public class BulletType extends ShootableType
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);
         setEntitiesOnFire = readValue("SetEntitiesOnFire", setEntitiesOnFire, file);
+        readArmourImpactSounds(file);
         hitSoundEnable = readValue("HitSoundEnable", hitSoundEnable, file);
+        dynamicHitSoundConfigured = file.hasConfigLine("DynamicHitSoundEnable");
+        dynamicHitSoundEnable = readValue("DynamicHitSoundEnable", false, file);
         entityHitSoundEnable = readValue("EntityHitSoundEnable", entityHitSoundEnable, file);
         // Many content packs have a HitSound line with no parameter for no hit sound -> don't consider it a syntax error
         if (hasValueForConfigField("HitSound", file))
@@ -332,6 +405,7 @@ public class BulletType extends ShootableType
         trailTexture = ResourceUtils.sanitize(readValue("TrailTexture", trailTexture, file));
 
         lockOnToPlanes = lockOnToVehicles = lockOnToMechas = readValue("LockOnToDriveables", lockOnToVehicles, file);
+        lockOnToVehicles = readValue("LockOnToVehicle", lockOnToVehicles, file);
         lockOnToVehicles = readValue("LockOnToVehicles", lockOnToVehicles, file);
         lockOnToPlanes = readValue("LockOnToPlanes", lockOnToPlanes, file);
         lockOnToMechas = readValue("LockOnToMechas", lockOnToMechas, file);
@@ -339,6 +413,7 @@ public class BulletType extends ShootableType
         lockOnToLivings = readValue("LockOnToLivings", lockOnToLivings, file);
 
         maxLockOnAngle = readValue("MaxLockOnAngle", maxLockOnAngle, file);
+        readProportionalNavigation(file);
         lockOnForce = readValue("LockOnForce", lockOnForce, file);
         lockOnForce = readValue("TurningForce", lockOnForce, file);
         maxDegreeOfMissile = readValue("MaxDegreeOfLockOnMissile", maxDegreeOfMissile, file);
@@ -533,7 +608,7 @@ public class BulletType extends ShootableType
         float speed = hasDifferentRounds() ? statsForShot(shotsFired).bulletSpeed : bulletSpeed;
 
         if (speed > 0F)
-            return applySpeedMultiplier(speed);
+            return speed;
         if (weaponBulletSpeedBlocksPerTick > 0F)
             return applySpeedMultiplier(weaponBulletSpeedBlocksPerTick);
 
@@ -542,7 +617,7 @@ public class BulletType extends ShootableType
 
     public float getBulletSpeed(boolean enforceDefaultFallback)
     {
-        float speed = applySpeedMultiplier(hasDifferentRounds() ? statsForShot(0).bulletSpeed : bulletSpeed);
+        float speed = hasDifferentRounds() ? statsForShot(0).bulletSpeed : bulletSpeed;
 
         if (enforceDefaultFallback && speed <= 0F)
             return applySpeedMultiplier(DEFAULT_BULLET_SPEED);
@@ -555,10 +630,10 @@ public class BulletType extends ShootableType
         return getBulletSpeed(false);
     }
 
-    /** Applies this ammunition's {@code BulletSpeedMultiplier} to an already resolved velocity. */
+    /** Applies the ammunition multiplier to fallback velocity only; explicit ammunition and override speeds bypass it. */
     public float applySpeedMultiplier(float speedBlocksPerTick)
     {
-        return speedMultiplier > 0F && speedMultiplier != 1F ? speedBlocksPerTick * speedMultiplier : speedBlocksPerTick;
+        return !explicitBulletSpeed && Float.isFinite(speedMultiplier) && speedMultiplier > 0F && speedMultiplier != 1F ? speedBlocksPerTick * speedMultiplier : speedBlocksPerTick;
     }
 
     @Override
@@ -714,5 +789,14 @@ public class BulletType extends ShootableType
         flyBySoundRange = Float.isFinite(flyBySoundRange) ? Mth.clamp(flyBySoundRange, 0F, 32F) : 5F;
         suppression = Float.isFinite(suppression) ? Mth.clamp(suppression, 0F, 160F) : 0F;
         suppressionRange = Float.isFinite(suppressionRange) ? Mth.clamp(suppressionRange, 0F, 32F) : 0F;
+    }
+
+    /** The gun model's ammo variant (1 to 10) this round shows in the given gun; 1 is the plain {@code ammoModel}. */
+    public int getAmmoModelTypeForGun(GunType gun)
+    {
+        Integer variant = ammoModelTypeByGun.get(gun.getOriginalShortName().toLowerCase(Locale.ROOT));
+        if (variant == null)
+            variant = ammoModelTypeByGun.get(gun.getShortName().toLowerCase(Locale.ROOT));
+        return variant == null ? 1 : variant;
     }
 }

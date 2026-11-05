@@ -134,18 +134,22 @@ class VehicleProjectileDamageResolverTest
     }
 
     @Test
-    void shapedChargeChannelIsLimitedToArmouredTargetsOnRealisticHealth()
+    void shapedChargeIncludesSoftTargetsAndLegacyHealth()
     {
-        // A soft target is left to the kinetic hit and the ungated blast.
+        // Unarmoured vehicles and aircraft receive the full charge effect.
         VehicleProjectileDamageResolver.Result soft = panzerfaust(unarmoured());
-        assertFalse(soft.shapedCharge());
-        assertTrue(soft.damage() < 100F);
+        assertTrue(soft.shapedCharge());
+        assertEquals(VehicleProjectileDamageResolver.shapedChargeDamage(0.95F, 2F, HEAT_REFERENCE), soft.damage(), 0.01F);
 
-        // Legacy health keeps the authored damage, which already stands for the whole warhead.
+        // Legacy health keeps authored damage when it exceeds the HEAT jet.
         VehicleProjectileDamageResolver.Result legacy = VehicleProjectileDamageResolver.resolve(false, 2_900F,
             4_500F, 45D / 20D, armoured(80F), 200F, 0.95F, HEAT_REFERENCE);
         assertEquals(4_500F, legacy.damage());
-        assertFalse(legacy.shapedCharge());
+        assertTrue(legacy.shapedCharge());
+        VehicleProjectileDamageResolver.Result lowLegacy = VehicleProjectileDamageResolver.resolve(false, 2_900F,
+            10F, 45D / 20D, unarmoured(), 200F, 0.95F, HEAT_REFERENCE);
+        assertEquals(soft.damage(), lowLegacy.damage());
+        assertTrue(lowLegacy.shapedCharge());
     }
 
     @Test

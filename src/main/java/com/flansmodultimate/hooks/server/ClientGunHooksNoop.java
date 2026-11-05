@@ -53,7 +53,7 @@ public class ClientGunHooksNoop implements IClientGunHooks
     }
 
     @Override
-    public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
+    public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo, boolean tactical, int loopRounds)
     {
         /* no-op */
     }

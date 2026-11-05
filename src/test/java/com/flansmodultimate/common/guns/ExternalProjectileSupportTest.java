@@ -9,6 +9,8 @@ import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.item.ItemStack;
@@ -24,6 +26,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExternalProjectileSupportTest
 {
+    @BeforeAll
+    static void bootstrap() throws ReflectiveOperationException
+    {
+        EntityTestBootstrap.initialize();
+    }
+
+    @Test
+    void npcSeatMuzzlesHonorAuthoredBarrelsAndParticleOffsets()
+    {
+        var pack = new com.flansmodultimate.content.ContentPack("test", java.nio.file.Path.of("build", "test-packs", "seat-particles"));
+        VehicleType type = new PassengerVehicle(new TypeFile("vehicle", EnumType.VEHICLE, pack, List.of("Passenger 1 0 0 0 core -180 180 -45 45 seatgun gun",
+            "GunOrigin 1 0 0 0", "barrels 1 2", "barrelSpread 1 2", "PassengerHasParticles 1 true", "PassengerShootParticles 1 smoke 3 2 1 0 0")));
+        GunType gun = new GunType();
+        try (var types = org.mockito.Mockito.mockStatic(InfoType.class))
+        {
+            types.when(() -> InfoType.getInfoType("seatgun", pack)).thenReturn(gun);
+            WeaponMuzzle left = ExternalProjectileSupport.getSeatMuzzle(type, 1, 0, MountAim.REST, MountAim.REST).orElseThrow();
+            WeaponMuzzle right = ExternalProjectileSupport.getSeatMuzzle(type, 1, 1, MountAim.REST, MountAim.REST).orElseThrow();
+            assertEquals(2D, left.offset().distanceTo(right.offset()), 1E-6D);
+            WeaponMuzzle.Particle particle = left.particles().get(0);
+            assertVector(new Vec3(0, 2, -3), particle.offset());
+            assertVector(new Vec3(0, 0, -1), particle.velocity());
+            WeaponMuzzle aimed = ExternalProjectileSupport.getSeatMuzzle(type, 1, 0, MountAim.REST, new MountAim(90F, 0F)).orElseThrow();
+            assertVector(new Vec3(3, 2, 0), aimed.particles().get(0).offset());
+        }
+    }
+
     @Test
     void vehicleAndAircraftMuzzlesUseTheSameFrameAsTheirStaticModels()
     {
@@ -212,6 +241,15 @@ class ExternalProjectileSupportTest
             turretOrigin = origin;
             shootPointsPrimary.clear();
             shootPointsPrimary.add(new ShootPoint(new DriveablePosition(muzzle, EnumDriveablePart.TURRET), new Vector3f()));
+        }
+    }
+
+    private static final class PassengerVehicle extends VehicleType
+    {
+        PassengerVehicle(TypeFile file)
+        {
+            contentPack = file.getContentPack();
+            read(file);
         }
     }
 

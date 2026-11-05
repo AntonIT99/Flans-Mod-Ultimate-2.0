@@ -7,6 +7,7 @@ Icon IconGunRebelLaserCannon
 Colour 255 255 255
 DeployedModel manus_sifi.LaserCannon
 DeployedTexture SkinGunRebelLaserCannon
+EjectCasings False
 
 // Recipe and Inventory
 Ammo AmmoPowerpackRebelLaserCannon

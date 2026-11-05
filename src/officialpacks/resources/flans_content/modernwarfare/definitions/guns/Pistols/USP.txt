@@ -8,6 +8,7 @@ Icon USP
 Colour 255 255 255
 DeployedModel None
 Model mw.USP
+animAimOffset 0 -0.77170629 0
 Texture USP
 ModelScale 0.18
 Paintjob usp_stoic_blue usp_stoic_blue blue 2

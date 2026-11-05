@@ -30,6 +30,7 @@ public final class VehicleOpticsReader
         VehicleOptics driver = new VehicleOptics();
         driver.driverDefinition = true;
         String passengerOverlay = "";
+        Set<VehicleOptics> explicitScope = new HashSet<>();
         for (String line : file.getLines())
         {
             String trimmed = line.trim();
@@ -59,8 +60,15 @@ public final class VehicleOpticsReader
                     case KEY_PILOT_OPTICS, "driveroptics", "gunneroptic" -> setMode(seat(seats, "0"), s[1]);
                     case "seatopticscamera", "opticscameraseat" -> setCamera(seat(seats, s[1]), s, 2);
                     case "pilotopticscamera", "driveropticscamera", "gunneropticcamera" -> setCamera(seat(seats, "0"), s, 1);
-                    case "passengerzoom" -> seat(seats, s[1]).zoom = VehicleOptics.positive(s[2], 1F);
-                    case "seathasscope", "passengerhasscope" -> seat(seats, s[1]).hasScope = Boolean.parseBoolean(s[2]);
+                    case "passengerzoom" -> {
+                        VehicleOptics optic = seat(seats, s[1]);
+                        optic.zoom = VehicleOptics.positive(s[2], 1F);
+                    }
+                    case "seathasscope", "passengerhasscope" -> {
+                        VehicleOptics optic = seat(seats, s[1]);
+                        optic.hasScope = Boolean.parseBoolean(s[2]);
+                        explicitScope.add(optic);
+                    }
                     case "seatautoscope", "passengerautoscope" -> seat(seats, s[1]).autoScope = Boolean.parseBoolean(s[2]);
                     case "seatnightsight", "passengernightsight" -> seat(seats, s[1]).nightSight = Boolean.parseBoolean(s[2]);
                     case "heliguiseat", "seatoverlay" -> seat(seats, s[1]).seatOverlay = Boolean.parseBoolean(s[2]);
@@ -95,10 +103,20 @@ public final class VehicleOpticsReader
                 warning.accept("Invalid optics definition: " + line + " (" + ex.getMessage() + ")");
             }
         }
+        applyPassengerDefaults(seats, passengerOverlay, explicitScope);
+        return driver;
+    }
+
+    private static void applyPassengerDefaults(List<SeatInfo> seats, String passengerOverlay, Set<VehicleOptics> explicitScope)
+    {
         for (SeatInfo seat : seats)
             if (seat != null)
-                seat.getOptics().fallbackOverlay = passengerOverlay;
-        return driver;
+            {
+                VehicleOptics optic = seat.getOptics();
+                optic.fallbackOverlay = passengerOverlay;
+                if (!explicitScope.contains(optic) && optic.zoom > 1F)
+                    optic.hasScope = true;
+            }
     }
 
     /** The part of a trimmed line before the first character {@link #WHITESPACE} splits on. */

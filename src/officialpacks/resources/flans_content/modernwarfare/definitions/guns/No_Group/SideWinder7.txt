@@ -8,6 +8,7 @@ Icon SideWinder7
 Colour 255 255 255
 DeployedModel None
 Model mw.SideWinder7
+animAimOffset 0 -1.84768591 0
 Texture SideWinder7
 ModelScale 0.18
 

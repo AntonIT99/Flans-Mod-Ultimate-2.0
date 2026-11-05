@@ -8,6 +8,7 @@ Icon Pr3
 Colour 255 255 255
 DeployedModel None
 Model mw.Pr3
+animAimOffset 0 -1.47824246 0
 Texture Pr3
 ModelScale 0.18
 Paintjob pr3_stoic_blue pr3_stoic_blue blue 3

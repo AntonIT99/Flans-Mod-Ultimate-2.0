@@ -93,11 +93,11 @@ class AmmoOverrideResolutionTest
     }
 
     @Test
-    void anOverriddenVelocityStillHonoursTheAmmunitionsSpeedMultiplier()
+    void anOverriddenVelocityIgnoresTheAmmunitionsSpeedMultiplier()
     {
         BulletType bullet = bullet("Mass 9", "BulletSpeedMultiplier 2.0");
         AmmoOverride override = overrides("AmmoMuzzleVelocity round 400");
-        assertEquals(40F, override.resolveBulletSpeed(bullet, 0, 0F), 1.0E-4F);
+        assertEquals(20F, override.resolveBulletSpeed(bullet, 0, 0F), 1.0E-4F);
     }
 
     @Test
@@ -109,6 +109,14 @@ class AmmoOverrideResolutionTest
 
         AmmoOverride override = overrides("AmmoMass laser 44");
         assertEquals(44F, override.resolveMass(bullet, 0), "a positive resolved mass is what puts the shot on the kinetic scale");
+    }
+
+    @Test
+    void weaponSpecificBeltSpeedBypassesTheAmmunitionMultiplier()
+    {
+        BulletType bullet = bullet("speedMultiplier 0.25", "MuzzleVelocity 200");
+        AmmoOverride override = overrides("AddRoundForAmmo belt AP 1 162 0 800 45");
+        assertEquals(40F, override.resolveBulletSpeed(bullet, 0, 50F));
     }
 
     private static BulletType bullet(String... lines)

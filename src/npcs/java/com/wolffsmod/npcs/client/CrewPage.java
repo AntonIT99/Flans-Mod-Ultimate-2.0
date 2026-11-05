@@ -18,6 +18,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Arrays;
@@ -221,7 +222,10 @@ final class CrewPage implements ICustomScrollListener
             case CLONE -> source.names()
                 ? Component.translatable(PREFIX + "status.clone", source.cloneName(), source.cloneTab())
                 : Component.translatable(PREFIX + "status.clone_unnamed").withStyle(ChatFormatting.DARK_RED);
-            case CLASS -> FlanSoldierSelection.resolve(source.team(), source.playerClass()).<Component>map(selection ->
+            case CLASS -> source.classes().size() > 1
+                ? Component.translatable(PREFIX + "status.classes", ComponentUtils.formatList(source.classes(), name -> FlanSoldierSelection.resolve(source.team(), name)
+                    .map(selection -> selection.playerClass().getNameComponent()).orElse(Component.literal(name))))
+                : FlanSoldierSelection.resolve(source.team(), source.playerClass()).<Component>map(selection ->
             {
                 MutableComponent text = Component.translatable(PREFIX + "status.class", selection.playerClass().getNameComponent());
                 if (selection.team() != null)

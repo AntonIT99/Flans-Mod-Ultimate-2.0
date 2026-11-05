@@ -9,6 +9,21 @@ import net.minecraft.util.Mth;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GunHandlingTiming
 {
+    /** Exponential aim smoothing; a zero constant reaches the target immediately. */
+    public static float aimProgress(float progress, boolean aiming, float constant)
+    {
+        float retention = Float.isFinite(constant) && constant >= 0F ? Math.min(0.95F, constant) : 0.66F;
+        return aiming ? 1F - (1F - progress) * retention : progress * retention;
+    }
+
+    /** Linear sprint-pose movement in ticks, in either direction, without overshooting. */
+    public static float sprintProgress(float progress, boolean sprinting, float ticks)
+    {
+        if (!Float.isFinite(ticks) || ticks <= 0F)
+            return sprinting ? 1F : 0F;
+        return Mth.clamp(progress + (sprinting ? 1F : -1F) / ticks, 0F, 1F);
+    }
+
     public static boolean tacticalReload(boolean hasLiveRounds, int slots, int magazineCapacity, float authoredTime)
     {
         return hasLiveRounds && (authoredTime > 0F || (slots == 1 && magazineCapacity > 1));

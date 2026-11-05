@@ -880,6 +880,14 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             penetrationLosses.add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.EnumType.DECAY));
     }
 
+    /** PN is server-steered; accept its vanilla tracked velocity updates instead of predicting pursuit. */
+    @Override
+    public void lerpMotion(double x, double y, double z)
+    {
+        if (configType != null && configType.isProportionalNavigation() && Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z))
+            setDeltaMovement(x, y, z);
+    }
+
     protected void applyHomingIfLocked(Level level)
     {
         if (isRemoved())
@@ -957,6 +965,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                     lockedOnTo = null;
             }
 
+            if (lockedOnTo == null)
+                return;
             updateVelocityForHoming(velocity, dX, dY, dZ, dXYZ);
 
             // "Close count" logic – if distance grows too long, drop lock
@@ -1017,6 +1027,17 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         if (angle > Math.toRadians(configType.getMaxDegreeOfMissile()))
         {
             lockedOnTo = null;
+            return;
+        }
+
+        if (configType.isProportionalNavigation())
+        {
+            if (!level().isClientSide)
+            {
+                Vec3 targetVelocity = lockedOnTo == null ? Vec3.ZERO : lockedOnTo.getDeltaMovement();
+                setDeltaMovement(com.flansmodultimate.common.guns.ProportionalNavigation.steer(velocity, new Vec3(dX, dY, dZ), targetVelocity,
+                    configType.getProNavGain(), Math.toRadians(configType.getLockOnForce() * 28.10 / 60)));
+            }
             return;
         }
 

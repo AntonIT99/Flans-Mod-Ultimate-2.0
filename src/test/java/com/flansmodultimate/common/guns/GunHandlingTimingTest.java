@@ -12,6 +12,56 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GunHandlingTimingTest
 {
+    @Test
+    void aimRetentionAppliesInBothDirectionsAndZeroIsInstant()
+    {
+        assertEquals(0.5F, GunHandlingTiming.aimProgress(0F, true, 0.5F));
+        assertEquals(0.75F, GunHandlingTiming.aimProgress(0.5F, true, 0.5F));
+        assertEquals(0.5F, GunHandlingTiming.aimProgress(1F, false, 0.5F));
+        assertEquals(1F, GunHandlingTiming.aimProgress(0F, true, 0F));
+        assertEquals(0F, GunHandlingTiming.aimProgress(1F, false, 0F));
+        assertEquals(0.34F, GunHandlingTiming.aimProgress(0F, true, Float.NaN), 0.0001F);
+    }
+
+    @Test
+    void sprintTransitionReversesSmoothlyAndRenderingDoesNotAdvanceIt()
+    {
+        GunAnimations animations = new GunAnimations();
+        for (int i = 0; i < 3; i++)
+            animations.updateSprintTransition(true, 6F);
+        assertEquals(0.5F, animations.getSprintTransitionProgress(), 0.0001F);
+        animations.updateSprintTransition(false, 6F);
+        assertEquals(0.5F, animations.getLastSprintTransitionProgress(), 0.0001F);
+        assertEquals(1F / 3F, animations.getSprintTransitionProgress(), 0.0001F);
+        for (int i = 0; i < 9; i++)
+            animations.updateSprintTransition(false, 6F);
+        assertEquals(0F, animations.getSprintTransitionProgress());
+        animations.updateSprintTransition(true, 0F);
+        assertEquals(1F, animations.getLastSprintTransitionProgress());
+        assertEquals(1F, animations.getSprintTransitionProgress());
+        for (int i = 0; i < 10; i++)
+            assertEquals(1F, animations.getSprintTransitionProgress());
+    }
+
+    @Test
+    void boltClosingIsReportedOnceAtTheEndOfTheCycle()
+    {
+        GunAnimations animations = new GunAnimations();
+        animations.setPumping(true);
+        animations.setTimeToPumpFor(4);
+        animations.setPumped(-1F);
+        for (int i = 0; i < 3; i++)
+        {
+            animations.update();
+            assertFalse(animations.isPumpFinished());
+        }
+        animations.update();
+        assertTrue(animations.isPumpFinished());
+        assertFalse(animations.isPumping());
+        animations.update();
+        assertFalse(animations.isPumpFinished());
+    }
+
     // Constant inputs deliberately exercise every eligibility/visibility branch.
     @SuppressWarnings("ConstantValue")
     @Test

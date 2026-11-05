@@ -377,17 +377,27 @@ public final class ExternalProjectileSupport
         int barrel = Math.floorMod(sequence, info.getGunBarrelCount());
         // As a crewed driveable lifts its seat guns, so the muzzle clears the gunner's own head.
         Vec3 position = LegacyDriveableCoordinates.toLocal(info.getGunOrigin(barrel)).add(0D, Driveable.PASSENGER_GUN_MOUNTED_OFFSET, 0D);
-        Vector3f pivot = info.getGunPivot();
+        Vector3f pivot = info.getAuthoredBarrels() > 0 ? info.getGunOrigin() : info.getGunPivot();
         boolean aimed = seatAim != null && pivot != null;
         if (aimed)
             position = aimSeatGunPoint(position, LegacyDriveableCoordinates.toLocal(pivot), type instanceof PlaneType ? 180F : 0F, seatAim);
         if (turretAim.yaw() != 0F && EnumDriveablePart.isTurretMounted(info.getPart()))
             position = aimTurretPoint(type, position, new MountAim(turretAim.yaw(), 0F));
-        float pitch = aimed ? seatAim.pitch() : 0F;
         List<WeaponMuzzle.Particle> particles = type.getShootParticlesPassenger(seat).stream()
-            .map(particle -> new WeaponMuzzle.Particle(particle.name(), LegacyDriveableCoordinates.rotateBarrelPitchLocal(previewVelocity(new Vec3(particle.x(), particle.y(), particle.z())), pitch)))
+            .map(particle -> new WeaponMuzzle.Particle(particle.name(), passengerParticleVector(type, info, seatAim, turretAim,
+                new Vec3(particle.x(), particle.y(), particle.z())), passengerParticleVector(type, info, seatAim, turretAim, new Vec3(particle.forward(), particle.up(), 0D))))
             .toList();
         return Optional.of(new WeaponMuzzle(position, Optional.of(info.getGunType()), particles));
+    }
+
+    private static Vec3 passengerParticleVector(DriveableType type, SeatInfo info, @Nullable MountAim aim, MountAim turret, Vec3 legacy)
+    {
+        Vec3 vector = previewVelocity(legacy);
+        if (aim != null)
+            vector = aimSeatGunPoint(vector, Vec3.ZERO, type instanceof PlaneType ? 180F : 0F, aim);
+        if (EnumDriveablePart.isTurretMounted(info.getPart()))
+            vector = LegacyDriveableCoordinates.rotateTurretYawLocal(vector, -turret.yaw());
+        return vector;
     }
 
     /**
@@ -561,7 +571,8 @@ public final class ExternalProjectileSupport
         for (WeaponMuzzle.Particle particle : particles)
         {
             Vec3 velocity = particle.velocity().yRot((float) Math.toRadians(180F - bodyYaw)).scale(scale);
-            PacketHandler.sendToAllAround(new PacketParticle(particle.name(), origin.x, origin.y, origin.z, velocity.x, velocity.y, velocity.z, scale), origin, 128D, shooter.level().dimension());
+            Vec3 position = origin.add(particle.offset().yRot((float) Math.toRadians(180F - bodyYaw)).scale(scale));
+            PacketHandler.sendToAllAround(new PacketParticle(particle.name(), position.x, position.y, position.z, velocity.x, velocity.y, velocity.z, scale), origin, 128D, shooter.level().dimension());
         }
     }
 

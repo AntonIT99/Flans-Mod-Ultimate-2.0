@@ -381,6 +381,70 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** Allows you to move the rotation helper to determine the required offsets for moving parts */
     protected Vector3f rotationToolOffset = new Vector3f(0F, 0F, 0F);
 
+    /*
+     * Tyrants and Plebeians (Labjac fork) model fields. Its gun models assign them in their constructors, so they
+     * must exist for those classes to load at all. Keyframe (GLTF) animations move the extra ammo parts and use the
+     * reload stage timings and pump handle point, and the smoke, casing, feed strip and ammo counter settings drive the
+     * matching first-person effects.
+     */
+    /** Additional ammo variants, selected by the loaded ammunition in Tyrants and Plebeians */
+    protected ModelRendererTurbo[] ammoModel2 = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] ammoModel3 = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] ammoModel4 = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] ammoModel5 = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] ammoModel6 = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] ammoModel7 = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] ammoModel8 = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] ammoModel9 = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] ammoModel10 = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] fullammoModel2 = new ModelRendererTurbo[0];
+    /** Ammo shown only while reloading, moved by the {@code extra_ammo} and {@code partial_ammo} animation bones */
+    protected ModelRendererTurbo[] extraAmmoModel = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] partialAmmoModel = new ModelRendererTurbo[0];
+    protected ModelRendererTurbo[] enBlocClipModel = new ModelRendererTurbo[0];
+    protected boolean hasEnbloc;
+    protected ModelRendererTurbo[] feedStripModel = new ModelRendererTurbo[0];
+    protected boolean hasFeedStrip;
+    protected float feedStripMovePerRound = 1F;
+    protected Vector3f feedStripMoveVector = new Vector3f(0F, 0F, 0F);
+    protected ModelRendererTurbo[][] ammoCounterModel = new ModelRendererTurbo[0][0];
+    protected boolean rotateAmmo;
+    protected float rotateAmmoRevolutions = 1F;
+    /** Reload progress (0 to 1) at which the full ammo model replaces the emptied one */
+    protected float ammoSwapAnimationTime = 0.5F;
+    /** Arms follow their keyframe placement instead of the legacy arm rotation order */
+    protected boolean enableNewArm;
+    /** Shoot keyframe animation length setting, in ticks */
+    protected int recoilTime = 20;
+    /** Seconds of the start, per-round loop and end keyframe animations of a round-by-round reload */
+    protected float startTime;
+    protected float loopTime;
+    protected float endTime;
+    /** Rotation point of the pump handle keyframe animation */
+    protected Vector3f pumpHandlePoint = new Vector3f();
+    protected float slideSpeed = 0.1F;
+    protected float zoomOffsetY;
+    protected float zoomOffsetZ;
+    protected float zoomModifier;
+    protected boolean fancyCasings;
+    protected float casingGravity = 0.015F;
+    protected float casingDrag = 0.98F;
+    protected float casingLife = 80F;
+    protected boolean hasSmoke;
+    protected boolean hasChamberSmoke;
+    protected float muzzleSmokeScale = 0.1F;
+    protected float muzzleSmokeScaleEx = 0.0008F;
+    protected float muzzleSmokeVanishConst = 0.93F;
+    protected boolean muzzleSmokeFreeRotate = true;
+    protected Vector3f muzzleSmokeOffset = new Vector3f(-0.15F, 0F, 0F);
+    protected float chamberSmokeScale = 0.1F;
+    protected float chamberSmokeScaleEx = 0.0008F;
+    protected float chamberSmokeVanishConst = 0.93F;
+    protected boolean chamberSmokeFreeRotate = true;
+    protected Vector3f chamberSmokePoint = new Vector3f(0F, 0F, 0F);
+    protected Vector3f chamberSmokeVelocity = new Vector3f(0F, -0.0015F, 0F);
+    protected Vector3f chamberSmokeRandomVelocity = new Vector3f(0.001F, 0.001F, 0.001F);
+
     protected float reloadRotate;
 
     @Override
@@ -390,10 +454,42 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         writeToModel(this.type.getAnimationConfig());
     }
 
+    /** Uses the content-pack override when present, otherwise preserves the Java model's third-person offset. */
+    public Vector3f getThirdPersonOffset()
+    {
+        Vector3f configured = type == null ? null : type.getAnimationConfig().getThirdPersonOffset();
+        return configured == null ? thirdPersonOffset : configured;
+    }
+
     @Override
     public Class<GunType> typeClass()
     {
         return GunType.class;
+    }
+
+    /** The ammo parts of an ammo variant (Tyrants and Plebeians {@code AmmoModelType}); empty variants fall back to {@code ammoModel}. */
+    public ModelRendererTurbo[] getAmmoModel(int variant)
+    {
+        ModelRendererTurbo[] parts = switch (variant)
+        {
+            case 2 -> ammoModel2;
+            case 3 -> ammoModel3;
+            case 4 -> ammoModel4;
+            case 5 -> ammoModel5;
+            case 6 -> ammoModel6;
+            case 7 -> ammoModel7;
+            case 8 -> ammoModel8;
+            case 9 -> ammoModel9;
+            case 10 -> ammoModel10;
+            default -> ammoModel;
+        };
+        return parts.length > 0 ? parts : ammoModel;
+    }
+
+    /** The full ammo parts of an ammo variant; only variant 2 has its own. */
+    public ModelRendererTurbo[] getFullammoModel(int variant)
+    {
+        return variant == 2 && fullammoModel2.length > 0 ? fullammoModel2 : fullammoModel;
     }
 
     /**
@@ -426,8 +522,24 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         flip(hammerModel);
         flip(althammerModel);
         flip(bulletCounterModel);
+        flip(ammoModel2);
+        flip(ammoModel3);
+        flip(ammoModel4);
+        flip(ammoModel5);
+        flip(ammoModel6);
+        flip(ammoModel7);
+        flip(ammoModel8);
+        flip(ammoModel9);
+        flip(ammoModel10);
+        flip(fullammoModel2);
+        flip(extraAmmoModel);
+        flip(partialAmmoModel);
+        flip(enBlocClipModel);
+        flip(feedStripModel);
 
         for (ModelRendererTurbo[] mod : advBulletCounterModel)
+            flip(mod);
+        for (ModelRendererTurbo[] mod : ammoCounterModel)
             flip(mod);
     }
 
@@ -470,8 +582,24 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         translate(hammerModel, x, y, z);
         translate(althammerModel, x, y, z);
         translate(bulletCounterModel, x, y, z);
+        translate(ammoModel2, x, y, z);
+        translate(ammoModel3, x, y, z);
+        translate(ammoModel4, x, y, z);
+        translate(ammoModel5, x, y, z);
+        translate(ammoModel6, x, y, z);
+        translate(ammoModel7, x, y, z);
+        translate(ammoModel8, x, y, z);
+        translate(ammoModel9, x, y, z);
+        translate(ammoModel10, x, y, z);
+        translate(fullammoModel2, x, y, z);
+        translate(extraAmmoModel, x, y, z);
+        translate(partialAmmoModel, x, y, z);
+        translate(enBlocClipModel, x, y, z);
+        translate(feedStripModel, x, y, z);
 
         for (ModelRendererTurbo[] modelPart : advBulletCounterModel)
+            translate(modelPart, x, y, z);
+        for (ModelRendererTurbo[] modelPart : ammoCounterModel)
             translate(modelPart, x, y, z);
     }
 
@@ -650,7 +778,6 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         setMeleeAnimation(Optional.ofNullable(config.getMeleeAnimation()).orElse(getMeleeAnimation()));
 
         setAimOffset(Optional.ofNullable(config.getAimOffset()).orElse(getAimOffset()));
-        setThirdPersonOffset(Optional.ofNullable(config.getThirdPersonOffset()).orElse(getThirdPersonOffset()));
         setItemFrameOffset(Optional.ofNullable(config.getItemFrameOffset()).orElse(getItemFrameOffset()));
         setStillRenderGunWhenScopedOverlay(Optional.ofNullable(config.getStillRenderGunWhenScopedOverlay()).orElse(isStillRenderGunWhenScopedOverlay()));
         setAdsEffectMultiplier(Optional.ofNullable(config.getAdsEffectMultiplier()).orElse(getAdsEffectMultiplier()));

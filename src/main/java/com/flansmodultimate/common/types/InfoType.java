@@ -226,6 +226,7 @@ public abstract class InfoType implements IContentType
     {
         name = readValues("Name", name, file);
         originalShortName = readResource("ShortName", originalShortName, file);
+        description = readValues("Descriptions", description, file);
         description = readValues("Description", description, file);
         icon = readResource("Icon", icon, file);
         textureName = readResource("Texture", textureName, file);

@@ -63,7 +63,12 @@ public final class NpcDrivers
     private static final double BAIL_OUT_HEALTH = 0.2D;
     /** Speed under which a driveable on the ground has stopped, in blocks a tick. */
     private static final double STOPPED = 0.05D;
-    /** Widest and highest path, in blocks, searched for a driveable: a wider one costs too much to search. */
+    /**
+     * Widest path, in blocks, searched for a ground vehicle or mecha: as wide as most tanks, so that their path does not
+     * lead them through gaps their hull cannot pass. A wider one costs too much to search.
+     */
+    private static final int MAX_PATH_WIDTH = 5;
+    /** Widest path searched for a ship, whose long searches over open water a wider one makes too costly, and highest path searched for any driveable. */
     private static final int MAX_PATH_SIZE = 3;
 
     private static final Map<Level, SeatReservations> RESERVATIONS = new WeakHashMap<>();
@@ -145,13 +150,34 @@ public final class NpcDrivers
     {
         if (!(mob instanceof EntityNPCInterface npc) || npc.level().isClientSide || !enabled(npc))
             return Optional.empty();
-        return drivenSeat(npc).filter(seat -> !aircraft(seat)).map(ISeat::getDriveable).map(driveable -> new PathSize(pathSize(driveable.getBbWidth()), pathSize(driveable.getBbHeight())));
+        return drivenSeat(npc).filter(seat -> !aircraft(seat)).map(seat ->
+        {
+            Entity driveable = seat.getDriveable();
+            boolean ship = seat.getDriveableType().map(IDriveableType::isShip).orElse(false);
+            return new PathSize(pathWidth(hullWidth(driveable), ship), pathSize(driveable.getBbHeight()));
+        });
     }
 
-    /** @return blocks of path that a driveable so many blocks across needs, counted as vanilla does for a mob, within the bounds searched */
+    /**
+     * @return blocks across the driveable's hull from side to side, so that a jeep or a light tank is pathed through
+     *         streets a heavy tank does not fit; its entity box, which is as wide as the hull is long, where its definition
+     *         has no hull shapes
+     */
+    static double hullWidth(Entity driveable)
+    {
+        return FlansEntityTypes.getDriveableType(driveable).flatMap(FlansEntityTypes::getHullFootprint).map(HullFootprint::width).orElse((double) driveable.getBbWidth());
+    }
+
+    /** @return blocks of path that a driveable so many blocks high needs, counted as vanilla does for a mob, within the bounds searched */
     static int pathSize(double size)
     {
         return Mth.clamp(Mth.floor(size + 1D), 1, MAX_PATH_SIZE);
+    }
+
+    /** @return blocks of path that a driveable so many blocks across needs, counted as vanilla does for a mob, within the bounds searched */
+    static int pathWidth(double size, boolean ship)
+    {
+        return Mth.clamp(Mth.floor(size + 1D), 1, ship ? MAX_PATH_SIZE : MAX_PATH_WIDTH);
     }
 
     /**

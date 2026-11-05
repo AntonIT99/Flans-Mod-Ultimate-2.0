@@ -6,6 +6,7 @@ ShortName MG42Hand
 Icon MG42
 Colour 255 255 255
 Model ww2.MG42Hand
+animAimOffset 0 2.3059809 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.33594 0.19687 0

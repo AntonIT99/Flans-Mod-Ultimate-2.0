@@ -185,6 +185,14 @@ class NpcEquipmentHookContractTest
     }
 
     @Test
+    void movementLimitsReachEveryFinalTravelCallIncludingRiderControls() throws IOException
+    {
+        MethodNode travel = method(read(NPC), "(Lnet/minecraft/world/phys/Vec3;)V", "m_7023_", "travel");
+        // This older NeoForge build has one rider-control call and one ordinary AI call, without a separate mounted-flight branch.
+        assertEquals(2, calls(travel, "net/minecraft/world/entity/PathfinderMob", "travel", "(Lnet/minecraft/world/phys/Vec3;)V"));
+    }
+
+    @Test
     void navigationAndTargetingHooksMatchTheInstalledGoals() throws IOException
     {
         ClassNode ranged = read("noppes/npcs/ai/EntityAIRangedAttack");

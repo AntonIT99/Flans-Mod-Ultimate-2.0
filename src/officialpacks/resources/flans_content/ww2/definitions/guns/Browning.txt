@@ -6,6 +6,7 @@ ShortName BrowningHand
 Icon Browning
 Colour 255 255 255
 Model ww2.BrowningHand
+animAimOffset 0 2.52495523 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.19531 0.16172 0

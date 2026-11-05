@@ -6,6 +6,7 @@ import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
+import com.flansmodultimate.common.item.tooltip.HeatDamageTooltip;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
@@ -314,6 +315,9 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
                 }
             }
 
+            if (configType.isShowDamage() && ammoTypes.stream().anyMatch(ammo -> ammo instanceof BulletType bullet && bullet.isHeat()))
+                tooltipComponents.add(Component.translatable(HeatDamageTooltip.NOTE).withStyle(ChatFormatting.GRAY));
+
             if (configType.getPrimaryFunction().isMelee() || configType.getSecondaryFunction().isMelee())
             {
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
@@ -392,6 +396,13 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
 
     private DamageTooltipValues getDamageTooltipValues(ShootableType shootableType, ItemStack stack)
     {
+        if (shootableType instanceof BulletType bullet && bullet.isHeat())
+        {
+            FireableGun weapon = new FireableGun(configType, stack, null, null, EnumMovement.NONE, false);
+            weapon.applyAmmunition(bullet);
+            String heat = HeatDamageTooltip.range(bullet, new FiredShot(weapon, bullet, null, null, 0));
+            return new DamageTooltipValues(false, IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1), false, "", false, "", true, heat, true, heat);
+        }
         if (shootableType.useKineticDamageSystem())
             return new DamageTooltipValues(true, IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1), false, "", false, "", false, "", false, "");
 
@@ -594,7 +605,9 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         data.updateHeldGuns(player);
         ensureGunTags(gunStack);
 
-        if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
+        if (configType.isBayonetMode(gunStack))
+            handleBayonetMode(level, player, data, gunStack, hand);
+        else if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
         {
             EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand, level.registryAccess());
             if (decision == EnumFireDecision.RELOAD)
@@ -621,6 +634,17 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
 
         if (soundDelay > 0)
             soundDelay--;
+    }
+
+    private void handleBayonetMode(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
+    {
+        if (data.isShooting(hand))
+        {
+            data.setShooting(hand, false);
+            PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
+        }
+        if (data.isShootKeyPressed(hand) && !data.isReloading(hand) && !data.isSecondaryModeSwitching(hand))
+            gunItemHandler.doBayonetAttack(level, player, data, gunStack, hand);
     }
 
     private void ensureGunTags(ItemStack stack)
@@ -736,14 +760,48 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         return emptySlots;
     }
 
+    /** Whether the gun still holds live rounds, which makes its next reload a tactical one. */
+    public boolean hasLiveRounds(ItemStack gunStack, HolderLookup.Provider registries)
+    {
+        return !getBulletItemStackList(gunStack, registries).isEmpty();
+    }
+
+    /**
+     * Rounds a round-by-round reload loads (Tyrants and Plebeians {@code UseLoopReloadAnimation}): a single-magazine gun
+     * that still holds rounds only tops up the missing ones. Zero when the next reload is an ordinary one.
+     */
+    public int getLoopReloadRounds(ItemStack gunStack, HolderLookup.Provider registries)
+    {
+        if (!configType.getKeyframes().isLoopReloadAnimation() || configType.getNumAmmoItemsInGun(gunStack) != 1 || configType.getSecondaryFire(gunStack))
+            return 0;
+        ItemStack loaded = getAmmoItemStack(gunStack, 0, registries);
+        if (loaded == null || !(loaded.getItem() instanceof ShootableItem) || !ShootableItem.hasRoundsLeft(loaded))
+            return 0;
+        return Math.max(0, ShootableItem.getMaxRounds(loaded) - ShootableItem.getRoundsRemaining(loaded));
+    }
+
     public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand)
+    {
+        return getActualReloadTime(gunStack, registries, otherHand, null);
+    }
+
+    /** Worn pouch modifiers are applied before the single-round reload/cadence rule. */
+    public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand, @Nullable LivingEntity holder)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
         boolean tactical = getBulletItemStackList(gunStack, registries).stream()
             .anyMatch(ammo -> GunHandlingTiming.tacticalReload(true, maxAmmo, ShootableItem.getMaxRounds(ammo), configType.getTacticalReloadTime()));
         float baseTime = configType.getReloadTime(gunStack, tactical);
+        int loopRounds = getLoopReloadRounds(gunStack, registries);
+        if (loopRounds > 0)
+        {
+            ItemStack loaded = getAmmoItemStack(gunStack, 0, registries);
+            baseTime = configType.getStagedReloadTime(gunStack) / Math.max(1, ShootableItem.getMaxRounds(loaded)) * loopRounds;
+        }
         float reloadTime = (maxAmmo <= 1) ? baseTime : (baseTime / maxAmmo) * getReloadCount(gunStack, registries);
         reloadTime = EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
+        if (holder != null)
+            reloadTime *= com.flansmodultimate.common.guns.ReloadPouchSupport.multiplier(holder, gunStack);
         // A gun holding a single round reloads after every shot, so the shorter of its
         // reload and its cadence sets the gap between shots (see GunHandlingTiming.reloadWait).
         if (reloadTime > 0F && maxAmmo <= 1 && !configType.getAmmoTypes().isEmpty() && configType.getAmmoTypes().stream().allMatch(ammo -> ammo.getRoundsPerItem() <= 1))

@@ -7,9 +7,10 @@ Icon trenchgun
 Colour 255 255 255
 DeployedModel None
 Model ww2.Trenchgun
+animAimOffset 0 0.42760852 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
-animMuzzleFlashPoint 1.2085 0.36804 -0.00659
+animMuzzleFlashPoint 1.2085 0.36804 0.01216
 animFlashScale 2.84
 Texture trenchgun
 Paintjob trenchgun_acacia trenchgun_acacia orange 2

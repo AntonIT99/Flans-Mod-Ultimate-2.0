@@ -7,9 +7,10 @@ Icon thompson
 Colour 255 255 255
 DeployedModel None
 Model ww2.Thompson
+animAimOffset 0 0.7149808 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
-animMuzzleFlashPoint 1.38616 0.54844 -0.00904
+animMuzzleFlashPoint 1.38616 0.54844 0.00971
 animFlashScale 2.07
 Texture thompson
 Paintjob thompson_acacia thompson_acacia orange 2

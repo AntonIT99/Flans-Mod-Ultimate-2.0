@@ -227,8 +227,9 @@ public final class BotEditor
             for (CrewPost post : CrewPost.values())
             {
                 String crew = force.crewClass(scope, post);
-                if (crew != null && !crew.isEmpty() && !BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(crew) && !classes.contains(crew))
-                    problems.add(Component.translatable(PREFIX + "unknown_crew_class", team, crew, scope.isEmpty() ? post.id() : scope + "/" + post.id()));
+                for (String playerClass : BotSettingsText.crewClasses(crew))
+                    if (!classes.contains(playerClass))
+                        problems.add(Component.translatable(PREFIX + "unknown_crew_class", team, playerClass, scope.isEmpty() ? post.id() : scope + "/" + post.id()));
             }
     }
 

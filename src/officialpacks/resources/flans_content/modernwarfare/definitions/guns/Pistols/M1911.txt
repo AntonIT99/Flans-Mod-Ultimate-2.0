@@ -8,6 +8,7 @@ Icon Colt45
 Colour 255 255 255
 DeployedModel None
 Model mw.M1911
+animAimOffset 0 3.22829371 0
 Texture M1911
 ModelScale 0.18
 Paintjob colt45_stoic_blue m1911_stoic_blue blue 2

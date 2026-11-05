@@ -38,7 +38,7 @@ public final class DriveableMuzzleFlashes
     public static void bankFired(Driveable driveable, boolean secondary, int[] points, int[] barrels)
     {
         DriveableType type = driveable.getConfigType();
-        if (type == null || !type.isDefaultMuzzleFlash() || !hasMuzzleFlash(type.weaponType(secondary)))
+        if (type == null || !type.isDefaultMuzzleFlash() || !hasMuzzleFlash(type.weaponType(secondary), type.isShellMuzzleFlash()))
             return;
         List<ShootPoint> shootPoints = type.shootPoints(secondary);
         for (int i = 0; i < points.length; i++)
@@ -71,9 +71,9 @@ public final class DriveableMuzzleFlashes
         spawnGunParticle(info.getGunType(), origin, direction);
     }
 
-    private static boolean hasMuzzleFlash(EnumWeaponType weapon)
+    private static boolean hasMuzzleFlash(EnumWeaponType weapon, boolean shellEnabled)
     {
-        return weapon == EnumWeaponType.GUN || weapon == EnumWeaponType.SHELL;
+        return weapon == EnumWeaponType.GUN || shellEnabled && weapon == EnumWeaponType.SHELL;
     }
 
     private static void add(Driveable driveable, Flash flash)

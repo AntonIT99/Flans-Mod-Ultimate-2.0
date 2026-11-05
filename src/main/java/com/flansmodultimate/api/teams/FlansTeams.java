@@ -26,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * Entry point to the Teams game modes for addons: the rotation, the round being played, the events of a round, and
@@ -134,6 +135,19 @@ public final class FlansTeams
     public static void applyBotHealthOverride(LivingEntity entity, boolean bot)
     {
         manager().ifPresent(manager -> com.flansmodultimate.common.teams.TeamsHealth.apply(entity, bot ? manager.getBotHealth() : 0));
+    }
+
+    /**
+     * How long the bodies of an addon's fallen bots stay after their death animation, by the Teams {@code corpses} and
+     * {@code corpseLife} rules. A corpse kept until the round ends should be removed with the round's other bots. Server
+     * thread only.
+     *
+     * @return the seconds a corpse stays, 0 to keep it until the round ends, or empty when the rule is off or off the
+     *         server thread
+     */
+    public static OptionalInt getBotCorpseLife()
+    {
+        return manager().filter(TeamsManager::isCorpses).map(manager -> OptionalInt.of(manager.getCorpseLife())).orElse(OptionalInt.empty());
     }
 
     /**

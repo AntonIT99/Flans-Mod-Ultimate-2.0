@@ -26,7 +26,7 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcSkinResolver
 {
-    private static final String STEVE = "customnpcs:textures/entity/humanmale/steve.png";
+    static final String STEVE = "customnpcs:textures/entity/humanmale/steve.png";
 
     public static void apply(EntityCustomNpc npc)
     {

@@ -8,6 +8,7 @@ Icon RPK
 Colour 255 255 255
 DeployedModel None
 Model mw.RPK
+animAimOffset 0 6.46298245 0
 Texture RPK
 ModelScale 0.18
 Paintjob rpk_stoic_blue rpk_stoic_blue blue 3

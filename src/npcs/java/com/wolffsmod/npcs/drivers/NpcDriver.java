@@ -19,6 +19,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -51,6 +52,19 @@ public final class NpcDriver
 {
     /** Blocks of path ahead the driveable steers for, beyond half its width. */
     private static final double LOOKAHEAD = 6D;
+    /**
+     * Blocks of path ahead the driveable steers for at the least, beyond half its width, where its hull would run into
+     * terrain on the straight way to any point further along.
+     */
+    private static final double NEAR_LOOKAHEAD = 2D;
+    /** Ticks after getting stuck for which the driveable keeps clear of terrain by an extra margin as it cuts corners. */
+    private static final int CAREFUL_TICKS = 200;
+    /** Blocks kept clear on each side of the hull meanwhile. */
+    private static final double CAREFUL_MARGIN = 1D;
+    /** Manoeuvres out of being stuck after which the NPC searches its path afresh from where it backed up to. */
+    private static final int REPATH_AFTER = 2;
+    /** Degrees a tracked vehicle has to come round within the stuck interval while it turns on the spot, not to count as stuck. */
+    private static final float STUCK_TURN = 3F;
     /** Hull lengths of path ahead a ship steers for, which it needs to begin a turn early enough to answer it. */
     private static final double SHIP_LOOKAHEAD_LENGTHS = 1.5D;
     /** Nodes beyond its progress searched for the node nearest the driveable. */
@@ -116,7 +130,10 @@ public final class NpcDriver
     /** Where the driveable was when the current check for being stuck began, and when. */
     @Nullable
     private Vec3 anchor;
+    private float anchorYaw;
     private long anchorTime;
+    /** Game time until which the driveable keeps an extra margin clear of terrain, after it got stuck. */
+    private long carefulUntil;
     /** Where the driveable first got stuck; it has to get well away from there to count as free again. */
     @Nullable
     private Vec3 stuckAt;
@@ -234,7 +251,8 @@ public final class NpcDriver
         arrival = mechaArrival(npc, meleeReach, arrival);
         Route route = fightingCourse(npc, seat, position, heading);
         if (route == null)
-            route = route(npc, position, lookahead(driveable, ship(seat)), NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
+            // A ship keeps to its own waters; only a vehicle's hull is kept off the terrain beside its path.
+            route = route(npc, ship(seat) || mecha ? null : driveable, position, lookahead(driveable, ship(seat)), NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
         if (route == null)
         {
             anchor = null;
@@ -256,8 +274,13 @@ public final class NpcDriver
         // A ship steams on; anything else without a stabiliser stands for a moment to shoot, steering on as it does.
         controls = haltForFire(npc, seat, mecha, meleeReach, controls, speed);
         if (recovery > 0)
+        {
             recovery--;
-        else if (stuck(position, pushes(controls, mecha), now) && !startRecovery(controls))
+            // Backing out of the same spot again and again means the path itself leads into it: search it afresh from here.
+            if (recovery == 0 && recoveries >= REPATH_AFTER)
+                npc.getNavigation().recomputePath();
+        }
+        else if (stuck(position, MountMotion.yaw(heading), pushes(controls, mecha), turns(controls, mecha, tracked), now) && !startRecovery(controls, now))
             return false;
         report(mecha, route.steer(), controls, off, route.distance(), speed);
         act(npc, seat, driveable, mecha, controls, off);
@@ -392,7 +415,7 @@ public final class NpcDriver
         course = null;
         if (!NpcCombatMovement.allowed(npc))
             return null;
-        Route pursuit = route(npc, position, 2D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
+        Route pursuit = route(npc, null, position, 2D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
         Vec3 destination = pursuit == null ? target.position() : pursuit.steer();
         return NpcCombatMovement.permits(npc, destination) ? new Route(destination, distance) : null;
     }
@@ -427,12 +450,12 @@ public final class NpcDriver
     @Nullable
     private Route groundCourse(EntityNPCInterface npc, ISeat seat, LivingEntity target, Vec3 position)
     {
-        Route flank = armorCourse(npc, target, position);
+        Route flank = armorCourse(npc, seat, target, position);
         return flank != null ? flank : lateralCourse(npc, seat, target, position);
     }
 
     @Nullable
-    private Route armorCourse(EntityNPCInterface npc, LivingEntity target, Vec3 position)
+    private Route armorCourse(EntityNPCInterface npc, ISeat seat, LivingEntity target, Vec3 position)
     {
         Vec3 flank = NpcVehicleCombat.armorFlank(npc, target);
         if (flank == null)
@@ -447,7 +470,8 @@ public final class NpcDriver
             armorOrdered = flank;
             armorOrderedAt = now;
         }
-        return route(npc, position, LOOKAHEAD + NpcVehicleThreats.platform(npc).getBbWidth() * 0.5D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
+        Entity hull = NpcVehicleThreats.platform(npc);
+        return route(npc, ship(seat) ? null : hull, position, LOOKAHEAD + hull.getBbWidth() * 0.5D, NpcDrivers.pathSize(npc).map(size -> size.width() * 0.5D).orElse(0.5D));
     }
 
     private double combatDistance(EntityNPCInterface npc, ISeat seat, LivingEntity target)
@@ -639,12 +663,13 @@ public final class NpcDriver
         drivingSince = now;
     }
 
-    /** Starts a manoeuvre out of being stuck. @return false once the NPC has tried too often */
-    private boolean startRecovery(Set<DriveControl> controls)
+    /** Starts a manoeuvre out of being stuck, after which the driveable keeps clear of terrain for a while. @return false once the NPC has tried too often */
+    private boolean startRecovery(Set<DriveControl> controls, long now)
     {
         if (++recoveries > GIVE_UP)
             return false;
         recovery = RECOVERY_TICKS;
+        carefulUntil = now + CAREFUL_TICKS;
         recoveryBackward = !controls.contains(DriveControl.BACKWARD);
         return true;
     }
@@ -678,7 +703,7 @@ public final class NpcDriver
         Set<DriveControl> controls = pilot.fly(npc, aircraft, mode, goal(npc), NpcBlastSafety.standoff(npc, fireReach()), bombRun(npc, seat, aircraft));
         report = new Report(pilot.getPhase().name().toLowerCase(Locale.ROOT), pilot.getPoint(), controls, pilot::describe);
         // An aircraft that cannot get off the ground, for want of fuel or of room, is given up.
-        if (stuck(aircraft.position(), pilot.isRolling(), now) && ++recoveries > GIVE_UP)
+        if (stuck(aircraft.position(), 0F, pilot.isRolling(), false, now) && ++recoveries > GIVE_UP)
             return false;
         if (!seat.setAutomatedDriving(controls))
             return true;
@@ -785,15 +810,29 @@ public final class NpcDriver
         return walks || mecha && (controls.contains(DriveControl.LEFT) || controls.contains(DriveControl.RIGHT));
     }
 
-    /** Whether the driveable has been driven without moving for a while. */
-    private boolean stuck(Vec3 position, boolean pushing, long now)
+    /** Whether a tracked vehicle turns on the spot, which a wall along its side can hold it from as surely as one ahead. */
+    private static boolean turns(Set<DriveControl> controls, boolean mecha, boolean tracked)
+    {
+        return tracked && !mecha && (controls.contains(DriveControl.LEFT) || controls.contains(DriveControl.RIGHT));
+    }
+
+    /**
+     * Whether the driveable has been driven without moving for a while, or a tracked one turned on the spot without coming
+     * round.
+     *
+     * @param yaw
+     *            where its heading points
+     * @param turning
+     *            whether it turns on the spot, which counts as moving as long as it comes round
+     */
+    private boolean stuck(Vec3 position, float yaw, boolean pushing, boolean turning, long now)
     {
         if (stuckAt != null && position.distanceToSqr(stuckAt) > FREE_DISTANCE * FREE_DISTANCE)
         {
             stuckAt = null;
             recoveries = 0;
         }
-        if (!pushing || now - drivingSince < START_GRACE)
+        if (!pushing && !turning || now - drivingSince < START_GRACE)
         {
             anchor = null;
             return false;
@@ -801,12 +840,14 @@ public final class NpcDriver
         if (anchor == null)
         {
             anchor = position;
+            anchorYaw = yaw;
             anchorTime = now;
             return false;
         }
         if (now - anchorTime < STUCK_INTERVAL)
             return false;
-        boolean moved = anchor.distanceToSqr(position) >= STUCK_DISTANCE * STUCK_DISTANCE;
+        // A vehicle that only comes round while it pushes against something still gets nowhere.
+        boolean moved = anchor.distanceToSqr(position) >= STUCK_DISTANCE * STUCK_DISTANCE || !pushing && Math.abs(Mth.wrapDegrees(yaw - anchorYaw)) >= STUCK_TURN;
         anchor = null;
         if (moved)
             return false;
@@ -1028,13 +1069,17 @@ public final class NpcDriver
     }
 
     /**
-     * Reads the point to steer for and the distance to the goal off the NPC's path; none without a path.
+     * Reads the point to steer for and the distance to the goal off the NPC's path; none without a path. The point lies as
+     * far along the path as the lookahead reaches, but no further than the hull can drive to in a straight line without
+     * running into terrain: cutting the corner of a building the path goes round is what drives a vehicle into its wall.
      *
+     * @param hull
+     *            the driveable whose width has to fit along the straight way to that point; null to not check it
      * @param middle
      *            blocks from a node's corner to the middle of the path: half the width it was searched for
      */
     @Nullable
-    private Route route(EntityNPCInterface npc, Vec3 position, double lookahead, double middle)
+    private Route route(EntityNPCInterface npc, @Nullable Entity hull, Vec3 position, double lookahead, double middle)
     {
         Path current = npc.getNavigation().getPath();
         if (current == null || current.isDone() || current.getNodeCount() == 0)
@@ -1050,6 +1095,9 @@ public final class NpcDriver
         progress = nearest(current, position, Math.min(progress, current.getNodeCount() - 1), middle);
         // Steering for a node further along keeps the driveable from turning back to one it has just passed.
         Vec3 steer = node(current, progress, middle);
+        int furthest = progress;
+        int near = progress;
+        double nearReach = hull == null ? lookahead : Math.min(lookahead, NEAR_LOOKAHEAD + hull.getBbWidth() * 0.5D);
         double travelled = horizontal(position, steer);
         for (int index = progress + 1; index < current.getNodeCount(); index++)
         {
@@ -1058,8 +1106,33 @@ public final class NpcDriver
             if (travelled > lookahead)
                 break;
             steer = next;
+            furthest = index;
+            if (travelled <= nearReach)
+                near = index;
         }
+        if (hull != null && furthest > near)
+            steer = node(current, clearNode(current, hull, position, near, furthest, middle), middle);
         return new Route(steer, horizontal(position, node(current, current.getNodeCount() - 1, middle)));
+    }
+
+    /**
+     * @param near
+     *            the node steered for, however close, when the hull cannot drive straight to any further one
+     * @return the furthest node up to the given one that the hull drives to in a straight line without running into
+     *         terrain, with a margin to spare while it is being careful after getting stuck
+     */
+    private int clearNode(Path current, Entity hull, Vec3 position, int near, int furthest, double middle)
+    {
+        Level level = hull.level();
+        double width = NpcDrivers.hullWidth(hull) + (level.getGameTime() < carefulUntil ? CAREFUL_MARGIN * 2D : 0D);
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        DriveCorridor.Solid solid = (x, y, z) -> level.isLoaded(cursor.set(x, y, z)) && !level.getBlockState(cursor).getCollisionShape(level, cursor).isEmpty();
+        for (int index = furthest; index > near; index--)
+        {
+            if (DriveCorridor.clear(position, node(current, index, middle), width, solid))
+                return index;
+        }
+        return near;
     }
 
     private static int nearest(Path path, Vec3 position, int from, double middle)
@@ -1125,6 +1198,7 @@ public final class NpcDriver
         path = null;
         progress = 0;
         anchor = null;
+        carefulUntil = 0L;
         stuckAt = null;
         recovery = 0;
         recoveries = 0;

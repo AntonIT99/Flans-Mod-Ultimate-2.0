@@ -7,9 +7,10 @@ Icon mp44
 Colour 255 255 255
 DeployedModel None
 Model ww2.Mp44
+animAimOffset 0 9 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
-animMuzzleFlashPoint 0.96429 0.3817 -0.00703
+animMuzzleFlashPoint 0.96429 0.3817 0.08047
 animFlashScale 12.44
 Texture SkinSTG44
 ModelScale 0.06

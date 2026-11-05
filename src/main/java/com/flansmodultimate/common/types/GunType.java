@@ -6,9 +6,11 @@ import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.*;
+import com.flansmodultimate.common.types.keyframe.GunKeyframeConfig;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -170,6 +172,12 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected float tacticalReloadTime = -1F;
     @Getter
     protected float tacticalReloadMultiplier = 0.8F;
+    /**
+     * Ticks to load a full magazine round by round (Tyrants and Plebeians). With {@code UseLoopReloadAnimation}, a
+     * single-magazine gun that still holds rounds only loads the missing ones and takes this share of the time.
+     */
+    @Getter
+    protected float stagedReloadTime = -1F;
     @Getter
     protected float secondarySwitchTime = 8F;
     @Getter
@@ -439,6 +447,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected String actionSound;
+    @Getter
+    protected String actionEndSound;
     /**
      * The sound to play upon shooting on last round
      */
@@ -476,9 +486,31 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected String modeSwitchSound = FlansModSounds.SOUND_SWITCH_FIRING_MODE;
-    /**
-     * The sound to play while holding the weapon in the hand
-     */
+    /** Sound played once when switching to this weapon. */
+    @Getter
+    protected String equipSound;
+    @Getter
+    protected Vector3f ironSightOffset = new Vector3f();
+    @Getter
+    protected float ironSightPitch;
+    /** Authored model alignment from FirstPersonFrame; null uses 1.7.10. */
+    @Getter @Nullable
+    protected EnumGunFirstPersonFrame firstPersonFrame;
+    @Getter
+    protected float aimTimeConstant = 0.66F;
+    /** Negative means use the original model sprint animation. Zero switches instantly. */
+    @Getter
+    protected float runPosTime = -1F;
+    @Getter
+    protected boolean bow;
+    @Getter
+    protected boolean oldGun;
+    @Getter
+    protected boolean repeatingGun;
+    @Getter
+    protected boolean heavy;
+
+    /** The sound to play while holding the weapon in the hand. */
     @Getter
     protected String idleSound;
     /**
@@ -650,6 +682,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /** Thermal imaging while looking through the gun's own scope, from the Labjac Edition's {@code HasThermalVision} */
     protected boolean thermalVision;
 
+    /** Whether shots eject spent casings, as an authored casing model or the default casing particle; off for caseless weapons */
+    @Getter
+    protected boolean ejectCasings = true;
     /**
      * For adding a bullet casing model to render
      */
@@ -658,6 +693,22 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected String casingModelClassName = StringUtils.EMPTY;
     @Getter
     protected ResourceLocation casingTexture;
+    /*
+     * Tyrants and Plebeians smoke puffs. Its parser swaps the two settings, so MuzzleSmokeModel and MuzzleSmokeTexture
+     * pick the chamber smoke and ChamberSmokeModel and ChamberSmokeTexture the muzzle smoke; packs made for it rely on that.
+     */
+    protected String muzzleSmokeModelName = StringUtils.EMPTY;
+    protected String muzzleSmokeTextureName = StringUtils.EMPTY;
+    protected String chamberSmokeModelName = StringUtils.EMPTY;
+    protected String chamberSmokeTextureName = StringUtils.EMPTY;
+    @Getter
+    protected String muzzleSmokeModelClassName = StringUtils.EMPTY;
+    @Getter
+    protected ResourceLocation muzzleSmokeTexture;
+    @Getter
+    protected String chamberSmokeModelClassName = StringUtils.EMPTY;
+    @Getter
+    protected ResourceLocation chamberSmokeTexture;
     /** Class of the built-in flash selected by {@code FlashModel DefaultFlash}; named here so common code need not load it. */
     public static final String DEFAULT_FLASH_MODEL_CLASS = "com.flansmod.client.model.ModelDefaultFlash";
 
@@ -761,6 +812,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
     @Getter
     protected final GunAnimationConfig animationConfig = new GunAnimationConfig();
+    @Getter
+    protected final GunKeyframeConfig keyframes = new GunKeyframeConfig();
 
     @Override
     protected void read(TypeFile file)
@@ -783,11 +836,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         canForceReload = readValue("CanForceReload", canForceReload, file);
         reloadTime = readValue("ReloadTime", reloadTime, file);
         readHandling(file);
+        keyframes.read(file);
         consumeBulletType = readValue("ConsumeBulletType", consumeBulletType, file);
         bulletsPerReload = readValue("BulletsPerReload", bulletsPerReload, file);
 
         // Fire Rate
         shootDelay = readValue("ShootDelay", shootDelay, file);
+        roundsPerMin = readValue("RPM", roundsPerMin, file);
         roundsPerMin = readValue("RoundsPerMin", roundsPerMin, file);
 
         // Accuracy
@@ -841,8 +896,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         resolvedAmmo.set(null);
 
         // Lock on settings
+        canLockOnAngle = readValue("CanLockOnAngle", canLockOnAngle, file);
         canLockOnAngle = readValue("CanLockAngle", canLockOnAngle, file);
         lockOnToDriveables = readValue("LockOnToDriveables", lockOnToDriveables, file);
+        lockOnToVehicles = readValue("LockOnToVehicle", lockOnToVehicles, file);
         lockOnToVehicles = readValue("LockOnToVehicles", lockOnToVehicles, file);
         lockOnToPlanes = readValue("LockOnToPlanes", lockOnToPlanes, file);
         lockOnToMechas = readValue("LockOnToMechas", lockOnToMechas, file);
@@ -926,6 +983,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         shootSound = readSound("ShootSound", shootSound, file);
         bulletInsert = readSound("BulletInsertSound", bulletInsert, file);
         actionSound = readSound("ActionSound", actionSound, file);
+        actionEndSound = readSound("ActionEndSound", actionEndSound, file);
         lastShootSound = readSound("LastShootSound", lastShootSound, file);
         suppressedShootSound = readSound("SuppressedShootSound", suppressedShootSound, file);
         lastShootSoundSuppressed = readSound("LastSuppressedShootSound", lastShootSoundSuppressed, file);
@@ -934,6 +992,29 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         clickSoundOnEmpty = readSound("EmptyClickSound", clickSoundOnEmpty, file);
         clickSoundOnEmptyRepeated = readSound("EmptyClickSoundRepeated", clickSoundOnEmptyRepeated, file);
         modeSwitchSound = readSound("ModeSwitchSound", modeSwitchSound, file);
+        equipSound = readSound("EquipSound", equipSound, file);
+        ironSightOffset = readVector("IronSightOffset", ironSightOffset, file);
+        if (!Float.isFinite(ironSightOffset.x) || !Float.isFinite(ironSightOffset.y) || !Float.isFinite(ironSightOffset.z))
+            ironSightOffset = new Vector3f();
+        aimTimeConstant = readValue("AimTimeConstant", aimTimeConstant, file);
+        aimTimeConstant = Float.isFinite(aimTimeConstant) && aimTimeConstant >= 0F ? Math.min(0.95F, aimTimeConstant) : 0.66F;
+        runPosTime = readValue("RunPosTime", runPosTime, file);
+        runPosTime = Float.isFinite(runPosTime) && runPosTime >= 0F ? Math.min(1200F, runPosTime) : -1F;
+        ironSightPitch = readValue("IronSightPitch", ironSightPitch, file);
+        if (!Float.isFinite(ironSightPitch))
+            ironSightPitch = 0F;
+        String configuredFrame = readValue("FirstPersonFrame", firstPersonFrame == null ? StringUtils.EMPTY : firstPersonFrame.getDisplayName(), file);
+        if (!configuredFrame.isBlank())
+        {
+            EnumGunFirstPersonFrame parsedFrame = EnumGunFirstPersonFrame.parse(configuredFrame);
+            if (parsedFrame == null)
+                FlansLog.log.warn("Unknown FirstPersonFrame '{}' in {}; expected 1.7.10 or 1.12.2", configuredFrame, originalShortName);
+            firstPersonFrame = parsedFrame;
+        }
+        bow = readValue("Bow", bow, file);
+        oldGun = readValue("OldGun", oldGun, file);
+        repeatingGun = readValue("RepeatingGun", repeatingGun, file);
+        heavy = readValue("Heavy", heavy, file);
         idleSound = readSound("IdleSound", idleSound, file);
         toggleOnSound = readSound("ToggleOnSound", toggleOnSound, file);
         toggleOffSound = readSound("ToggleOffSound", toggleOffSound, file);
@@ -997,8 +1078,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         deployable = readValue("Deployable", deployable, file);
         deployableModelName = readValue("DeployedModel", deployableModelName, file);
         deployableTextureName = readResource("DeployedTexture", deployableTextureName, file);
+        ejectCasings = readValue("EjectCasings", ejectCasings, file);
         casingModelName = readValue("CasingModel", casingModelName, file);
         casingTextureName = readResource("CasingTexture", casingTextureName, file);
+        muzzleSmokeModelName = readValue("ChamberSmokeModel", muzzleSmokeModelName, file);
+        muzzleSmokeTextureName = readResource("ChamberSmokeTexture", muzzleSmokeTextureName, file);
+        chamberSmokeModelName = readValue("MuzzleSmokeModel", chamberSmokeModelName, file);
+        chamberSmokeTextureName = readResource("MuzzleSmokeTexture", chamberSmokeTextureName, file);
         flashModelName = readValue("FlashModel", flashModelName, file);
         flashTextureName = readResource("FlashTexture", flashTextureName, file);
         muzzleFlashModelName = readValue("MuzzleFlashModel", muzzleFlashModelName, file);
@@ -1090,11 +1176,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected void readClient(TypeFile file)
     {
         animationConfig.read(file);
+        keyframes.loadAnimations(contentPack, file);
         super.readClient(file);
         deployableModelClassName = findModelClass(deployableModelName, contentPack);
         deployableTexture = loadTexture(deployableTextureName, this);
         casingModelClassName = findModelClass(casingModelName, contentPack);
         casingTexture = loadTexture(casingTextureName, this);
+        muzzleSmokeModelClassName = findModelClass(muzzleSmokeModelName, contentPack);
+        muzzleSmokeTexture = loadTexture(muzzleSmokeTextureName, this);
+        chamberSmokeModelClassName = findModelClass(chamberSmokeModelName, contentPack);
+        chamberSmokeTexture = loadTexture(chamberSmokeTextureName, this);
         flashModelClassName = findModelClass(flashModelName, contentPack);
         flashTexture = StringUtils.isBlank(flashTextureName) && DEFAULT_FLASH_MODEL_CLASS.equalsIgnoreCase(flashModelClassName)
             ? FlansModTextures.TEXTURE_DEFAULTFLASH
@@ -1964,7 +2055,19 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /** Tactical selection is made from the ammunition present before a reload is queued. */
     public float getReloadTime(ItemStack stack, boolean tactical)
     {
-        float stackReloadTime = GunHandlingTiming.reloadTime(reloadTime, tacticalReloadTime, tacticalReloadMultiplier, tactical);
+        return applyReloadTimeModifiers(stack, GunHandlingTiming.reloadTime(reloadTime, tacticalReloadTime, tacticalReloadMultiplier, tactical));
+    }
+
+    /** Time to load a whole magazine round by round; falls back to the tactical reload time without {@code StagedReloadTime}. */
+    public float getStagedReloadTime(ItemStack stack)
+    {
+        float baseTime = stagedReloadTime > 0F ? stagedReloadTime : GunHandlingTiming.reloadTime(reloadTime, tacticalReloadTime, tacticalReloadMultiplier, true);
+        return applyReloadTimeModifiers(stack, baseTime);
+    }
+
+    private float applyReloadTimeModifiers(ItemStack stack, float baseTime)
+    {
+        float stackReloadTime = baseTime;
 
         if (getGrip(stack) != null && getSecondaryFire(stack))
             stackReloadTime = getGrip(stack).secondaryReloadTime;
@@ -2090,10 +2193,29 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         ItemStackData.update(stack, tag -> tag.putBoolean(GunItem.NBT_SECONDARY_FIRE, mode));
     }
 
+    public boolean isBayonetMode(ItemStack stack)
+    {
+        AttachmentType grip = getGrip(stack);
+        return grip != null && grip.isBayonet() && getSecondaryFire(stack);
+    }
+
+    public Optional<ShootableType> getBayonetAmmo(ItemStack stack)
+    {
+        AttachmentType grip = getGrip(stack);
+        if (grip == null || !grip.isBayonet())
+            return Optional.empty();
+        return ShootableType.findDefaultAmmo(ShootableType.findAmmoTypes(new LinkedHashSet<>(grip.getSecondaryAmmo()), grip.getContentPack()), grip.getContentPack());
+    }
+
+    public int getMeleeTime(ItemStack stack)
+    {
+        return isBayonetMode(stack) ? getGrip(stack).getBayonetMeleeTime() : meleeTime;
+    }
+
     public boolean canToggleSecondaryFire(ItemStack stack)
     {
         AttachmentType grip = getGrip(stack);
-        return grip != null && grip.secondaryFire;
+        return grip != null && (grip.secondaryFire || grip.isBayonet());
     }
 
     @Nullable
@@ -2336,6 +2458,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         tacticalReloadTime = Float.isFinite(tacticalReloadTime) ? Mth.clamp(tacticalReloadTime, -1F, 72000F) : -1F;
         tacticalReloadMultiplier = readValue("TacticalReloadMultiplier", tacticalReloadMultiplier, file);
         tacticalReloadMultiplier = Float.isFinite(tacticalReloadMultiplier) ? Mth.clamp(tacticalReloadMultiplier, 0F, 2F) : 0.8F;
+        stagedReloadTime = readValue("StagedReloadTime", stagedReloadTime, file);
+        stagedReloadTime = Float.isFinite(stagedReloadTime) ? Mth.clamp(stagedReloadTime, -1F, 72000F) : -1F;
         secondarySwitchTime = GunHandlingTiming.switchTicks(readValue("SecondarySwitchTime", secondarySwitchTime, file));
         secondaryUnSwitchTime = GunHandlingTiming.switchTicks(readValue("SecondaryUnSwitchTime", secondaryUnSwitchTime, file));
         secondarySwitchMovement = readValue("SecondarySwitchMovement", secondarySwitchMovement, file);

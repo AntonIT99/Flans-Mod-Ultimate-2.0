@@ -8,6 +8,7 @@ Icon KCASmartcarbine
 Colour 255 255 255
 DeployedModel None
 Model mw.KCASmartcarbine
+animAimOffset 0 3.15231409 0
 Texture KCASmartcarbine
 ModelScale 0.18
 Paintjob kcasmartcarbine_stoic_blue kcasmartcarbine_stoic_blue blue 3

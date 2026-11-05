@@ -44,9 +44,9 @@ class NpcLauncherReloadTest
     }
 
     @ParameterizedTest
-    @CsvSource({"MAIN_HAND,80,80,1", "MAIN_HAND,120,80,1", "MAIN_HAND,40,80,1", "OFF_HAND,80,80,1", "OFF_HAND,120,80,1", "OFF_HAND,40,80,1", "MAIN_HAND,80,80,4", "MAIN_HAND,120,80,4",
-        "MAIN_HAND,40,80,4", "OFF_HAND,80,80,4", "OFF_HAND,120,80,4", "OFF_HAND,40,80,4"})
-    void reloadOverlapsCadenceInEitherHand(InteractionHand testedHand, double shotDelay, double reloadTime, int decisionPeriod) throws ReflectiveOperationException
+    @CsvSource({"MAIN_HAND,80,80,1,1", "MAIN_HAND,120,80,1,1", "MAIN_HAND,40,80,1,1", "OFF_HAND,80,80,1,1", "OFF_HAND,120,80,1,1", "OFF_HAND,40,80,1,1", "MAIN_HAND,80,80,4,1", "MAIN_HAND,120,80,4,1",
+        "MAIN_HAND,40,80,4,1", "OFF_HAND,80,80,4,1", "OFF_HAND,120,80,4,1", "OFF_HAND,40,80,4,1", "MAIN_HAND,40,80,1,0.5", "OFF_HAND,40,80,4,0.5", "MAIN_HAND,40,80,1,1.2"})
+    void reloadOverlapsCadenceInEitherHand(InteractionHand testedHand, double shotDelay, double reloadTime, int decisionPeriod, float pouchMultiplier) throws ReflectiveOperationException
     {
         LivingEntity target = mock(LivingEntity.class);
         EntityNPCInterface npc = engagedNpc(target);
@@ -60,6 +60,7 @@ class NpcLauncherReloadTest
         var loaded = new EnumMap<InteractionHand, Boolean>(InteractionHand.class);
         var shots = new EnumMap<InteractionHand, List<Integer>>(InteractionHand.class);
         int[] tick = {0};
+        int effectiveReloadTime = (int) Math.ceil(reloadTime * pouchMultiplier);
         try (var equipment = mockStatic(FlansEquipment.class);
             var options = mockStatic(NpcEquipment.class);
             var vehicles = mockStatic(NpcVehicleState.class);
@@ -69,6 +70,7 @@ class NpcLauncherReloadTest
             var tactics = mockStatic(NpcTacticState.class);
             var roles = mockStatic(NpcInfantryRole.class))
         {
+            equipment.when(() -> FlansEquipment.getReloadTimeMultiplier(any(), any())).thenReturn(1F);
             roles.when(() -> NpcInfantryRole.of(npc)).thenReturn(ClassRole.RIFLEMAN);
             NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
@@ -76,6 +78,8 @@ class NpcLauncherReloadTest
             options.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(main);
             options.when(() -> NpcEquipment.ranged(npc)).thenReturn(true);
             options.when(() -> NpcEquipment.offHandGun(npc)).thenReturn(true);
+            equipment.when(() -> FlansEquipment.getReloadTimeMultiplier(npc, main)).thenReturn(pouchMultiplier);
+            equipment.when(() -> FlansEquipment.getReloadTimeMultiplier(npc, off)).thenReturn(pouchMultiplier);
             equipment.when(() -> FlansEquipment.getWeaponProperties(main, ItemStack.EMPTY)).thenReturn(Optional.of(properties));
             WeaponKind mainKind = new WeaponKind(properties.ranged(), properties.throwable(), properties.shield());
             equipment.when(() -> FlansEquipment.getWeaponKind(main)).thenReturn(Optional.of(mainKind));
@@ -121,9 +125,9 @@ class NpcLauncherReloadTest
             for (int i = 1; i < fired.size(); i++)
             {
                 int interval = fired.get(i) - fired.get(i - 1);
-                assertEquals((int) Math.max(shotDelay, reloadTime), interval);
+                assertEquals((int) Math.max(shotDelay, effectiveReloadTime), interval);
             }
-            feedback.verify(() -> NpcReloadFeedback.reload(npc, testedHand, (int) reloadTime), atLeast(2));
+            feedback.verify(() -> NpcReloadFeedback.reload(npc, testedHand, effectiveReloadTime), atLeast(2));
             verify(npc.getSensing(), times(400 - 400 / decisionPeriod)).tick();
             goal.stop();
             clearInvocations(npc.getSensing());
@@ -150,6 +154,7 @@ class NpcLauncherReloadTest
             var tactics = mockStatic(NpcTacticState.class);
             var roles = mockStatic(NpcInfantryRole.class))
         {
+            equipment.when(() -> FlansEquipment.getReloadTimeMultiplier(any(), any())).thenReturn(1F);
             roles.when(() -> NpcInfantryRole.of(npc)).thenReturn(ClassRole.RIFLEMAN);
             NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);
@@ -196,6 +201,7 @@ class NpcLauncherReloadTest
             var tactics = mockStatic(NpcTacticState.class);
             var roles = mockStatic(NpcInfantryRole.class))
         {
+            equipment.when(() -> FlansEquipment.getReloadTimeMultiplier(any(), any())).thenReturn(1F);
             roles.when(() -> NpcInfantryRole.of(npc)).thenReturn(ClassRole.RIFLEMAN);
             NpcVehicleState vehicle = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
             vehicles.when(() -> NpcVehicleState.of(npc)).thenReturn(vehicle);

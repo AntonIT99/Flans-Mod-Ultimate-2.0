@@ -49,6 +49,12 @@ public final class TeamsClientState
         return snapshot != null && snapshot.isVehiclesCanZoom();
     }
 
+    /** @return the seconds the round being played keeps ground blood for, or empty when each client keeps its own */
+    public static java.util.OptionalInt roundBloodLife()
+    {
+        return hasActiveRound() && snapshot.getBloodLife() > 0 ? java.util.OptionalInt.of(snapshot.getBloodLife()) : java.util.OptionalInt.empty();
+    }
+
     /** Matches legacy Teams visibility: active players cannot see spectator models. */
     public static boolean shouldHidePlayer(Player renderedPlayer)
     {

@@ -19,6 +19,23 @@ import static org.mockito.Mockito.*;
 class NpcCrewSettingsTest
 {
     @Test
+    void multipleClassesSurviveSavingAndChooseAvailableRecruitsIndependently()
+    {
+        CrewSource source = new CrewSource(CrewSource.Kind.CLASS, 1, "", "army", "driver|engineer|driver", CrewSource.RANDOM_SKIN);
+        CrewSource loaded = CrewSource.load(source.save());
+        assertEquals(source, loaded);
+        assertEquals(java.util.List.of("driver", "engineer"), loaded.classes());
+        RandomSource random = mock(RandomSource.class);
+        when(random.nextInt(2)).thenReturn(0, 1);
+        assertEquals("driver", loaded.chooseClass(java.util.List.of("driver", "engineer", "infantry"), random));
+        assertEquals("engineer", loaded.chooseClass(java.util.List.of("driver", "engineer", "infantry"), random));
+        assertEquals("engineer", loaded.chooseClass(java.util.List.of("engineer"), random));
+        assertEquals("", loaded.chooseClass(java.util.List.of("infantry"), random));
+        assertEquals("driver", source.withClass("army", "driver").chooseClass(java.util.List.of("driver"), random));
+        assertEquals(CrewSource.RANDOM_SKIN, loaded.skin());
+    }
+
+    @Test
     void aNewNpcSavesNothingAndKeepsTheDefaults()
     {
         NpcCrewSettings settings = new NpcCrewSettings();

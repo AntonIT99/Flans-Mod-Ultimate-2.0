@@ -8,6 +8,7 @@ ModelScale 0.11
 Icon Icon_WH40K_Gun_M98Lasgun_1A
 Texture Skin_WH40K_Gun_M98Lasgun_1A
 DeployedModel None
+EjectCasings False
 
 // Recipe and Inventory
 Ammo WH40K_Ammo_PowerpackLasgun

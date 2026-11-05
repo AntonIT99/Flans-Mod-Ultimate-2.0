@@ -86,6 +86,9 @@ public final class TeamsManager
     private static final String NBT_PLACE_VEHICLES = "place_vehicles";
     private static final String NBT_WEAPON_DROPS = "weapon_drops";
     private static final String NBT_MG_LIFE = "mg_life";
+    private static final String NBT_CORPSES = "corpses";
+    private static final String NBT_CORPSE_LIFE = "corpse_life";
+    private static final String NBT_BLOOD_LIFE = "blood_life";
     private static final String NBT_PLANE_LIFE = "plane_life";
     private static final String NBT_VEHICLE_LIFE = "vehicle_life";
     private static final String NBT_MECHA_LIFE = "mecha_life";
@@ -118,6 +121,8 @@ public final class TeamsManager
     public static final int DEFAULT_SPAWN_PROTECTION_SECONDS = 3;
     /** Upper bound of {@link #spawnProtectionSeconds}, so a typo cannot make a whole round invulnerable. */
     public static final int MAX_SPAWN_PROTECTION_SECONDS = 60;
+    /** The longest a ground blood splatter may be kept, in seconds. */
+    public static final int MAX_BLOOD_LIFE_SECONDS = 3600;
     public static final String DEFAULT_MOTD = "Welcome to the Teams server";
 
     public enum EnumWeaponDrop
@@ -225,6 +230,15 @@ public final class TeamsManager
     /** Allows temporary blood splatters for players and entities that opt in, including NPC soldiers. */
     @Getter
     private boolean bloodEffects = true;
+    /** Whether the bodies of fallen bots stay after their death animation instead of vanishing. Off by default. */
+    @Getter @Setter
+    private boolean corpses;
+    /** Seconds a corpse stays when {@link #corpses} is on; 0 keeps it until the round ends. */
+    @Getter
+    private int corpseLife;
+    /** Seconds ground blood splatters stay on every client; 0 leaves it to each client's own setting. */
+    @Getter
+    private int bloodLife;
     /**
      * Whether allied teams come back at each other's bases. A team without a base of its own on the
      * map does so whatever this says.
@@ -495,6 +509,16 @@ public final class TeamsManager
     {
         this.bloodEffects = bloodEffects;
         saveRuntime();
+    }
+
+    public void setCorpseLife(int seconds)
+    {
+        corpseLife = Math.max(0, seconds);
+    }
+
+    public void setBloodLife(int seconds)
+    {
+        bloodLife = Mth.clamp(seconds, 0, MAX_BLOOD_LIFE_SECONDS);
     }
 
     public void setMovieProp(boolean movieProp)
@@ -2672,6 +2696,9 @@ public final class TeamsManager
         vehicleLife = tag.contains(NBT_VEHICLE_LIFE) ? tag.getInt(NBT_VEHICLE_LIFE) : vehicleLife;
         mechaLife = tag.contains(NBT_MECHA_LIFE) ? tag.getInt(NBT_MECHA_LIFE) : mechaLife;
         aaLife = tag.contains(NBT_AA_LIFE) ? tag.getInt(NBT_AA_LIFE) : aaLife;
+        corpses = tag.getBoolean(NBT_CORPSES);
+        setCorpseLife(tag.getInt(NBT_CORPSE_LIFE));
+        setBloodLife(tag.getInt(NBT_BLOOD_LIFE));
         voting = tag.contains(NBT_VOTING) && tag.getBoolean(NBT_VOTING);
         roundsGenerator = tag.contains(NBT_ROUNDS_GENERATOR) && tag.getBoolean(NBT_ROUNDS_GENERATOR);
         currentLoadoutPoolId = tag.getString(NBT_LOADOUT_POOL);
@@ -2790,6 +2817,9 @@ public final class TeamsManager
         tag.putInt(NBT_VEHICLE_LIFE, vehicleLife);
         tag.putInt(NBT_MECHA_LIFE, mechaLife);
         tag.putInt(NBT_AA_LIFE, aaLife);
+        tag.putBoolean(NBT_CORPSES, corpses);
+        tag.putInt(NBT_CORPSE_LIFE, corpseLife);
+        tag.putInt(NBT_BLOOD_LIFE, bloodLife);
         tag.putBoolean(NBT_VOTING, voting);
         tag.putBoolean(NBT_ROUNDS_GENERATOR, roundsGenerator);
         tag.putString(NBT_LOADOUT_POOL, currentLoadoutPoolId);

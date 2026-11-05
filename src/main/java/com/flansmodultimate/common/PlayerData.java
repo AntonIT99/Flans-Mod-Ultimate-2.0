@@ -381,6 +381,8 @@ public class PlayerData
                 gunSoundPermissions.clear(hand);
             if (switched && current.getItem() instanceof GunItem gun)
             {
+                if (!player.level().isClientSide && StringUtils.isNotBlank(gun.getConfigType().getEquipSound()))
+                    PacketPlaySound.sendSoundPacket(player, gun.getConfigType().getIdleSoundRange(), gun.getConfigType().getEquipSound(), false);
                 float switchDelay = gun.getConfigType().getSwitchDelay();
                 if (switchDelay > 0F)
                     setShootTime(hand, Math.max(getShootTime(hand), switchDelay));

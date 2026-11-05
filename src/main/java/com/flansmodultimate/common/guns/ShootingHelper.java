@@ -322,6 +322,7 @@ public final class ShootingHelper
         Vec3 normal = partHit == null
             ? ModelArmourDamage.worldDirection(entity, result.armour().virtualNormal())
             : partHit.getBody().armourDirectionToWorld(partHit.getPart(), result.armour().virtualNormal());
+        ArmourImpactSounds.send(level, hit, shot.getBulletType(), result.penetration());
         ArmourImpactEffects.send(level, hit, shootingMotion, normal, shot.getProjectileMass(), result.armour(), result.blocked());
     }
 
@@ -415,23 +416,22 @@ public final class ShootingHelper
         ModUtils.destroyBlock((ServerLevel) level, pos, causingEntity, false);
     }
 
-    private static void playImpactSound(Level level, BlockPos pos, BlockState state, BulletType type)
+    static void playImpactSound(Level level, BlockPos pos, BlockState state, BulletType type)
     {
         if (level.isClientSide || !type.isHitSoundEnable())
             return;
 
-        String hitToUse = resolveImpactSound(level, pos, state, state.getBlock(), type).orElse(null);
-        if (hitToUse == null)
-            return;
-
-        PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), hitToUse, true, null);
+        String authored = type.getHitSound();
+        if (StringUtils.isNotBlank(authored))
+            PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), authored, true, null);
+        if (type.usesMaterialImpactSounds())
+            resolveMaterialImpactSound(level, pos, state).filter(sound -> !sound.equals(authored)).ifPresent(sound ->
+                PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), sound, true, null));
     }
 
-    private static Optional<String> resolveImpactSound(Level level, BlockPos pos, BlockState state, Block block, BulletType type)
+    private static Optional<String> resolveMaterialImpactSound(Level level, BlockPos pos, BlockState state)
     {
-        if (StringUtils.isNotBlank(type.getHitSound()))
-            return Optional.of(type.getHitSound());
-
+        Block block = state.getBlock();
         // special-case certain blocks if you want
         if (block == Blocks.BRICKS)
             return Optional.of(FlansModSounds.SOUND_IMPACT_BRICKS);
@@ -644,6 +644,7 @@ public final class ShootingHelper
         }
 
         playDetonateSound(level, type, position, shootable);
+        DistantDetonationSounds.send(level, type, position, shootable);
         doExplosion(level, type, position, shootable, causingEntity);
         if (!(type instanceof GrenadeType grenade && grenade.isUseVanillaExplosion()))
             spreadFire(level, type, position, true);
@@ -678,6 +679,7 @@ public final class ShootingHelper
         if (level.isClientSide)
             return;
 
+        DistantDetonationSounds.send(level, type, position, shootable);
         doExplosion(level, type, position, shootable, causingEntity);
         spreadFire(level, type, position, false);
         spawnFlakParticles(level, type, position);

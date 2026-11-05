@@ -263,10 +263,22 @@ public final class NpcCrew
         return Optional.of(vehicle);
     }
 
-    /** Rendering policy only: hidden crew remain aboard and become visible again as soon as they leave their seat. */
+    /** Rendering policy for all NPC-vehicle riders; explicit hidden-crew choices still apply only to assigned crew. */
     public static boolean hiddenAboard(Entity entity)
     {
-        return vehicleOf(entity).flatMap(vehicle -> seatOf(vehicle, entity).map(mount -> !NpcCrewSettings.of(vehicle).isSeatVisible(mount.seat()))).orElse(false);
+        if (!(entity.getVehicle() instanceof EntityNPCInterface vehicle))
+            return false;
+        return seatOf(vehicle, entity).map(mount ->
+        {
+            var model = com.wolffsmod.npcs.sim.NpcModels.flan(vehicle);
+            if (seat(entity) >= 0 && !NpcCrewSettings.of(vehicle).isSeatVisible(mount.seat()))
+                return true;
+            if (model == null)
+                return false;
+            var options = ((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions();
+            boolean doorsOpen = options.enabled(Feature.ANIMATED_MODEL) && options.enabled(Feature.DOORS_OPEN);
+            return com.flansmodultimate.api.entity.FlansEntityTypes.hidesOccupants(model.getInfoType(), doorsOpen, mount.seat());
+        }).orElse(false);
     }
 
     /**
@@ -591,7 +603,9 @@ public final class NpcCrew
     @Nullable
     private static EntityNPCInterface fromClass(ServerLevel level, Vec3 position, CrewSource source)
     {
-        FlanSoldierSelection selection = FlanSoldierSelection.resolve(source.team(), source.playerClass()).orElse(null);
+        var available = source.classes().stream().filter(name -> FlanSoldierSelection.resolve(source.team(), name).isPresent()).toList();
+        String playerClass = source.chooseClass(available, level.random);
+        FlanSoldierSelection selection = FlanSoldierSelection.resolve(source.team(), playerClass).orElse(null);
         if (selection == null)
         {
             NpcsMod.log.warn("Cannot crew a vehicle with unknown class {} of team {}", source.playerClass(), source.team());

@@ -265,6 +265,10 @@ public abstract class ShootableType extends InfoType
     /** Sound to play upon detonation */
     @Getter
     protected String detonateSound = StringUtils.EMPTY;
+    @Getter
+    protected String distantDetonateSound = StringUtils.EMPTY;
+    @Getter
+    protected float distantDetonateSoundRange = 900F;
 
     // Particles and Smoke
     /** Whether trail particles are given off */
@@ -489,6 +493,10 @@ public abstract class ShootableType extends InfoType
 
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
         detonateSound = readSound("DetonateSound", detonateSound, file);
+        distantDetonateSound = readSound("DistantDetonateSound", distantDetonateSound, file);
+        distantDetonateSoundRange = readValue("DistantDetonateSoundRange", distantDetonateSoundRange, file);
+        if (!Float.isFinite(distantDetonateSoundRange) || distantDetonateSoundRange < 0F)
+            distantDetonateSoundRange = 900F;
         readExplosionShake(file);
 
         // Particles

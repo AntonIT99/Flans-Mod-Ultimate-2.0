@@ -16,7 +16,7 @@ public final class VehicleProjectileDamageResolver
     private VehicleProjectileDamageResolver() {}
 
     /**
-     * @param shapedCharge whether the shaped-charge channel set the damage: a HEAT round defeated an armoured face
+     * @param shapedCharge whether the shaped-charge channel set the damage: a HEAT round hit a penetrable face
      *                     of a normalized-health vehicle
      */
     public record Result(float damage, boolean kineticDamage, PenetrationResult penetration, boolean shapedCharge) {}
@@ -42,12 +42,12 @@ public final class VehicleProjectileDamageResolver
         if (!penetration.penetrated())
             return new Result(0F, false, penetration, false);
 
-        if (!normalizedHealth)
+        if (!normalizedHealth && !(shapedChargeKg > 0F && Float.isFinite(shapedChargeKg)))
             return new Result(safeFixedDamage, false, penetration, false);
 
         float damage;
         boolean kinetic;
-        if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F)
+        if (!normalizedHealth || !Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F)
         {
             // Compatibility bridge: mass-less legacy ammunition keeps its fixed
             // DamageStats value and does not receive the kinetic overmatch bonus.
@@ -65,10 +65,10 @@ public final class VehicleProjectileDamageResolver
 
         // A shaped charge does its work with the jet, not with the speed of the round that carries it, so a slow
         // rocket would otherwise do almost nothing to the tank it was built to kill. Against armour it is credited
-        // with whichever channel hurts more; soft targets keep the kinetic damage and the ungated blast.
-        if (shapedChargeKg > 0F && Float.isFinite(shapedChargeKg) && safeArmor.isArmoured())
+        // with whichever channel hurts more, including on unarmoured vehicles and aircraft.
+        if (shapedChargeKg > 0F && Float.isFinite(shapedChargeKg))
         {
-            float shaped = shapedChargeDamage(shapedChargeKg, penetration.overmatch(), heatDamageReference);
+            float shaped = shapedChargeDamage(shapedChargeKg, safeArmor.isArmoured() ? penetration.overmatch() : FULL_SHAPED_CHARGE_OVERMATCH, heatDamageReference);
             if (shaped > damage)
                 return new Result(shaped, false, penetration, true);
             return new Result(damage, kinetic, penetration, true);

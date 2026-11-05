@@ -115,7 +115,7 @@ public final class WeaponShotEffects
         if (smoke && (config == null || config.showWeaponSmoke))
             ParticleHelper.spawnFromString(FlanParticles.FM_GUN_SMOKE, origin.x, origin.y, origin.z, drift.x, drift.y, drift.z, heavy ? scale * 2F : scale);
         boolean firearm = gun == null
-            || gun.getAmmoTypes().stream().anyMatch(ammo -> ammo instanceof BulletType bullet && (bullet.getWeaponType() == EnumWeaponType.GUN || bullet.getWeaponType() == EnumWeaponType.SHELL));
+            || gun.isEjectCasings() && gun.getAmmoTypes().stream().anyMatch(ammo -> ammo instanceof BulletType bullet && (bullet.getWeaponType() == EnumWeaponType.GUN || bullet.getWeaponType() == EnumWeaponType.SHELL));
         if (casing && firearm && (config == null || config.showCasingEjections))
         {
             Vec3 eject = right.scale(0.12D).add(0D, 0.09D, 0D);

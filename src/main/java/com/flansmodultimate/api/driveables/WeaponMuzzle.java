@@ -40,8 +40,16 @@ public record WeaponMuzzle(Vec3 offset, Optional<IContentType> weapon, List<Part
      *            legacy or modern particle identifier
      * @param velocity
      *            velocity in model preview coordinates, in blocks per tick
+     * @param offset
+     *            position relative to the muzzle in model preview coordinates, in blocks
      */
     @ApiStatus.Experimental
-    public record Particle(String name, Vec3 velocity)
-    {}
+    public record Particle(String name, Vec3 velocity, Vec3 offset)
+    {
+        /** Creates a particle at the muzzle with the given velocity in blocks per tick. */
+        public Particle(String name, Vec3 velocity)
+        {
+            this(name, velocity, Vec3.ZERO);
+        }
+    }
 }

@@ -13,6 +13,8 @@ Evidence roots:
 
 ---
 
+Targeted refresh (2026-11-04): authored passenger barrel counts/spacing and offset particle lists now use the shared native/NPC muzzle path, and `PassengerZoom` enables optics unless explicitly disabled. Removed the obsolete uncertain seat-weapon finding. Bayonet mode, basic PN guidance and aircraft sirens are now present; their remaining broader feature gaps are retained below. `cannonRecoil` also supplies legacy camera-kick defaults. This is not a full re-audit of other findings.
+
 ## Optics, thermal and fire control
 
 ### Ballistic fire-control solution — PARTIAL
@@ -78,7 +80,7 @@ Both legacy recoil and FancyRecoil exist. The first-shot and sustained parameter
 
 Missing: first-shot recoil, sustained per-burst recoil growth, and the elevator and zoom modifiers.
 
-### Directional melee and bayonets — MISSING
+### Directional melee and bayonets — PARTIAL
 
 Reference: `R/common/guns/GunType` (`meleeLeft/Right/Up`, `Melee{Left,Right,Up}{Time,DamagePoint,DamageOffset}`, `AddLeftNode`/`AddRightNode`/`AddUpNode`, `spear`, `lance`, `canBlock`, `shootMelee`, `swordArmorPen`), `R/common/guns/AttachmentType` (`Bayonet`, `BayonetMeleeTime`), `R/common/network/PacketBlockerino`, `PacketBolterino`
 A melee swing goes left, right or up depending on input. Each direction has its own path, timing and damage point. Some weapons can block, and a bayonet attachment turns a gun into a stabbing weapon.
@@ -86,7 +88,8 @@ A melee swing goes left, right or up depending on input. Each direction has its 
 Target checked: `T/common/types/GunType` (`MeleeDamage`, single `AddNode` melee path), `T/network/client/PacketGunMeleeClient`
 There is one melee path only.
 
-Missing: directional swings, blocking, bayonet attachments, and spear/lance behaviour.
+Present: grip `Bayonet` mode uses the existing secondary-mode toggle, `AddNode` stabbing animation and attachment `BayonetMeleeTime`. The grip's short-lived `SecondaryAmmo` supplies damage through the shared projectile path with virtual ammunition; cartridges and magazines are not consumed.
+Missing: directional swings, blocking, and spear/lance behaviour.
 
 ### Ricochet, over-penetration and penetration feedback — PARTIAL
 
@@ -94,8 +97,8 @@ Reference: `R/common/guns/BulletType` (`ricochetSound`, `distantRicochetSound`, 
 Shells hitting armour play distinct sounds for a ricochet, a minor penetration, a full penetration and an over-penetration. An over-penetrating round does reduced damage (`overPenPenalty`), and penetration falls off with flight time (`penDecay`).
 
 Target checked: `T/common/guns/ShootingHelper` (bounce/ricochet branch at line 349), `T/common/types/BulletType` (`PenetrationAt100m`, `PenetrationDecay`, `HEAT`)
-**Present:** projectiles can bounce or ricochet, and penetration decays with distance.
-**Missing:** per-outcome hit sounds, the damage penalty for over-penetration, and time-based penetration decay.
+**Present (verified 2026-11-04):** projectiles can bounce or ricochet, penetration decays with distance, and `ricochetSound` / `minorPenSound` / `penetrateSound` / `overPenSound` select feedback from the current armor result for real driveables and NPC model bodies. `bounceSoundRange` controls ricochet reach.
+**Missing:** distant ricochet audio, the damage penalty for over-penetration, and time-based penetration decay. Audio does not change penetration or damage; blocked hits above 90% of the requirement use minor feedback and successful hits above 3x use over-penetration feedback.
 
 ### Motion-sensor grenades — UNCERTAIN
 
@@ -125,13 +128,14 @@ Missiles lock on at the launcher, or are steered by SACLOS, manual or laser guid
 
 Missing: post-launch seeker acquisition, anti-radiation and radar-guided seekers, and torpedo homing and depth control.
 
-### Proportional-navigation guidance — MISSING
+### Proportional-navigation guidance — PARTIAL
 
 Reference: `R/common/guns/ProportionalNavigation`, `R/common/network/PacketProNavState`, `R/client/ProNavDebugTrailRenderer`, `BulletType` (`ProportionalNavigation`, `ProNavGain`, `ProNavMaxTurnRate`, `ProNavTerminalRange`, `ProNavTerminalGain`, `ProNavDebugTrail*`), `config_txt/proportional_navigation.txt`
 This is opt-in interception guidance for MISSILE rounds. PN commands the turn rate (gain clamped to 0–10, maximum turn per tick clamped to 0–90) and blends to a terminal gain near the target. The server is authoritative, and players tracking the missile receive a motion stream. There is an optional debug flight-path trail.
 
 Target checked: `T/common/entity/Bullet` homing (pursuit using `TurningForce`/`LockOnForce`)
-Missing: PN guidance, its motion sync, and the debug trail.
+Present: server-authoritative `ProportionalNavigation` / `ProNavGain` steering, preserving speed and the existing seeker, delay and `LockOnForce` turn budget. PN projectiles accept vanilla tracked velocity corrections; the existing entity tracking carries motion to clients.
+Missing: separate `ProNavMaxTurnRate`, terminal gain/range controls, and the optional debug trail.
 
 ### Missile twirl and ground-skim profiles — MISSING
 
@@ -196,7 +200,7 @@ Reference: `GunType` (`Heavy`, `sidearm`, `OldGun`, `RepeatingGun`, `labigunLimi
 Players may carry only a limited number of guns per class (heavy, sidearm, old). Armour pouches raise those limits, and tiers drive the gun economy.
 
 Target checked: `T/common/item/GunItem`, `T/common/types/GunType`, `ArmorType`
-Missing: carry-limit enforcement, pouches and the tier field.
+Missing: carry-limit enforcement, pouch-based carrying allowances and the tier field. Reload-duration pouch effects are now implemented separately.
 
 ### Ammunition evolution — MISSING
 
@@ -235,21 +239,23 @@ Armour carries reserve plates that absorb damage first. Shields recharge after a
 Target checked: `T/common/types/ArmorType`, `T/common/types/MechaItemType` (mecha force field only)
 Missing: player armour plates and player energy shields.
 
-### Bleeding and field medicine — MISSING
+### Bleeding and field medicine — PARTIAL
 
 Reference: `R/common/tools/ToolType` (`bandAid`, `superBandAid`, `surgery`, `transfusion`, `needle`, `HealStrength`), `ShootableType.bleedMultiplier`, `R/common/network/PacketVaccine`, `CommandTeams bleeding`
 Wounds make players bleed, and medical tools stop the bleeding or heal.
 
 Target checked: `T/common/types/ToolType`, `T/common/types/GrenadeType.HealAmount`
-Missing: the bleeding state and the medical tool classes.
+**Present (verified 2026-11-04):** native healing tools honor an authored `HealStrength` as regeneration amplifier and `HealAmount` as duration in ticks, preserving instant healing when the strength field is absent.
+Missing: the bleeding state and the bleeding-specific medical tool classes.
 
-### Armour weapon mounts, pouches and attributes — MISSING
+### Armour weapon mounts, pouches and attributes — PARTIAL
 
 Reference: `ArmourType` (`hasTopMount`, `hasFrontMount`, `topMount*`, `frontMount*`, `pouchMultiplier`, `reloadMultiplier`, `gasmaskable`/`smokeProtectable`)
 Armour can show stowed guns, speed up reloads and protect against gas or smoke.
 
 Target checked: `T/common/types/ArmorType`
-Missing: weapon mounts, the reload multiplier and gas or smoke protection.
+**Present (verified 2026-11-04):** `reloadMultiplier` / `pouchMultiplier`, general and weapon-specific pouch flags, applied to player and NPC held-gun reloads. The fastest matching worn pouch wins without stacking, instead of relying on armor-slot order.
+Missing: weapon mounts and gas or smoke protection.
 
 ---
 
@@ -271,14 +277,6 @@ When a `turretWeak`/`weakSpot` hitbox is destroyed while the turret or core stil
 Target checked: `T/common/driveables/EnumDriveablePart` (`TURRET_WEAK`, `TURRET_WEAK_2`, `WEAK_SPOT`…`WEAK_SPOT_3`)
 **Present:** the weak-spot part names parse as damageable parts.
 **Missing:** the cook-off sequence (killing the driver, timed turret or core burn-down, effects), plus `WeakspotCookTime` and `fancyAmmoRackCookoff`.
-
-### Vehicle weapon overheating — MISSING
-
-Reference: `R/common/driveables/EntityDriveable` (line 2198; `overheatLimit`, `overheatPenalty`, `overheatSound`, `coolingBonus`)
-Sustained fire builds heat. Past the limit the gun is locked out for a penalty time.
-
-Target checked: `T/common/entity/Driveable`
-Missing: weapon heat.
 
 ### Radar, stealth and target designation — MISSING
 
@@ -369,14 +367,16 @@ Target checked: `T/common/entity/Plane` (`SpinWithoutTail`, `PlaneCrashDamage`),
 **Present:** spin without a tail, and the crash explosion and fire.
 **Missing:** the crash smoke and fire threshold, spin strength, slower crash descent, tail-rotor hiding, and crash sounds.
 
-### Distant and situational vehicle audio — MISSING
+### Distant and situational vehicle audio — PARTIAL
 
 Reference: `DriveableType` (`farSound`, `farSoundRange`, `DistantSoundPrimary`/`Secondary`, `DistantFlareSound*`, `TracksSound*`, `StukaSound*`, `sonicBoomSound`, `loudCannon`, `LegacyEngineSounds`), `VehicleType` (`DriftSound*`), `ShootableType` (`DistantDetonateSound*`), `R/client/CustomSoundLoop`
 Vehicles play distant-fire and distant-detonation sounds, track and drift loops, Stuka dive sirens and sonic booms, with custom sound ranges.
 
 Target checked: `T/common/types/GunType` (distant gun sounds for infantry and deployed guns)
-**Note:** distant gun sounds exist for guns only.
-Missing: distant sounds for driveable weapons and detonations, and track, drift, dive-siren and sonic-boom audio.
+**Present (verified 2026-11-04):** infantry and deployed-gun distant sounds, plus driveable-bank `DistantSoundPrimary` / `DistantSoundSecondary`, `DistantSoundRange`, and `farSound` / `farSoundRange` aliases.
+**Present (additional verification 2026-11-04):** shootable `DistantDetonateSound` / `DistantDetonateSoundRange`, sent on the server to listeners beyond near explosion audio reach.
+Present: aircraft speed-triggered `StukaSound`, `StukaSpeed` (mph), `StukaSoundLength` and `StukaSoundRange`.
+Missing: track, drift and sonic-boom audio.
 
 ### Door-state passenger visibility — PARTIAL
 
@@ -384,18 +384,9 @@ Reference: `DriveableType` (`SetPlayerInvisibleOnDoorClose`/`Open`, `SetPassenge
 Whether occupants are visible depends on whether the doors are open, and the driver can be made invincible.
 
 Target checked: `T/common/types/DriveableType` (`SetPlayerInvisible`)
-**Present:** an unconditional invisibility flag.
-**Missing:** visibility tied to door state, and the driver-invincible flag.
-
-### Seat weapon groups and passenger particles — UNCERTAIN
-
-Reference: `DriveableType` (`SeatGuns`, `SeatGunSpread`, `barrels`, `barrelSpread`, `barrelOffset`, `PassengerShootParticles`, `PassengerHasParticles`), the F10 passenger shoot-point debug
-Passenger seats can fire several barrels with spread, with muzzle-particle origins per barrel.
-
-Target checked: `T/network/client/PacketDriveablePassengerFired`, `T/client/render/DriveableMuzzleFlashes`, `temp/secondary-passenger-muzzle-particles.md`
-Passenger muzzle effects exist. I could not confirm multi-barrel seat guns or barrel-spread semantics.
-
-Missing (unconfirmed): multi-barrel passenger seat guns.
+**Present (verified 2026-11-04):** unconditional hiding and `SetPlayerInvisibleOnDoorOpen` / `SetPlayerInvisibleOnDoorClose`, shared with NPC vehicle crews through the API and their model door state.
+Per-seat `invisiblePassenger` / `SetPassengerInvisible` definition support is also present and inherited by NPC vehicle crews; explicit NPC hidden-seat choices remain additional hiding rules.
+**Missing:** the driver-invincible flag.
 
 ### Crew damage and part-loss effects — UNCERTAIN
 
@@ -565,12 +556,12 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Optics | Picture-in-picture scopes | MISSING | HIGH |
 | Optics | Missile and shell camera views | MISSING | HIGH |
 | Weapons | Battlefield and sustained recoil | MISSING | HIGH |
-| Weapons | Directional melee and bayonets | MISSING | HIGH |
+| Weapons | Directional melee and bayonets | PARTIAL | HIGH |
 | Weapons | Ricochet and penetration feedback | PARTIAL | MEDIUM |
 | Weapons | Motion-sensor grenades | UNCERTAIN | LOW |
 | Weapons | Projectile chunk loading | MISSING | HIGH |
 | Weapons | Self-guided, radar and ARM seekers, homing torpedoes | MISSING | HIGH |
-| Weapons | Proportional navigation | MISSING | HIGH |
+| Weapons | Proportional navigation | PARTIAL | HIGH |
 | Weapons | Missile twirl and ground skim | MISSING | HIGH |
 | Weapons | Fly-over top attack | PARTIAL | HIGH |
 | Weapons | Wire-guided missile and wire | MISSING | HIGH |
@@ -583,11 +574,10 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Weapons | Muzzle and chamber smoke models | PARTIAL | MEDIUM |
 | Armour | Per-zone armour and penetration | MISSING | HIGH |
 | Armour | Reserve plates and energy shields | MISSING | HIGH |
-| Armour | Bleeding and field medicine | MISSING | HIGH |
-| Armour | Weapon mounts, pouches and attributes | MISSING | HIGH |
+| Armour | Bleeding and field medicine | PARTIAL | HIGH |
+| Armour | Weapon mounts, pouches and attributes | PARTIAL | HIGH |
 | Vehicles | Destroyed-vehicle wrecks | MISSING | HIGH |
 | Vehicles | Ammo-rack and weak-spot cook-off | PARTIAL | HIGH |
-| Vehicles | Weapon overheating | MISSING | HIGH |
 | Vehicles | Radar, stealth and designation | MISSING | HIGH |
 | Vehicles | APS and CIWS | MISSING | HIGH |
 | Vehicles | Remote drones and quadcopters | MISSING | HIGH |
@@ -599,7 +589,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Vehicles | Afterburner | MISSING | HIGH |
 | Vehicles | Altitude performance and flight tuning | MISSING | MEDIUM |
 | Vehicles | Helicopter and aircraft crash presentation | PARTIAL | HIGH |
-| Vehicles | Distant and situational vehicle audio | MISSING | HIGH |
+| Vehicles | Distant and situational vehicle audio | PARTIAL | HIGH |
 | Vehicles | Door-state passenger visibility | PARTIAL | HIGH |
 | Vehicles | Vehicle smoke and turret grenades | MISSING | HIGH |
 | Mechas | Mecha morale | MISSING | HIGH |
@@ -700,9 +690,18 @@ These findings were removed from the active gap sections and summary table after
 
 - **Motion sensors.** Reference parser fields appear dormant; an active implementation has not been established.
 
-- **Passenger and seat weapons.** The target has passenger fire packets and muzzle-flash handling. The reference's `SeatGuns`/`barrels`/`barrelSpread` semantics need a line-by-line comparison against `T/common/entity/Driveable` seat firing.
 - **Crew and part-loss model.** The reference's `damageVsCrew`, `crewEngine` and `engineLoss`/`wingLoss`/`tailLoss` may partly overlap with the target's part-health scaling (`VehicleHealthScaler`) and its aircraft physics. I did not confirm this.
 - **Vehicle driving model.** The target's physics stack (`T/common/driveables/physics`) is substantially different. The Labjac `NewDrivingModel`/drift/terrain-penalty behaviour needs a behavioural comparison rather than a key comparison.
 - **Flan's Horizons versus Distant Horizons.** The two have equivalent aims through different mechanisms. Whether server-authoritative terrain distribution matters for this project is a product decision.
 - **HFR bundle.** It is intentionally not audited.
 - **Key-extraction blind spots.** Discovery relied on `split[0]` keys plus a sweep of client and network classes. Reference behaviour that is hard-coded, with no key, packet or class, could be missing from this list. The likeliest places are `R/common/driveables/EntityDriveable` (more than 5,000 lines), `EntityPlane` and `EntityBullet`.
+
+## Targeted refresh (2026-11-04)
+
+Vehicle weapon overheating is implemented: opt-in `OverheatLimit`, `OverheatPenalty`, `CoolingBonus`, `OverheatSound`, shared mounted-weapon heat, server-enforced cooling and lockouts, and synchronized driver HUD feedback. Main-mod commit `55168e36d`. Door-dependent occupant visibility is implemented in `5130026f8`; gun equip and distant bank sounds in `3ca23865e`. These are targeted corrections; other older findings have not all been re-audited.
+
+Compatibility follow-up (2026-11-04): gun `IronSightOffset` (raw legacy render translation) and `IronSightPitch` (aim-blended rotation) now affect first-person rendering only. Pouch, seat, and armor-audio findings above reflect their implementation, not a full re-audit of the remaining reference features.
+
+Additional rate/audio compatibility (2026-11-04): gun `RPM` aliases canonical/category `RoundsPerMin` at lower priority, `Descriptions` aliases `Description`, and native player bolt/pump closing supports optional `ActionEndSound` with server-validated per-shot/reload permissions. This is a timing adaptation to native animations, not glTF clip playback.
+
+Impact/scatter follow-up (2026-11-04): ammunition `DynamicHitSoundEnable` can layer material feedback with the authored hit sound, with explicit false and unset fallback handled separately. Grenade `RandomDirection` chooses the fork-style scatter direction and speed on the server; spawn and saved orientation now include roll. Shared impact metadata carries both sound layers for native NPC equipment.

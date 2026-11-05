@@ -56,7 +56,7 @@ import java.util.*;
 
 /**
  * Teams controls passive regeneration for round soldiers; medical healing and vehicle repairs stay independent.
- * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed.
+ * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed, and kept corpses lie in their death pose for their corpse time.
  *
  * <ul>
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data, and stand in for each melee statistic
@@ -261,6 +261,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private final NpcDriverGuns wolffsmodnpcsDriverGuns = new NpcDriverGuns();
     @Unique
     private final NpcMeleeState wolffsmodnpcsMelee = new NpcMeleeState();
+    /** Ticks the body has lain since its death animation ended; not saved, so a reloaded corpse starts its time over. */
+    @Unique
+    private int wolffsmodnpcsCorpseTicks;
 
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
@@ -282,6 +285,29 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (npc.stats.spawnCycle == 3 && !npc.stats.hideKilledBody && NpcPresentation.of(npc).isKeepWreck())
             callback.cancel();
+        else
+            wolffsmodnpcsKeepCorpse(npc, callback);
+    }
+
+    /**
+     * Holds a fallen body in its last death pose instead of removing it when the animation ends, until its corpse time has
+     * passed. Clients never remove dying entities themselves, so only the server takes over.
+     */
+    @Unique
+    private void wolffsmodnpcsKeepCorpse(EntityNPCInterface npc, CallbackInfo callback)
+    {
+        if (level().isClientSide || deathTime < FlansCorpses.DEATH_ANIMATION_TICKS - 1)
+            return;
+        OptionalInt seconds = NpcCorpses.lifeSeconds(npc);
+        if (seconds.isEmpty())
+            return;
+        callback.cancel();
+        deathTime = FlansCorpses.DEATH_ANIMATION_TICKS;
+        if (seconds.getAsInt() > 0 && ++wolffsmodnpcsCorpseTicks >= seconds.getAsInt() * 20 && !isRemoved())
+        {
+            level().broadcastEntityEvent(this, EntityEvent.POOF);
+            remove(RemovalReason.KILLED);
+        }
     }
 
     // Presentation
@@ -621,7 +647,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     }
 
     /** The dependency's walking-speed getter bypasses the vanilla sprint attribute boost. */
-    @Inject(method = {"getSpeed", "m_6113_"}, at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getSpeed", at = @At("RETURN"), cancellable = true)
     private void wolffsmodnpcsSprintSpeed(CallbackInfoReturnable<Float> callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
@@ -1254,7 +1280,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         }
     }
 
-    @ModifyVariable(method = "travel", at = @At("HEAD"), argsOnly = true)
+    // Apply to the final input: Custom NPCs replaces the argument with rider controls when mounted.
+    @ModifyArg(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/PathfinderMob;travel(Lnet/minecraft/world/phys/Vec3;)V", remap = true), index = 0)
     private Vec3 wolffsmodnpcsDrive(Vec3 travel)
     {
         if (level().isClientSide)
@@ -1265,7 +1292,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             NpcRepairs.hold(npc);
             return Vec3.ZERO;
         }
-        Vec3 driven = wolffsmodnpcsVehicleState().beforeTravel(npc, travel);
+        Vec3 driven = wolffsmodnpcsVehicleState().getParts().effects().movementInput(wolffsmodnpcsVehicleState().beforeTravel(npc, travel));
         // A vehicle set to stand turns on the spot but goes nowhere, however its driving or flight would move it.
         if (wolffsmodnpcsVehicleState().isActive() && npc.ais.getMovingType() == WOLFFSMODNPCS_STANDING && !(npc.isVehicle() && npc.ais.mountControl))
         {
@@ -1274,7 +1301,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return new Vec3(0D, driven.y, 0D);
         }
         // Broken tracks, wheels and engines slow the NPC down or stop it, and so does a grade too steep for its engine.
-        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().getParts().effects().mobility() * wolffsmodnpcsVehicleState().climbFactor(npc);
+        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().climbFactor(npc);
         return factor == 1F ? driven : new Vec3(driven.x * factor, driven.y, driven.z * factor);
     }
 

@@ -29,11 +29,21 @@ class NpcDriversTest
     }
 
     @Test
-    void aDriveablesPathIsSearchedAsWideAsTheDriveableUpToThreeBlocks()
+    void aDriveablesPathIsSearchedAsHighAsTheDriveableUpToThreeBlocks()
     {
         assertEquals(1, NpcDrivers.pathSize(0.6D));
         assertEquals(2, NpcDrivers.pathSize(1.5D));
         assertEquals(3, NpcDrivers.pathSize(2D));
         assertEquals(3, NpcDrivers.pathSize(4D));
+    }
+
+    @Test
+    void aVehiclesPathIsSearchedAsWideAsATankAndAShipsUpToThreeBlocks()
+    {
+        assertEquals(1, NpcDrivers.pathWidth(0.6D, false));
+        assertEquals(3, NpcDrivers.pathWidth(2D, false));
+        assertEquals(5, NpcDrivers.pathWidth(4D, false));
+        assertEquals(5, NpcDrivers.pathWidth(9D, false));
+        assertEquals(3, NpcDrivers.pathWidth(4D, true));
     }
 }

@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.NpcsMod;
 import com.wolffsmod.npcs.combat.NpcAirCombat;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelNpcs;
+import com.wolffsmod.npcs.properties.NpcCorpses;
 import com.wolffsmod.npcs.sim.NpcTargetSearch;
 import com.wolffsmod.npcs.tactics.*;
 import lombok.AccessLevel;
@@ -429,7 +430,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
                 keepTrained(npc, current.getSettings());
             if (dead && slot.getDiedAt() == 0)
                 fallenUnreported(current, slot, now);
-            if (dead && now - slot.getDiedAt() > BODY_TICKS || !dead && withdrawn(current, slot))
+            if (dead && now - slot.getDiedAt() > BODY_TICKS && !slot.isVehicle() && NpcCorpses.lifeSeconds(npc).isPresent())
+                forget(current, slot);
+            else if (dead && now - slot.getDiedAt() > BODY_TICKS || !dead && withdrawn(current, slot))
                 removeBody(level, current, slot, npc, dead);
         }
         else if (slot.getDiedAt() > 0)
@@ -700,7 +703,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
             {
                 if (BotTransports.staleWreck(entity.getPersistentData(), runningRound))
                     staleWrecks.add(entity);
-                if (entity instanceof EntityNPCInterface npc && BotTag.read(npc).filter(data -> belongs(npc, data)).isEmpty() && BotTag.isBot(npc))
+                if (entity instanceof EntityNPCInterface npc && BotTag.read(npc).filter(data -> belongs(npc, data) || corpse(npc, data)).isEmpty() && BotTag.isBot(npc))
                     stale.add(npc);
             }
             stale.forEach(TeamsBots::remove);
@@ -715,6 +718,15 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     private static boolean belongs(EntityNPCInterface npc, BotTag.Data data)
     {
         return BotBattles.get(data.instance()).filter(battle -> data.crew() ? battle.getSlots().containsKey(data.slot()) : battle.getSlotOfEntity().containsKey(npc.getUUID())).isPresent();
+    }
+
+    /**
+     * Whether a bot is the corpse of a fallen soldier its slot let go of, kept by the Teams corpses rule for as long as its
+     * battle is fought; the body removes itself when its corpse time has passed.
+     */
+    private static boolean corpse(EntityNPCInterface npc, BotTag.Data data)
+    {
+        return npc.isDeadOrDying() && BotBattles.get(data.instance()).isPresent() && NpcCorpses.lifeSeconds(npc).isPresent();
     }
 
     /** Removes a bot; an NPC that was enlisted as it was is given back instead, awake and no bot any more. */

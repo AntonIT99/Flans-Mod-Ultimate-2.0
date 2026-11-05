@@ -8,6 +8,7 @@ Icon DesertEagle
 Colour 255 255 255
 DeployedModel None
 Model mw.DesertEagle
+animAimOffset 0 1.97666037 0
 ModelScale 0.8
 Texture DesertEagle
 Paintjob DesertEagle_Neon DesertEagle_Neon magenta 2

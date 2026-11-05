@@ -11,6 +11,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import net.minecraft.server.level.ServerLevel;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.random.RandomGenerator;
 
 /**
@@ -41,11 +42,17 @@ final class BotCrews
      */
     private static String playerClass(BotBattle battle, BotFactory.Order order, String wanted, RandomGenerator random)
     {
+        return selectedClass(order.team().getClasses().stream().map(IContentType::getShortName).toList(), wanted, random)
+            .orElseGet(() -> BotPopulation.pickClass(battle, order.team(), order.force(), random));
+    }
+
+    /** Empty optional requests the usual weighted fallback; an empty class leaves the seat uncrewed. */
+    static Optional<String> selectedClass(List<String> offered, String wanted, RandomGenerator random)
+    {
         if (BotSettings.TeamForce.NO_CREW.equalsIgnoreCase(wanted))
-            return "";
-        if (order.team().getClasses().stream().map(IContentType::getShortName).anyMatch(wanted::equals))
-            return wanted;
-        return BotPopulation.pickClass(battle, order.team(), order.force(), random);
+            return Optional.of("");
+        List<String> choices = BotSettingsText.crewClasses(wanted).stream().filter(offered::contains).toList();
+        return choices.isEmpty() ? Optional.empty() : Optional.of(choices.get(random.nextInt(choices.size())));
     }
 
     /** @return the place in the force a crew member's vehicle fills, for scoring the crew's kills to the vehicle */

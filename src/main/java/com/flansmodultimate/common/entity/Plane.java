@@ -49,6 +49,7 @@ import java.util.*;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Plane extends Driveable implements PlaneVisual
 {
+    private int stukaSoundDelay;
     private static final Vec3 MODEL_FLIGHT_FORWARD = LegacyDriveableCoordinates.applyPlaneModelFacing(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
     private static final Vec3 MODEL_FLIGHT_UP = LegacyDriveableCoordinates.toLocal(new Vec3(0D, 1D, 0D));
     /** Legacy gear toggle required clear air three blocks below the plane. */
@@ -367,12 +368,28 @@ public class Plane extends Driveable implements PlaneVisual
             doorsAutoCloseApplied = false;
     }
 
+    private void tickStukaSound(PlaneType type)
+    {
+        if (!level().isClientSide)
+        {
+            if (stukaSoundDelay > 0)
+                stukaSoundDelay--;
+            // The authored threshold is mph; entity velocity is blocks per tick.
+            if (stukaSoundDelay == 0 && !type.getStukaSound().isBlank() && getDeltaMovement().length() * 20D * 2.23694D > type.getStukaSpeed())
+            {
+                com.flansmodultimate.network.client.effects.PacketPlaySound.sendSoundPacket(this, type.getStukaSoundRange(), type.getStukaSound(), false);
+                stukaSoundDelay = type.getStukaSoundLength();
+            }
+        }
+    }
+
     @Override
     protected void tickDriveable()
     {
         PlaneType type = getPlaneType();
         if (type == null)
             return;
+        tickStukaSound(type);
         Vec3 startVelocity = getDeltaMovement();
         if (crashImpactCooldown > 0)
             --crashImpactCooldown;

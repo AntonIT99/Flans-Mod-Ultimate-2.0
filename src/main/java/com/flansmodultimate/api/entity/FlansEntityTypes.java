@@ -8,6 +8,7 @@ package com.flansmodultimate.api.entity;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.MechaEquipmentSupport;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
@@ -58,6 +59,30 @@ public final class FlansEntityTypes
     {
         if (type instanceof MechaType mecha)
             MechaEquipmentSupport.landing(entity, mecha, force, descent);
+    }
+
+    /**
+     * Tests whether a definition hides all occupants at the supplied door state.
+     * @param type loaded content definition
+     * @param doorsOpen whether its doors are open
+     * @return whether occupants, including equipment, should be hidden; false for non-driveables
+     * May be called on either side after content loading.
+     */
+    public static boolean hidesOccupants(IContentType type, boolean doorsOpen)
+    {
+        return type instanceof DriveableType driveable && driveable.hidesOccupants(doorsOpen);
+    }
+
+    /**
+     * Tests unconditional, door-dependent and per-seat occupant hiding after content loading, on either side.
+     * @param type loaded content definition
+     * @param doorsOpen current door state
+     * @param seatIndex seat number from the definition, zero for the driver
+     * @return whether that seat's entire occupant should be hidden; false for non-driveables
+     */
+    public static boolean hidesOccupants(IContentType type, boolean doorsOpen, int seatIndex)
+    {
+        return type instanceof DriveableType driveable && driveable.hidesOccupants(doorsOpen, seatIndex);
     }
 
     private FlansEntityTypes()
@@ -233,6 +258,20 @@ public final class FlansEntityTypes
     public static OptionalDouble getStepHeight(IContentType type)
     {
         return DriveableMobilityProfiles.stepHeight(type);
+    }
+
+    /**
+     * Reads how much room a vehicle, plane or mecha's hull takes up, from the collision shapes of its definition and
+     * without its turret and barrels, for instance to find whether it fits between two walls. Either side after content
+     * loading.
+     *
+     * @param type
+     *            selected definition
+     * @return the hull's footprint, or empty for anything but a driveable, or one without hull shapes
+     */
+    public static Optional<HullFootprint> getHullFootprint(IContentType type)
+    {
+        return type instanceof DriveableType driveable ? driveable.getCollisionProfile().getHullFootprint() : Optional.empty();
     }
 
     /**
@@ -537,7 +576,8 @@ public final class FlansEntityTypes
         ItemStack source = new ItemStack(item);
         if (paintjob != 0)
             ItemStackData.update(source, tag -> tag.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob));
-        Driveable driveable = item.spawnDriveable(level, position.x, position.y, position.z, yaw, null, source);
+        float driveableYaw = LegacyDriveableCoordinates.driveableYawFromRenderedForward(yaw, type instanceof PlaneType);
+        Driveable driveable = item.spawnDriveable(level, position.x, position.y, position.z, driveableYaw, null, source);
         if (driveable == null)
             return Optional.empty();
         driveable.wearDown(health);
