@@ -97,12 +97,28 @@ class NpcPartsTest
     {
         assertEquals(NpcPartEffects.NONE, NpcPartEffects.of(parts("core", false, "leftTrack", false, "rightTrack", false, "turret", false), FlanModelKind.VEHICLE));
         NpcPartEffects oneTrack = NpcPartEffects.of(parts("leftTrack", true, "rightTrack", false, "turret", true), FlanModelKind.VEHICLE);
-        assertEquals(0.5F, oneTrack.mobility(), 1.0E-6F);
+        assertEquals(0F, oneTrack.mobility(), 0F);
         assertTrue(oneTrack.gunDisabled());
         assertEquals(0F, NpcPartEffects.of(parts("leftTrack", true, "rightTrack", true), FlanModelKind.VEHICLE).mobility(), 0F);
         assertEquals(0.75F, NpcPartEffects.of(parts("frontLeftWheel", true, "frontRightWheel", false, "backLeftWheel", false, "backRightWheel", false), FlanModelKind.VEHICLE).mobility(), 1.0E-6F);
         // Half the engine rooms cost four tenths of the speed, the bow another tenth.
         assertEquals(0.5F, NpcPartEffects.of(parts("engineRoom1", true, "engineRoom2", false, "bow", true), FlanModelKind.VEHICLE).mobility(), 1.0E-6F);
+    }
+
+    @Test
+    void brokenRunningGearLimitsFinalInputAndShotDownAircraftCannotPowerTheirFall()
+    {
+        Vec3 input = new Vec3(0.4D, -0.2D, 1D);
+        assertEquals(input, NpcPartEffects.NONE.movementInput(input));
+        // One surviving track permits pivoting, but no forward or sideways propulsion.
+        for (String track : List.of("leftTrack", "rightTrack"))
+            assertEquals(new Vec3(0D, input.y, 0D), NpcPartEffects.of(parts(track, true), FlanModelKind.VEHICLE).movementInput(input));
+        assertEquals(new Vec3(0D, input.y, 0D),
+            NpcPartEffects.of(parts("frontLeftWheel", true, "frontRightWheel", true, "backLeftWheel", true, "backRightWheel", true), FlanModelKind.VEHICLE).movementInput(input));
+        assertEquals(input.multiply(0.5D, 1D, 0.5D), NpcPartEffects.of(parts("frontWheel", true, "backWheel", false), FlanModelKind.VEHICLE).movementInput(input));
+        for (String part : List.of("leftWing", "rightWing", "tail", "blades", "airframe"))
+            assertEquals(Vec3.ZERO, NpcPartEffects.of(parts(part, true), FlanModelKind.PLANE).movementInput(input));
+        assertEquals(input, NpcPartEffects.of(parts("leftWingWheel", true), FlanModelKind.PLANE).movementInput(input));
     }
 
     @Test

@@ -1227,7 +1227,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         }
     }
 
-    @ModifyVariable(method = {"travel", "m_7023_"}, at = @At("HEAD"), argsOnly = true)
+    // Apply to the final input: Custom NPCs replaces the argument with rider controls when mounted.
+    @ModifyArg(method = {"travel", "m_7023_"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/PathfinderMob;travel(Lnet/minecraft/world/phys/Vec3;)V", remap = true), index = 0)
     private Vec3 wolffsmodnpcsDrive(Vec3 travel)
     {
         if (level().isClientSide)
@@ -1238,7 +1239,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             NpcRepairs.hold(npc);
             return Vec3.ZERO;
         }
-        Vec3 driven = wolffsmodnpcsVehicleState().beforeTravel(npc, travel);
+        Vec3 driven = wolffsmodnpcsVehicleState().getParts().effects().movementInput(wolffsmodnpcsVehicleState().beforeTravel(npc, travel));
         // A vehicle set to stand turns on the spot but goes nowhere, however its driving or flight would move it.
         if (wolffsmodnpcsVehicleState().isActive() && npc.ais.getMovingType() == WOLFFSMODNPCS_STANDING && !(npc.isVehicle() && npc.ais.mountControl))
         {
@@ -1247,7 +1248,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             return new Vec3(0D, driven.y, 0D);
         }
         // Broken tracks, wheels and engines slow the NPC down or stop it, and so does a grade too steep for its engine.
-        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().getParts().effects().mobility() * wolffsmodnpcsVehicleState().climbFactor(npc);
+        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().climbFactor(npc);
         return factor == 1F ? driven : new Vec3(driven.x * factor, driven.y, driven.z * factor);
     }
 

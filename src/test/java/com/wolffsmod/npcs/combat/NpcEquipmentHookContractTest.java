@@ -183,6 +183,15 @@ class NpcEquipmentHookContractTest
     }
 
     @Test
+    void movementLimitsReachEveryFinalTravelCallIncludingRiderControls() throws IOException
+    {
+        MethodNode travel = method(read(NPC), "(Lnet/minecraft/world/phys/Vec3;)V", "m_7023_", "travel");
+        // Mounted flight, mounted ground travel and ordinary AI travel each invoke the superclass directly.
+        assertEquals(3, calls(travel, "net/minecraft/world/entity/PathfinderMob", "m_7023_", "(Lnet/minecraft/world/phys/Vec3;)V")
+            + calls(travel, "net/minecraft/world/entity/PathfinderMob", "travel", "(Lnet/minecraft/world/phys/Vec3;)V"));
+    }
+
+    @Test
     void navigationAndTargetingHooksMatchTheInstalledGoals() throws IOException
     {
         ClassNode ranged = read("noppes/npcs/ai/EntityAIRangedAttack");

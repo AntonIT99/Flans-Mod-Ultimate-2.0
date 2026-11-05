@@ -4,13 +4,15 @@ import com.flansmodultimate.api.driveables.AircraftDamage;
 import com.flansmodultimate.api.parts.PartState;
 import com.wolffsmod.npcs.model.FlanModelKind;
 
+import net.minecraft.world.phys.Vec3;
+
 import java.util.*;
 
 /**
  * What an NPC loses with the parts of its model that have been broken, following what a driveable loses with them.
  *
  * @param mobility
- *            share of its speed the NPC keeps: half on one track, none without tracks or hips, less with wheels,
+ *            share of its speed the NPC keeps: none with a broken track or hips, less with wheels,
  *            engine rooms, boilers, bow or stern gone
  * @param gunDisabled
  *            whether the main gun is out of action: its turret or barrel is gone, or both arms of a mecha
@@ -45,6 +47,14 @@ public record NpcPartEffects(float mobility, boolean gunDisabled, boolean shotDo
         boolean gun = isBroken(broken, "turret") || isBroken(broken, "barrel") || kind == FlanModelKind.MECHA && isBroken(broken, "leftarm") && isBroken(broken, "rightarm");
         boolean shotDown = kind == FlanModelKind.PLANE && FLIGHT.stream().anyMatch(name -> isBroken(broken, name));
         return new NpcPartEffects(mobility(broken, kind), gun, shotDown);
+    }
+
+    /** Limits final AI or rider movement input, without changing momentum or the motion of a falling airframe. */
+    public Vec3 movementInput(Vec3 input)
+    {
+        if (shotDown)
+            return Vec3.ZERO;
+        return mobility == 1F ? input : new Vec3(input.x * mobility, input.y, input.z * mobility);
     }
 
     /**
@@ -85,7 +95,7 @@ public record NpcPartEffects(float mobility, boolean gunDisabled, boolean shotDo
         {
             float tracks = brokenShare(broken, TRACKS);
             if (tracks > 0F)
-                mobility *= tracks >= 1F ? 0F : 0.5F;
+                return 0F;
             mobility *= 1F - brokenShare(broken, WHEELS);
         }
         // The penalty a driveable's throttle takes for its engine rooms, boilers, bow and stern.

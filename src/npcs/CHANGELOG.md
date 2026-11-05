@@ -63,6 +63,8 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 
 ## Vehicles, Aircraft & Mechas
 
+* NPC vehicles lose forward drive when either track is destroyed, and part-damage movement limits also apply to rider controls; shot-down NPC aircraft cannot keep accelerating or climbing through AI or rider input while they fall
+
 * NPC aircraft that lose a wing, their tail, rotor or airframe, or are killed in the air, no longer drop like a stone: they come down as Flan's aircraft do, spiralling, spinning or diving with smoke trailing, holding fire, and go in with a fireball or a splash; crews set to bail out jump while there is height, and NPC pilots of Flan aircraft bail out as soon as their aircraft is crippled past flying
 
 * NPC bomb release predictions follow the projectile's collision, drag, gravity and movement order, including impact within a tick, and reject falls that never reach the target height; NPC pilots of Flan vehicles apply only a quarter of the normal difficulty penalty to bomb leading
