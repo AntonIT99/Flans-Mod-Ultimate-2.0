@@ -138,6 +138,8 @@
 
 ## Vehicles, Aircraft & Ships
 
+* Shooting off `frontalArmor`, `leftsideArmor` or `rightsideArmor` opens that face of the hull: the core and other hull parts behind it no longer keep the inherited `ArmorFrontMm`/`ArmorSideMm` plate, so shells, HEAT rockets and blasts reach them through the hole, on driveables and on NPCs wearing vehicle part boxes alike; turret parts, parts with their own `PartArmor` plate and other armour parts keep theirs, and the debug armour readout marks a breached face
+
 * Aircraft damage is progressive (`enableRealisticAircraftDamage`, on by default): worn wings lose lift and pull the aircraft toward the weaker side, a shot-up tail answers more slowly, hit engines lose power and misfire, holed wing tanks leak fuel, and worn rotors lift less; a helicopter that loses its engine or runs dry can autorotate down and flare to land, and a plane down without its gear slides to a stop on its belly
 * Crippled and dead aircraft come down as airframes instead of tumbling: nose into the wind, spiralling over a lost wing, flat-spinning without a tail, spinning about the mast without a tail rotor or dropping without a rotor; one blown apart in the air may lose its tail or a wing as a separate piece
 * Going down: burning aircraft trail black smoke visible from up to 320 blocks, wing, tail and blade pieces flutter down like leaves, rotor strikes shed blade fragments, crashes into water throw up a spray column instead of a fireball, belly slides and sliding wrecks plough scorched furrows with dust and sparks, falling aircraft scream louder as they speed up, and crash booms arrive with a delay over distance

@@ -443,7 +443,7 @@ public class FlanExplosion extends Explosion
         @Override
         public ArmorPlate plate(VehicleExplosionTarget target)
         {
-            return type.getResolvedArmor().plate(target.part(), target.facing()).authored();
+            return type.getResolvedArmor().plate(target.part(), target.facing(), entity::isDefinedAndDestroyed).authored();
         }
 
         @Override
@@ -479,7 +479,7 @@ public class FlanExplosion extends Explosion
         public ArmorPlate plate(VehicleExplosionTarget struck)
         {
             if (target.flansmodultimateModelArmour() && target.flansmodultimateDamageModel().orElse(null) instanceof DriveableType)
-                return body.armor().plate(struck.part(), struck.facing()).authored();
+                return body.armor().plate(struck.part(), struck.facing(), body::isShotOff).authored();
             return ResolvedArmorPlate.unarmoured(struck.facing()).authored();
         }
 

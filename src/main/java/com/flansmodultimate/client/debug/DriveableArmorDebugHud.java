@@ -24,6 +24,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Locale;
+import java.util.function.Predicate;
 
 /**
  * Shows the health of the part under the crosshair while debugging or holding a driveable repair tool, and in debug mode also the normal and composite (HEAT) protection on the first part hitbox face
@@ -39,7 +40,8 @@ public final class DriveableArmorDebugHud
     {}
 
     /** The part face under the crosshair, with the armour that protects it. */
-    record Aimed(float time, EnumDriveablePart part, EnumArmorFacing facing, @Nullable ResolvedVehicleArmor armor, @Nullable Health health)
+    record Aimed(float time, EnumDriveablePart part, EnumArmorFacing facing, @Nullable ResolvedVehicleArmor armor, @Nullable Health health,
+        @Nullable Predicate<EnumDriveablePart> shotOff)
     {}
 
     record Health(float current, float maximum, boolean destroyed)
@@ -76,8 +78,10 @@ public final class DriveableArmorDebugHud
         ResolvedVehicleArmor armor = closest.armor();
         if (armor == null || !armor.isPlateConfigured(closest.part(), closest.facing()))
             return;
-        ArmorPlate plate = armor.plate(closest.part(), closest.facing()).authored();
-        String label = String.format(Locale.ROOT, "%s %s | Normal armor: %.1f mm", closest.part().getShortName(), closest.facing().name().toLowerCase(Locale.ROOT), plate.thicknessMm());
+        boolean breached = armor.isBreached(closest.part(), closest.facing(), closest.shotOff());
+        ArmorPlate plate = armor.plate(closest.part(), closest.facing(), closest.shotOff()).authored();
+        String label = String.format(Locale.ROOT, "%s %s | Normal armor: %.1f mm%s", closest.part().getShortName(), closest.facing().name().toLowerCase(Locale.ROOT), plate.thicknessMm(),
+            breached ? " (breached)" : "");
         graphics.drawString(mc.font, label, (screenWidth - mc.font.width(label)) / 2, y, 0xFFD700, true);
         String composite = String.format(Locale.ROOT, "Composite armor (HEAT): %.1f mm", plate.heatThicknessMm());
         graphics.drawString(mc.font, composite, (screenWidth - mc.font.width(composite)) / 2, y + 10, 0xFFD700, true);
@@ -134,7 +138,7 @@ public final class DriveableArmorDebugHud
             {
                 if (hit instanceof DriveableHit partHit)
                     closest = nearer(closest, new Aimed(partHit.getIntersectTime(), partHit.getPart(), partHit.getFacing(), driveable.getConfigType().getResolvedArmor(),
-                        health(driveable.getDriveableData() == null ? null : driveable.getDriveableData().getPart(partHit.getPart()))));
+                        health(driveable.getDriveableData() == null ? null : driveable.getDriveableData().getPart(partHit.getPart())), driveable::isDefinedAndDestroyed));
             }
         }
         return closest;
@@ -153,7 +157,7 @@ public final class DriveableArmorDebugHud
             for (BulletHit hit : body.trace(wearer, origin, motion, true))
             {
                 if (hit instanceof PartBodyHit partHit)
-                    closest = nearer(closest, new Aimed(partHit.getIntersectTime(), partHit.getPart(), partHit.getFacing(), body.armor(), health(body.partState(partHit.getPart()))));
+                    closest = nearer(closest, new Aimed(partHit.getIntersectTime(), partHit.getPart(), partHit.getFacing(), body.armor(), health(body.partState(partHit.getPart())), body::isShotOff));
             }
         }
         return closest;
@@ -173,7 +177,7 @@ public final class DriveableArmorDebugHud
                 continue;
             float time = motion.lengthSqr() <= 1.0E-8D ? 0F : (float) (origin.distanceTo(point) / motion.length());
             closest = nearer(closest, new Aimed(time, EnumDriveablePart.CORE, EnumArmorFacing.FRONT, null,
-                new Health(aaGun.getHealth(), aaGun.getConfigType().getHealth(), aaGun.isWreck() || aaGun.getHealth() <= 0)));
+                new Health(aaGun.getHealth(), aaGun.getConfigType().getHealth(), aaGun.isWreck() || aaGun.getHealth() <= 0), null));
         }
         return closest;
     }

@@ -301,6 +301,13 @@ public final class PartBody implements IPartBody
         return state == null ? 0F : state.getPenetrationResistance();
     }
 
+    /** Whether a part with health of its own has been shot off; it also opens the hull face it carried. */
+    public boolean isShotOff(EnumDriveablePart part)
+    {
+        DriveablePart state = parts.get(part);
+        return state != null && enabled(state) && state.getMaxHealth() > 0F && state.isDestroyed();
+    }
+
     public boolean isIntact(EnumDriveablePart part)
     {
         DriveablePart state = parts.get(part);
