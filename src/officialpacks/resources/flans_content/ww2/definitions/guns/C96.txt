@@ -7,7 +7,6 @@ Icon C96
 Colour 255 255 255
 DeployedModel None
 Model ww2.C96
-FirstPersonFrame 1.12.2
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.06523 0.80156 -0.00633
