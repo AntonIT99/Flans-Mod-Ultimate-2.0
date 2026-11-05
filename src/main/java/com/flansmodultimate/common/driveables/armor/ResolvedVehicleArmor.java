@@ -58,7 +58,8 @@ public final class ResolvedVehicleArmor
 
     /**
      * The plate a part shows on a face once the armour parts already shot off are taken away: a hull part whose face
-     * is carried by a destroyed armour part is open there.
+     * is carried by a destroyed armour part is open there. The core instead uses that hull plate as fallback once
+     * the covering part is destroyed, without adding a second inherited plate while the covering part is intact.
      *
      * @param shotOff
      *            whether the given part has been destroyed
@@ -66,7 +67,15 @@ public final class ResolvedVehicleArmor
     public ResolvedArmorPlate plate(EnumDriveablePart part, EnumArmorFacing facing, Predicate<EnumDriveablePart> shotOff)
     {
         EnumArmorFacing safeFacing = facing == null ? EnumArmorFacing.FRONT : facing;
-        return isBreached(part, safeFacing, shotOff) ? ResolvedArmorPlate.unarmoured(safeFacing) : plate(part, safeFacing);
+        return coreCoveredByIntactArmor(part, safeFacing, shotOff) || isBreached(part, safeFacing, shotOff) ? ResolvedArmorPlate.unarmoured(safeFacing) : plate(part, safeFacing);
+    }
+
+    private boolean coreCoveredByIntactArmor(EnumDriveablePart part, EnumArmorFacing facing, @Nullable Predicate<EnumDriveablePart> shotOff)
+    {
+        if (part != EnumDriveablePart.CORE || shotOff == null || source.partOverrides().containsKey(part))
+            return false;
+        EnumDriveablePart cover = coveringPart(facing);
+        return cover != null && plates.containsKey(cover) && !shotOff.test(cover);
     }
 
     /**
@@ -91,12 +100,13 @@ public final class ResolvedVehicleArmor
     /**
      * Whether a part's face has lost its plate because the armour part carrying that face was shot off. Only a hull part
      * that inherits the hull plate is breached: a turret part, a part with its own {@code PartArmor} plate and the armour
-     * parts themselves (skirts, ERA, spaced plates) keep theirs. A driveable without the covering part is never breached.
+     * parts themselves (skirts, ERA, spaced plates) keep theirs. The core uses its plate as fallback, so losing an outer
+     * part does not expose it to small-arms fire. A driveable without the covering part is never breached.
      */
     public boolean isBreached(@Nullable EnumDriveablePart part, @Nullable EnumArmorFacing facing, @Nullable Predicate<EnumDriveablePart> shotOff)
     {
         EnumDriveablePart cover = coveringPart(facing);
-        if (part == null || cover == null || shotOff == null || part == cover || !plates.containsKey(cover))
+        if (part == null || part == EnumDriveablePart.CORE || cover == null || shotOff == null || part == cover || !plates.containsKey(cover))
             return false;
         if (source.partOverrides().containsKey(part) || DriveableCollisionProfile.isTurretMountedPart(part) || PartDamageKind.defaultFor(part) == PartDamageKind.ARMOR)
             return false;
@@ -125,8 +135,21 @@ public final class ResolvedVehicleArmor
     public ResolvedArmorHit resolveHit(EnumDriveablePart part, EnumArmorFacing facing, Vec3 projectileDirection, double maxImpactAngleDeg, boolean shapedCharge,
         @Nullable Predicate<EnumDriveablePart> shotOff)
     {
+        return resolveHit(part, facing, projectileDirection, maxImpactAngleDeg, shapedCharge, shotOff, null);
+    }
+
+    /**
+     * A shell carrying damage through the covering part it just destroyed has already defeated that hull plate.
+     * The core does not count the inherited plate twice for that impact; an explicit {@code PartArmor} still applies.
+     * Later shots supply no penetrated cover and face the core's full protection.
+     */
+    public ResolvedArmorHit resolveHit(EnumDriveablePart part, EnumArmorFacing facing, Vec3 projectileDirection, double maxImpactAngleDeg, boolean shapedCharge,
+        @Nullable Predicate<EnumDriveablePart> shotOff, @Nullable EnumDriveablePart penetratedCover)
+    {
         EnumArmorFacing safeFacing = facing == null ? EnumArmorFacing.FRONT : facing;
-        ResolvedArmorPlate plate = isBreached(part, safeFacing, shotOff) ? ResolvedArmorPlate.unarmoured(safeFacing) : plate(part, safeFacing);
+        boolean coreBehindPenetratedCover = part == EnumDriveablePart.CORE && penetratedCover != null && penetratedCover == coveringPart(safeFacing) && !source.partOverrides().containsKey(part);
+        ResolvedArmorPlate plate = coreBehindPenetratedCover || coreCoveredByIntactArmor(part, safeFacing, shotOff) || isBreached(part, safeFacing, shotOff)
+            ? ResolvedArmorPlate.unarmoured(safeFacing) : plate(part, safeFacing);
         ArmorPlate authored = plate.authored();
         float thickness = authored.thicknessAgainst(shapedCharge);
         if (!Float.isFinite(thickness) || thickness <= 0F)

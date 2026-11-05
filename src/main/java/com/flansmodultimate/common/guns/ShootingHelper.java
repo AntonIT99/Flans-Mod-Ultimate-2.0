@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.api.parts.IFlanPartTarget;
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.explosions.FlanExplosion;
@@ -161,8 +162,13 @@ public final class ShootingHelper
         }
     }
 
-    public record HitData(float penetratingPower, float lastHitPenAmount, boolean lastHitHeadshot)
-    {}
+    public record HitData(float penetratingPower, float lastHitPenAmount, boolean lastHitHeadshot, Set<DriveablePart> resolvedDriveableParts)
+    {
+        public HitData(float penetratingPower, float lastHitPenAmount, boolean lastHitHeadshot)
+        {
+            this(penetratingPower, lastHitPenAmount, lastHitHeadshot, new HashSet<>());
+        }
+    }
 
     public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingMotion, HitData hitData, @Nullable Bullet bullet)
     {
@@ -252,7 +258,7 @@ public final class ShootingHelper
         if (!level.isClientSide && showHitMarker && playerOwner.isPresent())
             PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), playerOwner.get());
 
-        return new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot);
+        return new HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot, hitData.resolvedDriveableParts());
     }
 
     /**

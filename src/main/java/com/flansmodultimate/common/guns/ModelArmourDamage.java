@@ -78,7 +78,7 @@ public final class ModelArmourDamage
         Vec3 local, float partResistance, FiredShot shot, BulletType bulletType, float penetratingPower)
     {
         boolean heat = bulletType.isHeat();
-        // A face whose armour part has been shot off meets no plate, as on a driveable.
+        // Resolve destroyed outer parts as on driveables; the core keeps its hull protection.
         ResolvedArmorHit armour = plates.resolveHit(part, facing, local, ModCommonConfig.maxArmorImpactAngleDeg(), heat, shotOff);
         float previousPower = Math.max(0F, penetratingPower);
         boolean normalizedHealth = type.getResolvedHealth().enabled();
