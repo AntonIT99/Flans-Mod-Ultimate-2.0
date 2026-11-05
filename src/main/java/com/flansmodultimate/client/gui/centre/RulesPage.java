@@ -84,13 +84,21 @@ final class RulesPage extends TeamsPage
         }
     }
 
-    private static int totalRows(Tab tab)
+    /** Rows of the health tab: the switch, four fields and the two lines of help under them. */
+    private static final int HEALTH_ROWS = 7;
+    private static final List<String> HEALTH_FIELDS = List.of("playerHealth", "botHealth", "playerRegenSeconds", "botRegenSeconds");
+
+    private int totalRows(Tab tab)
     {
         return switch (tab)
         {
             // The spawn protection and the weapon drops take the slot after the last switch.
             case PROTECTION -> (PROTECTION.size() + 1) / 2 + 1;
             case COMBAT -> COMBAT.size() / 2 + 1;
+            case HEALTH -> HEALTH_ROWS;
+            // The switches, the lifetimes, the remains and the sea level.
+            case CLEANUP -> 1 + lifetimeRows() + remainsRows() + 1;
+            case GAME_TYPE -> data().live().isEmpty() ? 0 : (data().variables().size() + 2 + 1) / 2;
             default -> 0;
         };
     }
@@ -98,7 +106,8 @@ final class RulesPage extends TeamsPage
     private Viewport viewport(ICommandCentreView view)
     {
         int top = view.getTop() + WIDGET_HEIGHT + GAP + 16;
-        int height = Math.max(WIDGET_HEIGHT, presetsTop(view) - GAP - top);
+        int bottom = tab == Tab.GAME_TYPE || tab == Tab.MINECRAFT ? view.getTop() + view.getHeight() : presetsTop(view) - GAP;
+        int height = Math.max(WIDGET_HEIGHT, bottom - top);
         int visible = Math.max(1, (height - WIDGET_HEIGHT) / ROW + 1);
         int total = totalRows(tab);
         int first = Math.max(0, Math.min(scrolls.getOrDefault(tab, 0), total - visible));
@@ -138,9 +147,9 @@ final class RulesPage extends TeamsPage
                         .setTooltip(Tooltip.create(tr(RULE + "weaponDrops.tip")));
                 }
             }
-            case HEALTH -> initHealth(view, data.rules(), left, y + 16, width);
-            case CLEANUP -> initCleanup(view, data.rules(), left, y + 16, width);
-            case GAME_TYPE -> initGameType(view, data, left, y + 16, width);
+            case HEALTH -> initHealth(view, data.rules(), scrollArea(view));
+            case CLEANUP -> initCleanup(view, data.rules(), scrollArea(view));
+            case GAME_TYPE -> initGameType(view, data, scrollArea(view));
             case MINECRAFT -> initMinecraftRules(view, data.rules().getCompound(TeamsSection.GAME_RULES), left, y + 16, width);
         }
         if (tab != Tab.GAME_TYPE && tab != Tab.MINECRAFT)
@@ -225,31 +234,42 @@ final class RulesPage extends TeamsPage
                 .ifPresent(seconds -> run(view, TEAMS, TeamsSection.SPAWN_PROTECTION, seconds)));
     }
 
-    private static void initHealth(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
+    private static void initHealth(ICommandCentreView view, CompoundTag rules, Viewport port)
     {
-        toggle(view, tr(RULE + "bodyPartDamageModifiers"), rules.getBoolean("bodyPartDamageModifiers"), left, top, width, tr(RULE + "bodyPartDamageModifiers.tip"),
-            enabled -> run(view, "teams bodyPartDamageModifiers", enabled));
-        int row = 1;
-        for (String rule : List.of("playerHealth", "botHealth", "playerRegenSeconds", "botRegenSeconds"))
+        int left = port.left();
+        int width = port.contentWidth();
+        if (port.shows(0))
         {
+            toggle(view, tr(RULE + "bodyPartDamageModifiers"), rules.getBoolean("bodyPartDamageModifiers"), left, port.y(0), width, tr(RULE + "bodyPartDamageModifiers.tip"),
+                enabled -> run(view, "teams bodyPartDamageModifiers", enabled));
+        }
+        for (int i = 0; i < HEALTH_FIELDS.size(); i++)
+        {
+            int row = i + 1;
+            if (!port.shows(row))
+                continue;
+            String rule = HEALTH_FIELDS.get(i);
             int x = left + width - 100;
-            int y = top + row++ * ROW;
+            int y = port.y(row);
             view.addField(rule, x, y, 56, Integer.toString(rules.getInt(rule)), tr(RULE + rule)).setTooltip(Tooltip.create(tr(RULE + rule + ".tip")));
             button(view, tr("set"), x + 60, y, 40, () -> number(view, rule, 0, rule.endsWith("Health") ? TeamsManager.MAX_HEALTH_OVERRIDE : Integer.MAX_VALUE, tr(RULE + rule)).ifPresent(health -> run(view, TEAMS, rule, health)));
         }
     }
 
-    private static void initCleanup(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
+    private static void initCleanup(ICommandCentreView view, CompoundTag rules, Viewport port)
     {
-        int columnWidth = (width - GAP) / 2;
-        switches(view, rules, List.of("restoreBlocks", "corpses"), new Viewport(left, top, width, ROW, 0, 1, 1));
-        top += ROW;
-        secondsFields(view, rules, TeamsSection.LIFETIMES, left, top, columnWidth);
-        top += lifetimeRows() * ROW;
-        secondsFields(view, rules, TeamsSection.REMAINS, left, top, columnWidth);
+        int left = port.left();
+        int columnWidth = port.columnWidth();
+        if (port.shows(0))
+            switches(view, rules, List.of("restoreBlocks", "corpses"), new Viewport(left, port.y(0), port.width(), ROW, 0, 1, 1));
+        secondsFields(view, rules, TeamsSection.LIFETIMES, left, 1, columnWidth, port);
+        secondsFields(view, rules, TeamsSection.REMAINS, left, 1 + lifetimeRows(), columnWidth, port);
+        int seaRow = 1 + lifetimeRows() + remainsRows();
+        if (!port.shows(seaRow))
+            return;
         int fieldWidth = 48;
         int buttonWidth = 40;
-        int y = top + remainsRows() * ROW + 10;
+        int y = port.y(seaRow);
         int x = left + columnWidth - fieldWidth - buttonWidth - GAP;
         String seaLevel = rules.contains(TeamsSection.SEA_LEVEL) ? Integer.toString(rules.getInt(TeamsSection.SEA_LEVEL)) : "";
         view.addField(SEA_LEVEL_FIELD, x, y, fieldWidth, seaLevel, tr("sea_level.hint"));
@@ -269,15 +289,17 @@ final class RulesPage extends TeamsPage
     }
 
     /** Lays out a seconds field and its set button for each rule, in two columns; a rule with a tooltip shows it on its field. */
-    private static void secondsFields(ICommandCentreView view, CompoundTag rules, List<String> names, int left, int top, int columnWidth)
+    private static void secondsFields(ICommandCentreView view, CompoundTag rules, List<String> names, int left, int firstRow, int columnWidth, Viewport port)
     {
         int fieldWidth = 48;
         int buttonWidth = 40;
         for (int i = 0; i < names.size(); i++)
         {
+            if (!port.shows(firstRow + i / 2))
+                continue;
             String rule = names.get(i);
             int x = left + (i % 2) * (columnWidth + GAP) + columnWidth - fieldWidth - buttonWidth - GAP;
-            int y = top + (i / 2) * ROW;
+            int y = port.y(firstRow + i / 2);
             var field = view.addField(rule, x, y, fieldWidth, Integer.toString(rules.getInt(rule)), tr("seconds"));
             String tip = KEY + RULE + rule + ".tip";
             if (net.minecraft.locale.Language.getInstance().has(tip))
@@ -287,27 +309,32 @@ final class RulesPage extends TeamsPage
         }
     }
 
-    private static void initGameType(ICommandCentreView view, TeamsData data, int left, int top, int width)
+    private static void initGameType(ICommandCentreView view, TeamsData data, Viewport port)
     {
         Optional<TeamsData.LiveRound> live = data.live();
         if (live.isEmpty())
             return;
-        int columnWidth = (width - GAP) / 2;
+        int left = port.left();
+        int columnWidth = port.columnWidth();
         int fieldWidth = 56;
         int buttonWidth = 40;
         int x = left + columnWidth - fieldWidth - buttonWidth - GAP;
-        view.addField(SCORE_LIMIT, x, top, fieldWidth, Integer.toString(live.get().round().scoreLimit()), tr(SCORE_LIMIT_TEXT));
-        button(view, tr("set"), x + fieldWidth + GAP, top, buttonWidth, tr("score_limit.tip"),
-            () -> number(view, SCORE_LIMIT, 1, Integer.MAX_VALUE, tr(SCORE_LIMIT_TEXT)).ifPresent(score -> run(view, SET_VARIABLE, SCORE_LIMIT, score)));
+        if (port.shows(0))
+        {
+            view.addField(SCORE_LIMIT, x, port.y(0), fieldWidth, Integer.toString(live.get().round().scoreLimit()), tr(SCORE_LIMIT_TEXT));
+            button(view, tr("set"), x + fieldWidth + GAP, port.y(0), buttonWidth, tr("score_limit.tip"),
+                () -> number(view, SCORE_LIMIT, 1, Integer.MAX_VALUE, tr(SCORE_LIMIT_TEXT)).ifPresent(score -> run(view, SET_VARIABLE, SCORE_LIMIT, score)));
+        }
         int index = 0;
         for (Map.Entry<String, String> variable : data.variables().entrySet())
         {
             String name = variable.getKey();
             int slot = index + 2;
+            index++;
+            if (!port.shows(slot / 2))
+                continue;
             int columnLeft = left + (slot % 2) * (columnWidth + GAP);
-            int y = top + (slot / 2) * ROW;
-            if (y + WIDGET_HEIGHT > view.getTop() + view.getHeight())
-                break;
+            int y = port.y(slot / 2);
             if ("true".equals(variable.getValue()) || "false".equals(variable.getValue()))
                 toggle(view, variableName(name), Boolean.parseBoolean(variable.getValue()), columnLeft, y, columnWidth, tr("variable_tip", name), enabled -> run(view, SET_VARIABLE, name, enabled));
             else
@@ -318,7 +345,6 @@ final class RulesPage extends TeamsPage
                 button(view, tr("set"), fieldLeft + fieldWidth + GAP, y, buttonWidth,
                     () -> number(view, VARIABLE + name, 0, Integer.MAX_VALUE, variableName(name)).ifPresent(value -> run(view, SET_VARIABLE, name, value)));
             }
-            index++;
         }
     }
 
@@ -337,62 +363,77 @@ final class RulesPage extends TeamsPage
         int top = view.getTop() + WIDGET_HEIGHT + GAP;
         int width = view.getWidth();
         label(view, graphics, tr("rules_tab." + tab.name().toLowerCase(Locale.ROOT) + ".help"), left + 2, top + 2, width - 4, CentreStyle.MUTED);
-        int rowsTop = top + 16;
-        int columnWidth = (width - GAP) / 2;
+        Viewport port = viewport(view);
+        int columnWidth = port.columnWidth();
         switch (tab)
         {
             case CLEANUP -> {
-                rowsTop += ROW;
-                secondsLabels(view, graphics, TeamsSection.LIFETIMES, left, rowsTop, columnWidth);
-                rowsTop += lifetimeRows() * ROW;
-                secondsLabels(view, graphics, TeamsSection.REMAINS, left, rowsTop, columnWidth);
-                int y = rowsTop + remainsRows() * ROW + 10;
-                label(view, graphics, tr(SEA_LEVEL), left + 2, y + 5, columnWidth - 104, CentreStyle.TEXT);
+                secondsLabels(view, graphics, TeamsSection.LIFETIMES, left, 1, columnWidth, port);
+                secondsLabels(view, graphics, TeamsSection.REMAINS, left, 1 + lifetimeRows(), columnWidth, port);
+                int seaRow = 1 + lifetimeRows() + remainsRows();
+                if (port.shows(seaRow))
+                    label(view, graphics, tr(SEA_LEVEL), left + 2, port.y(seaRow) + 5, columnWidth - 104, CentreStyle.TEXT);
             }
             case HEALTH -> {
-                int row = 1;
-                for (String rule : List.of("playerHealth", "botHealth", "playerRegenSeconds", "botRegenSeconds"))
-                    label(view, graphics, tr(RULE + rule), left + 2, rowsTop + row++ * ROW + 5, width - 104, CentreStyle.TEXT);
-                paragraph(view, graphics, tr("health.help"), left + 2, rowsTop + 5 * ROW + GAP, width - 4, CentreStyle.MUTED);
+                for (int i = 0; i < HEALTH_FIELDS.size(); i++)
+                {
+                    if (port.shows(i + 1))
+                        label(view, graphics, tr(RULE + HEALTH_FIELDS.get(i)), left + 2, port.y(i + 1) + 5, port.contentWidth() - 104, CentreStyle.TEXT);
+                }
+                int helpRow = HEALTH_FIELDS.size() + 1;
+                if (port.first() <= helpRow)
+                {
+                    graphics.enableScissor(port.left(), port.top(), port.left() + port.width(), port.top() + port.height());
+                    paragraph(view, graphics, tr("health.help"), left + 2, port.top() + (helpRow - port.first()) * ROW + GAP, port.contentWidth() - 4, CentreStyle.MUTED);
+                    graphics.disableScissor();
+                }
             }
             case PROTECTION -> {
-                Viewport port = viewport(view);
                 int row = (PROTECTION.size() + 1) / 2;
                 if (port.shows(row))
                     label(view, graphics, tr(RULE + TeamsSection.SPAWN_PROTECTION), left + 2, port.y(row) + 5, port.columnWidth() - 104, CentreStyle.TEXT);
             }
-            case GAME_TYPE -> renderGameType(view, graphics, data, left, rowsTop, width, columnWidth);
+            case GAME_TYPE -> renderGameType(view, graphics, data, port);
             default -> {
                 // The switches name themselves.
             }
         }
     }
 
-    private static void secondsLabels(ICommandCentreView view, GuiGraphics graphics, List<String> names, int left, int top, int columnWidth)
+    private static void secondsLabels(ICommandCentreView view, GuiGraphics graphics, List<String> names, int left, int firstRow, int columnWidth, Viewport port)
     {
         for (int i = 0; i < names.size(); i++)
-            label(view, graphics, tr(RULE + names.get(i)), left + (i % 2) * (columnWidth + GAP) + 2, top + (i / 2) * ROW + 5, columnWidth - 104, CentreStyle.TEXT);
+        {
+            if (port.shows(firstRow + i / 2))
+                label(view, graphics, tr(RULE + names.get(i)), left + (i % 2) * (columnWidth + GAP) + 2, port.y(firstRow + i / 2) + 5, columnWidth - 104, CentreStyle.TEXT);
+        }
     }
 
-    private static void renderGameType(ICommandCentreView view, GuiGraphics graphics, TeamsData data, int left, int top, int width, int columnWidth)
+    private static void renderGameType(ICommandCentreView view, GuiGraphics graphics, TeamsData data, Viewport port)
     {
         Optional<TeamsData.LiveRound> live = data.live();
+        int left = port.left();
+        int columnWidth = port.columnWidth();
         if (live.isEmpty())
         {
-            paragraph(view, graphics, tr("game_type_none"), left + 2, top, width - 4, CentreStyle.DIM);
+            paragraph(view, graphics, tr("game_type_none"), left + 2, port.top(), port.width() - 4, CentreStyle.DIM);
             return;
         }
-        label(view, graphics, tr(SCORE_LIMIT_TEXT), left + 2, top + 5, columnWidth - 104, CentreStyle.TEXT);
-        label(view, graphics, tr("game_type_playing", data.gameTypeName(live.get().round().gameType())), left + columnWidth + GAP + 2, top + 5, columnWidth - 4, CentreStyle.ACCENT);
+        if (port.shows(0))
+        {
+            label(view, graphics, tr(SCORE_LIMIT_TEXT), left + 2, port.y(0) + 5, columnWidth - 104, CentreStyle.TEXT);
+            label(view, graphics, tr("game_type_playing", data.gameTypeName(live.get().round().gameType())), left + columnWidth + GAP + 2, port.y(0) + 5, columnWidth - 4, CentreStyle.ACCENT);
+        }
         int index = 0;
         for (Map.Entry<String, String> variable : data.variables().entrySet())
         {
             int slot = index + 2;
-            int y = top + (slot / 2) * ROW;
+            index++;
+            if (!port.shows(slot / 2))
+                continue;
             boolean flag = "true".equals(variable.getValue()) || "false".equals(variable.getValue());
             if (!flag)
-                label(view, graphics, variableName(variable.getKey()), left + (slot % 2) * (columnWidth + GAP) + 2, y + 5, columnWidth - 104, CentreStyle.TEXT);
-            index++;
+                label(view, graphics, variableName(variable.getKey()), left + (slot % 2) * (columnWidth + GAP) + 2, port.y(slot / 2) + 5, columnWidth - 104, CentreStyle.TEXT);
         }
     }
 }
