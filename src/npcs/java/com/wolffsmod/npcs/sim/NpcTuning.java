@@ -208,7 +208,9 @@ public final class NpcTuning
         /** Blocks within which an aircraft evaluates missions across all target-search bands. */
         AIR_SEARCH_RANGE(192, 32, 512),
         /** Greatest extra spread of a vehicle's guns, in tenths of a degree, while its hull runs at speed and turns hard; 0 keeps them steady. */
-        MOVING_SPREAD(25, 0, 200);
+        MOVING_SPREAD(25, 0, 200),
+        /** Seconds the body of an NPC that keeps its corpse stays after the death animation; 0 keeps it until it is removed. */
+        CORPSE_TIME(60, 0, 86400);
 
         private final int fallback;
         private final int minimum;

@@ -30,10 +30,13 @@ final class TeamsRulePresets implements ISettingsPresets
         Map.entry("pacifism", TeamsManager::setPacifism), Map.entry("bombs", TeamsManager::setBombsEnabled), Map.entry("shells", TeamsManager::setShellsEnabled),
         Map.entry("bullets", TeamsManager::setBulletsEnabled), Map.entry("armourDrops", TeamsManager::setArmourDrops), Map.entry("overrideHunger", TeamsManager::setOverrideHunger),
         Map.entry("regeneration", TeamsManager::setRegeneration), Map.entry("alliedSpawns", TeamsManager::setAlliedSpawnSharing), Map.entry("fuelNeeded", TeamsManager::setVehiclesNeedFuel),
-        Map.entry("vehiclesCanZoom", TeamsManager::setVehiclesCanZoom), Map.entry("movieProp", TeamsManager::setMovieProp), Map.entry("bloodEffects", TeamsManager::setBloodEffects));
-    private static final Map<String, ObjIntConsumer<TeamsManager>> NUMBERS = Map.of("playerHealth", TeamsManager::setPlayerHealth, "botHealth", TeamsManager::setBotHealth, "spawnProtection",
-        TeamsManager::setSpawnProtectionSeconds, "mgLife", TeamsManager::setMgLife, "planeLife", TeamsManager::setPlaneLife, "vehicleLife", TeamsManager::setVehicleLife, "mechaLife",
-        TeamsManager::setMechaLife, "aaLife", TeamsManager::setAaLife, "playerRegenSeconds", TeamsManager::setPlayerRegenSeconds, "botRegenSeconds", TeamsManager::setBotRegenSeconds);
+        Map.entry("vehiclesCanZoom", TeamsManager::setVehiclesCanZoom), Map.entry("movieProp", TeamsManager::setMovieProp), Map.entry("bloodEffects", TeamsManager::setBloodEffects),
+        Map.entry("corpses", TeamsManager::setCorpses));
+    private static final Map<String, ObjIntConsumer<TeamsManager>> NUMBERS = Map.ofEntries(Map.entry("playerHealth", TeamsManager::setPlayerHealth),
+        Map.entry("botHealth", TeamsManager::setBotHealth), Map.entry("spawnProtection", TeamsManager::setSpawnProtectionSeconds), Map.entry("mgLife", TeamsManager::setMgLife),
+        Map.entry("planeLife", TeamsManager::setPlaneLife), Map.entry("vehicleLife", TeamsManager::setVehicleLife), Map.entry("mechaLife", TeamsManager::setMechaLife),
+        Map.entry("aaLife", TeamsManager::setAaLife), Map.entry("playerRegenSeconds", TeamsManager::setPlayerRegenSeconds), Map.entry("botRegenSeconds", TeamsManager::setBotRegenSeconds),
+        Map.entry("corpseLife", TeamsManager::setCorpseLife), Map.entry("bloodLife", TeamsManager::setBloodLife));
     private final Supplier<TeamsManager> managerSource;
 
     TeamsRulePresets()
@@ -147,6 +150,8 @@ final class TeamsRulePresets implements ISettingsPresets
             return TeamsManager.MAX_HEALTH_OVERRIDE;
         if (key.equals("spawnProtection"))
             return TeamsManager.MAX_SPAWN_PROTECTION_SECONDS;
+        if (key.equals("bloodLife"))
+            return TeamsManager.MAX_BLOOD_LIFE_SECONDS;
         return Integer.MAX_VALUE;
     }
 

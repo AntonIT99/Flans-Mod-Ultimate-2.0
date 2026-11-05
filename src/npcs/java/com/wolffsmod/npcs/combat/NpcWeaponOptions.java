@@ -136,7 +136,12 @@ public final class NpcWeaponOptions
          */
         UNSTEADY_GUNS(true),
         /** The vehicle's guns are stabilised: they stay on target while it moves, so it neither scatters its rounds nor stops to fire. */
-        GUN_STABILISER(false);
+        GUN_STABILISER(false),
+        /**
+         * The body stays after the death animation, for the Corpse time tuning value, when the NPC does not respawn. Teams bots
+         * follow the Teams corpses rule instead.
+         */
+        KEEP_CORPSE(false);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

@@ -135,6 +135,7 @@ public final class ModClientConfig
     public final boolean showCasingEjections;
     public final boolean showWeaponSmoke;
     public final boolean showBloodEffects;
+    public final int bloodSplatterSeconds;
     public final EnumMuzzleFlashStyle muzzleFlashStyle;
 
     public final boolean enableFastTranslucentRendering;
@@ -256,6 +257,7 @@ public final class ModClientConfig
     public static final DoubleValue DRIVEABLE_DAMAGE_EFFECT_DENSITY;
     public static final IntValue MAX_DETACHED_DRIVEABLE_PIECES;
     public static final BooleanValue SHOW_BLOOD_EFFECTS;
+    public static final IntValue BLOOD_SPLATTER_SECONDS;
 
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -517,6 +519,8 @@ public final class ModClientConfig
 
         builder.push("Particle Rendering Settings");
         SHOW_BLOOD_EFFECTS = builder.comment("Show airborne blood and ground splatters when enabled by the server; disabling this hides blood on this client only").define("showBloodEffects", true);
+        BLOOD_SPLATTER_SECONDS = builder.comment("Seconds ground blood splatters stay before fading. A Teams round can set its own time with the bloodLife rule, which then takes precedence")
+            .defineInRange("bloodSplatterSeconds", 35, 1, 3600);
         PARTICLE_DISTANCE_SCALE = builder.comment(
             "Multiplies how far Flan's Mod particles are drawn. Every effect has its own natural drawing distance: 128 blocks for ordinary particles, and further for large effects such as an explosion's rising column, which grows with the charge up to 256 blocks. 0.5 halves every distance; 2 doubles it.")
             .defineInRange("particleDistanceScale", 1.0D, 0.125D, 4.0D);
@@ -751,6 +755,7 @@ public final class ModClientConfig
         showCasingEjections = SHOW_CASING_EJECTIONS.get();
         showWeaponSmoke = SHOW_WEAPON_SMOKE.get();
         showBloodEffects = SHOW_BLOOD_EFFECTS.get();
+        bloodSplatterSeconds = BLOOD_SPLATTER_SECONDS.get();
         muzzleFlashStyle = MUZZLE_FLASH_STYLE.get();
 
         enableFastTranslucentRendering = ENABLE_FAST_TRANSLUCENT_RENDERING.get();

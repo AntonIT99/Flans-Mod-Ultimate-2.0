@@ -86,6 +86,9 @@ public final class PacketTeamsState implements IClientPacket
     @Getter
     private boolean overtime;
     private boolean vehiclesCanZoom;
+    /** Seconds ground blood stays during the round, by the Teams rule; 0 leaves it to each client. */
+    @Getter
+    private int bloodLife;
     private boolean roundRunning;
     private boolean sortedByTeam;
     private boolean showZombieScore;
@@ -143,6 +146,7 @@ public final class PacketTeamsState implements IClientPacket
         packet.staging = roundRules.isStaging();
         packet.overtime = roundRules.isOvertime();
         packet.vehiclesCanZoom = manager.isVehiclesCanZoom();
+        packet.bloodLife = manager.getBloodLife();
         packet.roundRunning = manager.isRoundRunning();
         packet.timeLeftTicks = manager.getRoundTimeLeftTicks();
         packet.intermissionTicks = manager.getIntermissionTicks();
@@ -298,6 +302,7 @@ public final class PacketTeamsState implements IClientPacket
         data.writeBoolean(staging);
         data.writeBoolean(overtime);
         data.writeBoolean(vehiclesCanZoom);
+        data.writeVarInt(bloodLife);
         data.writeBoolean(roundRunning);
         data.writeBoolean(sortedByTeam);
         data.writeBoolean(showZombieScore);
@@ -411,6 +416,7 @@ public final class PacketTeamsState implements IClientPacket
         staging = data.readBoolean();
         overtime = data.readBoolean();
         vehiclesCanZoom = data.readBoolean();
+        bloodLife = data.readVarInt();
         roundRunning = data.readBoolean();
         sortedByTeam = data.readBoolean();
         showZombieScore = data.readBoolean();

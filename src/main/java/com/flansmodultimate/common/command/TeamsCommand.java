@@ -443,7 +443,7 @@ public final class TeamsCommand
         {
             context.getSource().sendSuccess(() -> Component.translatable("message.flansmodultimate.centre.help"), false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|bloodEffects|parachutesCanBeHit|canBreakGuns|canBreakAAGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection|playerRegenSeconds|botRegenSeconds> <seconds>"),
+                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|bloodEffects|parachutesCanBeHit|canBreakGuns|canBreakAAGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns|corpses> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection|playerRegenSeconds|botRegenSeconds|corpseLife|bloodLife> <seconds>"),
                 false);
             context.getSource()
                 .sendSuccess(() -> Component.literal("Rounds and server: /teams setRound <index>, /teams goToMap <index>, /teams ping, /teams bltss [<min> <divisor>], /teams motd <text>"), false);
@@ -497,7 +497,13 @@ public final class TeamsCommand
                     .executes(TeamsCommand::setWeaponDrops)))
             .then(lifeSetting("mgLife", "MGs", TeamsManager::setMgLife)).then(lifeSetting("planeLife", "Planes", TeamsManager::setPlaneLife))
             .then(lifeSetting("vehicleLife", "Vehicles", TeamsManager::setVehicleLife)).then(lifeSetting("mechaLife", "Mechas", TeamsManager::setMechaLife))
-            .then(lifeSetting("aaLife", "AA guns", TeamsManager::setAaLife)).then(Commands.literal("spawnProtection").requires(source -> source.hasPermission(2))
+            .then(lifeSetting("aaLife", "AA guns", TeamsManager::setAaLife))
+            .then(rule("corpses", TeamsManager::setCorpses, enabled -> "Bodies of fallen bots will " + (enabled ? "now stay" : "no longer stay") + " after dying"))
+            .then(secondsSetting("corpseLife", Integer.MAX_VALUE, TeamsManager::setCorpseLife,
+                seconds -> seconds > 0 ? "Bot corpses will stay for " + seconds + SECONDS_SUFFIX : "Bot corpses will stay until the round ends"))
+            .then(secondsSetting("bloodLife", TeamsManager.MAX_BLOOD_LIFE_SECONDS, TeamsManager::setBloodLife,
+                seconds -> seconds > 0 ? "Ground blood will stay for " + seconds + SECONDS_SUFFIX + " during rounds" : "Ground blood follows each player's own setting"))
+            .then(Commands.literal("spawnProtection").requires(source -> source.hasPermission(2))
                 .then(Commands.argument(SECONDS, IntegerArgumentType.integer(0, TeamsManager.MAX_SPAWN_PROTECTION_SECONDS)).executes(context ->
                 {
                     int seconds = IntegerArgumentType.getInteger(context, SECONDS);
@@ -568,6 +574,18 @@ public final class TeamsCommand
             setter.accept(manager(), seconds);
             manager().saveSettings();
             return success(context, seconds > 0 ? what + " will despawn after " + seconds + SECONDS_SUFFIX : what + " will not despawn");
+        }));
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> secondsSetting(String name, int maximum, java.util.function.ObjIntConsumer<TeamsManager> setter,
+        java.util.function.IntFunction<String> message)
+    {
+        return Commands.literal(name).requires(source -> source.hasPermission(2)).then(Commands.argument(SECONDS, IntegerArgumentType.integer(0, maximum)).executes(context ->
+        {
+            int seconds = IntegerArgumentType.getInteger(context, SECONDS);
+            setter.accept(manager(), seconds);
+            manager().saveSettings();
+            return success(context, message.apply(seconds));
         }));
     }
 

@@ -41,6 +41,8 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 
 * `Blood Effects` in Wolff's Mod > Effects enables airborne wound puffs, severe-injury spray and temporary ground splatters; blocked hits do not bleed and fatal heavy hits do not duplicate splatters; the Player and Human NPC presets and generated soldier bots enable it, and the Teams rule can disable it for everyone
 
+* `Keep corpse` and `Corpse time` in Wolff's Mod > Effects keep the body of an NPC that does not respawn after its death animation, without the red hurt tint, for the given seconds (0 = until removed); Teams bots follow the Teams `Keep corpses` and `Corpse time` rules instead
+
 * Custom NPCs use Flan's guns, grenades, throwables, melee weapons, shields and armour, with reloads, ammunition from their inventory and Flan's sounds and muzzle flashes; the sounds an NPC makes carry as far, and as loudly, as the same weapon in a player's hands
 * Soldier class loadouts from Flan's teams and classes, with skins, themed name lists and naming by class and gender; NPCs whose random Custom NPCs preset skin is missing wear Steve instead of the missing texture
 * Flan NPC tactics for soldiers, vehicles and aircraft, including cover, peeking and Custom NPCs' own tactics with Flan's weapons

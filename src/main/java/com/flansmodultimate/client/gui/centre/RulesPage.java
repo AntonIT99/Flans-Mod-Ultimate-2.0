@@ -241,26 +241,50 @@ final class RulesPage extends TeamsPage
 
     private static void initCleanup(ICommandCentreView view, CompoundTag rules, int left, int top, int width)
     {
-        toggle(view, tr(RULE + "restoreBlocks"), rules.getBoolean("restoreBlocks"), left, top, width, tr(RULE + "restoreBlocks.tip"), enabled -> run(view, "teams restoreBlocks", enabled));
-        top += ROW;
         int columnWidth = (width - GAP) / 2;
+        switches(view, rules, List.of("restoreBlocks", "corpses"), new Viewport(left, top, width, ROW, 0, 1, 1));
+        top += ROW;
+        secondsFields(view, rules, TeamsSection.LIFETIMES, left, top, columnWidth);
+        top += lifetimeRows() * ROW;
+        secondsFields(view, rules, TeamsSection.REMAINS, left, top, columnWidth);
         int fieldWidth = 48;
         int buttonWidth = 40;
-        for (int i = 0; i < TeamsSection.LIFETIMES.size(); i++)
-        {
-            String rule = TeamsSection.LIFETIMES.get(i);
-            int x = left + (i % 2) * (columnWidth + GAP) + columnWidth - fieldWidth - buttonWidth - GAP;
-            int y = top + (i / 2) * ROW;
-            view.addField(rule, x, y, fieldWidth, Integer.toString(rules.getInt(rule)), tr("seconds"));
-            button(view, tr("set"), x + fieldWidth + GAP, y, buttonWidth, () -> number(view, rule, 0, Integer.MAX_VALUE, tr(RULE + rule)).ifPresent(seconds -> run(view, TEAMS, rule, seconds)));
-        }
-        int y = top + (TeamsSection.LIFETIMES.size() + 1) / 2 * ROW + 10;
+        int y = top + remainsRows() * ROW + 10;
         int x = left + columnWidth - fieldWidth - buttonWidth - GAP;
         String seaLevel = rules.contains(TeamsSection.SEA_LEVEL) ? Integer.toString(rules.getInt(TeamsSection.SEA_LEVEL)) : "";
         view.addField(SEA_LEVEL_FIELD, x, y, fieldWidth, seaLevel, tr("sea_level.hint"));
         button(view, tr("set"), x + fieldWidth + GAP, y, buttonWidth, tr("sea_level.tip"),
             () -> number(view, SEA_LEVEL_FIELD, -2048, 2048, tr(SEA_LEVEL)).ifPresent(level -> run(view, "teams seaLevel", level)));
         button(view, tr("sea_level.default"), left + columnWidth + GAP, y, Math.min(columnWidth, 110), () -> run(view, "teams seaLevel default")).active = rules.contains(TeamsSection.SEA_LEVEL);
+    }
+
+    private static int lifetimeRows()
+    {
+        return (TeamsSection.LIFETIMES.size() + 1) / 2;
+    }
+
+    private static int remainsRows()
+    {
+        return (TeamsSection.REMAINS.size() + 1) / 2;
+    }
+
+    /** Lays out a seconds field and its set button for each rule, in two columns; a rule with a tooltip shows it on its field. */
+    private static void secondsFields(ICommandCentreView view, CompoundTag rules, List<String> names, int left, int top, int columnWidth)
+    {
+        int fieldWidth = 48;
+        int buttonWidth = 40;
+        for (int i = 0; i < names.size(); i++)
+        {
+            String rule = names.get(i);
+            int x = left + (i % 2) * (columnWidth + GAP) + columnWidth - fieldWidth - buttonWidth - GAP;
+            int y = top + (i / 2) * ROW;
+            var field = view.addField(rule, x, y, fieldWidth, Integer.toString(rules.getInt(rule)), tr("seconds"));
+            String tip = KEY + RULE + rule + ".tip";
+            if (net.minecraft.locale.Language.getInstance().has(tip))
+                field.setTooltip(Tooltip.create(Component.translatable(tip)));
+            int maximum = rule.equals("bloodLife") ? TeamsManager.MAX_BLOOD_LIFE_SECONDS : Integer.MAX_VALUE;
+            button(view, tr("set"), x + fieldWidth + GAP, y, buttonWidth, () -> number(view, rule, 0, maximum, tr(RULE + rule)).ifPresent(seconds -> run(view, TEAMS, rule, seconds)));
+        }
     }
 
     private static void initGameType(ICommandCentreView view, TeamsData data, int left, int top, int width)
@@ -319,12 +343,10 @@ final class RulesPage extends TeamsPage
         {
             case CLEANUP -> {
                 rowsTop += ROW;
-                for (int i = 0; i < TeamsSection.LIFETIMES.size(); i++)
-                {
-                    String rule = TeamsSection.LIFETIMES.get(i);
-                    label(view, graphics, tr(RULE + rule), left + (i % 2) * (columnWidth + GAP) + 2, rowsTop + (i / 2) * ROW + 5, columnWidth - 104, CentreStyle.TEXT);
-                }
-                int y = rowsTop + (TeamsSection.LIFETIMES.size() + 1) / 2 * ROW + 10;
+                secondsLabels(view, graphics, TeamsSection.LIFETIMES, left, rowsTop, columnWidth);
+                rowsTop += lifetimeRows() * ROW;
+                secondsLabels(view, graphics, TeamsSection.REMAINS, left, rowsTop, columnWidth);
+                int y = rowsTop + remainsRows() * ROW + 10;
                 label(view, graphics, tr(SEA_LEVEL), left + 2, y + 5, columnWidth - 104, CentreStyle.TEXT);
             }
             case HEALTH -> {
@@ -344,6 +366,12 @@ final class RulesPage extends TeamsPage
                 // The switches name themselves.
             }
         }
+    }
+
+    private static void secondsLabels(ICommandCentreView view, GuiGraphics graphics, List<String> names, int left, int top, int columnWidth)
+    {
+        for (int i = 0; i < names.size(); i++)
+            label(view, graphics, tr(RULE + names.get(i)), left + (i % 2) * (columnWidth + GAP) + 2, top + (i / 2) * ROW + 5, columnWidth - 104, CentreStyle.TEXT);
     }
 
     private static void renderGameType(ICommandCentreView view, GuiGraphics graphics, TeamsData data, int left, int top, int width, int columnWidth)

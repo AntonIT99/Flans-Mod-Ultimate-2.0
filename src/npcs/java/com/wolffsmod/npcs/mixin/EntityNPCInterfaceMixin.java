@@ -56,7 +56,7 @@ import java.util.*;
 
 /**
  * Teams controls passive regeneration for round soldiers; medical healing and vehicle repairs stay independent.
- * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed.
+ * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed, and kept corpses lie in their death pose for their corpse time.
  *
  * <ul>
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data, and stand in for each melee statistic
@@ -258,6 +258,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private final NpcDriverGuns wolffsmodnpcsDriverGuns = new NpcDriverGuns();
     @Unique
     private final NpcMeleeState wolffsmodnpcsMelee = new NpcMeleeState();
+    /** Ticks the body has lain since its death animation ended; not saved, so a reloaded corpse starts its time over. */
+    @Unique
+    private int wolffsmodnpcsCorpseTicks;
 
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
@@ -279,6 +282,29 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (npc.stats.spawnCycle == 3 && !npc.stats.hideKilledBody && NpcPresentation.of(npc).isKeepWreck())
             callback.cancel();
+        else
+            wolffsmodnpcsKeepCorpse(npc, callback);
+    }
+
+    /**
+     * Holds a fallen body in its last death pose instead of removing it when the animation ends, until its corpse time has
+     * passed. Clients never remove dying entities themselves, so only the server takes over.
+     */
+    @Unique
+    private void wolffsmodnpcsKeepCorpse(EntityNPCInterface npc, CallbackInfo callback)
+    {
+        if (level().isClientSide || deathTime < FlansCorpses.DEATH_ANIMATION_TICKS - 1)
+            return;
+        OptionalInt seconds = NpcCorpses.lifeSeconds(npc);
+        if (seconds.isEmpty())
+            return;
+        callback.cancel();
+        deathTime = FlansCorpses.DEATH_ANIMATION_TICKS;
+        if (seconds.getAsInt() > 0 && ++wolffsmodnpcsCorpseTicks >= seconds.getAsInt() * 20 && !isRemoved())
+        {
+            level().broadcastEntityEvent(this, EntityEvent.POOF);
+            remove(RemovalReason.KILLED);
+        }
     }
 
     // Presentation

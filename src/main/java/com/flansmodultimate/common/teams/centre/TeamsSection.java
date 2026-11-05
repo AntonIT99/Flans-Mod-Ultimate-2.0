@@ -78,9 +78,11 @@ public final class TeamsSection
      */
     public static final List<String> SWITCHES = List.of("restoreBlocks", "bodyPartDamageModifiers", "explosions", "canBreakGlass", "canBreakGuns", "canBreakAAGuns", "vehiclesBreakBlocks",
         "survivalCanBreakVehicles", "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "regeneration", "alliedSpawns",
-        "fuelNeeded", "vehiclesCanZoom", "movieProp", "bloodEffects");
+        "fuelNeeded", "vehiclesCanZoom", "movieProp", "bloodEffects", "corpses");
     /** How long abandoned driveables last, by the {@code /teams} command that sets each, in seconds. */
     public static final List<String> LIFETIMES = List.of("mgLife", "planeLife", "vehicleLife", "mechaLife", "aaLife");
+    /** How long fallen bots and ground blood stay, by the {@code /teams} command that sets each, in seconds. */
+    public static final List<String> REMAINS = List.of("corpseLife", "bloodLife");
 
     public static final String VOTING = "voting";
     public static final String GENERATOR = "roundsGenerator";
@@ -272,6 +274,9 @@ public final class TeamsSection
         tag.putBoolean("vehiclesCanZoom", manager.isVehiclesCanZoom());
         tag.putBoolean("movieProp", manager.isMovieProp());
         tag.putBoolean("bloodEffects", manager.isBloodEffects());
+        tag.putBoolean("corpses", manager.isCorpses());
+        tag.putInt("corpseLife", manager.getCorpseLife());
+        tag.putInt("bloodLife", manager.getBloodLife());
         tag.putString(WEAPON_DROPS, switch (manager.getWeaponDrops())
         {
             case NONE -> "off";

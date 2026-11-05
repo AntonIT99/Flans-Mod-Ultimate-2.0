@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;
@@ -13,9 +14,14 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** A stationary, upward-facing splatter, kept for 35 seconds and removed if its supporting block changes. */
+/**
+ * A stationary, upward-facing splatter, removed if its supporting block changes. It stays for the client's
+ * {@code bloodSplatterSeconds}, or for the Teams {@code bloodLife} rule of the round being played when that is set.
+ */
 public final class GroundBloodParticle extends TextureSheetParticle
 {
+    private static final int DEFAULT_SECONDS = 35;
+    private static final int FADE_TICKS = 40;
     private final BlockPos support;
     private final BlockState supportState;
     private final float rotation;
@@ -23,7 +29,7 @@ public final class GroundBloodParticle extends TextureSheetParticle
     private GroundBloodParticle(ClientLevel level, double x, double y, double z, SpriteSet sprites)
     {
         super(level, x, y, z);
-        lifetime = 700;
+        lifetime = lifetimeTicks();
         quadSize = 0.2F + random.nextFloat() * 0.4F;
         rotation = random.nextInt(4) * Mth.HALF_PI;
         support = BlockPos.containing(x, y - 0.02D, z);
@@ -31,12 +37,19 @@ public final class GroundBloodParticle extends TextureSheetParticle
         pickSprite(sprites);
     }
 
+    private static int lifetimeTicks()
+    {
+        ModClientConfig config = ModClientConfig.get();
+        int seconds = TeamsClientState.roundBloodLife().orElse(config == null ? DEFAULT_SECONDS : config.bloodSplatterSeconds);
+        return Math.max(FADE_TICKS, seconds * 20);
+    }
+
     @Override
     public void tick()
     {
         if (++age >= lifetime || level.getBlockState(support) != supportState || !level.getFluidState(support).isEmpty())
             remove();
-        alpha = Mth.clamp((lifetime - age) / 40F, 0F, 1F);
+        alpha = Mth.clamp((lifetime - age) / (float) FADE_TICKS, 0F, 1F);
     }
 
     @Override
