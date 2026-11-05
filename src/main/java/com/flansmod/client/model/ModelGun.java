@@ -390,11 +390,11 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         writeToModel(this.type.getAnimationConfig());
     }
 
-    /** Adds the content-pack translation to the Java model's third-person offset without modifying either vector. */
+    /** Uses the content-pack override when present, otherwise preserves the Java model's third-person offset. */
     public Vector3f getThirdPersonOffset()
     {
         Vector3f configured = type == null ? null : type.getAnimationConfig().getThirdPersonOffset();
-        return configured == null ? thirdPersonOffset : Vector3f.add(thirdPersonOffset, configured, null);
+        return configured == null ? thirdPersonOffset : configured;
     }
 
     @Override

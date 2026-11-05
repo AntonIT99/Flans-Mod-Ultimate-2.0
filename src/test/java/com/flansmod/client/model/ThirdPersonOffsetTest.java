@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 class ThirdPersonOffsetTest
 {
     @Test
-    void textOffsetAddsToJavaModelAndDoesNotAccumulateWhenTypeIsReapplied()
+    void textOffsetOverridesJavaModelAndFallsBackWhenRemoved()
     {
         ModelGun model = new ModelGun();
         Vector3f javaOffset = new Vector3f(1F, 2F, 3F);
@@ -26,11 +26,14 @@ class ThirdPersonOffsetTest
         when(type.getAnimationConfig()).thenReturn(config);
 
         model.setType(type);
-        assertOffset(model.getThirdPersonOffset(), 0.5F, 2.25F, 5F);
+        assertOffset(model.getThirdPersonOffset(), -0.5F, 0.25F, 2F);
         model.setType(type);
-        assertOffset(model.getThirdPersonOffset(), 0.5F, 2.25F, 5F);
+        assertOffset(model.getThirdPersonOffset(), -0.5F, 0.25F, 2F);
         assertOffset(javaOffset, 1F, 2F, 3F);
         assertOffset(config.getThirdPersonOffset(), -0.5F, 0.25F, 2F);
+
+        config.read(new TypeFile("offset", EnumType.GUN, null, List.of("animThirdPersonOffset 0 0 0")));
+        assertOffset(model.getThirdPersonOffset(), 0F, 0F, 0F);
 
         when(type.getAnimationConfig()).thenReturn(new GunAnimationConfig());
         model.setType(type);
