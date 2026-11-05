@@ -4,6 +4,7 @@ import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.tooltip.AmmoStatContext;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
+import com.flansmodultimate.common.item.tooltip.HeatDamageTooltip;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.item.FlanItem;
@@ -305,6 +306,15 @@ public abstract class ShootableItem extends FlanItem
             // Legacy damage is scaled by the firing weapon's damage, e.g. a vehicle's DamageMultiplierPrimary.
             float weaponDamage = context != null && bulletType != null ? context.fireable(bulletType).getDamage() : 1F;
             IFlanItem.appendDamageStats(tooltipComponents, configType.getDamage(), TooltipKeys.DAMAGE, weaponDamage);
+        }
+
+        if (bulletType != null && bulletType.isHeat())
+        {
+            appendPerRound(tooltipComponents, TooltipKeys.VS_VEHICLES, rounds,
+                shot -> HeatDamageTooltip.range(bulletType, context == null ? null : context.shot(bulletType, shot)));
+            appendPerRound(tooltipComponents, TooltipKeys.VS_PLANES, rounds,
+                shot -> HeatDamageTooltip.range(bulletType, context == null ? null : context.shot(bulletType, shot)));
+            tooltipComponents.add(Component.translatable(HeatDamageTooltip.NOTE).withStyle(ChatFormatting.GRAY));
         }
 
         if (configType.useNewExplosionSystem())

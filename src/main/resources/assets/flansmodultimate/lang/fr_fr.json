@@ -571,6 +571,7 @@
   "tooltip.flansmodultimate.guidance.manual": "Manuel",
   "tooltip.flansmodultimate.guidance.unguided": "Non guidé",
   "tooltip.flansmodultimate.health": "Santé",
+  "tooltip.flansmodultimate.heat_damage_note": "*Jet HEAT : après pénétration, plein effet sans blindage.",
   "tooltip.flansmodultimate.hold_for_details": "Maintenez %s pour afficher les détails",
   "tooltip.flansmodultimate.horizontal_recoil": "Recul horizontal",
   "tooltip.flansmodultimate.item_holder": "Exposez des objets",

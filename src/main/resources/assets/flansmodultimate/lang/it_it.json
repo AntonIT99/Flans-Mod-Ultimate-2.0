@@ -571,6 +571,7 @@
   "tooltip.flansmodultimate.guidance.manual": "Manuale",
   "tooltip.flansmodultimate.guidance.unguided": "Non guidato",
   "tooltip.flansmodultimate.health": "Salute",
+  "tooltip.flansmodultimate.heat_damage_note": "*Getto HEAT: dopo la penetrazione, effetto pieno senza corazza.",
   "tooltip.flansmodultimate.hold_for_details": "Tieni premuto %s per i dettagli",
   "tooltip.flansmodultimate.horizontal_recoil": "Rinculo orizzontale",
   "tooltip.flansmodultimate.item_holder": "Posiziona oggetti in esposizione",

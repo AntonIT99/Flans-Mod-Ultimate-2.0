@@ -719,9 +719,9 @@ public final class ModCommonConfig
             "Most ordnance is far below this: a 250 kg bomb reaches about 85 blocks, the largest conventional bomb shipped about 167.",
             "At the default only nuclear-scale charges clamp; every conventional charge keeps its full damage reach.").defineInRange("maxBlastRadius", DEFAULT_MAX_BLAST_RADIUS, 1D, 8192D);
         HEAT_DAMAGE_REFERENCE = builder
-            .comment("Damage a HEAT (shaped-charge) round deals behind armour it penetrates, for a 1 kg TNT charge, on vehicles using UseRealisticVehicleHealth.",
-                "Damage grows with the square root of the charge and does not depend on the round's speed. A jet that barely penetrates delivers 60% of it.",
-                "The default makes a Panzerfaust 60 take about nine tenths of a Panzer IV hull per penetrating hit. Kinetic damage still applies when it is higher.")
+            .comment("Damage a HEAT (shaped-charge) round deals behind armour it penetrates, for a 1 kg TNT charge, on vehicles and aircraft.",
+                "Damage grows with the square root of the charge and does not depend on the round's speed. A jet that barely penetrates delivers 60% of it; unarmoured targets take the full amount.",
+                "The default makes a Panzerfaust 60 take about nine tenths of a Panzer IV hull per penetrating hit. Kinetic or authored damage still applies when it is higher, including on legacy-health vehicles.")
             .defineInRange("heatDamageReference", DEFAULT_HEAT_DAMAGE_REFERENCE, 0D, 100000D);
         HEAT_CREW_SPALL_DAMAGE = builder.comment("Damage dealt to each occupant of a vehicle part that a HEAT jet penetrates, on vehicles using UseRealisticVehicleHealth.",
             "Scaled down like the vehicle damage when the jet barely penetrates. Set to 0 to disable crew spall.").defineInRange("heatCrewSpallDamage", DEFAULT_HEAT_CREW_SPALL_DAMAGE, 0D, 1000D);

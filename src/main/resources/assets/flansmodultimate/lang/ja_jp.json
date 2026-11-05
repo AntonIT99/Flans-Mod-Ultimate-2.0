@@ -571,6 +571,7 @@
   "tooltip.flansmodultimate.guidance.manual": "手動",
   "tooltip.flansmodultimate.guidance.unguided": "無誘導",
   "tooltip.flansmodultimate.health": "耐久値",
+  "tooltip.flansmodultimate.heat_damage_note": "*HEAT噴流：貫通後に有効、非装甲には最大ダメージ。",
   "tooltip.flansmodultimate.hold_for_details": "%s を長押しして詳細を表示",
   "tooltip.flansmodultimate.horizontal_recoil": "水平反動",
   "tooltip.flansmodultimate.item_holder": "アイテムを展示する",

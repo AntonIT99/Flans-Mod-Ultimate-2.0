@@ -571,6 +571,7 @@
   "tooltip.flansmodultimate.guidance.manual": "手动",
   "tooltip.flansmodultimate.guidance.unguided": "无制导",
   "tooltip.flansmodultimate.health": "生命值",
+  "tooltip.flansmodultimate.heat_damage_note": "*HEAT射流：穿甲后生效，无装甲目标承受全额伤害。",
   "tooltip.flansmodultimate.hold_for_details": "按住 %s 查看详情",
   "tooltip.flansmodultimate.horizontal_recoil": "水平后坐力",
   "tooltip.flansmodultimate.item_holder": "放置物品以展示",

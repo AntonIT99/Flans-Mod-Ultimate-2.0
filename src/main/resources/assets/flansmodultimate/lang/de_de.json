@@ -1126,6 +1126,7 @@
   "tooltip.flansmodultimate.guidance.manual": "Manuell",
   "tooltip.flansmodultimate.guidance.unguided": "Ungelenkt",
   "tooltip.flansmodultimate.health": "Gesundheit",
+  "tooltip.flansmodultimate.heat_damage_note": "*HEAT-Strahl: nach Durchschlag, volle Wirkung ohne Panzerung.",
   "tooltip.flansmodultimate.hold_for_details": "Halte %s gedrückt, um Details anzuzeigen",
   "tooltip.flansmodultimate.hold_to_throw": "Angriff halten für Überhandwurf, Benutzen halten für Unterhandwurf",
   "tooltip.flansmodultimate.horizontal_recoil": "Horizontaler Rückstoß",

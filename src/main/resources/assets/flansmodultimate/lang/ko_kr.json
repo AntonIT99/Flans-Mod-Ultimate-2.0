@@ -571,6 +571,7 @@
   "tooltip.flansmodultimate.guidance.manual": "수동",
   "tooltip.flansmodultimate.guidance.unguided": "무유도",
   "tooltip.flansmodultimate.health": "내구도",
+  "tooltip.flansmodultimate.heat_damage_note": "*HEAT 제트: 관통 후 적용, 비장갑에는 최대 피해.",
   "tooltip.flansmodultimate.hold_for_details": "자세한 정보는 %s을(를) 길게 누르세요",
   "tooltip.flansmodultimate.horizontal_recoil": "수평 반동",
   "tooltip.flansmodultimate.item_holder": "아이템을 전시합니다",

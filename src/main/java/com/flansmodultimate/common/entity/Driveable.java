@@ -5043,7 +5043,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return defined == 0 ? 0F : (float) destroyedCount / defined;
     }
 
-    private boolean isDefinedAndDestroyed(@NotNull EnumDriveablePart part)
+    /** Whether a part with health of its own has been shot off; it also opens the hull face it carried. */
+    public boolean isDefinedAndDestroyed(@NotNull EnumDriveablePart part)
     {
         DriveablePart state = initializedData().getPart(part);
         return state != null && state.getMaxHealth() > 0F && state.isDestroyed();
@@ -5064,7 +5065,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
         int shotIndex = shot == null ? 0 : shot.getShot();
         boolean heat = bulletType.isHeat();
-        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat);
+        // A face whose armour part has been shot off is open: the hull behind it no longer has that plate.
+        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat,
+            this::isDefinedAndDestroyed);
         float authoredFixedDamage = bulletType.getDamage().getDamageAgainstEntity(this);
         boolean normalizedHealth = configType.getResolvedHealth().enabled();
         float selectedFixedDamage = normalizedHealth ? authoredFixedDamage : authoredFixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
@@ -5100,7 +5103,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             {
                 // The jet has already done the warhead's work on this part; its blast is left to the others.
                 shapedChargeImpact = new ShapedChargeImpact(hit.getPart(), hit.getHitPosition(), level().getGameTime());
-                applyHeatSpall(shot, hit.getPart(), resolvedDamage.penetration().overmatch());
+                applyHeatSpall(shot, hit.getPart(), armorHit.isArmoured() ? resolvedDamage.penetration().overmatch() : 2F);
             }
             if (part.isDestroyed())
                 onPartDestroyed(part.getType());

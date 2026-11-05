@@ -10,6 +10,8 @@
 
 ## Highlights
 
+* HEAT charges apply full jet damage to unarmoured vehicles and aircraft regardless of `UseRealisticVehicleHealth` (legacy-health vehicles use the higher of their authored damage and the jet damage; armoured faces still require penetration); ammunition and launcher vehicle/plane damage stats show the HEAT jet range
+
 * Driveable `FlashModel DefaultFlash` applies to `GUN` banks by default; `ShellMuzzleFlash true` also enables flashes for `SHELL` banks
 
 * Passenger weapons support authored `barrels` / `SeatGuns`, `barrelSpread` / `SeatGunSpread`, and offset `PassengerShootParticles` gated by `PassengerHasParticles`, including NPC vehicle crews

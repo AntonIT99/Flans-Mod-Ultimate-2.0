@@ -1130,6 +1130,7 @@
   "tooltip.flansmodultimate.guidance.manual": "Manual",
   "tooltip.flansmodultimate.guidance.unguided": "Unguided",
   "tooltip.flansmodultimate.health": "[Health] %s/%s",
+  "tooltip.flansmodultimate.heat_damage_note": "*HEAT jet: after penetration, full against unarmoured targets.",
   "tooltip.flansmodultimate.hold_for_details": "Hold %s for details",
   "tooltip.flansmodultimate.hold_to_throw": "Hold attack to throw overhand, hold use to toss underhand",
   "tooltip.flansmodultimate.horizontal_recoil": "Horizontal Recoil",

@@ -571,6 +571,7 @@
   "tooltip.flansmodultimate.guidance.manual": "Ручное",
   "tooltip.flansmodultimate.guidance.unguided": "Без наведения",
   "tooltip.flansmodultimate.health": "Прочность",
+  "tooltip.flansmodultimate.heat_damage_note": "*Струя HEAT: после пробития, полный урон без брони.",
   "tooltip.flansmodultimate.hold_for_details": "Удерживайте %s для подробностей",
   "tooltip.flansmodultimate.horizontal_recoil": "Горизонтальная отдача",
   "tooltip.flansmodultimate.item_holder": "Разместить предметы для демонстрации",

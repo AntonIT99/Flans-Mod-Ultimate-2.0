@@ -6,6 +6,7 @@ import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
+import com.flansmodultimate.common.item.tooltip.HeatDamageTooltip;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
@@ -314,6 +315,9 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
                 }
             }
 
+            if (configType.isShowDamage() && ammoTypes.stream().anyMatch(ammo -> ammo instanceof BulletType bullet && bullet.isHeat()))
+                tooltipComponents.add(Component.translatable(HeatDamageTooltip.NOTE).withStyle(ChatFormatting.GRAY));
+
             if (configType.getPrimaryFunction().isMelee() || configType.getSecondaryFunction().isMelee())
             {
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
@@ -392,6 +396,13 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
 
     private DamageTooltipValues getDamageTooltipValues(ShootableType shootableType, ItemStack stack)
     {
+        if (shootableType instanceof BulletType bullet && bullet.isHeat())
+        {
+            FireableGun weapon = new FireableGun(configType, stack, null, null, EnumMovement.NONE, false);
+            weapon.applyAmmunition(bullet);
+            String heat = HeatDamageTooltip.range(bullet, new FiredShot(weapon, bullet, null, null, 0));
+            return new DamageTooltipValues(false, IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1), false, "", false, "", true, heat, true, heat);
+        }
         if (shootableType.useKineticDamageSystem())
             return new DamageTooltipValues(true, IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1), false, "", false, "", false, "", false, "");
 

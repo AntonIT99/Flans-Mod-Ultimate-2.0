@@ -571,6 +571,7 @@
   "tooltip.flansmodultimate.guidance.manual": "Manual",
   "tooltip.flansmodultimate.guidance.unguided": "Sin guiado",
   "tooltip.flansmodultimate.health": "Salud",
+  "tooltip.flansmodultimate.heat_damage_note": "*Chorro HEAT: tras penetrar, efecto completo sin blindaje.",
   "tooltip.flansmodultimate.hold_for_details": "Mantén %s para ver detalles",
   "tooltip.flansmodultimate.horizontal_recoil": "Retroceso horizontal",
   "tooltip.flansmodultimate.item_holder": "Coloca objetos para exponerlos",
