@@ -43,6 +43,7 @@ public final class FlansModHelpCommand
         new Topic("client", "Client tools", "Render counters, model reloads and aim previews", false,
             List.of(new Entry("renderstats", "Inspect client rendering", "[start | stop | reset | bridge [indices]]", "/flansrenderstats", false),
                 new Entry("reloadModels", "Reload client model caches", "", "", false),
+                new Entry("debug thirdPersonOffset", "Preview held-gun third-person offsets", "[x y z | reset | clear]", "/flansdebug thirdPersonOffset", false),
                 new Entry("debug aimoffset", "Preview held-gun aim offsets", "[x y z | reset | clear]", "/flansdebug aimoffset", false))));
 
     private record Topic(String id, String title, String description, boolean operator, List<Entry> entries)

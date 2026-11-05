@@ -26,6 +26,7 @@ public final class AimOffsetDebugCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
+        ThirdPersonOffsetDebugCommand.register(dispatcher);
         dispatcher.register(Commands.literal("flansdebug").then(Commands.literal("aimoffset").executes(context -> apply(context.getSource(), null, false))
             .then(Commands.literal("reset").executes(context -> apply(context.getSource(), null, true))).then(Commands.literal("clear").executes(context ->
             {

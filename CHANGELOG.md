@@ -1,5 +1,7 @@
 # Flan's Mod Ultimate 2.2
 
+* `/flansdebug thirdPersonOffset [x y z | reset | clear]` previews third-person gun offsets locally without editing content packs
+
 * Driveable occupants can be hidden according to door state using `SetPlayerInvisibleOnDoorOpen` and `SetPlayerInvisibleOnDoorClose`
 
 ## Highlights

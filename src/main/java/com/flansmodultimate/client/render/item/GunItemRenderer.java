@@ -5,6 +5,7 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.AimOffsetDebugCommand;
+import com.flansmodultimate.client.debug.ThirdPersonOffsetDebugCommand;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.WeaponShotEffects;
@@ -224,7 +225,8 @@ public final class GunItemRenderer
         poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
         poseStack.translate(0.75F, -0.22F, -0.08F);
         PoseScaling.scale(poseStack, 1F, 1F, -1F);
-        poseStack.translate(model.getThirdPersonOffset().x, model.getThirdPersonOffset().y, model.getThirdPersonOffset().z);
+        Vector3f thirdPersonOffset = ThirdPersonOffsetDebugCommand.resolve(model);
+        poseStack.translate(thirdPersonOffset.x, thirdPersonOffset.y, thirdPersonOffset.z);
 
         if (ModClientConfig.get().enableGunAnimationsInThirdPerson)
         {
