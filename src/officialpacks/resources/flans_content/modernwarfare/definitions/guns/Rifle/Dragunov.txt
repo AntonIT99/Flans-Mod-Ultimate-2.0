@@ -8,6 +8,7 @@ Icon Dragunov
 Colour 255 255 255
 DeployedModel None
 Model mw.Dragunov
+FirstPersonFrame 1.12.2
 Texture Dragunov
 ModelScale 0.18
 Paintjob dragunov_stoic_blue dragunov_stoic_blue blue 3

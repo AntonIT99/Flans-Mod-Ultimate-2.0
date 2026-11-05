@@ -8,6 +8,7 @@ Icon KCASmartpistol
 Colour 255 255 255
 DeployedModel None
 Model mw.KCASmartpistol
+FirstPersonFrame 1.12.2
 Texture KCASmartpistol
 ModelScale 0.18
 Paintjob kcasmartpistol_stoic_blue kcasmartpistol_stoic_blue blue 2

@@ -8,6 +8,7 @@ Icon MLRS6
 Colour 255 255 255
 DeployedModel None
 Model mw.MLRS6
+FirstPersonFrame 1.12.2
 Texture MLRS6
 ModelScale 0.18
 Paintjob mlrs6_stoic_blue mlrs6_stoic_blue blue 3

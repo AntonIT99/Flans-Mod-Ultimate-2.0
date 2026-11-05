@@ -8,6 +8,7 @@ Icon Panzerfaust3
 Colour 255 255 255
 DeployedModel None
 Model mw.Panzerfaust3
+FirstPersonFrame 1.12.2
 Texture Panzerfaust3
 ModelScale 0.18
 Paintjob panzerfaust3_stoic_blue panzerfaust3_stoic_blue blue 3

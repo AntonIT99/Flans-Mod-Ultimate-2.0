@@ -8,6 +8,7 @@ Icon B4CrossBow
 Colour 255 255 255
 DeployedModel None
 Model mw.B4CrossBow
+FirstPersonFrame 1.12.2
 Texture B4CrossBow
 ModelScale 0.18
 Paintjob b4crossbow_stoic_blue b4crossbow_stoic_blue blue 3

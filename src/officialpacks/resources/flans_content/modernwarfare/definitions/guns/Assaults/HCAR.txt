@@ -8,6 +8,7 @@ Icon HCAR
 Colour 255 255 255
 DeployedModel None
 Model mw.HCAR
+FirstPersonFrame 1.12.2
 Texture HCAR
 ModelScale 0.18
 Paintjob hcar_stoic_blue hcar_stoic_blue blue 3

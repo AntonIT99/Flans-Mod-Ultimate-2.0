@@ -8,6 +8,7 @@ Icon Skorpion
 Colour 255 255 255
 DeployedModel None
 Model mw.Skorpion
+FirstPersonFrame 1.12.2
 Texture Skorpion
 ModelScale 0.18
 Paintjob skorpion_stoic_blue skorpion_stoic_blue blue 2

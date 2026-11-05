@@ -180,9 +180,8 @@ public class ModelKar98k extends ModelGun // Same as Filename
         untiltGunTime = 0.4F;
 
         flipAll();
-        translateAll(0F, 3F, -0.15F);
-        // Third-person fix (05.11.2026)
-        thirdPersonOffset = new Vector3f(-0.2F, -0.2F, 0.01F);
-        muzzleFlashPoint = new Vector3f(2.1875F, 0.4578125F, -0.009375F);
+        translateAll(0F, 3F, 0F);
+        thirdPersonOffset = new Vector3f(-0.2F, -0.0625F, 0F);
+        muzzleFlashPoint = new Vector3f(2.1875F, 0.4578125F, 0F);
     }
 }

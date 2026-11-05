@@ -8,6 +8,7 @@ Icon M1014
 Colour 255 255 255
 DeployedModel None
 Model mw.M1014
+FirstPersonFrame 1.12.2
 Texture M1014
 ModelScale 0.18
 Paintjob m1014_stoic_blue m1014_stoic_blue blue 3

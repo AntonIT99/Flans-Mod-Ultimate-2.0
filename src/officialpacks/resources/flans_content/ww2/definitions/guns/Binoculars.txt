@@ -7,6 +7,7 @@ Icon WW2Binoculars
 Colour 255 255 255
 DeployedModel None
 Model ww2.Binoculars
+FirstPersonFrame 1.12.2
 Texture binoculars
 
 // Ammunition

@@ -8,6 +8,7 @@ Icon ADAR15
 Colour 255 255 255
 DeployedModel None
 Model mw.ADAR15
+FirstPersonFrame 1.12.2
 Texture ADAR15
 ModelScale 0.18
 Paintjob adar15_stoic_blue adar15_stoic_blue blue 3

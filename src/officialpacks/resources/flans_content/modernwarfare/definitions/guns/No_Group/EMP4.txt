@@ -8,6 +8,7 @@ Icon EMP4
 Colour 255 255 255
 DeployedModel None
 Model mw.EMP4
+FirstPersonFrame 1.12.2
 Texture EMP4
 ModelScale 0.8
 Paintjob emp4_stoic_blue emp4_stoic_blue blue 3

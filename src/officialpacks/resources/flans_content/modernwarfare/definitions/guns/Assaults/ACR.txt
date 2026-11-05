@@ -8,6 +8,7 @@ Icon ACR
 Colour 255 255 255
 DeployedModel None
 Model mw.ACR
+FirstPersonFrame 1.12.2
 Texture ACR
 ModelScale 0.18
 Paintjob acr_stoic_blue acr_stoic_blue blue 3

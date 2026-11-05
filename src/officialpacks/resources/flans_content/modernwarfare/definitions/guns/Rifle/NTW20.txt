@@ -8,6 +8,7 @@ Icon NTW20
 Colour 255 255 255
 DeployedModel None
 Model mw.NTW20
+FirstPersonFrame 1.12.2
 Texture NTW20
 ModelScale 0.18
 Paintjob ntw20_stoic_blue ntw20_stoic_blue blue 3

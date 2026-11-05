@@ -8,6 +8,7 @@ Icon Executioner
 Colour 255 255 255
 DeployedModel None
 Model mw.Executioner
+FirstPersonFrame 1.12.2
 Texture Executioner
 ModelScale 0.18
 Paintjob executioner_stoic_blue executioner_stoic_blue blue 2

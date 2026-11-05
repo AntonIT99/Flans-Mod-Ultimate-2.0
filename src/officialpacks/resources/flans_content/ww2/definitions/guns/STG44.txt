@@ -7,6 +7,7 @@ Icon mp44
 Colour 255 255 255
 DeployedModel None
 Model ww2.Mp44
+FirstPersonFrame 1.12.2
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 0.96429 0.3817 -0.00703

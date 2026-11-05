@@ -8,6 +8,7 @@ Icon RPK
 Colour 255 255 255
 DeployedModel None
 Model mw.RPK
+FirstPersonFrame 1.12.2
 Texture RPK
 ModelScale 0.18
 Paintjob rpk_stoic_blue rpk_stoic_blue blue 3

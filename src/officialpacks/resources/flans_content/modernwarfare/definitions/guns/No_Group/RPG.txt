@@ -8,6 +8,7 @@ Icon RPG
 Colour 255 255 255
 DeployedModel None
 Model mw.RPG
+FirstPersonFrame 1.12.2
 Texture RPG
 ModelScale 0.18
 Paintjob rpg_stoic_blue rpg_stoic_blue blue 4

@@ -8,6 +8,7 @@ Icon Barrett
 Colour 255 255 255
 DeployedModel None
 Model mw.Barrett
+FirstPersonFrame 1.12.2
 Texture Barrett
 ModelScale 0.18
 Paintjob barrett_stoic_blue barrett_stoic_blue blue 3

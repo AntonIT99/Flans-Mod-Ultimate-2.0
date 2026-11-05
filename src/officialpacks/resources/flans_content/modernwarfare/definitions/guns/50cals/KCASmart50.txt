@@ -8,6 +8,7 @@ Icon kcasmart50
 Colour 255 255 255
 DeployedModel None
 Model mw.KCASmart50
+FirstPersonFrame 1.12.2
 Texture KCASmart50
 ModelScale 0.18
 Paintjob kcasmart50_stoic_blue kcasmart50_stoic_blue blue 3

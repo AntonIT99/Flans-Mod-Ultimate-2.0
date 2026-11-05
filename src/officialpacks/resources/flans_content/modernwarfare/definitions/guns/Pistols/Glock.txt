@@ -8,6 +8,7 @@ Icon Glock
 Colour 255 255 255
 DeployedModel None
 Model mw.Glock
+FirstPersonFrame 1.12.2
 Texture Glock
 ModelScale 0.18
 Paintjob glock_stoic_blue glock_stoic_blue blue 2

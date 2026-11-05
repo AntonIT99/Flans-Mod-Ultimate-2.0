@@ -180,10 +180,10 @@ public class ModelG43 extends ModelGun
         gunSlideDistance = 0.5F;
         animationType = EnumAnimationType.BOTTOM_CLIP;
 
-        translateAll(0F, -4F, 0.05F);
-        thirdPersonOffset = new Vector3f(0F, -0.13F, 0.01F);
+        translateAll(0F, -4F, 0F);
+        thirdPersonOffset = new Vector3f(0F, -0.13F, 0.008125F);
 
         flipAll();
-        muzzleFlashPoint = new Vector3f(2.25F, 0.596875F, -0.003125F);
+        muzzleFlashPoint = new Vector3f(2.25F, 0.596875F, 0F);
     }
 }

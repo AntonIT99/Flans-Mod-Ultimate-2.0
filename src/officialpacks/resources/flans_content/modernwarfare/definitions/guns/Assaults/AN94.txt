@@ -8,6 +8,7 @@ Icon AN94
 Colour 255 255 255
 DeployedModel None
 Model mw.AN94
+FirstPersonFrame 1.12.2
 Texture AN94
 ModelScale 0.18
 Paintjob an94_stoic_blue an94_stoic_blue blue 3

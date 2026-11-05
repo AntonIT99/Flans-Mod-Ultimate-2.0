@@ -8,6 +8,7 @@ Icon W1200
 Colour 255 255 255
 DeployedModel None
 Model mw.W1200
+FirstPersonFrame 1.12.2
 Texture W1200
 ModelScale 0.18
 Paintjob w1200_stoic_blue w1200_stoic_blue blue 3

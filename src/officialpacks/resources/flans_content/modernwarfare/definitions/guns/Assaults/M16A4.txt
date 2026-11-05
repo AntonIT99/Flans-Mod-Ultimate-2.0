@@ -8,6 +8,7 @@ Icon M16A4
 Colour 255 255 255
 DeployedModel None
 Model mw.M16A4
+FirstPersonFrame 1.12.2
 Texture M16A4
 Paintjob M16A4_Orange M16A4_Orange orange 1 white 1
 Paintjob M16A4_Green M16A4_Green green 2

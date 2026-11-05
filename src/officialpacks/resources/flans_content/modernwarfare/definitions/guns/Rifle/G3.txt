@@ -8,6 +8,7 @@ Icon G3
 Colour 255 255 255
 DeployedModel None
 Model mw.G3
+FirstPersonFrame 1.12.2
 Texture G3
 ModelScale 0.18
 Paintjob g3_stoic_blue g3_stoic_blue blue 3

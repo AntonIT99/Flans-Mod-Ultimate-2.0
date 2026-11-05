@@ -8,6 +8,7 @@ Icon Minigun
 Colour 255 255 255
 DeployedModel None
 Model mw.Minigun
+FirstPersonFrame 1.12.2
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 2.00893 0.02511 0

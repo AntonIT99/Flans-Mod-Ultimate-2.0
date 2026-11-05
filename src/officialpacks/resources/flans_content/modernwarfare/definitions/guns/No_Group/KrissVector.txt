@@ -8,6 +8,7 @@ Icon KrissVector
 Colour 255 255 255
 DeployedModel None
 Model mw.KrissVector
+FirstPersonFrame 1.12.2
 Texture KrissVector
 ModelScale 0.18
 Paintjob krissvector_stoic_blue krissvector_stoic_blue blue 3

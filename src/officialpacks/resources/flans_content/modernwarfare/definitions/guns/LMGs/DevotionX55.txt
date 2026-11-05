@@ -8,6 +8,7 @@ Icon DevotionX55
 Colour 255 255 255
 DeployedModel None
 Model mw.DevotionX55
+FirstPersonFrame 1.12.2
 Texture DevotionX55
 ModelScale 0.18
 Paintjob devotionx55_stoic_blue devotionx55_stoic_blue blue 3

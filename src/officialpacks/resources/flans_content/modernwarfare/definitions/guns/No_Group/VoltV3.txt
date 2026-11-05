@@ -8,6 +8,7 @@ Icon VoltV3
 Colour 255 255 255
 DeployedModel None
 Model mw.VoltV3
+FirstPersonFrame 1.12.2
 Texture VoltV3
 ModelScale 0.18
 FlashModel DefaultFlash

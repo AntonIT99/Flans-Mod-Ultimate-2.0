@@ -201,8 +201,7 @@ public class ModelSpringfield extends ModelGun // Same as Filename
         untiltGunTime = 0.4F;
 
         translateAll(0F, -5F, -0.15F);
-        // Third-person fix (05.11.2026)
-        thirdPersonOffset = new Vector3f(-0.2F, -0.1125F, 0.0067188F);
+        thirdPersonOffset = new Vector3f(-0.2F, -0.2F, 0.01F);
 
         flipAll();
     }
