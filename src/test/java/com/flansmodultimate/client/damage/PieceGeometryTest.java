@@ -11,6 +11,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class PieceGeometryTest
 {
     @Test
+    void aLongFaceRemainsSupportedWhenItsVerticesOverhangANarrowBlock()
+    {
+        PieceGeometry geometry = new PieceGeometry();
+        geometry.vertex(-2D, 0D, -0.2D).endVertex();
+        geometry.vertex(2D, 0D, -0.2D).endVertex();
+        geometry.vertex(2D, 0D, 0.2D).endVertex();
+        geometry.vertex(-2D, 0D, 0.2D).endVertex();
+        Vector3f[] points = geometry.relativeTo(new Vector3f());
+        Quaternionf rotation = new Quaternionf();
+        Vec3 pivot = new Vec3(0D, 1D, 0D);
+        PieceGrounding.Surface block = (point, ceiling) -> Math.abs(point.x) < 0.5D && ceiling >= 0D ? 0D : Double.NaN;
+        assertEquals(0D, PieceGrounding.supportHeight(points, rotation, pivot, rotation, pivot, block), 1.0E-6D,
+            "The face must rest on the block even when none of its vertices is above it");
+    }
+
+    @Test
     void elevatedScreenContactsTheFloorAtItsDrawnVerticesAfterRotating()
     {
         PieceGeometry geometry = new PieceGeometry();

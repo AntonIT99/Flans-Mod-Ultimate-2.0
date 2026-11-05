@@ -115,6 +115,18 @@ class PieceGroundingTest
     }
 
     @Test
+    void horizontalSpinBelowAnOverhangCannotLiftThePieceOntoItsTop()
+    {
+        Vector3f[] points = {new Vector3f(2F, 0.2F, 0F)};
+        Quaternionf previous = new Quaternionf();
+        Quaternionf rotation = new Quaternionf().rotateY((float) Math.PI / 2F);
+        Vec3 pivot = new Vec3(0D, 0.3D, 0D);
+        PieceGrounding.Surface overhang = (point, ceiling) -> ceiling >= 1D ? 1D : 0D;
+        double support = PieceGrounding.supportHeight(points, rotation, pivot, previous, pivot, overhang);
+        assertEquals(-0.2D, support, 1.0E-6D, "Horizontal rotation must not make a ceiling count as ground above the piece");
+    }
+
+    @Test
     void initialOverlapCanBeRecoveredWithoutSnappingToAnOverheadBlock()
     {
         ClientLevel level = mock(ClientLevel.class);

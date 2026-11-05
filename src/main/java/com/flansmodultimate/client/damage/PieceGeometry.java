@@ -10,6 +10,9 @@ import java.util.Set;
 final class PieceGeometry implements VertexConsumer
 {
     private final Set<Vector3f> points = new LinkedHashSet<>();
+    private final Vector3f vertex = new Vector3f();
+    private final Vector3f faceCentre = new Vector3f();
+    private int faceVertices;
 
     Vector3f[] relativeTo(Vector3f pivot)
     {
@@ -19,8 +22,9 @@ final class PieceGeometry implements VertexConsumer
     @Override
     public VertexConsumer vertex(double x, double y, double z)
     {
+        vertex.set((float) x, (float) y, (float) z);
         if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z))
-            points.add(new Vector3f((float) x, (float) y, (float) z));
+            points.add(new Vector3f(vertex));
         return this;
     }
 
@@ -56,7 +60,18 @@ final class PieceGeometry implements VertexConsumer
 
     @Override
     public void endVertex()
-    {}
+    {
+        // Entity models emit quads (including triangles padded to four vertices). Sample their interiors too:
+        // a long track can overhang both edges of a narrow block while its face still rests on that block.
+        faceCentre.add(vertex);
+        if (++faceVertices == 4)
+        {
+            if (faceCentre.isFinite())
+                points.add(new Vector3f(faceCentre).mul(0.25F));
+            faceCentre.zero();
+            faceVertices = 0;
+        }
+    }
 
     @Override
     public void defaultColor(int red, int green, int blue, int alpha)
