@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.model;
 
 import com.flansmodultimate.api.equipment.ArmPoseRule;
+import com.flansmodultimate.common.entity.ProneSupport;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.GunArmPoses.Arm;
 import com.flansmodultimate.common.guns.HeldItemPresentation;
@@ -23,6 +24,34 @@ class EquipmentAnimationSupportTest
     static void bootstrap() throws ReflectiveOperationException
     {
         EntityTestBootstrap.initialize();
+    }
+
+    @Test
+    void leavingProneClearsHeadAndHatRollOnAReusedModel()
+    {
+        HumanoidModel<LivingEntity> model = new HumanoidModel<>(HumanoidModel.createMesh(CubeDeformation.NONE, 0F).getRoot().bake(64, 64));
+        LivingEntity entity = mock(LivingEntity.class);
+        when(entity.getMainArm()).thenReturn(HumanoidArm.RIGHT);
+        try (var poses = mockStatic(GunArmPoses.class); var posture = mockStatic(ProneSupport.class))
+        {
+            poses.when(() -> GunArmPoses.resolve(entity)).thenReturn(new GunArmPoses.Result(Arm.ONE_ARM, Arm.NONE));
+            posture.when(() -> ProneSupport.lyingAmount(entity, model.swimAmount)).thenReturn(1F);
+            EquipmentAnimationSupport.prone(model, entity, 30F, 15F);
+            assertNotEquals(0F, model.head.zRot);
+            assertEquals(model.head.zRot, model.hat.zRot);
+
+            // Vanilla's next standing animation refreshes pitch and yaw, but not roll.
+            model.head.xRot = model.hat.xRot = 0.2F;
+            model.head.yRot = model.hat.yRot = 0.4F;
+            posture.when(() -> ProneSupport.lyingAmount(entity, model.swimAmount)).thenReturn(0F);
+            EquipmentAnimationSupport.prone(model, entity, 30F, 15F);
+            assertEquals(0F, model.head.zRot);
+            assertEquals(0F, model.hat.zRot);
+            assertEquals(0.2F, model.head.xRot);
+            assertEquals(0.4F, model.head.yRot);
+            assertEquals(0.2F, model.hat.xRot);
+            assertEquals(0.4F, model.hat.yRot);
+        }
     }
 
     @Test

@@ -76,6 +76,9 @@ public final class EquipmentAnimationSupport
      */
     public static void prone(HumanoidModel<?> model, LivingEntity entity, float headYaw, float headPitch)
     {
+        // Vanilla refreshes head pitch and yaw, but leaves our previous prone roll on the reused model.
+        model.head.zRot = 0F;
+        model.hat.zRot = 0F;
         float lying = ProneSupport.lyingAmount(entity, model.swimAmount);
         if (lying <= 0F)
             return;

@@ -57,6 +57,7 @@ class PlayerGunAuthorityTest
     void bothHandsAndSameTypeSlotSwitchesApplyDelayWithoutAClientPacket()
     {
         ServerPlayer player = mock(ServerPlayer.class);
+        when(player.level()).thenReturn(mock(ServerLevel.class));
         Inventory inventory = mock(Inventory.class);
         when(player.getInventory()).thenReturn(inventory);
         GunType type = mock(GunType.class);
