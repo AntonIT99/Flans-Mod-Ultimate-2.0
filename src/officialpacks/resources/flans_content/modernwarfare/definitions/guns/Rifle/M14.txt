@@ -8,7 +8,6 @@ Icon M14
 Colour 255 255 255
 DeployedModel None
 Model mw.M14
-FirstPersonFrame 1.12.2
 Texture M14
 ModelScale 0.18
 Paintjob m14_stoic_blue m14_stoic_blue blue 3

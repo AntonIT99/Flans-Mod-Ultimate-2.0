@@ -8,7 +8,6 @@ Icon SIGP232
 Colour 255 255 255
 DeployedModel None
 Model mw.SIGP232
-FirstPersonFrame 1.12.2
 Texture SIGP232
 ModelScale 0.18
 Paintjob sigp232_stoic_blue sigp232_stoic_blue blue 2

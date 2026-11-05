@@ -8,7 +8,6 @@ Icon AUG
 Colour 255 255 255
 DeployedModel None
 Model mw.AUG
-FirstPersonFrame 1.12.2
 Texture AUG
 ModelScale 0.18
 Paintjob aug_stoic_blue aug_stoic_blue blue 3

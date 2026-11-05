@@ -11,7 +11,6 @@ FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.575 0.36914 0.01137
 animFlashScale 2.54
-//animAimOffset 0 1 0
 Texture bar
 Paintjob bar_acacia bar_acacia orange 2
 Paintjob bar_birch bar_birch black 1 yellow 1

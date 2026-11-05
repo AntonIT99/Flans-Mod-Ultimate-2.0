@@ -8,7 +8,6 @@ Icon MP7
 Colour 255 255 255
 DeployedModel None
 Model mw.MP7
-FirstPersonFrame 1.12.2
 Texture MP7
 ModelScale 0.18
 Paintjob mp7_stoic_blue mp7_stoic_blue blue 3

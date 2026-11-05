@@ -8,7 +8,6 @@ Icon AK47
 Colour 255 255 255
 DeployedModel None
 Model mw.AK47
-FirstPersonFrame 1.12.2
 Texture AK47
 Paintjob AK47_JungleCamo AK47_JungleCamo green 1
 Paintjob AK47_Redline AK47_Redline red 1 black 1

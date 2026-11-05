@@ -8,7 +8,6 @@ Icon FAMAS
 Colour 255 255 255
 DeployedModel None
 Model mw.FAMAS
-FirstPersonFrame 1.12.2
 Texture FAMAS
 ModelScale 0.18
 Paintjob famas_stoic_blue famas_stoic_blue blue 3

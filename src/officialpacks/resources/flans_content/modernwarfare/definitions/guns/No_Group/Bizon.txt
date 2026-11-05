@@ -7,7 +7,6 @@ Icon Bizon
 Colour 255 255 255
 DeployedModel None
 Model mw.Bizon
-FirstPersonFrame 1.12.2
 Texture Bizon
 ModelScale 0.18
 Paintjob bizon_stoic_blue bizon_stoic_blue blue 3

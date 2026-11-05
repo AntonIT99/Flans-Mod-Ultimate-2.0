@@ -9,7 +9,6 @@ Model ww2.BrowningHand
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.19531 0.16172 0
-//animAimOffset 0 2.4 0
 animFlashScale 0.89
 Texture SkinBrowningHand
 

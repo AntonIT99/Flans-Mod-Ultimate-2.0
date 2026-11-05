@@ -8,7 +8,6 @@ Icon PeaceKeeper
 Colour 255 255 255
 DeployedModel None
 Model mw.PeaceKeeper
-FirstPersonFrame 1.12.2
 Texture PeaceKeeper
 ModelScale 0.18
 Paintjob peacekeeper_stoic_blue peacekeeper_stoic_blue blue 3

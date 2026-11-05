@@ -8,7 +8,6 @@ Icon RPD
 Colour 255 255 255
 DeployedModel None
 Model mw.RPD
-FirstPersonFrame 1.12.2
 Texture RPD
 ModelScale 0.18
 Paintjob rpd_stoic_blue rpd_stoic_blue blue 3

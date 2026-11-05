@@ -8,7 +8,6 @@ Icon R870
 Colour 255 255 255
 DeployedModel None
 Model mw.R870
-FirstPersonFrame 1.12.2
 Texture R870
 ModelScale 0.18
 Paintjob r870_stoic_blue r870_stoic_blue blue 3

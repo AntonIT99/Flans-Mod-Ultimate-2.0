@@ -8,7 +8,6 @@ Icon MP5
 Colour 255 255 255
 DeployedModel None
 Model mw.MP5
-FirstPersonFrame 1.12.2
 Texture MP5
 ModelScale 0.18
 Paintjob mp5_stoic_blue mp5_stoic_blue blue 3

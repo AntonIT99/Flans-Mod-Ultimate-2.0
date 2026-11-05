@@ -8,7 +8,6 @@ Icon FMG
 Colour 255 255 255
 DeployedModel None
 Model mw.FMG
-FirstPersonFrame 1.12.2
 Texture FMG
 ModelScale 0.18
 Paintjob fmg_stoic_blue fmg_stoic_blue blue 3

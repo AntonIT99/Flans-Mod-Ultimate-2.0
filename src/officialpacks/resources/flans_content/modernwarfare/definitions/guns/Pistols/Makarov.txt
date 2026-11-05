@@ -8,7 +8,6 @@ Icon Makarov
 Colour 255 255 255
 DeployedModel None
 Model mw.Makarov
-FirstPersonFrame 1.12.2
 Texture Makarov
 ModelScale 0.18
 Paintjob makarov_stoic_blue makarov_stoic_blue blue 2

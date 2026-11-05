@@ -8,7 +8,6 @@ Icon M40A3
 Colour 255 255 255
 DeployedModel None
 Model mw.M40A3
-FirstPersonFrame 1.12.2
 Texture M40A3
 ModelScale 0.18
 Paintjob m40a3_stoic_blue m40a3_stoic_blue blue 3

@@ -8,7 +8,6 @@ Icon Jury
 Colour 255 255 255
 DeployedModel None
 Model mw.Jury
-FirstPersonFrame 1.12.2
 Texture Jury
 ModelScale 0.18
 Paintjob jury_stoic_blue jury_stoic_blue blue 2

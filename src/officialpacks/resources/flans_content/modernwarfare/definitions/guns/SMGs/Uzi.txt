@@ -8,7 +8,6 @@ Icon MiniUzi
 Colour 255 255 255
 DeployedModel None
 Model mw.MiniUzi
-FirstPersonFrame 1.12.2
 Texture MiniUzi
 ModelScale 0.14
 Paintjob miniuzi_stoic_blue miniuzi_stoic_blue blue 2

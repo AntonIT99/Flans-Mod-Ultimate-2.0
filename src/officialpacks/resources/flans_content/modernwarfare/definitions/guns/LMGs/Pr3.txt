@@ -8,7 +8,6 @@ Icon Pr3
 Colour 255 255 255
 DeployedModel None
 Model mw.Pr3
-FirstPersonFrame 1.12.2
 Texture Pr3
 ModelScale 0.18
 Paintjob pr3_stoic_blue pr3_stoic_blue blue 3

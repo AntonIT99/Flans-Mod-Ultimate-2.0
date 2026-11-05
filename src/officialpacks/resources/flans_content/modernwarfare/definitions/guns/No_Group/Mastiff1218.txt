@@ -7,7 +7,6 @@ Icon Mastiff1218
 Colour 255 255 255
 DeployedModel None
 Model mw.Mastiff1218
-FirstPersonFrame 1.12.2
 Texture Mastiff1218
 ModelScale 0.18
 Paintjob mastiff1218_stoic_blue mastiff1218_stoic_blue blue 3

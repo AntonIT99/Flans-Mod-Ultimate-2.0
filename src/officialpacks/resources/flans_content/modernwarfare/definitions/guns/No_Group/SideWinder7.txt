@@ -8,7 +8,6 @@ Icon SideWinder7
 Colour 255 255 255
 DeployedModel None
 Model mw.SideWinder7
-FirstPersonFrame 1.12.2
 Texture SideWinder7
 ModelScale 0.18
 

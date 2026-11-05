@@ -8,7 +8,6 @@ Icon ElDiablo
 Colour 255 255 255
 DeployedModel None
 Model mw.ElDiablo
-FirstPersonFrame 1.12.2
 Texture ElDiablo
 ModelScale 0.18
 Paintjob eldiablo_stoic_blue eldiablo_stoic_blue blue 2

@@ -8,7 +8,6 @@ Icon USP
 Colour 255 255 255
 DeployedModel None
 Model mw.USP
-FirstPersonFrame 1.12.2
 Texture USP
 ModelScale 0.18
 Paintjob usp_stoic_blue usp_stoic_blue blue 2

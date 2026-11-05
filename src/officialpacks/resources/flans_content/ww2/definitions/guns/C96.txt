@@ -12,7 +12,6 @@ FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.06523 0.80156 -0.00633
 animFlashScale 2.96
-//animAimOffset 0 2 0
 Texture SkinC96
 ModelScale 0.15
 Paintjob c96_acacia c96_acacia orange 1

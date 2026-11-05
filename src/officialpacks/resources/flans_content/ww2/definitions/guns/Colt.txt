@@ -12,7 +12,6 @@ FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 0.75804 0.77351 -0.00928
 animFlashScale 2.02
-//animAimOffset 0 2 0
 Texture colt
 Paintjob colt_acacia colt_acacia orange 2
 Paintjob colt_birch colt_birch black 1 yellow 1

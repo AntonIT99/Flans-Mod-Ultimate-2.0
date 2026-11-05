@@ -8,7 +8,6 @@ Icon TripleTake
 Colour 255 255 255
 DeployedModel None
 Model mw.TripleTake
-FirstPersonFrame 1.12.2
 Texture TripleTake
 ModelScale 0.18
 Paintjob tripletake_stoic_blue tripletake_stoic_blue blue 3

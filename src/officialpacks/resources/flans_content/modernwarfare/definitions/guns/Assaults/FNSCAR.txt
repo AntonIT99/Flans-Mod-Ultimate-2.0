@@ -8,7 +8,6 @@ Icon FNSCAR
 Colour 255 255 255
 DeployedModel None
 Model mw.FNSCAR
-FirstPersonFrame 1.12.2
 Texture FNSCAR
 ModelScale 0.18
 Paintjob fnscar_stoic_blue fnscar_stoic_blue blue 3

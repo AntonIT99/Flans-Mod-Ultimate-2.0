@@ -8,7 +8,6 @@ Icon DesertEagle
 Colour 255 255 255
 DeployedModel None
 Model mw.DesertEagle
-FirstPersonFrame 1.12.2
 ModelScale 0.8
 Texture DesertEagle
 Paintjob DesertEagle_Neon DesertEagle_Neon magenta 2

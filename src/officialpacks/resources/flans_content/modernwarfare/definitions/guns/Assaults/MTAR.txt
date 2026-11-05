@@ -8,7 +8,6 @@ Icon MTAR
 Colour 255 255 255
 DeployedModel None
 Model mw.MTAR
-FirstPersonFrame 1.12.2
 Texture MTAR
 ModelScale 0.18
 Paintjob mtar_stoic_blue mtar_stoic_blue blue 3

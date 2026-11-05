@@ -11,7 +11,6 @@ FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 0.945 0.79045 0.02569
 animFlashScale 3.17
-//animAimOffset 0 2 0.5
 Texture luger
 Paintjob luger_acacia luger_acacia orange 2
 Paintjob luger_birch luger_birch black 1 yellow 1

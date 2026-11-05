@@ -251,7 +251,7 @@
 
 ## Content Packs
 
-* Official Modern Warfare, WW2 and Zombie guns whose models were made or retuned for the 1.12.2 placement are marked `FirstPersonFrame 1.12.2`, and their models now use the original 1.12.2 sources; G43, Kar98k, Kar98kSniper, MG34, Thompson, Greasegun, BAR, TrenchGun, Luger, STG44, Springfield and Springfield Sniper use centered model Z placement with matching muzzle flashes and the default 1.7.10 authored frame; Springfield geometry is recentered to match the sniper rifle in third person; both variants use zero third-person Z offsets and geometry-derived `animAimOffset` corrections for horizontal ADS alignment
+* Official gun models use the original 1.12.2 sources where appropriate; `FirstPersonFrame 1.12.2` is retained for models requiring the legacy frame correction, while Z-centered Modern Warfare models and WW2 Type 100 use the default 1.7.10 authored frame; G43, Kar98k, Kar98kSniper, MG34, Thompson, Greasegun, BAR, TrenchGun, Luger, STG44, Springfield and Springfield Sniper use centered model Z placement with matching muzzle flashes and the default 1.7.10 authored frame; Springfield geometry is recentered to match the sniper rifle in third person; both variants use zero third-person Z offsets and geometry-derived `animAimOffset` corrections for horizontal ADS alignment
 * Added a crafting-table recipe for the Manus Ships German 20 cm Ship Gun used by Prinz Eugen
 
 * Modern Warfare teams gain dedicated marksman, shotgun, anti-tank, ammunition bearer, demolition, MP5, HK416, MP7, AK74, RPK and pistol-and-shield loadouts, including suppressed MP5 and balaclava variants

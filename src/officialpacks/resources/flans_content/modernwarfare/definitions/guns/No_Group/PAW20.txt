@@ -8,7 +8,6 @@ Icon PAW20
 Colour 255 255 255
 DeployedModel None
 Model mw.PAW20
-FirstPersonFrame 1.12.2
 Texture PAW20
 ModelScale 0.18
 

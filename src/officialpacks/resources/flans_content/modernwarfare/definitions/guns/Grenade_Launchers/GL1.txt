@@ -8,7 +8,6 @@ Icon GL1
 Colour 255 255 255
 DeployedModel None
 Model mw.GL1
-FirstPersonFrame 1.12.2
 Texture GL1
 ModelScale 0.18
 Paintjob gl1_stoic_blue gl1_stoic_blue blue 3

@@ -8,7 +8,6 @@ Icon SPAS
 Colour 255 255 255
 DeployedModel None
 Model mw.SPAS
-FirstPersonFrame 1.12.2
 Texture SPAS
 ModelScale 0.18
 Paintjob spas_stoic_blue spas_stoic_blue blue 3
