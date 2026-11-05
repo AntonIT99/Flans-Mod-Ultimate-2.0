@@ -5059,9 +5059,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (!isPartHitboxActive(part) || !hitData.resolvedDriveableParts().add(part))
             return hitData;
 
+        ShapedChargeImpact previousImpact = shapedChargeImpact;
         ProjectilePartDamage result = bulletHitPart(shot, bulletType, hit, hitData, Float.POSITIVE_INFINITY);
         result = carryOverProjectileDamage(shot, bulletType, hit, hitData, result);
-        // HEAT spends its jet on the first part, including skirts and ERA. HESH also acts at the first surface.
+        if (shapedChargeImpact != null && shapedChargeImpact != previousImpact)
+            shapedChargeImpact = new ShapedChargeImpact(shapedChargeImpact.part(), hit.getHitPosition(), shapedChargeImpact.gameTime());
+        // The HEAT jet resolves inside the vehicle now; its carrier still detonates at the first contact. HESH acts at the first surface.
         if (bulletType.isHeat() || bulletType.isHesh() || part.isDestroyed() && result.overflow() <= 0F)
             return new ShootingHelper.HitData(0F, result.hitData().lastHitPenAmount(), false, hitData.resolvedDriveableParts());
         return result.hitData();
@@ -5072,7 +5075,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         // Resolve the interior now, before an impact fuse detonates or this tick's motion ends.
         // Only damage left after actually destroying a part can start this chain.
-        if (level().isClientSide || bulletType.isHeat() || bulletType.isHesh() || result.overflow() <= 0F || destroyed)
+        if (level().isClientSide || bulletType.isHesh() || result.overflow() <= 0F || destroyed)
             return result;
 
         for (BulletHit next : bulletCarryoverHits(hit))
@@ -5081,6 +5084,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             DriveablePart nextPart = driveableData.getPart(nextHit.getPart());
             if (!isPartHitboxActive(nextPart) || !hitData.resolvedDriveableParts().add(nextPart))
                 continue;
+            // A jet can spend its remaining damage on an unprotected face, but cannot defeat another plate.
+            if (bulletType.isHeat() && projectileArmorHit(nextHit, result.hitData(), result.overflow(), true).isArmoured())
+                return new ProjectilePartDamage(new ShootingHelper.HitData(0F, result.hitData().lastHitPenAmount(), false, hitData.resolvedDriveableParts()), 0F);
             result = bulletHitPart(shot, bulletType, nextHit, result.hitData(), result.overflow());
             if (result.overflow() <= 0F || destroyed)
                 // The carried damage was spent or stopped by another plate; it cannot start again farther on.
@@ -5110,9 +5116,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
         int shotIndex = shot == null ? 0 : shot.getShot();
         boolean heat = bulletType.isHeat();
-        // Later shots meet the core's hull plate; this shell does not count the covering plate it just defeated twice.
-        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat,
-            this::isDefinedAndDestroyed, projectilePenetratedCover(hit, hitData, damageLimit));
+        ResolvedArmorHit armorHit = projectileArmorHit(hit, hitData, damageLimit, heat);
         float authoredFixedDamage = bulletType.getDamage().getDamageAgainstEntity(this);
         boolean normalizedHealth = configType.getResolvedHealth().enabled();
         float selectedFixedDamage = normalizedHealth ? authoredFixedDamage : authoredFixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
@@ -5147,6 +5151,13 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return null;
         EnumDriveablePart cover = ResolvedVehicleArmor.coveringPart(hit.getFacing());
         return cover != null && hitData.resolvedDriveableParts().contains(driveableData.getPart(cover)) ? cover : null;
+    }
+
+    private ResolvedArmorHit projectileArmorHit(DriveableHit hit, ShootingHelper.HitData hitData, float damageLimit, boolean heat)
+    {
+        // Later shots meet the core's hull plate; this shot does not count the covering plate it just defeated twice.
+        return configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat,
+            this::isDefinedAndDestroyed, projectilePenetratedCover(hit, hitData, damageLimit));
     }
 
     private float damagePartAndHandleImpact(@Nullable FiredShot shot, BulletType bulletType, DriveableHit hit, VehicleProjectileDamageResolver.Result resolvedDamage, ResolvedArmorHit armorHit,

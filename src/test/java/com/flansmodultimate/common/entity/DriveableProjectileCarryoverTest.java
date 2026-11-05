@@ -154,15 +154,130 @@ class DriveableProjectileCarryoverTest
     }
 
     @Test
-    void heatSpendsItsJetOnTheFirstActivePartEvenWhenItDestroysThatPart()
+    void heatCarriesOnlySurplusDamageThroughTheCoreWithoutCountingTheFrontPlateTwice()
     {
         try (Fixture fixture = new Fixture())
         {
             when(fixture.bullet.isHeat()).thenReturn(true);
             ShootingHelper.HitData result = fixture.fire(fixture.trace(2D).get(0));
             assertTrue(fixture.front.isDestroyed());
-            assertEquals(200F, fixture.core.getHealth());
+            assertEquals(130F, fixture.core.getHealth());
             assertEquals(0F, result.penetratingPower());
+        }
+    }
+
+    @Test
+    void oneHeatShotCanDestroyBothFrontArmorAndCore()
+    {
+        try (Fixture fixture = new Fixture())
+        {
+            when(fixture.bullet.isHeat()).thenReturn(true);
+            fixture.damage.setDamageVsVehicles(250F);
+            fixture.fire(fixture.trace(2D).get(0));
+            assertTrue(fixture.front.isDestroyed());
+            assertTrue(fixture.core.isDestroyed());
+            verify(fixture.vehicle).onPartDestroyed(EnumDriveablePart.CORE);
+        }
+    }
+
+    @Test
+    void heatCarryoverCannotPenetrateEvenALightExplicitCorePlate()
+    {
+        try (Fixture fixture = new Fixture())
+        {
+            when(fixture.bullet.isHeat()).thenReturn(true);
+            fixture.armor(Map.of(EnumDriveablePart.CORE, new ArmorPlate(1F, 0F)));
+            fixture.fire(fixture.trace(2D).get(0));
+            assertTrue(fixture.front.isDestroyed());
+            assertEquals(200F, fixture.core.getHealth());
+        }
+    }
+
+    @Test
+    void heatCarryoverCanCrossAFrontFaceWhenOnlyTheSideIsArmored()
+    {
+        try (Fixture fixture = new Fixture())
+        {
+            when(fixture.bullet.isHeat()).thenReturn(true);
+            DriveablePart inner = fixture.addPart(EnumDriveablePart.TURRET, 20F, -1F, -2F, 0.25F);
+            when(fixture.type.getResolvedArmor()).thenReturn(VehicleArmorResolver.resolve(new VehicleArmorSpec(
+                Map.of(EnumArmorFacing.FRONT, new ArmorPlate(80F, 0F)),
+                Map.of(EnumArmorFacing.FRONT, ArmorPlate.UNARMOURED, EnumArmorFacing.LEFT, new ArmorPlate(200F, 0F)), Map.of()), fixture.parts.keySet()));
+            fixture.fire(fixture.trace(2D).get(0));
+            assertTrue(inner.isDestroyed());
+            assertEquals(150F, fixture.core.getHealth());
+        }
+    }
+
+    @Test
+    void heatCarryoverStopsOnAnArmoredFrontFaceEvenWhenTheSideIsUnarmored()
+    {
+        try (Fixture fixture = new Fixture())
+        {
+            when(fixture.bullet.isHeat()).thenReturn(true);
+            DriveablePart inner = fixture.addPart(EnumDriveablePart.TURRET, 20F, -1F, -2F, 0.25F);
+            when(fixture.type.getResolvedArmor()).thenReturn(VehicleArmorResolver.resolve(new VehicleArmorSpec(
+                Map.of(EnumArmorFacing.FRONT, new ArmorPlate(80F, 0F)),
+                Map.of(EnumArmorFacing.FRONT, new ArmorPlate(1F, 0F), EnumArmorFacing.LEFT, ArmorPlate.UNARMOURED), Map.of()), fixture.parts.keySet()));
+            fixture.fire(fixture.trace(2D).get(0));
+            assertTrue(fixture.front.isDestroyed());
+            assertEquals(20F, inner.getHealth());
+            assertEquals(200F, fixture.core.getHealth());
+        }
+    }
+
+    @Test
+    void heatCarryoverUsesHeatProtectionRatherThanTheFacesKineticThickness()
+    {
+        try (Fixture fixture = new Fixture())
+        {
+            when(fixture.bullet.isHeat()).thenReturn(true);
+            fixture.armor(Map.of(EnumDriveablePart.CORE, new ArmorPlate(200F, 0F, 0F)));
+            fixture.fire(fixture.trace(2D).get(0));
+            assertEquals(130F, fixture.core.getHealth());
+        }
+    }
+
+    @Test
+    void heatDoesNotCarryDamageWhenItCannotDestroyTheFirstPart()
+    {
+        try (Fixture fixture = new Fixture())
+        {
+            when(fixture.bullet.isHeat()).thenReturn(true);
+            fixture.damage.setDamageVsVehicles(20F);
+            fixture.fire(fixture.trace(2D).get(0));
+            assertEquals(10F, fixture.front.getHealth());
+            assertEquals(200F, fixture.core.getHealth());
+        }
+    }
+
+    @Test
+    void normalizedHeatCarriesItsOriginalJetBudgetWithoutRecalculatingItsDamage()
+    {
+        try (Fixture fixture = new Fixture())
+        {
+            when(fixture.bullet.isHeat()).thenReturn(true);
+            when(ModCommonConfig.get().heatDamageReference()).thenReturn(100D);
+            when(fixture.type.getResolvedHealth()).thenReturn(new VehicleHealthScaler.Result(true, true, 330F, Map.of(), Map.of(), List.of()));
+            fixture.damage.setDamageVsVehicles(0F);
+            fixture.fire(fixture.trace(2D).get(0));
+            assertTrue(fixture.front.isDestroyed());
+            assertEquals(160F, fixture.core.getHealth(), 0.01F);
+        }
+    }
+
+    @Test
+    void heatTracksTheLastJetDamagedPartAtTheOriginalDetonationPoint()
+    {
+        try (Fixture fixture = new Fixture())
+        {
+            when(fixture.bullet.isHeat()).thenReturn(true);
+            DriveablePart farCore = fixture.addPart(EnumDriveablePart.CORE, 200F, -1F, 2F, 2F);
+            DriveableHit hit = fixture.trace(2D).get(0);
+            fixture.fire(hit);
+            assertEquals(130F, farCore.getHealth());
+            assertEquals(EnumDriveablePart.CORE, fixture.vehicle.consumeShapedChargeImpact(hit.getHitPosition()));
+            assertNull(fixture.vehicle.consumeShapedChargeImpact(hit.getHitPosition()));
         }
     }
 
@@ -186,7 +301,9 @@ class DriveableProjectileCarryoverTest
     {
         try (Fixture fixture = new Fixture())
         {
+            when(fixture.bullet.isHeat()).thenReturn(true);
             fixture.fire(fixture.trace(2D).get(0));
+            when(fixture.bullet.isHeat()).thenReturn(false);
             when(fixture.shot.getPenetrationAt100m()).thenReturn(10F);
             ShootingHelper.HitData result = fixture.fire(fixture.trace(8D).get(0));
             assertEquals(130F, fixture.core.getHealth());
