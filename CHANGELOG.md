@@ -4,6 +4,8 @@
 
 * Driveable occupants can be hidden according to door state using `SetPlayerInvisibleOnDoorOpen` and `SetPlayerInvisibleOnDoorClose`
 
+* API-spawned driveables and wrecks now face the requested Minecraft yaw, correcting a 90-degree offset
+
 ## Highlights
 
 * Driveable `FlashModel DefaultFlash` applies to `GUN` banks by default; `ShellMuzzleFlash true` also enables flashes for `SHELL` banks

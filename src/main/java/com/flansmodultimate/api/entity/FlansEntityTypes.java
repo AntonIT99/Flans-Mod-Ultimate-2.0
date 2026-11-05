@@ -8,6 +8,7 @@ package com.flansmodultimate.api.entity;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.parts.PartArmor;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.MechaEquipmentSupport;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
@@ -561,7 +562,8 @@ public final class FlansEntityTypes
         ItemStack source = new ItemStack(item);
         if (paintjob != 0)
             ItemStackData.update(source, tag -> tag.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob));
-        Driveable driveable = item.spawnDriveable(level, position.x, position.y, position.z, yaw, null, source);
+        float driveableYaw = LegacyDriveableCoordinates.driveableYawFromRenderedForward(yaw, type instanceof PlaneType);
+        Driveable driveable = item.spawnDriveable(level, position.x, position.y, position.z, driveableYaw, null, source);
         if (driveable == null)
             return Optional.empty();
         driveable.wearDown(health);
