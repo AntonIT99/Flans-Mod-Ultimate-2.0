@@ -1,10 +1,7 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.*;
-import com.flansmodultimate.client.EntityCullingCompat;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
-import com.flansmodultimate.client.gui.ModMenuScreens;
-import com.flansmodultimate.client.gui.options.FlansSettingsHubScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
@@ -13,8 +10,6 @@ import com.flansmodultimate.client.render.blockentity.CapturePointRenderer;
 import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
 import com.flansmodultimate.client.render.blockentity.TeamBannerRenderer;
 import com.flansmodultimate.client.render.entity.*;
-import com.flansmodultimate.client.render.gpu.GpuModelCache;
-import com.flansmodultimate.client.render.hud.ClientHudOverlays;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.client.render.layer.*;
 import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
@@ -22,9 +17,7 @@ import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.content.ContentManager;
-import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.client.ClientPlatform;
-import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.FlansLog;
@@ -32,21 +25,15 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.event.sound.SoundEngineLoadEvent;
-import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.*;
@@ -74,10 +61,7 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event)
     {
-        // The Config button of the mod list opens the same screen as the pause menu button
-        ModList.get().getModContainerById(FlansMod.MOD_ID)
-            .ifPresent(container -> container.registerExtensionPoint(IConfigScreenFactory.class, (IConfigScreenFactory) (mod, parent) -> new FlansSettingsHubScreen(parent)));
-
+        // The config screen, menu screens and EntityCulling are set up by platform/event/ClientModEvents.
         event.enqueueWork(() ->
         {
             CustomItemRenderers.registerAll();
@@ -104,27 +88,6 @@ public final class ModClientEventHandler
             ItemProperties.register(FlansModItems.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
                 (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
         });
-    }
-
-    /** EntityCulling on NeoForge creates its instance during client setup, which is complete by now. */
-    @SubscribeEvent
-    public static void loadComplete(FMLLoadCompleteEvent event)
-    {
-        event.enqueueWork(EntityCullingCompat::init);
-    }
-
-    @SubscribeEvent
-    public static void registerMenuScreens(RegisterMenuScreensEvent event)
-    {
-        ModMenuScreens.register(event::register);
-    }
-
-    @SubscribeEvent
-    public static void registerClientExtensions(RegisterClientExtensionsEvent event)
-    {
-        Item[] customRenderedItems = FlansMod.getItems().stream().map(RegistryEntry::get).filter(ICustomRendereredItem.class::isInstance).toArray(Item[]::new);
-        if (customRenderedItems.length > 0)
-            event.registerItem(ClientHooks.RENDER.customItemExtensions(), customRenderedItems);
     }
 
     @SubscribeEvent
@@ -192,12 +155,6 @@ public final class ModClientEventHandler
         event.registerBlockEntityRenderer(FlansModBlocks.itemHolderBlockEntity.get(), ItemHolderRenderer::new);
         event.registerBlockEntityRenderer(FlansModBlocks.capturePointBlockEntity.get(), CapturePointRenderer::new);
         event.registerBlockEntityRenderer(FlansModBlocks.teamBannerBlockEntity.get(), context -> new TeamBannerRenderer());
-    }
-
-    @SubscribeEvent
-    public static void registerOverlays(RegisterGuiLayersEvent event)
-    {
-        ClientHudOverlays.register(HudOverlayPlatform.registrar(event));
     }
 
     @SubscribeEvent
@@ -294,12 +251,6 @@ public final class ModClientEventHandler
             ArmorCapeLayer.clearValidationCache();
             ContentManager.logMissingModelTextures(rm);
         });
-    }
-
-    @SubscribeEvent
-    public static void registerGpuModelShader(net.neoforged.neoforge.client.event.RegisterShadersEvent event)
-    {
-        GpuModelCache.registerShader(event);
     }
 
     @SubscribeEvent

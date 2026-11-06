@@ -1,13 +1,13 @@
 package com.flansmodultimate.client.damage;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.flansmodultimate.platform.render.PositionCollector;
 import org.joml.Vector3f;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 /** Collects the actual drawn vertices once at detachment, including model and animation transforms. */
-final class PieceGeometry implements VertexConsumer
+final class PieceGeometry extends PositionCollector
 {
     private final Set<Vector3f> points = new LinkedHashSet<>();
     private final Vector3f faceCentre = new Vector3f();
@@ -19,9 +19,8 @@ final class PieceGeometry implements VertexConsumer
     }
 
     @Override
-    public VertexConsumer addVertex(float x, float y, float z)
+    public void vertexPosition(float x, float y, float z)
     {
-        // 1.21 starts each vertex with addVertex and has no endVertex, so the face is completed here.
         Vector3f vertex = new Vector3f(x, y, z);
         if (vertex.isFinite())
             points.add(vertex);
@@ -35,36 +34,5 @@ final class PieceGeometry implements VertexConsumer
             faceCentre.zero();
             faceVertices = 0;
         }
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setColor(int red, int green, int blue, int alpha)
-    {
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setUv(float u, float v)
-    {
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setUv1(int u, int v)
-    {
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setUv2(int u, int v)
-    {
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setNormal(float x, float y, float z)
-    {
-        return this;
     }
 }

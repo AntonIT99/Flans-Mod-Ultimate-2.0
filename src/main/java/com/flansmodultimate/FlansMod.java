@@ -1,21 +1,18 @@
 package com.flansmodultimate;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
-import com.flansmodultimate.common.recipe.GunpowderRecipeCondition;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.*;
 import com.flansmodultimate.content.ContentManager;
-import com.flansmodultimate.platform.network.NetworkPlatform;
+import com.flansmodultimate.platform.ModBootstrap;
 import com.flansmodultimate.platform.registry.RegistryEntry;
-import com.flansmodultimate.platform.world.ChunkTicketPlatform;
 import com.flansmodultimate.util.ModLogFile;
 import lombok.Getter;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -50,18 +47,14 @@ public class FlansMod
     private static final Map<ResourceLocation, TypeFile> soundsOrigins = new HashMap<>();
 
     @SuppressWarnings("java:S1118")
-    public FlansMod(IEventBus modEventBus, ModContainer modContainer)
+    public FlansMod(IEventBus eventBus, ModContainer modContainer)
     {
-        GunpowderRecipeCondition.CODECS.register(modEventBus);
-        modEventBus.addListener(NetworkPlatform::register);
-        modEventBus.addListener(ChunkTicketPlatform::register);
         ModLogFile.initialize(MOD_ID);
         Arrays.stream(EnumType.values()).filter(EnumType::isHasItem).forEach(type -> items.put(type, new ArrayList<>()));
         Arrays.stream(EnumType.values()).filter(EnumType::isHasBlock).forEach(type -> blocks.put(type, new HashMap<>()));
-        // Init Configs
-        modContainer.registerConfig(ModConfig.Type.COMMON, ModCommonConfig.configSpec);
-        modContainer.registerConfig(ModConfig.Type.COMMON, ModApocalypseConfig.configSpec, ModApocalypseConfig.CONFIG_FILE_NAME);
-        modContainer.registerConfig(ModConfig.Type.CLIENT, ModClientConfig.configSpec);
+
+        // Loader setup: mixins, configs and mod-bus listeners
+        IEventBus modEventBus = ModBootstrap.initialize(eventBus, modContainer);
 
         ApocalypseContent.register(modEventBus);
 

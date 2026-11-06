@@ -20,16 +20,24 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Unit;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.SmallFireball;
+import net.minecraft.world.item.ArrowItem;
+import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -58,6 +66,10 @@ public final class NpcPlatform
     {
         DAMAGE, KNOCKBACK, PROTECTION
     }
+
+    /** An enchanted bow's arrow and the ammunition it costs; zero means the shot is free and the arrow cannot be picked up. */
+    public record BowShot(AbstractArrow arrow, int usedAmmo)
+    {}
 
     /** Whether the slot is one of the four worn armor slots, not a hand or a body slot. */
     public static boolean isHumanoidArmor(EquipmentSlot slot)
@@ -213,6 +225,98 @@ public final class NpcPlatform
     public static double meleeKnockbackBonus(LivingEntity holder, ItemStack item)
     {
         return 0D;
+    }
+
+    /** Melee damage after the weapon's enchantments act on the real target. */
+    public static float meleeDamage(LivingEntity holder, ItemStack weapon, LivingEntity target, float damage)
+    {
+        return EnchantmentHelper.modifyDamage((ServerLevel) holder.level(), weapon, target, holder.damageSources().mobAttack(holder), damage);
+    }
+
+    /** Melee knockback after the weapon's enchantments act on the real target; 1.21 enchantments scale it rather than add a level. */
+    public static double meleeKnockback(LivingEntity holder, ItemStack weapon, LivingEntity target, double attributeKnockback)
+    {
+        return EnchantmentHelper.modifyKnockback((ServerLevel) holder.level(), weapon, target, holder.damageSources().mobAttack(holder), (float) attributeKnockback);
+    }
+
+    /**
+     * Post-attack enchantment effects of a melee hit. 1.21 applies the target's and the striking weapon's effects together, so
+     * the idle hand of a dual wielder never adds its own.
+     */
+    // 1.20.1 needs the dual-wield flag to skip the idle hand's scalar enchantments.
+    @SuppressWarnings({"java:S1172", "unused"})
+    public static void meleePostAttackEffects(LivingEntity holder, LivingEntity target, ItemStack weapon, boolean dualWield)
+    {
+        EnchantmentHelper.doPostAttackEffectsWithItemSource((ServerLevel) holder.level(), target, holder.damageSources().mobAttack(holder), weapon);
+    }
+
+    /** The weapon's own on-hit behaviour; 1.21 splits durability loss into postHurtEnemy. */
+    public static void hurtEnemy(ItemStack weapon, LivingEntity target, LivingEntity attacker)
+    {
+        if (weapon.getItem().hurtEnemy(weapon, target, attacker) && !weapon.isEmpty())
+            weapon.getItem().postHurtEnemy(weapon, target, attacker);
+    }
+
+    public static void ignite(Entity entity, int seconds)
+    {
+        entity.igniteForSeconds(seconds);
+    }
+
+    public static MobEffectInstance effectInstance(MobEffect effect, int durationTicks, int amplifier)
+    {
+        return new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect), durationTicks, amplifier);
+    }
+
+    /** Builds an enchanted bow's arrow from one round of the ammunition; null when the ammunition cannot pay for it. */
+    public static BowShot bowArrow(LivingEntity shooter, ItemStack weapon, BowItem bow, ArrowItem arrowItem, ItemStack ammo)
+    {
+        int usedAmmo = arrowItem.isInfinite(ammo, weapon, shooter) ? 0 : EnchantmentHelper.processAmmoUse((ServerLevel) shooter.level(), weapon, ammo, 1);
+        if (usedAmmo > ammo.getCount())
+            return null;
+        ItemStack projectileAmmo = ammo.copyWithCount(1);
+        if (usedAmmo == 0)
+            projectileAmmo.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
+        // Modern arrows retain the firing weapon and apply its enchantment effects natively.
+        AbstractArrow arrow = bow.customArrow(arrowItem.createArrow(shooter.level(), projectileAmmo, shooter, weapon), projectileAmmo, weapon);
+        return new BowShot(arrow, usedAmmo);
+    }
+
+    /** Loads the ammunition into an uncharged crossbow, as many rounds as its enchantments fire; false when it cannot pay. */
+    public static boolean chargeCrossbow(LivingEntity shooter, ItemStack weapon, ItemStack ammo)
+    {
+        ServerLevel level = (ServerLevel) shooter.level();
+        int usedAmmo = EnchantmentHelper.processAmmoUse(level, weapon, ammo, 1);
+        if (usedAmmo > ammo.getCount())
+            return false;
+        List<ItemStack> projectiles = new ArrayList<>();
+        int count = EnchantmentHelper.processProjectileCount(level, weapon, shooter, 1);
+        for (int i = 0; i < count; i++)
+        {
+            ItemStack projectileAmmo = ammo.copyWithCount(1);
+            if (usedAmmo == 0 || i > 0)
+                projectileAmmo.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
+            projectiles.add(projectileAmmo);
+        }
+        weapon.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(projectiles));
+        ammo.shrink(usedAmmo);
+        return true;
+    }
+
+    public static boolean crossbowHasRocket(ItemStack weapon)
+    {
+        return weapon.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).contains(Items.FIREWORK_ROCKET);
+    }
+
+    /** Fires and empties a charged crossbow from the main hand. */
+    public static void shootCrossbow(LivingEntity shooter, ItemStack weapon, CrossbowItem crossbow, float speed, float inaccuracy)
+    {
+        crossbow.performShooting(shooter.level(), shooter, InteractionHand.MAIN_HAND, weapon, speed, inaccuracy, null);
+    }
+
+    /** Whether the trident launches its holder instead of being thrown. */
+    public static boolean hasRiptide(ItemStack weapon, LivingEntity holder)
+    {
+        return EnchantmentHelper.getTridentSpinAttackStrength(weapon, holder) > 0;
     }
 
     /** Whether the item's enchantments have the effect but only the real target decides its value. */

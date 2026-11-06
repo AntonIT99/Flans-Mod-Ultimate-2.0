@@ -1,13 +1,11 @@
 package com.flansmodultimate.platform.render;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import net.minecraft.world.phys.AABB;
 
 import java.util.Optional;
 
-/** Version-specific vertex collector for a conservative radius about a static model's origin. */
-public final class WorldModelBoundsCollector implements VertexConsumer
+/** Vertex collector for a conservative radius about a static model's origin. */
+public final class WorldModelBoundsCollector extends PositionCollector
 {
     private double radiusSquared;
     private boolean valid = true;
@@ -30,7 +28,7 @@ public final class WorldModelBoundsCollector implements VertexConsumer
     }
 
     @Override
-    public VertexConsumer addVertex(float x, float y, float z)
+    public void vertexPosition(float x, float y, float z)
     {
         double squared = (double) x * x + (double) y * y + (double) z * z;
         valid &= Double.isFinite(squared);
@@ -41,36 +39,5 @@ public final class WorldModelBoundsCollector implements VertexConsumer
         maxX = Math.max(maxX, x);
         maxY = Math.max(maxY, y);
         maxZ = Math.max(maxZ, z);
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setColor(int r, int g, int b, int a)
-    {
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setUv(float u, float v)
-    {
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setUv1(int u, int v)
-    {
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setUv2(int u, int v)
-    {
-        return this;
-    }
-
-    @Override
-    public VertexConsumer setNormal(float x, float y, float z)
-    {
-        return this;
     }
 }

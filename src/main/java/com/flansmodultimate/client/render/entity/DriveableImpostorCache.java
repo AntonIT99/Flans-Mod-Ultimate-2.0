@@ -7,6 +7,7 @@ import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.render.PositionCollector;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.pipeline.TextureTarget;
@@ -19,7 +20,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.math.Axis;
 import lombok.NoArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -608,7 +608,7 @@ public final class DriveableImpostorCache
         private static final ModelBounds INVALID = new ModelBounds(0F, 0F, 0F, 0F, 0F, false);
     }
 
-    private static final class BoundsConsumer implements VertexConsumer
+    private static final class BoundsConsumer extends PositionCollector
     {
         private float minX = Float.POSITIVE_INFINITY;
         private float minY = Float.POSITIVE_INFINITY;
@@ -618,8 +618,7 @@ public final class DriveableImpostorCache
         private float maxZ = Float.NEGATIVE_INFINITY;
 
         @Override
-        @NotNull
-        public VertexConsumer addVertex(float x, float y, float z)
+        public void vertexPosition(float x, float y, float z)
         {
             minX = Math.min(minX, x);
             minY = Math.min(minY, y);
@@ -627,42 +626,6 @@ public final class DriveableImpostorCache
             maxX = Math.max(maxX, x);
             maxY = Math.max(maxY, y);
             maxZ = Math.max(maxZ, z);
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer setColor(int red, int green, int blue, int alpha)
-        {
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer setUv(float u, float v)
-        {
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer setUv1(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer setUv2(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer setNormal(float x, float y, float z)
-        {
-            return this;
         }
 
         private ModelBounds toBounds()

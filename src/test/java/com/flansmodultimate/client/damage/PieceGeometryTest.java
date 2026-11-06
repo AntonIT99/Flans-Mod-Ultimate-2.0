@@ -14,10 +14,10 @@ class PieceGeometryTest
     void aLongFaceRemainsSupportedWhenItsVerticesOverhangANarrowBlock()
     {
         PieceGeometry geometry = new PieceGeometry();
-        geometry.addVertex(-2F, 0F, -0.2F);
-        geometry.addVertex(2F, 0F, -0.2F);
-        geometry.addVertex(2F, 0F, 0.2F);
-        geometry.addVertex(-2F, 0F, 0.2F);
+        geometry.vertexPosition(-2F, 0F, -0.2F);
+        geometry.vertexPosition(2F, 0F, -0.2F);
+        geometry.vertexPosition(2F, 0F, 0.2F);
+        geometry.vertexPosition(-2F, 0F, 0.2F);
         Vector3f[] points = geometry.relativeTo(new Vector3f());
         Quaternionf rotation = new Quaternionf();
         Vec3 pivot = new Vec3(0D, 1D, 0D);
@@ -34,10 +34,10 @@ class PieceGeometryTest
         // The same quad drawn twice, as a double-sided screen would be.
         for (int face = 0; face < 2; face++)
         {
-            geometry.addVertex(pivot.x - 1F, pivot.y + 2F, pivot.z);
-            geometry.addVertex(pivot.x + 1F, pivot.y + 2F, pivot.z);
-            geometry.addVertex(pivot.x + 1F, pivot.y + 3F, pivot.z);
-            geometry.addVertex(pivot.x - 1F, pivot.y + 3F, pivot.z);
+            geometry.vertexPosition(pivot.x - 1F, pivot.y + 2F, pivot.z);
+            geometry.vertexPosition(pivot.x + 1F, pivot.y + 2F, pivot.z);
+            geometry.vertexPosition(pivot.x + 1F, pivot.y + 3F, pivot.z);
+            geometry.vertexPosition(pivot.x - 1F, pivot.y + 3F, pivot.z);
         }
         Vector3f[] points = geometry.relativeTo(pivot);
         assertEquals(5, points.length, "Shared face vertices and face centres should be sampled only once");
