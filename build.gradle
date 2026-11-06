@@ -69,6 +69,8 @@ spotless {
     encoding 'UTF-8'
     lineEndings 'UNIX'
     ratchetFrom 'origin/master'
+    // Formatting is checked on demand (spotlessCheck, scripts/validate.ps1), not by build/check.
+    enforceCheck false
 
     java {
         target 'src/*/java/**/*.java'
@@ -115,7 +117,10 @@ version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = "[$minecraft_version] $mod_name"
+    archivesName = "$mod_id-$minecraft_version"
+}
+tasks.named('jar') {
+    ext.curseforgeDisplayName = "[$minecraft_version] $mod_name-$mod_version"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -224,7 +229,8 @@ configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
 
 /*
  * Registers an optional module described by src/<module>/fmu-module.gradle.
- * Required: sourceSet, modId, jarTask, archiveBaseName, archiveVersion.
+ * Required: sourceSet, modId, jarTask, displayName, archiveVersion.
+ * The jar is named <modId>-<minecraft version>-<archiveVersion>.jar; displayName titles CurseForge uploads.
  * Optional: directory (defaults to sourceSet), implementationTitle (defaults to sourceSet),
  *           javaCompileJvmArgs, curseforge (projectUrl, projectId, changelog,
  *           releaseType, requiredDependencies).
@@ -232,7 +238,7 @@ configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
 ext.fmuModuleJars = []
 ext.fmuModulePublishing = [:]
 ext.registerFmuModule = { Map module ->
-    def missing = ['sourceSet', 'modId', 'jarTask', 'archiveBaseName', 'archiveVersion'].findAll { !module[it]?.toString()?.trim() }
+    def missing = ['sourceSet', 'modId', 'jarTask', 'displayName', 'archiveVersion'].findAll { !module[it]?.toString()?.trim() }
     if (missing)
         throw new GradleException("FMU module is missing required properties: ${missing.join(', ')}")
 
@@ -278,7 +284,8 @@ ext.registerFmuModule = { Map module ->
     }
 
     fmuModuleJars << tasks.register(module.jarTask.toString(), Jar) {
-        archiveBaseName = module.archiveBaseName.toString()
+        archiveBaseName = "$modId-$minecraft_version"
+        ext.curseforgeDisplayName = "[$minecraft_version] ${module.displayName}-$moduleVersion"
         archiveVersion = moduleVersion
         from source.output
         manifest {
@@ -551,9 +558,10 @@ tasks.named(sourceSets.packsmanager.processResourcesTaskName, ProcessResources) 
 }
 
 // Bundles the development run/flan packs for extraction by the Packs Manager.
-String packsManagerBaseName = "[$minecraft_version] $packs_manager_name"
+String packsManagerBaseName = "$packs_manager_mod_id-$minecraft_version"
 def packsManagerJar = tasks.register('packsManagerJar', Jar) { Jar jar ->
     jar.archiveBaseName.set(packsManagerBaseName)
+    jar.ext.curseforgeDisplayName = "[$minecraft_version] $packs_manager_name-$packsManagerVersion"
     jar.archiveVersion.set(packsManagerVersion)
     jar.from(sourceSets.packsmanager.output)
     jar.from('run/flan') { CopySpec spec -> spec.into('flan') }
