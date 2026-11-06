@@ -83,6 +83,8 @@ bots do not replace real-client rendering, GUI or modded-physics checks.
 
 - Keep gameplay state server-authoritative. Do not initialize client-only classes
   from common or server code.
+- Keep Forge and NeoForge references (`net.minecraftforge`, `net.neoforged`) in `platform/` or `mixin/`.
+  `LoaderBoundaryTest` enforces this for the main mod and NPC module; its allowlist may only shrink.
 - Preserve deterministic legacy-content loading and compatibility. Do not bulk-change
   definition whitespace, casing, filenames, encodings, or layouts.
 - Do not edit generated output, runtime files, or generated metadata; change the
