@@ -58,18 +58,14 @@ public final class CommonGameEvents
     }
 
     @SubscribeEvent
-    public static void onEntityTickStart(EntityTickEvent.Pre event)
+    public static void onLivingTick(EntityTickEvent.Pre event)
     {
         // Forge's LivingTickEvent fires as the tick starts; the position history records the box from before this tick's move.
         if (event.getEntity() instanceof LivingEntity living)
+        {
             EntityPositionHistory.record(living);
-    }
-
-    @SubscribeEvent
-    public static void onLivingTick(EntityTickEvent.Post event)
-    {
-        if (event.getEntity() instanceof LivingEntity living)
             CommonEventHandler.onLivingTick(living);
+        }
     }
 
     @SubscribeEvent

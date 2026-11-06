@@ -104,7 +104,7 @@ public final class ClientGameEvents
             ClientEventHandler.renderCrosshairHitMarker(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(true));
     }
 
-    /** 1.20.1 changes the third-person camera distance with DriveableCameraMixin instead. */
+    /** Sets the requested driveable third-person distance; 1.20.1 changes Camera.setup's constant with DriveableCameraMixin instead. */
     @SubscribeEvent
     public static void onDetachedCameraDistance(CalculateDetachedCameraDistanceEvent event)
     {

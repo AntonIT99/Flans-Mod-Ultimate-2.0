@@ -77,14 +77,15 @@ public final class LegacyParticleRenderTypes
     }
 
     /**
-     * Draws a completed particle batch of the given type. Legacy smoke gets its depth pass; muzzle smoke is drawn without depth
-     * writes and then restores the depth mask that its {@code begin} disabled.
+     * Draws a completed particle batch of the given type. Legacy smoke gets its depth pass; muzzle smoke and tracer beams are drawn
+     * without depth writes and then restore the depth mask and blend function that their {@code begin} changed, as Forge's
+     * {@code ParticleRenderType.end} did.
      */
     public static void drawBatch(@Nullable ParticleRenderType type, MeshData mesh)
     {
         if (usesDepthPass(type))
             drawWithDepth(mesh);
-        else if (type == GUN_SMOKE)
+        else if (type == GUN_SMOKE || type == TracerBeamParticle.RENDER_TYPE)
         {
             try
             {
@@ -92,6 +93,7 @@ public final class LegacyParticleRenderTypes
             }
             finally
             {
+                RenderSystem.defaultBlendFunc();
                 RenderSystem.depthMask(true);
             }
         }

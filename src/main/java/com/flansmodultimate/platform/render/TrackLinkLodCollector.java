@@ -167,44 +167,4 @@ public final class TrackLinkLodCollector implements VertexConsumer
         }
         return result;
     }
-
-    // TMT uses the packed vertex entry point; unexpected custom emission is unsupported.
-    public VertexConsumer vertex(double x, double y, double z)
-    {
-        throw new IllegalStateException("Non-TMT vertex");
-    }
-
-    public VertexConsumer color(int r, int g, int b, int a)
-    {
-        return this;
-    }
-
-    public VertexConsumer uv(float u, float v)
-    {
-        return this;
-    }
-
-    public VertexConsumer overlayCoords(int u, int v)
-    {
-        return this;
-    }
-
-    public VertexConsumer uv2(int u, int v)
-    {
-        return this;
-    }
-
-    public VertexConsumer normal(float x, float y, float z)
-    {
-        return this;
-    }
-
-    public void endVertex()
-    {}
-
-    public void defaultColor(int r, int g, int b, int a)
-    {}
-
-    public void unsetDefaultColor()
-    {}
 }

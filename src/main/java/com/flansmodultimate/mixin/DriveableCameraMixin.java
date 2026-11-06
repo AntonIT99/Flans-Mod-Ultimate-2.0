@@ -1,6 +1,5 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.render.hud.MountedCameraView;
 import com.flansmodultimate.client.render.hud.VehicleOpticsClient;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
@@ -11,13 +10,10 @@ import com.flansmodultimate.common.types.GunType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -26,9 +22,9 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Anchors mounted cameras to their weapon or driveable, and changes only
- * Camera.setup's requested third-person distance. Camera still passes that
- * distance through its vanilla getMaxZoom collision probes.
+ * Anchors mounted cameras to their weapon or driveable. On 1.21.1 the requested
+ * third-person distance comes from ClientGameEvents.onDetachedCameraDistance;
+ * Camera still passes it through its vanilla getMaxZoom collision probes.
  */
 @Mixin(Camera.class)
 public abstract class DriveableCameraMixin
@@ -110,20 +106,5 @@ public abstract class DriveableCameraMixin
         LegacyDriveableCoordinates.ViewAngles view = MountedCameraView.resolve(player, partialTick);
         if (view != null)
             setRotation(view.yaw(), view.pitch(), roll);
-    }
-
-    @ModifyConstant(method = "setup", constant = @Constant(floatValue = 4.0F))
-    private float flansmodultimateDriveableCameraDistance(float vanillaDistance)
-    {
-        Player player = Minecraft.getInstance().player;
-        if (player == null)
-            return vanillaDistance;
-
-        var controllable = KeyInputHandler.resolveControllable(player);
-        if (controllable == null)
-            return vanillaDistance;
-
-        float requestedDistance = controllable.getCameraDistance();
-        return Float.isFinite(requestedDistance) ? Mth.clamp(requestedDistance, 1F, 64F) : vanillaDistance;
     }
 }

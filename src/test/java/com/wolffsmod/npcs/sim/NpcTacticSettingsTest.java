@@ -62,4 +62,14 @@ class NpcTacticSettingsTest
         assertTrue(NpcFlight.extending(true, 39D, 40D));
         assertFalse(NpcFlight.extending(true, 40D, 40D), "far enough beyond, it comes round");
     }
+
+    @Test
+    void onlyCustomNpcsVariantsThatManoeuvreKeepATargetBeyondAggroRange()
+    {
+        // Rush, Dodge, Surround, Hit & Run, Ambush, Stalk, None, as the AI page lists them.
+        assertFalse(NpcTargetSearch.manoeuvres(0));
+        for (int variant = 1; variant <= 5; variant++)
+            assertTrue(NpcTargetSearch.manoeuvres(variant), String.valueOf(variant));
+        assertFalse(NpcTargetSearch.manoeuvres(6));
+    }
 }

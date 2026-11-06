@@ -72,7 +72,6 @@ public final class DriveableImpostorCache
     // Geometry LOD must also work for damaged vehicles and when the atlas cache is full.
     private static final IdentityHashMap<ModelDriveable, IdentityHashMap<DriveableType, ModelBounds>> boundsCache = new IdentityHashMap<>();
     private static TextureTarget captureTarget;
-    private static MultiBufferSource.BufferSource captureBuffer;
     private static final ImpostorAtlasBlitter atlasBlitter = new ImpostorAtlasBlitter();
     private static Settings settings;
     private static long lastCaptureTick = Long.MIN_VALUE;
@@ -297,9 +296,6 @@ public final class DriveableImpostorCache
         }
         catch (Exception | LinkageError e)
         {
-            // A custom model can fail midway through a batch. Do not reuse that
-            // incomplete buffer for the next atlas capture.
-            captureBuffer = null;
             entry.failed = true;
             release(entry);
             FlansLog.log.warn("Disabling generated LOD impostor for model {} and texture {}: {}", entry.model.getClass().getName(), entry.sourceTexture, e.toString());
@@ -521,7 +517,6 @@ public final class DriveableImpostorCache
         entries.clear();
         boundsCache.clear();
         pendingEntry = null;
-        captureBuffer = null;
         atlasBlitter.close();
         if (captureTarget != null)
         {

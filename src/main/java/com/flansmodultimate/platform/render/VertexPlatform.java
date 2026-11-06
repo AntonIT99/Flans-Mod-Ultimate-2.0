@@ -52,7 +52,7 @@ public final class VertexPlatform
     @SuppressWarnings("java:S107")
     public static void renderModelPart(ModelPart part, PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        int color = Math.round(alpha * 255F) << 24 | Math.round(red * 255F) << 16 | Math.round(green * 255F) << 8 | Math.round(blue * 255F);
+        int color = ((int) (alpha * 255F) & 0xFF) << 24 | ((int) (red * 255F) & 0xFF) << 16 | ((int) (green * 255F) & 0xFF) << 8 | ((int) (blue * 255F) & 0xFF);
         part.render(poseStack, consumer, packedLight, packedOverlay, color);
     }
 
