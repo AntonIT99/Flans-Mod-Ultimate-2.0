@@ -135,7 +135,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        float lifetimeScale = ExplosionVisuals.lifetimeScale(explosionRadius);
+        float lifetimeScale = ExplosionVisuals.lifetimeScale(explosionRadius) * (float) ModClientConfig.get().explosionParticleLifetime;
         boolean groundBurst = isGroundBurst(level, position);
 
         // The flash, fireball and smoke of a heavy charge are what a bomber sees from far away, so
@@ -152,10 +152,10 @@ public class PacketFlanExplosionParticles implements IClientPacket
         float legacy = ExplosionVisuals.legacyWeight(explosionRadius);
         float diameter = ExplosionVisuals.fireballDiameter(explosionRadius);
         float legacyScale = 1.0F + Mth.clamp(blastRadius / LEGACY_MAX_SCALE_RADIUS, 0.0F, 1.0F) * (LEGACY_MAX_PARTICLE_SCALE - 1.0F);
-        float particleScale = Mth.lerp(legacy, Mth.clamp(diameter * 0.04F, 0.25F, 1.2F), legacyScale);
+        float particleScale = Mth.lerp(legacy, Mth.clamp(diameter * 0.04F, 0.25F, 1.2F), legacyScale) * (float) ModClientConfig.get().explosionEjectaScale;
         float ejectaSpeed = Mth.lerp(legacy, Math.min(1.5F, diameter * 0.04F), blastRadius * 0.12F);
-        spawn(level, FlanParticles.FM_FLARE, position, ExplosionVisuals.scaledCount(numSmoke, explosionRadius), ejectaSpeed, particleScale, lifetimeScale * Mth.lerp(legacy, 0.03F, 1F));
-        spawn(level, FlanParticles.FM_DEBRIS_1, position, ExplosionVisuals.scaledCount(numDebris, explosionRadius), ejectaSpeed, particleScale, lifetimeScale);
+        spawn(level, FlanParticles.FM_FLARE, position, (int) Math.round(ExplosionVisuals.scaledCount(numSmoke, explosionRadius) * ModClientConfig.get().explosionEjectaDensity), ejectaSpeed, particleScale, lifetimeScale * Mth.lerp(legacy, 0.03F, 1F));
+        spawn(level, FlanParticles.FM_DEBRIS_1, position, (int) Math.round(ExplosionVisuals.scaledCount(numDebris, explosionRadius) * ModClientConfig.get().explosionEjectaDensity), ejectaSpeed, particleScale, lifetimeScale);
 
         // The envelope cues go before the extra layers deliberately: they tell a player how far
         // the explosion can actually hurt them, so if a barrage exhausts the client's particle
@@ -182,7 +182,9 @@ public class PacketFlanExplosionParticles implements IClientPacket
      */
     private void spawnLayer(Level level, ExplosionVisuals.Layer layer, float lifetimeScale, boolean groundBurst)
     {
-        int count = layer.count(explosionRadius);
+        if (ModClientConfig.get().explosionLayerScale <= 0D)
+            return;
+        int count = (int) Math.round(layer.count(explosionRadius) * ModClientConfig.get().explosionLayerDensity);
         if (count <= 0)
             return;
 
@@ -211,7 +213,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
                 continue;
 
             ClientHooks.RENDER.spawnParticle(layer.particle(), at.x, at.y, at.z, dx * speed * jitter, vertical * speed * jitter, dz * speed * jitter,
-                Math.min(1F, ExplosionVisuals.fireballDiameter(explosionRadius) * 0.12F), lifetimeScale * layer.lifetimeShare());
+                Math.min(1F, ExplosionVisuals.fireballDiameter(explosionRadius) * 0.12F) * (float) ModClientConfig.get().explosionLayerScale, lifetimeScale * layer.lifetimeShare());
         }
     }
 
@@ -264,10 +266,10 @@ public class PacketFlanExplosionParticles implements IClientPacket
      */
     private void spawnFlash()
     {
-        float scale = ExplosionVisuals.flashScale(explosionRadius);
+        float scale = ExplosionVisuals.flashScale(explosionRadius) * (float) ModClientConfig.get().explosionFlashScale;
         if (scale <= 0F)
             return;
-        ClientHooks.RENDER.spawnParticle(FlanParticles.FM_FLASH, position.x, position.y, position.z, 0D, 0D, 0D, scale);
+        ClientHooks.RENDER.spawnParticle(FlanParticles.FM_FLASH, position.x, position.y, position.z, 0D, 0D, 0D, scale, (float) ModClientConfig.get().explosionParticleLifetime);
     }
 
     /**
@@ -278,15 +280,15 @@ public class PacketFlanExplosionParticles implements IClientPacket
      */
     private void spawnFireball(Level level, float lifetimeScale)
     {
-        if (explosionRadius <= 0F)
+        if (explosionRadius <= 0F || ModClientConfig.get().explosionFireballScale <= 0D)
             return;
         int hotTicks = ExplosionVisuals.fireballHotTicks(explosionRadius, fiery);
         if (ExplosionVisuals.legacyWeight(explosionRadius) > 0F)
         {
             float legacy = ExplosionVisuals.legacyWeight(explosionRadius);
             ClientHooks.RENDER.spawnSustainedParticles(FlanParticles.FM_FIRE_EXPLOSION, FlanParticles.LARGE_EXPLODE, hotTicks, position.x, position.y, position.z,
-                ExplosionVisuals.fireballSpread(explosionRadius), explosionRadius * 0.02D * legacy, ExplosionVisuals.fireballScale(explosionRadius),
-                ExplosionVisuals.fireballCount(explosionRadius), ExplosionVisuals.fireballDurationTicks(explosionRadius), lifetimeScale);
+                ExplosionVisuals.fireballSpread(explosionRadius), explosionRadius * 0.02D * legacy, ExplosionVisuals.fireballScale(explosionRadius) * (float) ModClientConfig.get().explosionFireballScale,
+                (int) Math.round(ExplosionVisuals.fireballCount(explosionRadius) * ModClientConfig.get().explosionFireballDensity), ExplosionVisuals.fireballDurationTicks(explosionRadius), lifetimeScale);
             return;
         }
 
@@ -294,15 +296,15 @@ public class PacketFlanExplosionParticles implements IClientPacket
         String particle = hotTicks > 0 ? FlanParticles.FM_FIRE_EXPLOSION : FlanParticles.LARGE_EXPLODE;
         int duration = hotTicks > 0 ? hotTicks : ExplosionVisuals.fireballDurationTicks(explosionRadius);
         // Fire sprites live 8-11 ticks; the grey vanilla puff lives 6-9. Bound the final puff's life.
-        float lifetime = duration / (hotTicks > 0 ? 11F : 9F);
-        for (int i = 0; i < ExplosionVisuals.fireballCount(explosionRadius); i++)
+        float lifetime = duration / (hotTicks > 0 ? 11F : 9F) * (float) ModClientConfig.get().explosionParticleLifetime;
+        for (int i = 0; i < (int) Math.round(ExplosionVisuals.fireballCount(explosionRadius) * ModClientConfig.get().explosionFireballDensity); i++)
         {
             double dx = (level.random.nextDouble() * 2D - 1D) * diameter * 0.15D;
             double dy = (level.random.nextDouble() * 2D - 1D) * diameter * 0.15D;
             double dz = (level.random.nextDouble() * 2D - 1D) * diameter * 0.15D;
             Vec3 at = place(level, dx, dy, dz);
             if (at != null)
-                ClientHooks.RENDER.spawnParticle(particle, at.x, at.y, at.z, 0D, 0D, 0D, ExplosionVisuals.fireballScale(explosionRadius), lifetime);
+                ClientHooks.RENDER.spawnParticle(particle, at.x, at.y, at.z, 0D, 0D, 0D, ExplosionVisuals.fireballScale(explosionRadius) * (float) ModClientConfig.get().explosionFireballScale, lifetime);
         }
     }
 
@@ -314,7 +316,9 @@ public class PacketFlanExplosionParticles implements IClientPacket
      */
     private void spawnShockwave(Level level)
     {
-        int count = ExplosionVisuals.shockwaveCount(blastRadius);
+        if (ModClientConfig.get().explosionShockwaveScale <= 0D)
+            return;
+        int count = (int) Math.round(ExplosionVisuals.shockwaveCount(blastRadius) * ModClientConfig.get().explosionShockwaveDensity);
         if (count <= 0)
             return;
 
@@ -331,7 +335,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
             double wobble = 0.8D + random.nextDouble() * 0.4D;
 
             ClientHooks.RENDER.spawnParticle(FlanParticles.FM_SMOKE, position.x + dx * start, position.y + blastRadius * SHOCKWAVE_HEIGHT_SHARE, position.z + dz * start, dx * speed * wobble,
-                speed * 0.05D, dz * speed * wobble, 1.0F);
+                speed * 0.05D, dz * speed * wobble, (float) ModClientConfig.get().explosionShockwaveScale, (float) ModClientConfig.get().explosionParticleLifetime);
         }
     }
 
@@ -341,12 +345,14 @@ public class PacketFlanExplosionParticles implements IClientPacket
      */
     private void spawnFragmentation(Level level, boolean groundBurst)
     {
+        if (ModClientConfig.get().explosionFragSparkScale <= 0D)
+            return;
         int count = ExplosionVisuals.fragSparkCount(fragRadius, fragIntensity, effectiveFragments, ModClientConfig.get().fragSparkMultiplier, ModClientConfig.get().maxFragSparks);
         if (count <= 0)
             return;
 
         RandomSource random = level.random;
-        float lifetimeScale = ExplosionVisuals.fragLifetimeScale(explosionRadius);
+        float lifetimeScale = ExplosionVisuals.fragLifetimeScale(explosionRadius) * (float) ModClientConfig.get().explosionParticleLifetime;
         double speed = fragRadius * FRAG_SPEED_PER_RADIUS;
         double start = Math.min(Math.max(0.35F, explosionRadius * FRAG_START_CRATER_SHARE), fragRadius * FRAG_START_RADIUS_SHARE);
 
@@ -361,7 +367,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
                 continue;
 
             ClientHooks.RENDER.spawnParticle(FlanParticles.FIREWORKS_SPARK, origin.x, origin.y, origin.z, direction.x * speed * jitter, direction.y * speed * jitter, direction.z * speed * jitter,
-                FRAG_SPARK_SCALE, lifetimeScale);
+                FRAG_SPARK_SCALE * (float) ModClientConfig.get().explosionFragSparkScale, lifetimeScale);
         }
     }
 
@@ -409,14 +415,16 @@ public class PacketFlanExplosionParticles implements IClientPacket
      */
     private void spawnSmokeColumn(Level level)
     {
-        int count = ExplosionVisuals.smokeColumnCount(explosionRadius);
+        if (ModClientConfig.get().explosionSmokeScale <= 0D)
+            return;
+        int count = (int) Math.round(ExplosionVisuals.smokeColumnCount(explosionRadius) * ModClientConfig.get().explosionSmokeDensity);
         if (count <= 0)
             return;
 
         RandomSource random = level.random;
         double rise = ExplosionVisuals.stagedSizingRadius(explosionRadius) * COLUMN_RISE_PER_RADIUS;
         double foot = ExplosionVisuals.stagedSizingRadius(explosionRadius) * COLUMN_FOOT_SHARE;
-        float columnLifetime = ExplosionVisuals.lifetimeScale(explosionRadius);
+        float columnLifetime = ExplosionVisuals.lifetimeScale(explosionRadius) * (float) ModClientConfig.get().explosionParticleLifetime;
 
         for (int i = 0; i < count; i++)
         {
@@ -424,12 +432,14 @@ public class PacketFlanExplosionParticles implements IClientPacket
             double distance = random.nextDouble() * foot;
 
             ClientHooks.RENDER.spawnParticle(FlanParticles.LARGE_SMOKE, position.x + Math.cos(angle) * distance, position.y, position.z + Math.sin(angle) * distance, Math.cos(angle) * rise * 0.15D,
-                rise * (0.7D + random.nextDouble() * 0.6D), Math.sin(angle) * rise * 0.15D, 1.0F, columnLifetime);
+                rise * (0.7D + random.nextDouble() * 0.6D), Math.sin(angle) * rise * 0.15D, (float) ModClientConfig.get().explosionSmokeScale, columnLifetime);
         }
     }
 
     private void spawn(Level level, String particleType, Vec3 position, int count, float maxVelocity, float scale, float lifetimeScale)
     {
+        if (scale <= 0F)
+            return;
         for (int i = 0; i < count; i++)
         {
             // Individually randomised overshoot so particles are not strictly contained to the

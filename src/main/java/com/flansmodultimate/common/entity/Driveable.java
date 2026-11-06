@@ -1593,7 +1593,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     public void submitPredictedInput(@NotNull DriveablePrediction.Frame frame)
     {
-        if (!level().isClientSide || !supportsClientPrediction())
+        if (!level().isClientSide || !supportsClientPrediction() || isWreck())
             return;
         if (prediction == null)
             startPrediction();
@@ -5055,65 +5055,117 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         if (bulletType == null || hit == null || driveableData == null || configType == null)
             return hitData;
-        DriveablePart part = driveableData.getPart(hit.getPart());
-        if (part == null)
-            return hitData;
+        return VehicleProjectileImpact.hit(new ProjectileTarget(shot, bulletType), shot, bulletType, hit, hitData);
+    }
 
-        float previousPower = Math.max(0F, hitData.penetratingPower());
-        float resistance = part.getPenetrationResistance();
-        float remainingPower = Math.max(0F, previousPower - resistance);
-        float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
-        int shotIndex = shot == null ? 0 : shot.getShot();
-        boolean heat = bulletType.isHeat();
-        // A face whose armour part has been shot off is open: the hull behind it no longer has that plate.
-        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat,
-            this::isDefinedAndDestroyed);
-        float authoredFixedDamage = bulletType.getDamage().getDamageAgainstEntity(this);
-        boolean normalizedHealth = configType.getResolvedHealth().enabled();
-        float selectedFixedDamage = normalizedHealth ? authoredFixedDamage : authoredFixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
-        // Resolved through the shot where one exists, so a per-weapon override of the
-        // shared round's mass, velocity or penetration reaches the armour gate too.
-        float p100 = shot != null ? shot.getPenetrationAt100m() : bulletType.getPenetrationAt100m(shotIndex);
-        float muzzleVelocity = shot != null ? shot.getMuzzleVelocity() : ShootingHelper.getMuzzleVelocity(bulletType, shotIndex, null);
-        float projectileMass = shot != null ? shot.getProjectileMass() : bulletType.getMass(shotIndex);
-        VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(normalizedHealth, projectileMass, selectedFixedDamage, muzzleVelocity, armorHit,
-            p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
-        boolean armourBlocked = resolvedDamage.penetration().armourGateRequired() && !resolvedDamage.penetration().penetrated();
-        ArmourImpactSounds.send(level(), hit.getHitPosition(), bulletType, resolvedDamage.penetration());
-        ArmorImpactHandler.dispatch(shot, this, hit.getPart().getShortName(), hit.getFacing().outwardNormal(), armourBlocked);
-        Vec3 impactNormal = modelLocalDirectionToWorld(
-            DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(armorHit.virtualNormal()), hit.getPart(), getTurretYaw(), getTurretPitch()));
-        Vec3 impactMotion = modelLocalDirectionToWorld(
-            DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(hit.getLocalProjectileDirection()), hit.getPart(), getTurretYaw(), getTurretPitch()));
-        ArmourImpactEffects.send(level(), hit.getHitPosition(), impactMotion, impactNormal, projectileMass, armorHit, armourBlocked);
-        // A wreck's hull only stops the round: there is nothing left to damage, and a warhead's blast breaks it up.
-        if (!level().isClientSide && !isWreckHull(hit.getPart()))
+    private final class ProjectileTarget implements VehicleProjectileImpact.Target<DriveableHit>
+    {
+        private final FiredShot shot;
+        private final BulletType bulletType;
+
+        private ProjectileTarget(@Nullable FiredShot shot, BulletType bulletType)
         {
+            this.shot = shot;
+            this.bulletType = bulletType;
+        }
+
+        @Override
+        public DriveableType type()
+        {
+            return configType;
+        }
+
+        @Override
+        public DriveablePart part(EnumDriveablePart part)
+        {
+            return driveableData.getPart(part);
+        }
+
+        @Override
+        public boolean active(EnumDriveablePart part)
+        {
+            return isPartHitboxActive(part(part));
+        }
+
+        @Override
+        public boolean finished()
+        {
+            return destroyed;
+        }
+
+        @Override
+        public List<DriveableHit> traceBehind(DriveableHit hit)
+        {
+            Vec3 direction = modelLocalDirectionToWorld(DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(hit.getLocalProjectileDirection()), hit.getPart(),
+                getTurretYaw(), getTurretPitch())).normalize();
+            // The culling bounds include all authored boxes. Their summed side lengths exceed their diagonal.
+            Vec3 motion = direction.scale(getBoundingBoxForCulling().getSize() * 3D);
+            return attackFromBullet(hit.getHitPosition().add(direction.scale(1.0E-5D)), motion).stream().map(DriveableHit.class::cast).toList();
+        }
+
+        @Override
+        public float apply(DriveableHit hit, VehicleProjectileImpact.Impact impact, float damage, Vec3 detonation, ShootingHelper.HitData data)
+        {
+            ResolvedArmorHit armorHit = impact.armor();
+            boolean blocked = impact.blocked();
+            ArmourImpactSounds.send(level(), hit.getHitPosition(), bulletType, impact.damage().penetration());
+            ArmorImpactHandler.dispatch(shot, Driveable.this, hit.getPart().getShortName(), hit.getFacing().outwardNormal(), blocked);
+            Vec3 normal = modelLocalDirectionToWorld(
+                DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(armorHit.virtualNormal()), hit.getPart(), getTurretYaw(), getTurretPitch()));
+            Vec3 motion = modelLocalDirectionToWorld(
+                DriveableProjectileCollision.partDirectionToHullLocal(partFrameToModelLocal(hit.getLocalProjectileDirection()), hit.getPart(), getTurretYaw(), getTurretPitch()));
+            ArmourImpactEffects.send(level(), hit.getHitPosition(), motion, normal, shot == null ? bulletType.getMass(0) : shot.getProjectileMass(), armorHit, blocked);
+            return damagePartAndHandleImpact(hit, impact, damage, detonation);
+        }
+
+        private float damagePartAndHandleImpact(DriveableHit hit, VehicleProjectileImpact.Impact impact, float damage, Vec3 detonation)
+        {
+            // A wreck's hull only stops the round: there is nothing left to damage, and a warhead's blast breaks it up.
+            if (level().isClientSide || isWreckHull(hit.getPart()))
+                return 0F;
+
+            ResolvedArmorHit armorHit = impact.armor();
+            VehicleProjectileDamageResolver.Result resolvedDamage = impact.damage();
+            boolean armourBlocked = impact.blocked();
+            DriveablePart part = driveableData.getPart(hit.getPart());
             float previousHealth = part.getHealth();
-            part.damage(resolvedDamage.damage(), bulletType.isSetEntitiesOnFire() && !armourBlocked);
+            // A later part receives the existing budget after its own armour gate, never a fresh damage roll.
+            part.damage(damage, bulletType.isSetEntitiesOnFire() && !armourBlocked);
             float appliedDamage = Math.max(0F, previousHealth - part.getHealth());
             var debugPlayer = shot == null ? null : shot.getPlayerAttacker().orElse(null);
             if (armourBlocked)
-                DriveableDamageDebug.reportArmorBlock(debugPlayer, this, hit.getPart(), resolvedDamage.penetration().penetrationMm(), armorHit);
+                DriveableDamageDebug.reportArmorBlock(debugPlayer, Driveable.this, hit.getPart(), resolvedDamage.penetration().penetrationMm(), armorHit);
             else if (armorHit.isArmoured())
-                DriveableDamageDebug.reportPenetration(debugPlayer, this, hit.getPart(), appliedDamage, resolvedDamage.penetration().penetrationMm(), armorHit);
+                DriveableDamageDebug.reportPenetration(debugPlayer, Driveable.this, hit.getPart(), appliedDamage, resolvedDamage.penetration().penetrationMm(), armorHit);
             else
-                DriveableDamageDebug.reportDamage(debugPlayer, this, hit.getPart(), appliedDamage);
+                DriveableDamageDebug.reportDamage(debugPlayer, Driveable.this, hit.getPart(), appliedDamage);
             if (resolvedDamage.shapedCharge())
             {
                 // The jet has already done the warhead's work on this part; its blast is left to the others.
-                shapedChargeImpact = new ShapedChargeImpact(hit.getPart(), hit.getHitPosition(), level().getGameTime());
+                shapedChargeImpact = new ShapedChargeImpact(hit.getPart(), detonation, level().getGameTime());
                 applyHeatSpall(shot, hit.getPart(), armorHit.isArmoured() ? resolvedDamage.penetration().overmatch() : 2F);
             }
-            if (part.isDestroyed())
-                onPartDestroyed(part.getType());
+            if (!part.isDestroyed())
+                return 0F;
+            onPartDestroyed(part.getType());
+            return Math.max(0F, damage - previousHealth);
         }
-        // A shaped charge fires its jet at the first surface it strikes. Whatever it hits first - a skirt, an ERA
-        // block, a track - takes the jet in place of the hull behind, so it never carries on into the next part.
-        // A HESH round likewise acts at the first surface, without selecting the shaped-charge damage channel.
-        if (heat || bulletType.isHesh())
-            return new ShootingHelper.HitData(0F, armourBlocked ? 0F : penetrationRatio, false);
-        return new ShootingHelper.HitData(remainingPower, armourBlocked ? 0F : penetrationRatio, false);
+
+        /** Spall from a HEAT jet hurts whoever sits in the part it went through. */
+        private void applyHeatSpall(@Nullable FiredShot shot, EnumDriveablePart penetratedPart, float overmatch)
+        {
+            float spall = (float) ModCommonConfig.heatCrewSpallDamage() * VehicleProjectileDamageResolver.shapedChargeResidual(overmatch);
+            if (spall <= 0F || !Float.isFinite(spall))
+                return;
+            DamageSource source = shot != null ? shot.getDamageSource(level(), null) : level().damageSources().explosion(null, null);
+            for (Seat seat : seats)
+            {
+                if (seat == null || seat.getSeatInfo() == null || seat.getSeatInfo().getPart() != penetratedPart)
+                    continue;
+                if (seat.getRiddenByEntity() instanceof LivingEntity occupant)
+                    occupant.hurt(source, spall);
+            }
+        }
     }
 
     /** Charge of a HEAT round in kg TNT, recovered from its legacy explosion when it declares no explosive mass. */
@@ -5125,22 +5177,6 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         FlanExplosion.Stats stats = shot != null ? bulletType.getExplosionStatsForShot(shot) : bulletType.getExplosionStats(null);
         return ExplosionVehicleDamageResolver.legacyTntEquivalentKg(stats.explosionRadius(), stats.explosionPower(),
             ModCommonConfig.get() == null ? ModCommonConfig.DEFAULT_CRATER_RADIUS_REFERENCE : ModCommonConfig.get().newDamageSystemExplosiveRadiusReference());
-    }
-
-    /** Spall from a HEAT jet hurts whoever sits in the part it went through. */
-    private void applyHeatSpall(@Nullable FiredShot shot, EnumDriveablePart penetratedPart, float overmatch)
-    {
-        float spall = (float) ModCommonConfig.heatCrewSpallDamage() * VehicleProjectileDamageResolver.shapedChargeResidual(overmatch);
-        if (spall <= 0F || !Float.isFinite(spall))
-            return;
-        DamageSource source = shot != null ? shot.getDamageSource(level(), null) : level().damageSources().explosion(null, null);
-        for (Seat seat : seats)
-        {
-            if (seat == null || seat.getSeatInfo() == null || seat.getSeatInfo().getPart() != penetratedPart)
-                continue;
-            if (seat.getRiddenByEntity() instanceof LivingEntity occupant)
-                occupant.hurt(source, spall);
-        }
     }
 
     /**
@@ -6223,6 +6259,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // The client counts on by itself between the server's occasional updates, so only a real gap is corrected.
         if (age < 0 || clientWreckAge < 0 || Math.abs(clientWreckAge - age) > 40)
             clientWreckAge = age;
+        // Hand the existing visual pose back to server interpolation before another queued driving step can move it.
+        if (age >= 0 && prediction != null)
+            endPrediction();
         if (news)
             ClientHooks.RENDER.onDriveableWrecked(this);
     }

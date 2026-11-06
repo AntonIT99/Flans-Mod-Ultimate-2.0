@@ -64,6 +64,10 @@ public final class PartBody implements IPartBody
     private double reach = -1D;
     @Nullable
     private ShapedChargeImpact shapedChargeImpact;
+    /** Last accepted part damage, after the wearer's own damage modifiers, used to preserve its unspent budget. */
+    @Getter
+    @Nullable
+    private DamageReceipt lastDamage;
     /** The entity wearing the body; null for a body that only holds parts. */
     @Nullable
     private Entity owner;
@@ -74,6 +78,9 @@ public final class PartBody implements IPartBody
     private PartBodyCollisionHelper collision;
 
     private record ShapedChargeImpact(EnumDriveablePart part, Vec3 point, long gameTime)
+    {}
+
+    public record DamageReceipt(EnumDriveablePart part, float damage, float overflow)
     {}
 
     /** The eight corners of a part box, relative to the model origin in world axes, and whether rounds stop at it. */
@@ -391,8 +398,10 @@ public final class PartBody implements IPartBody
         if (part == null || !enabled(part) || part.isDestroyed() || !Float.isFinite(amount) || amount <= 0F && !fire)
             return 0F;
         float before = getHealth();
+        float partHealth = part.getHealth();
         if (part.damage(amount, fire))
             breakChildren(part.getType());
+        lastDamage = new DamageReceipt(part.getType(), amount, part.isDestroyed() ? Math.max(0F, amount - partHealth) : 0F);
         return before - getHealth();
     }
 
@@ -663,6 +672,13 @@ public final class PartBody implements IPartBody
     public List<BulletHit> trace(Entity owner, Vec3 origin, Vec3 motion)
     {
         return trace(owner, origin, motion, false);
+    }
+
+    /** Continues an impact ray across the whole body, even when the projectile's current tick ends at its outer plate. */
+    public List<PartBodyHit> traceBehind(PartBodyHit hit)
+    {
+        Vec3 direction = armourDirectionToWorld(hit.getPart(), hit.getLocalProjectileDirection()).normalize();
+        return trace(hit.getEntity(), hit.getHitPosition().add(direction.scale(1.0E-5D)), direction.scale(reach() * 2D + 1D)).stream().map(PartBodyHit.class::cast).toList();
     }
 
     /**

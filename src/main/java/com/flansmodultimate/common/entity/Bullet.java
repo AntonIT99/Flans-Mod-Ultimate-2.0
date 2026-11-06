@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.projectiles.IBullet;
+import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
@@ -87,6 +88,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     /** Penetration */
     protected float penetratingPower;
+    /** Parts already resolved by this projectile, including immediate damage carried through a breached part. */
+    private final Set<DriveablePart> resolvedDriveableParts = new HashSet<>();
     /** Penetrating power this bullet was fired with, kept so penetration losses can be expressed as a fraction of it */
     @Getter
     protected float initialPenetratingPower;
@@ -731,7 +734,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             if (bulletHit.getEntity() instanceof Player player)
                 directHitPlayers.add(player.getUUID());
 
-            ShootingHelper.HitData hitData = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity, new ShootingHelper.HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot), this);
+            ShootingHelper.HitData hitData = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity,
+                new ShootingHelper.HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot, resolvedDriveableParts), this);
             penetratingPower = hitData.penetratingPower();
             lastHitPenAmount = hitData.lastHitPenAmount();
             lastHitHeadshot = hitData.lastHitHeadshot();

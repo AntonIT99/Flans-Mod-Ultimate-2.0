@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
 // Hits are ordered and compared by intersect time and entity only, as defined in BulletHit.
 @SuppressWarnings("java:S2160")
 @Getter
-public class DriveableHit extends BulletHit
+public class DriveableHit extends BulletHit implements VehiclePartHit
 {
     private final Driveable driveable;
     private final EnumDriveablePart part;

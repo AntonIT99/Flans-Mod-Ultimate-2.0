@@ -12,6 +12,8 @@
 
 ## Highlights
 
+* Client `Explosion Visual Settings` offers independent particle size and density multipliers for explosion layers, plus particle lifetime and water splash scaling; defaults preserve the existing visuals
+
 * HEAT charges apply full jet damage to unarmoured vehicles and aircraft regardless of `UseRealisticVehicleHealth` (legacy-health vehicles use the higher of their authored damage and the jet damage; armoured faces still require penetration); ammunition and launcher vehicle/plane damage stats show the HEAT jet range
 
 * Driveable `FlashModel DefaultFlash` applies to `GUN` banks by default; `ShellMuzzleFlash true` also enables flashes for `SHELL` banks
@@ -56,7 +58,7 @@
 * Player classes can use repeatable `AddToTeam <packId>:<teamShortName>` lines to extend another pack's teams without a reverse dependency
 * New companion mod: **Flan's Ultimate 2: NPC Vehicles & Soldiers**, which lets Custom NPCs soldiers use Flan's weapons, vehicles, planes, ships and mechas, crew them and fight Teams rounds, skirmishes and wars (separate download, requires Custom NPCs)
 * Driveable damage and destruction: damaged parts smoke, burn, steam and spark, each machine class dies its own way (tank cook-off, ship magazines and boilers, aircraft fuel, rotor and wing loss, mecha collapse), and parts shot off fly away; destruction bursts stay bounded, ship magazine blasts scale with ammunition rather than hull size, and machine-gun-only boats produce small cook-off pops
-* Destroyed driveables stay as burning wrecks that tumble as they fall, come to rest along the ground they land on, slide down steep slopes, keep their collision, char and settle, burn out and sink away after five minutes by default, and can be shoved about or blown apart by explosives; their smoke clouds are slightly smaller; the scorch mark under a wreck lasts as long as the wreck and fades when it is broken up or removed (`driveableWreckLifetime`, `NoWreck`)
+* Destroyed driveables stay as burning wrecks that tumble as they fall, come to rest along the ground they land on, slide down steep slopes, keep their collision, char and settle, burn out and sink away after five minutes by default, and can be shoved about or blown apart by explosives; destruction ends client driving prediction while preserving the visible pose, and their own destruction blasts cannot hit or launch their hull through seats or wheels; their smoke clouds are slightly smaller; the scorch mark under a wreck lasts as long as the wreck and fades when it is broken up or removed (`driveableWreckLifetime`, `NoWreck`)
 * Driveable repairs and carrier servicing, with repair tools, the Blowtorch, a repair progress display and an operator command to fully repair a driveable
 * New Teams command centre for operators (F7, `/teams admin` or `/teams gui`) covering rounds, rotation, maps, rules, game type variables and server settings; global Teams rules can be saved as named presets, previewed and imported/exported as JSON files alongside built-in Arena and Survival presets, with preset management pinned to the bottom of the Rules tabs; every Rules tab with more rows than fit the window (Protection, Combat, Health, Cleanup, Game type) scrolls with the mouse wheel or a scroll bar
 * Reimplemented missing features of Flan's Mod Ultimate 1.7.10, including Teams rule commands, lag compensation settings, death drop rules, item spawners, `ShootWithOpenDoor`, kill messages with distance and hit markers
@@ -140,7 +142,7 @@
 
 ## Vehicles, Aircraft & Ships
 
-* Shooting off `frontalArmor`, `leftsideArmor` or `rightsideArmor` opens that face of the hull: the core and other hull parts behind it no longer keep the inherited `ArmorFrontMm`/`ArmorSideMm` plate, so shells, HEAT rockets and blasts reach them through the hole, on driveables and on NPCs wearing vehicle part boxes alike; turret parts, parts with their own `PartArmor` plate and other armour parts keep theirs, and the debug armour readout marks a breached face
+* `frontalArmor`, `leftsideArmor` and `rightsideArmor` own their face's `ArmorFrontMm`/`ArmorSideMm` plate while intact; after one is destroyed its hitbox disappears and the core uses that plate as fallback, including on NPC vehicle models; explicit core `PartArmor` remains additional protection, other hull parts open on the lost face, and the debug armour readout marks breached faces; on driveables and NPC vehicle models, shells carry damage left after destroying a part into hitboxes along the shot without counting the same inherited core plate twice, and HEAT carries its surplus through faces with no HEAT protection but stops at additional armor; HESH acts only on the first active part it hits
 
 * Aircraft damage is progressive (`enableRealisticAircraftDamage`, on by default): worn wings lose lift and pull the aircraft toward the weaker side, a shot-up tail answers more slowly, hit engines lose power and misfire, holed wing tanks leak fuel, and worn rotors lift less; a helicopter that loses its engine or runs dry can autorotate down and flare to land, and a plane down without its gear slides to a stop on its belly
 * Crippled and dead aircraft come down as airframes instead of tumbling: nose into the wind, spiralling over a lost wing, flat-spinning without a tail, spinning about the mast without a tail rotor or dropping without a rotor; one blown apart in the air may lose its tail or a wing as a separate piece
@@ -169,12 +171,14 @@
 * Wrecks lie along the ground they come to rest on instead of staying at the attitude they died at, tumble when shot down in the air or thrown by a blast, slide down slopes too steep for what is left of their running gear, crush and mark the ground where they come down hard, and ships go down at a rate set by their own flotation and stay on the sea bed for the rest of their lifetime
 * A wreck's gun droops and its turret slumps off its bearing as it cools, a collapsed mecha's hull now blocks where its model actually lies, and a burnt-out hull is taken down into the ground over its last seconds instead of vanishing
 * Columns of smoke over a battlefield all lean with one slow drift, stronger in the rain, and burning wrecks are heard as a roar that carries plus a crackle close to
-* Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards; detached parts such as tracks now check ground support across their shape, tip into a stable resting position and land correctly on stairs and slabs
+* Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards; detached parts such as tracks and armor screens now check ground support against their rendered geometry, tip into a stable resting position, remain supported on narrow blocks and land correctly on stairs and slabs without snapping onto overhead surfaces
 * Fixed animated tracks, driveable collisions against walls and ThrownGun gravity
 * Pointing a driveable repair tool (such as the blow torch) at a part of a driveable or Flan's NPC shows its remaining and total HP; debug mode shows it above the armor readout
 * Using a driveable repair tool on a vehicle repairs it instead of entering a seat, and repair tool tooltips show their repair amount and remaining uses
 
 ## Weapons
+
+* Disposable guns such as the Panzerfaust are no longer removed after firing in creative mode (`ConsumeGunOnUse`)
 
 * New gun parameter `EjectCasings` turns off casing ejection for a single gun; blasters, energy and rail weapons, rocket and missile launchers, flamethrowers, revolvers, bows, Nerf blasters, the caseless HK G11 and muzzle-loaders no longer throw out casings
 

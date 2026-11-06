@@ -30,6 +30,14 @@ import java.util.function.Predicate;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelArmourDamage
 {
+    /** The enabled vehicle damage model shared by whole-entity armour and part-body projectile routing. */
+    public static Optional<DriveableType> type(Entity target)
+    {
+        if (target instanceof IFlanDamageModel stand && stand.flansmodultimateModelArmour() && stand.flansmodultimateDamageModel().orElse(null) instanceof DriveableType type)
+            return Optional.of(type);
+        return Optional.empty();
+    }
+
     /**
      * @param damage
      *            damage to deal, in the same units a driveable part takes
@@ -46,9 +54,10 @@ public final class ModelArmourDamage
     /** @return the resolved hit, or empty when the entity does not stand in for an armoured driveable */
     public static Optional<Result> resolve(Entity target, FiredShot shot, BulletType bulletType, Vec3 motion, float penetratingPower)
     {
-        if (!(target instanceof IFlanDamageModel stand) || !stand.flansmodultimateModelArmour() || !(stand.flansmodultimateDamageModel().orElse(null) instanceof DriveableType type)
-            || motion.lengthSqr() < 1.0E-12D)
+        Optional<DriveableType> selected = type(target);
+        if (selected.isEmpty() || motion.lengthSqr() < 1.0E-12D)
             return Optional.empty();
+        DriveableType type = selected.get();
         Vec3 local = localDirection(target, motion.normalize());
         // The face struck is the one turned towards where the round came from.
         EnumArmorFacing facing = EnumArmorFacing.fromOutwardNormal(local.scale(-1D));
@@ -66,9 +75,10 @@ public final class ModelArmourDamage
     public static Optional<Result> resolve(PartBodyHit hit, FiredShot shot, BulletType bulletType, float penetratingPower)
     {
         Entity target = hit.getEntity();
-        if (!(target instanceof IFlanDamageModel stand) || !stand.flansmodultimateModelArmour() || !(stand.flansmodultimateDamageModel().orElse(null) instanceof DriveableType type))
+        Optional<DriveableType> selected = type(target);
+        if (selected.isEmpty())
             return Optional.empty();
-        return Optional.of(resolve(type, hit.getBody().armor(), hit.getBody()::isShotOff, target, hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(),
+        return Optional.of(resolve(selected.get(), hit.getBody().armor(), hit.getBody()::isShotOff, target, hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(),
             hit.getBody().penetrationResistance(hit.getPart()), shot, bulletType, penetratingPower));
     }
 
@@ -78,7 +88,7 @@ public final class ModelArmourDamage
         Vec3 local, float partResistance, FiredShot shot, BulletType bulletType, float penetratingPower)
     {
         boolean heat = bulletType.isHeat();
-        // A face whose armour part has been shot off meets no plate, as on a driveable.
+        // Resolve destroyed outer parts as on driveables; the core keeps its hull protection.
         ResolvedArmorHit armour = plates.resolveHit(part, facing, local, ModCommonConfig.maxArmorImpactAngleDeg(), heat, shotOff);
         float previousPower = Math.max(0F, penetratingPower);
         boolean normalizedHealth = type.getResolvedHealth().enabled();

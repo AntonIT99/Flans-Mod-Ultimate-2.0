@@ -2,6 +2,7 @@ package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.FlansModParticles;
 import com.flansmodultimate.common.explosions.ExplosionVisuals;
+import com.flansmodultimate.config.ModClientConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -57,7 +58,8 @@ public final class ExplosionSpectacle
         if (level == null)
             return;
 
-        WaterEffects.splash(level, position, Math.max(0.5F, ExplosionVisuals.fireballDiameter(craterRadius) * 0.5F));
+        if (ModClientConfig.get().explosionSplashScale > 0D)
+            WaterEffects.splash(level, position, Math.max(0.5F, ExplosionVisuals.fireballDiameter(craterRadius) * 0.5F) * (float) ModClientConfig.get().explosionSplashScale);
         spawnAfterglow(level, position, craterRadius);
 
         Staged staged = Staged.of(level, position, craterRadius, blastRadius, groundBurst, fiery);
@@ -86,7 +88,7 @@ public final class ExplosionSpectacle
      */
     private static void spawnAfterglow(ClientLevel level, Vec3 position, float craterRadius)
     {
-        float scale = ExplosionVisuals.afterglowScale(craterRadius);
+        float scale = ExplosionVisuals.afterglowScale(craterRadius) * (float) ModClientConfig.get().explosionAfterglowScale;
         if (scale <= 0F)
             return;
 
@@ -96,9 +98,9 @@ public final class ExplosionSpectacle
 
     private static void emit(ClientLevel level, float range, double x, double y, double z, double vx, double vy, double vz, BlastPuffParticle.Look look, float size, int lifetime)
     {
-        if (!ParticleHelper.shouldSpawnLandmark(x, y, z, range))
+        if (size <= 0F || !ParticleHelper.shouldSpawnLandmark(x, y, z, range))
             return;
-        BlastPuffParticle particle = BlastPuffParticle.create(level, x, y, z, vx, vy, vz, look, size, lifetime);
+        BlastPuffParticle particle = BlastPuffParticle.create(level, x, y, z, vx, vy, vz, look, size, Math.max(1, Math.round(lifetime * (float) ModClientConfig.get().explosionParticleLifetime)));
         if (particle != null)
         {
             if (!look.additive())
@@ -148,17 +150,17 @@ public final class ExplosionSpectacle
 
             boolean hasGround = !Double.isNaN(skirtY);
             this.skirtWaves = hasGround ? ExplosionVisuals.dustSkirtWaves(craterRadius) : 0;
-            this.skirtPuffs = ExplosionVisuals.dustSkirtPuffsPerWave(craterRadius);
+            this.skirtPuffs = (int) Math.round(ExplosionVisuals.dustSkirtPuffsPerWave(craterRadius) * ModClientConfig.get().explosionDustDensity);
             this.skirtReach = ExplosionVisuals.dustSkirtReach(craterRadius, blastRadius);
 
             this.stemSteps = ExplosionVisuals.fireballStemSteps(craterRadius);
             this.stemHeight = ExplosionVisuals.fireballStemHeight(craterRadius);
             this.stemRiseTicks = stemSteps == 0 ? 0 : ExplosionVisuals.cloudRiseTicks(craterRadius);
             this.capStart = Math.round(stemRiseTicks * 0.75F);
-            this.stemPuffs = ExplosionVisuals.fireballStemPuffsPerStep(craterRadius);
+            this.stemPuffs = (int) Math.round(ExplosionVisuals.fireballStemPuffsPerStep(craterRadius) * ModClientConfig.get().explosionStemDensity);
             this.hotStemSteps = Mth.ceil(stemSteps * ExplosionVisuals.hotStemShare(fiery));
 
-            this.capPuffs = ExplosionVisuals.mushroomCapPuffs(craterRadius);
+            this.capPuffs = (int) Math.round(ExplosionVisuals.mushroomCapPuffs(craterRadius) * ModClientConfig.get().explosionCapDensity);
             this.capRadius = ExplosionVisuals.mushroomCapRadius(craterRadius);
 
             int skirtEnd = skirtWaves * SKIRT_WAVE_INTERVAL_TICKS;
@@ -227,7 +229,7 @@ public final class ExplosionSpectacle
             double inner = sizingRadius * 0.4D;
             double ring = Mth.lerp(progress, inner, skirtReach * 0.85D);
             double push = Math.max(0.05D, (skirtReach - ring) * 0.06D);
-            float size = sizingRadius * 0.2F * (1F + 0.4F * progress);
+            float size = sizingRadius * 0.2F * (1F + 0.4F * progress) * (float) ModClientConfig.get().explosionDustScale;
             int lifetime = Math.max(20, Math.round((35F + 45F * progress) * lifetimeScale));
 
             for (int i = 0; i < skirtPuffs; i++)
@@ -250,7 +252,7 @@ public final class ExplosionSpectacle
         {
             double height = stemHeight * (1D - (1D - progress) * (1D - progress));
             double width = sizingRadius * (0.4D + 0.5D * progress);
-            float size = sizingRadius * 0.26F * (1F + 0.3F * progress);
+            float size = sizingRadius * 0.26F * (1F + 0.3F * progress) * (float) ModClientConfig.get().explosionStemScale;
             int lifetime = Math.max(30, Math.round((70F + 70F * progress) * lifetimeScale));
             BlastPuffParticle.Look look = stemLook(progress);
 
@@ -267,7 +269,7 @@ public final class ExplosionSpectacle
                 double fireAngle = random.nextDouble() * Mth.TWO_PI;
                 double fireDistance = width * 0.8D * Math.sqrt(random.nextDouble());
                 emitFire(landmarkRange, position.x + Math.cos(fireAngle) * fireDistance, position.y + height + random.nextGaussian() * width * 0.25D, position.z + Math.sin(fireAngle) * fireDistance,
-                    size * (0.9F + random.nextFloat() * 0.4F));
+                    sizingRadius * 0.26F * (1F + 0.3F * progress) * (0.9F + random.nextFloat() * 0.4F) * (float) ModClientConfig.get().explosionFireballScale);
             }
         }
 
@@ -288,7 +290,7 @@ public final class ExplosionSpectacle
         {
             float rise = Math.min(1F, age / (float) stemRiseTicks);
             double top = position.y + stemHeight * (1D - (1D - rise) * (1D - rise));
-            float size = sizingRadius * 0.32F;
+            float size = sizingRadius * 0.32F * (float) ModClientConfig.get().explosionCapScale;
             int lifetime = Math.max(60, Math.round(150F * lifetimeScale));
 
             for (int i = 0; i < count; i++)
@@ -313,11 +315,14 @@ public final class ExplosionSpectacle
          */
         private static void emitFire(float range, double x, double y, double z, float size)
         {
-            if (!ParticleHelper.shouldSpawnLandmark(x, y, z, range))
+            if (size <= 0F || !ParticleHelper.shouldSpawnLandmark(x, y, z, range))
                 return;
             Particle particle = Minecraft.getInstance().particleEngine.createParticle(FlansModParticles.fireExplosionParticle.get(), x, y, z, 0D, 0D, 0D);
             if (particle != null)
+            {
                 particle.scale(size / FireExplosionParticle.BASE_SIZE);
+                particle.setLifetime(Math.max(1, Math.round(particle.getLifetime() * (float) ModClientConfig.get().explosionParticleLifetime)));
+            }
         }
 
         /**

@@ -40,7 +40,8 @@ final class PieceGrounding
             rotation.transform(point, rotated);
             previousRotation.transform(point, previous);
             Vec3 at = pivot.add(rotated.x, rotated.y, rotated.z);
-            double ceiling = Math.max(at.y, previousPivot.y + previous.y) + rotated.distance(previous) + CONTACT_TOLERANCE;
+            // Allow vertical rotation to settle against rising terrain, but horizontal spin cannot raise the search ceiling.
+            double ceiling = Math.max(at.y, previousPivot.y + previous.y) + Math.abs(rotated.y - previous.y) + CONTACT_TOLERANCE;
             double ground = surface.height(at, ceiling);
             if (Double.isFinite(ground))
                 height = Math.max(height, ground - rotated.y);
