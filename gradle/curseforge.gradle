@@ -192,7 +192,8 @@ releases.each { Map<String, Object> release ->
         task.releaseType.set(moduleSetting.call(release, 'releaseType', setting('curseforgeReleaseType', 'release').get()))
         task.dryRun.set(dryRunSetting)
         task.contentPack.set(name != 'Mod')
-        task.displayName.set(jarTask.get().archiveFileName.map { String fileName -> fileName.replaceFirst(/\.jar$/, '') })
+        // Jar files use modid-mcversion-version; CurseForge keeps the readable title.
+        task.displayName.set(provider { jarTask.get().ext.has('curseforgeDisplayName') ? (String) jarTask.get().ext.curseforgeDisplayName : jarTask.get().archiveFileName.get().replaceFirst(/\.jar$/, '') })
         task.changelogFile.set(layout.projectDirectory.file(moduleSetting.call(release, 'changelog', commonChangelog.get())))
         task.apiBaseUrl.set('https://minecraft.curseforge.com')
         task.requiredDependencies.set(moduleSetting.call(release, 'requiredDependencies', '').map { String value ->
