@@ -1,5 +1,6 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.common.EnchantmentModule;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -45,6 +46,7 @@ final class FlansModRegistries
         creativeModeTabRegistry.register(bus);
         entityRegistry.register(bus);
         menuRegistry.register(bus);
+        EnchantmentModule.register(enchantmentRegistry);
         enchantmentRegistry.register(bus);
     }
 }

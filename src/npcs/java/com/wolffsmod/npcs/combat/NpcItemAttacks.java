@@ -17,16 +17,12 @@ import noppes.npcs.api.event.NpcEvent;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityNPCInterface;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.*;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -73,7 +69,7 @@ public final class NpcItemAttacks
         if (target instanceof LivingEntity living)
         {
             if (itemDamage)
-                damage += EnchantmentHelper.getDamageBonus(weapon, living.getMobType());
+                damage = NpcPlatform.meleeDamage(npc, weapon, living, damage);
             NpcEvent.MeleeAttackEvent event = new NpcEvent.MeleeAttackEvent(npc.wrappedNPC, living, damage);
             if (EventHooks.onNPCAttacksMelee(npc, event))
                 return false;
@@ -117,35 +113,26 @@ public final class NpcItemAttacks
         boolean itemEffect = NpcEquipment.inherits(npc, EquipmentProperty.MELEE_EFFECT);
         int fire = NpcEquipment.fireSeconds(weapon, npc);
         if (itemEffect && fire > 0)
-            target.setSecondsOnFire(fire);
+            NpcPlatform.ignite(target, fire);
         if (target instanceof LivingEntity living)
         {
             if (NpcEquipment.inherits(npc, EquipmentProperty.MELEE_KNOCKBACK))
             {
-                double knockback = EquipmentAttributes.value(weapon, EquipmentSlot.MAINHAND, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_KNOCKBACK, 0D)
-                    + NpcPlatform.meleeKnockbackBonus(npc, weapon);
+                double knockback = NpcPlatform.meleeKnockback(npc, weapon, living,
+                    EquipmentAttributes.value(weapon, EquipmentSlot.MAINHAND, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_KNOCKBACK, 0D));
                 if (knockback > 0D)
                     living.knockback(knockback * 0.5D, Math.sin(Math.toRadians(npc.getYRot())), -Math.cos(Math.toRadians(npc.getYRot())));
             }
             else
                 npcKnockback(npc, living);
             if (itemEffect)
-                meleeEnchantmentEffects(npc, living, weapon);
+                NpcPlatform.meleePostAttackEffects(npc, living, weapon, NpcEquipment.enabled(npc, Feature.MELEE_DUAL_WIELD));
             else
                 npcEffect(npc, living);
-            weapon.getItem().hurtEnemy(weapon, living, npc);
+            NpcPlatform.hurtEnemy(weapon, living, npc);
             npc.setItemSlot(hand == InteractionHand.OFF_HAND ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND, weapon);
         }
         npc.setLastHurtMob(target);
-    }
-
-    private static void meleeEnchantmentEffects(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
-    {
-        EnchantmentHelper.doPostHurtEffects(target, npc);
-        if (NpcEquipment.enabled(npc, Feature.MELEE_DUAL_WIELD))
-            NpcPlatform.meleePostDamageEffects(npc, target, weapon);
-        else
-            EnchantmentHelper.doPostDamageEffects(npc, target);
     }
 
     /** The push Custom NPCs gives a target with the NPC's own melee knockback. */
@@ -168,12 +155,12 @@ public final class NpcItemAttacks
             return;
         if (type == NpcEquipmentImport.FIRE_EFFECT)
         {
-            target.setSecondsOnFire(seconds);
+            NpcPlatform.ignite(target, seconds);
             return;
         }
         MobEffect effect = PotionEffectType.getMCType(type);
         if (effect != null)
-            target.addEffect(new MobEffectInstance(effect, seconds * 20, npc.stats.melee.getEffectStrength()));
+            target.addEffect(NpcPlatform.effectInstance(effect, seconds * 20, npc.stats.melee.getEffectStrength()));
     }
 
     public static boolean ranged(EntityNPCInterface npc, LivingEntity target)
@@ -369,25 +356,20 @@ public final class NpcItemAttacks
         ItemStack ammo = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
         if (!(ammo.getItem() instanceof ArrowItem arrowItem) || !bow.getAllSupportedProjectiles().test(ammo))
             return false;
-        AbstractArrow arrow = bow.customArrow(arrowItem.createArrow(npc.level(), ammo, npc));
-        int power = NpcPlatform.powerLevel(npc, weapon);
-        if (power > 0)
-            arrow.setBaseDamage(arrow.getBaseDamage() + power * 0.5D + 0.5D);
-        arrow.setKnockback(NpcPlatform.punchLevel(npc, weapon));
-        if (NpcPlatform.flameLevel(npc, weapon) > 0)
-            arrow.setSecondsOnFire(100);
+        NpcPlatform.BowShot shot = NpcPlatform.bowArrow(npc, weapon, bow, arrowItem, ammo);
+        if (shot == null)
+            return false;
+        AbstractArrow arrow = shot.arrow();
         arrow.setCritArrow(true);
         float speed = speed(npc, 3F);
         // An arrow deals its base damage times its speed, so the NPC's own damage is spread over the speed it leaves at.
         if (!NpcEquipment.inherits(npc, EquipmentProperty.RANGED_DAMAGE))
             arrow.setBaseDamage(npc.stats.ranged.getStrength() / speed);
         shoot(arrow, npc, target, speed, inaccuracy(npc), 0.05D);
-        boolean infinite = ammo.is(Items.ARROW) && NpcPlatform.infinityLevel(npc, weapon) > 0;
-        arrow.pickup = infinite ? AbstractArrow.Pickup.CREATIVE_ONLY : AbstractArrow.Pickup.ALLOWED;
+        arrow.pickup = shot.usedAmmo() == 0 ? AbstractArrow.Pickup.CREATIVE_ONLY : AbstractArrow.Pickup.ALLOWED;
         if (!npc.level().addFreshEntity(arrow))
             return false;
-        if (!infinite)
-            ammo.shrink(1);
+        ammo.shrink(shot.usedAmmo());
         NpcPlatform.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);
         npc.playSound(SoundEvents.ARROW_SHOOT, 1F, 1F);
         return true;
@@ -395,21 +377,10 @@ public final class NpcItemAttacks
 
     private static boolean crossbow(EntityNPCInterface npc, LivingEntity target, ItemStack weapon, CrossbowItem crossbow)
     {
-        if (!CrossbowItem.isCharged(weapon))
-        {
-            ItemStack ammo = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
-            if (ammo.isEmpty() || !crossbow.getAllSupportedProjectiles().test(ammo))
-                return false;
-            ListTag projectiles = new ListTag();
-            int count = NpcPlatform.multishotLevel(npc, weapon) > 0 ? 3 : 1;
-            for (int i = 0; i < count; i++)
-                projectiles.add(ammo.copyWithCount(1).save(new CompoundTag()));
-            weapon.getOrCreateTag().put("ChargedProjectiles", projectiles);
-            ammo.shrink(1);
-            CrossbowItem.setCharged(weapon, true);
-        }
+        if (!CrossbowItem.isCharged(weapon) && !chargeCrossbow(npc, weapon, crossbow))
+            return false;
         // Vanilla crossbows accept living shooters and preserve charged ammunition, piercing and multishot.
-        boolean rocket = CrossbowItem.containsChargedProjectile(weapon, Items.FIREWORK_ROCKET);
+        boolean rocket = NpcPlatform.crossbowHasRocket(weapon);
         float speed = speed(npc, rocket ? 1.6F : CROSSBOW_VELOCITY);
         Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()),
             NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement().scale(NpcSkill.leadShare(npc)) : Vec3.ZERO, speed,
@@ -417,15 +388,22 @@ public final class NpcItemAttacks
         direction = NpcSkill.aimError(npc, target).apply(direction);
         npc.setXRot((float) -Math.toDegrees(Math.atan2(direction.y, direction.horizontalDistance())));
         npc.setYRot((float) Math.toDegrees(Math.atan2(-direction.x, direction.z)));
-        CrossbowItem.performShooting(npc.level(), npc, InteractionHand.MAIN_HAND, weapon, speed, inaccuracy(npc));
-        CrossbowItem.setCharged(weapon, false);
+        NpcPlatform.shootCrossbow(npc, weapon, crossbow, speed, inaccuracy(npc));
         return true;
+    }
+
+    private static boolean chargeCrossbow(EntityNPCInterface npc, ItemStack weapon, CrossbowItem crossbow)
+    {
+        ItemStack ammo = ItemStackWrapper.MCItem(npc.inventory.getProjectile());
+        if (ammo.isEmpty() || !crossbow.getAllSupportedProjectiles().test(ammo))
+            return false;
+        return NpcPlatform.chargeCrossbow(npc, weapon, ammo);
     }
 
     private static boolean throwable(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)
     {
         boolean trident = weapon.getItem() instanceof TridentItem;
-        if (trident && EnchantmentHelper.getRiptide(weapon) > 0)
+        if (trident && NpcPlatform.hasRiptide(weapon, npc))
             return false;
         if (trident)
             NpcPlatform.hurtAndBreak(weapon, 1, npc, EquipmentSlot.MAINHAND);

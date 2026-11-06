@@ -7,6 +7,7 @@ import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.render.PositionCollector;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.pipeline.TextureTarget;
@@ -16,7 +17,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import lombok.NoArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -608,7 +608,7 @@ public final class DriveableImpostorCache
         private static final ModelBounds INVALID = new ModelBounds(0F, 0F, 0F, 0F, 0F, false);
     }
 
-    private static final class BoundsConsumer extends DefaultedVertexConsumer
+    private static final class BoundsConsumer extends PositionCollector
     {
         private float minX = Float.POSITIVE_INFINITY;
         private float minY = Float.POSITIVE_INFINITY;
@@ -618,57 +618,14 @@ public final class DriveableImpostorCache
         private float maxZ = Float.NEGATIVE_INFINITY;
 
         @Override
-        @NotNull
-        public VertexConsumer vertex(double x, double y, double z)
+        public void vertexPosition(float x, float y, float z)
         {
-            minX = Math.min(minX, (float) x);
-            minY = Math.min(minY, (float) y);
-            minZ = Math.min(minZ, (float) z);
-            maxX = Math.max(maxX, (float) x);
-            maxY = Math.max(maxY, (float) y);
-            maxZ = Math.max(maxZ, (float) z);
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer color(int red, int green, int blue, int alpha)
-        {
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer uv(float u, float v)
-        {
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer overlayCoords(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer uv2(int u, int v)
-        {
-            return this;
-        }
-
-        @Override
-        @NotNull
-        public VertexConsumer normal(float x, float y, float z)
-        {
-            return this;
-        }
-
-        @Override
-        public void endVertex()
-        {
-            // no-op
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            minZ = Math.min(minZ, z);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+            maxZ = Math.max(maxZ, z);
         }
 
         private ModelBounds toBounds()

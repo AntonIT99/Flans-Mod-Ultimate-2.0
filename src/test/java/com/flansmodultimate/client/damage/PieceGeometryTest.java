@@ -14,10 +14,10 @@ class PieceGeometryTest
     void aLongFaceRemainsSupportedWhenItsVerticesOverhangANarrowBlock()
     {
         PieceGeometry geometry = new PieceGeometry();
-        geometry.vertex(-2D, 0D, -0.2D).endVertex();
-        geometry.vertex(2D, 0D, -0.2D).endVertex();
-        geometry.vertex(2D, 0D, 0.2D).endVertex();
-        geometry.vertex(-2D, 0D, 0.2D).endVertex();
+        geometry.vertexPosition(-2F, 0F, -0.2F);
+        geometry.vertexPosition(2F, 0F, -0.2F);
+        geometry.vertexPosition(2F, 0F, 0.2F);
+        geometry.vertexPosition(-2F, 0F, 0.2F);
         Vector3f[] points = geometry.relativeTo(new Vector3f());
         Quaternionf rotation = new Quaternionf();
         Vec3 pivot = new Vec3(0D, 1D, 0D);
@@ -31,16 +31,16 @@ class PieceGeometryTest
     {
         PieceGeometry geometry = new PieceGeometry();
         Vector3f pivot = new Vector3f(2F, 1F, 3F);
-        for (int x = -1; x <= 1; x += 2)
+        // The same quad drawn twice, as a double-sided screen would be.
+        for (int face = 0; face < 2; face++)
         {
-            for (int y = 2; y <= 3; y++)
-            {
-                geometry.vertex(pivot.x + x, pivot.y + y, pivot.z);
-                geometry.vertex(pivot.x + x, pivot.y + y, pivot.z);
-            }
+            geometry.vertexPosition(pivot.x - 1F, pivot.y + 2F, pivot.z);
+            geometry.vertexPosition(pivot.x + 1F, pivot.y + 2F, pivot.z);
+            geometry.vertexPosition(pivot.x + 1F, pivot.y + 3F, pivot.z);
+            geometry.vertexPosition(pivot.x - 1F, pivot.y + 3F, pivot.z);
         }
         Vector3f[] points = geometry.relativeTo(pivot);
-        assertEquals(4, points.length, "Shared face vertices should be sampled only once");
+        assertEquals(5, points.length, "Shared face vertices and face centres should be sampled only once");
         Quaternionf rotation = new Quaternionf().rotateZ(0.7F);
         Vec3 initial = new Vec3(0D, 4D, 0D);
         double support = PieceGrounding.supportHeight(points, rotation, initial, rotation, initial, (point, ceiling) -> ceiling >= 0D ? 0D : Double.NaN);

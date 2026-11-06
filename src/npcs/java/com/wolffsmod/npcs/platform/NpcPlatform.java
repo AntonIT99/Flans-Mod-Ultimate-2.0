@@ -8,16 +8,20 @@ import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -46,6 +50,10 @@ public final class NpcPlatform
     {
         DAMAGE, KNOCKBACK, PROTECTION
     }
+
+    /** An enchanted bow's arrow and the ammunition it costs; zero means the shot is free and the arrow cannot be picked up. */
+    public record BowShot(AbstractArrow arrow, int usedAmmo)
+    {}
 
     /** Whether the slot is one of the four worn armor slots, not a hand or a body slot. */
     public static boolean isHumanoidArmor(EquipmentSlot slot)
@@ -181,27 +189,6 @@ public final class NpcPlatform
 
     // The holder supplies 1.21's enchantment registry; 1.20.1 enchantments are constants.
     @SuppressWarnings({"java:S1172", "unused"})
-    public static int punchLevel(LivingEntity holder, ItemStack item)
-    {
-        return item.getEnchantmentLevel(Enchantments.PUNCH_ARROWS);
-    }
-
-    // The holder supplies 1.21's enchantment registry; 1.20.1 enchantments are constants.
-    @SuppressWarnings({"java:S1172", "unused"})
-    public static int flameLevel(LivingEntity holder, ItemStack item)
-    {
-        return item.getEnchantmentLevel(Enchantments.FLAMING_ARROWS);
-    }
-
-    // The holder supplies 1.21's enchantment registry; 1.20.1 enchantments are constants.
-    @SuppressWarnings({"java:S1172", "unused"})
-    public static int infinityLevel(LivingEntity holder, ItemStack item)
-    {
-        return item.getEnchantmentLevel(Enchantments.INFINITY_ARROWS);
-    }
-
-    // The holder supplies 1.21's enchantment registry; 1.20.1 enchantments are constants.
-    @SuppressWarnings({"java:S1172", "unused"})
     public static int multishotLevel(LivingEntity holder, ItemStack item)
     {
         return item.getEnchantmentLevel(Enchantments.MULTISHOT);
@@ -230,12 +217,102 @@ public final class NpcPlatform
         return item.getEnchantmentLevel(Enchantments.KNOCKBACK);
     }
 
-    /** Attacking enchantments come from armor and the striking weapon, never from the idle hand as well. */
-    public static void meleePostDamageEffects(LivingEntity holder, Entity target, ItemStack weapon)
+    /** Melee damage after the weapon's enchantments act on the real target. */
+    public static float meleeDamage(LivingEntity holder, ItemStack weapon, LivingEntity target, float damage)
     {
+        return damage + EnchantmentHelper.getDamageBonus(weapon, target.getMobType());
+    }
+
+    /** Melee knockback after the weapon's enchantments act on the real target; 1.20.1 adds the Knockback level. */
+    // The target and its damage source decide 1.21's knockback effects.
+    @SuppressWarnings({"java:S1172", "unused"})
+    public static double meleeKnockback(LivingEntity holder, ItemStack weapon, LivingEntity target, double attributeKnockback)
+    {
+        return attributeKnockback + meleeKnockbackBonus(holder, weapon);
+    }
+
+    /**
+     * Post-attack enchantment effects of a melee hit: the target's thorns-like armor reactions and the attacker's offensive
+     * enchantments. A dual wielder applies only its armor and the striking weapon, never the idle hand as well.
+     */
+    public static void meleePostAttackEffects(LivingEntity holder, LivingEntity target, ItemStack weapon, boolean dualWield)
+    {
+        EnchantmentHelper.doPostHurtEffects(target, holder);
+        if (!dualWield)
+        {
+            EnchantmentHelper.doPostDamageEffects(holder, target);
+            return;
+        }
         for (ItemStack armor : holder.getArmorSlots())
             armor.getAllEnchantments().forEach((enchantment, level) -> enchantment.doPostAttack(holder, target, level));
         weapon.getAllEnchantments().forEach((enchantment, level) -> enchantment.doPostAttack(holder, target, level));
+    }
+
+    /** The weapon's own on-hit behaviour, including its durability loss. */
+    public static void hurtEnemy(ItemStack weapon, LivingEntity target, LivingEntity attacker)
+    {
+        weapon.getItem().hurtEnemy(weapon, target, attacker);
+    }
+
+    public static void ignite(Entity entity, int seconds)
+    {
+        entity.setSecondsOnFire(seconds);
+    }
+
+    public static MobEffectInstance effectInstance(MobEffect effect, int durationTicks, int amplifier)
+    {
+        return new MobEffectInstance(effect, durationTicks, amplifier);
+    }
+
+    /** Builds an enchanted bow's arrow from one round of the ammunition; null when the ammunition cannot pay for it. */
+    public static BowShot bowArrow(LivingEntity shooter, ItemStack weapon, BowItem bow, ArrowItem arrowItem, ItemStack ammo)
+    {
+        AbstractArrow arrow = bow.customArrow(arrowItem.createArrow(shooter.level(), ammo, shooter));
+        int power = powerLevel(shooter, weapon);
+        if (power > 0)
+            arrow.setBaseDamage(arrow.getBaseDamage() + power * 0.5D + 0.5D);
+        arrow.setKnockback(weapon.getEnchantmentLevel(Enchantments.PUNCH_ARROWS));
+        if (weapon.getEnchantmentLevel(Enchantments.FLAMING_ARROWS) > 0)
+            arrow.setSecondsOnFire(100);
+        boolean infinite = ammo.is(Items.ARROW) && weapon.getEnchantmentLevel(Enchantments.INFINITY_ARROWS) > 0;
+        return new BowShot(arrow, infinite ? 0 : 1);
+    }
+
+    /** Loads one round of the ammunition, three with Multishot, into an uncharged crossbow; false when it cannot pay. */
+    // The shooter supplies 1.21's enchantment context.
+    @SuppressWarnings({"java:S1172", "unused"})
+    public static boolean chargeCrossbow(LivingEntity shooter, ItemStack weapon, ItemStack ammo)
+    {
+        ListTag projectiles = new ListTag();
+        int count = multishotLevel(shooter, weapon) > 0 ? 3 : 1;
+        for (int i = 0; i < count; i++)
+            projectiles.add(ammo.copyWithCount(1).save(new CompoundTag()));
+        weapon.getOrCreateTag().put("ChargedProjectiles", projectiles);
+        ammo.shrink(1);
+        CrossbowItem.setCharged(weapon, true);
+        return true;
+    }
+
+    public static boolean crossbowHasRocket(ItemStack weapon)
+    {
+        return CrossbowItem.containsChargedProjectile(weapon, Items.FIREWORK_ROCKET);
+    }
+
+    /** Fires and empties a charged crossbow from the main hand. */
+    // The item instance shoots on 1.21; 1.20.1 uses the static helper.
+    @SuppressWarnings({"java:S1172", "unused"})
+    public static void shootCrossbow(LivingEntity shooter, ItemStack weapon, CrossbowItem crossbow, float speed, float inaccuracy)
+    {
+        CrossbowItem.performShooting(shooter.level(), shooter, InteractionHand.MAIN_HAND, weapon, speed, inaccuracy);
+        CrossbowItem.setCharged(weapon, false);
+    }
+
+    /** Whether the trident launches its holder instead of being thrown. */
+    // The holder decides 1.21's spin attack strength.
+    @SuppressWarnings({"java:S1172", "unused"})
+    public static boolean hasRiptide(ItemStack weapon, LivingEntity holder)
+    {
+        return EnchantmentHelper.getRiptide(weapon) > 0;
     }
 
     /** Whether the item's enchantments have the effect but only the real target decides its value; never on 1.20.1. */
