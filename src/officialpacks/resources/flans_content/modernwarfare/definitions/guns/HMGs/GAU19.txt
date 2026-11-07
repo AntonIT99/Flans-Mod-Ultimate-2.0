@@ -4,7 +4,7 @@ ShortName gau19
 Description Ammo Type : HMG
 
 // Item and rendering
-Icon GAU19
+Icon Minigun
 Colour 255 255 255
 Model mw.GAU19
 animAimOffset 0 1.98798104 0

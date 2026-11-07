@@ -1,0 +1,67 @@
+// Identity
+Name HK G3 (Legacy)
+ShortName LegacyG3_164
+Description Ammo Type : Rifle, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon g3
+Colour 255 255 255
+DeployedModel None
+Model legacy.G3_164
+animAimOffset 0 0.58918801 0
+Texture legacyg3_164
+ModelScale 1.0
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.20344,0.042382,0]
+animFlashScale 5.53
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo g3Ammo
+Ammo tripletakeAmmo
+Ammo sg550Ammo
+Ammo seekerrifleammo
+Ammo ntw20Ammo
+Ammo m21Ammo
+Ammo m14Ammo
+Ammo l96Ammo
+Ammo dragunovAmmo
+ReloadTime 40
+
+// Operation
+Mode SemiAuto FullAuto
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 550.0
+
+// Ballistics
+Recoil 6
+MuzzleVelocity 800.0
+Dispersion 0.22
+
+// Damage and protection
+Damage 16
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound P90Shoot
+ReloadSound MWThompsonReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

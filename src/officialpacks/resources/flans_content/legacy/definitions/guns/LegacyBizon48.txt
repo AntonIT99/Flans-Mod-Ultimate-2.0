@@ -1,0 +1,59 @@
+// Identity
+Name PP-19 Bizon (Legacy)
+ShortName LegacyBizon48
+Description Original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon bizon
+Colour 255 255 255
+DeployedModel None
+Model legacy.Bizon48
+animAimOffset 0 1.0807916 0
+Texture legacybizon48
+ModelScale 1.0
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.27095,0.081286,0]
+animFlashScale 3.46
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo bizonAmmo
+ReloadTime 40
+
+// Operation
+Mode FullAuto SemiAuto
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 700.0
+
+// Ballistics
+Recoil 3
+MuzzleVelocity 315.0
+Dispersion 0.42
+
+// Damage and protection
+Damage 7
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound P90Shoot
+ReloadSound MWMP40Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

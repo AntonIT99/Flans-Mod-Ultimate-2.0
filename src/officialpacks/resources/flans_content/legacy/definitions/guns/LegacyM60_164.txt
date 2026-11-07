@@ -1,0 +1,65 @@
+// Identity
+Name M60E4 (Legacy)
+ShortName LegacyM60_164
+Description Ammo Type : LMG, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon m60e4
+Colour 255 255 255
+DeployedModel None
+Model legacy.M60E4_164
+animAimOffset 0 1.489188 0
+Texture legacym60_164
+ModelScale 1.0
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.18083,0.040687,0]
+animFlashScale 5.53
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo m60Ammo
+Ammo m249Ammo
+Ammo devotionx55Ammo
+Ammo pr3Ammo
+Ammo pr3oscAmmo
+ReloadTime 110
+NumBullets 1
+
+// Operation
+Mode FullAuto
+Deployable False
+CanShootUnderwater False
+MoveSpeedModifier 0.8
+RoundsPerMin 600.0
+
+// Ballistics
+Recoil 3
+MuzzleVelocity 855.0
+Dispersion 0.36
+
+// Damage and protection
+Damage 7
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 2
+
+// Sounds
+ShootSound RPDShoot
+ReloadSound BrowningReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

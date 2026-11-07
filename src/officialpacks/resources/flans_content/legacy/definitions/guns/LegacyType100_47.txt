@@ -1,0 +1,43 @@
+// Identity
+Name Type 100 (Legacy)
+ShortName LegacyType100_47
+Description Original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.7-5.5)
+
+// Item and rendering
+Icon type100
+Colour 255 255 255
+DeployedModel None
+Model legacy.Type100_47
+animAimOffset 0 3.1689542 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [0.62751,0.075301,0]
+animFlashScale 2.49
+Texture legacytype100_47
+
+// Ammunition
+Ammo type100Ammo
+ReloadTime 40
+
+// Operation
+Mode FullAuto
+Deployable False
+RoundsPerMin 450.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 335.0
+Dispersion 0.45
+
+// Damage and protection
+Damage 5
+
+// Optics
+Scope None
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound Type100Shoot
+ReloadSound stenReload

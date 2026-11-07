@@ -1,0 +1,38 @@
+// Identity
+Name M72 LAW (Legacy)
+ShortName LegacyM72law48
+Description Rocket Launcher : Anti-Armor weapon for heavy landcraft., original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon m72law
+Colour 255 255 255
+DeployedModel None
+animMuzzleFlashPoint [0.875,0.1875,0]
+Model legacy.M72LAW48
+animAimOffset 0 1.5262147 0
+Texture legacym72law48
+
+// Ammunition
+Ammo m72lawAmmo
+ReloadTime 75
+
+// Operation
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.8
+RoundsPerMin 4
+
+// Ballistics
+Recoil 25
+MuzzleVelocity 144.8
+Dispersion 0.8
+
+// Damage and protection
+Damage 2
+
+// Optics
+Scope None
+
+// Sounds
+ShootSound AT4Shoot
+ReloadSound MWbazookaReload

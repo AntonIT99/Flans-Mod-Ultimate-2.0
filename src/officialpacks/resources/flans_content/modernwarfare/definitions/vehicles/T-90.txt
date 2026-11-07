@@ -50,7 +50,7 @@ Tank true
 // Weaponry
 GunOrigin 1 1 15.9 -10
 BarrelPosition 122 21 0
-AddGun 8 34 8 turret rpd
+AddGun 32 21 5 turret rpd
 ShootDelay 1
 ShellDelay 70
 TurretRotationSpeed 0.06
@@ -102,7 +102,7 @@ RotatedPassengerOffset 1 2 0 -14
 StartEngineSound ChallengerIdle
 StartEngineSoundLength 40
 EngineSound ChallengerRun
-EngineSound 40
+EngineSoundLength 40
 ShootSoundPrimary 90mm
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.4 0 0

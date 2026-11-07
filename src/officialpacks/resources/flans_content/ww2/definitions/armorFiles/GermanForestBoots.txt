@@ -3,7 +3,7 @@ Name German WW2 Forest Boots
 ShortName germanForestBoots
 
 // Item and rendering
-Icon germanforestboots
+Icon ItalianBoots
 Colour 255 255 255
 ArmourTexture germanforest
 

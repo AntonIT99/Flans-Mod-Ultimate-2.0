@@ -1,0 +1,66 @@
+// Identity
+Name MP5 (Legacy)
+ShortName LegacyMp5_164
+Description Ammo Type : SMG_Dual Wieldable, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon mp5
+Colour 255 255 255
+DeployedModel None
+Model legacy.MP5_164
+animAimOffset 0 0.55560224 0
+Texture legacymp5_164
+ModelScale 1.0
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.21676,0.081286,0]
+animFlashScale 3.46
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo mp5Ammo
+Ammo mp5kAmmo
+Ammo skorpionAmmo
+Ammo uziAmmo
+Ammo mp7Ammo
+Ammo honeybadgerAmmo
+Ammo smg100ammo
+ReloadTime 50
+
+// Operation
+Mode FullAuto SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 800.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 400.0
+Dispersion 0.34
+
+// Damage and protection
+Damage 8
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound MP5Shoot
+ReloadSound MWStenReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

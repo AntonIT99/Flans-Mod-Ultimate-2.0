@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "flansmod:item/8xscope"
+    "layer0": "flansmod:item/2xscope"
   },
   "overrides": []
 }

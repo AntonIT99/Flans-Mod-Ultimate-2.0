@@ -1,0 +1,45 @@
+// Identity
+Name Karabiner 98k Sniper (Legacy)
+ShortName LegacyKar98kSniper44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.9)
+
+// Item and rendering
+Icon kar98ksniper
+Colour 255 255 255
+DeployedModel None
+Model legacy.Kar98kSniper44
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [1.5405,0.3081,0]
+animFlashScale 1.42
+Texture kar98ksniper
+ModelScale 0.7
+
+// Ammunition
+Ammo kar98kAmmo
+ReloadTime 60
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 45.0
+
+// Ballistics
+Recoil 20
+MuzzleVelocity 760.0
+Dispersion 0.15
+
+// Damage and protection
+Damage 15
+
+// Optics
+Scope official_ww2_german
+ZoomLevel 4.0
+FOVZoomLevel 1.0
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound kar98kSniperShoot
+ReloadSound kar98kSniperReload

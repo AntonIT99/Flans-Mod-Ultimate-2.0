@@ -1,0 +1,17 @@
+// Identity
+Name German WW2 Forest Pants (Legacy)
+ShortName LegacyGermanForestPants47
+Description Original textures from Minecraft 1.7.10 (Flan's Mod 4.7-4.9)
+
+// Item and rendering
+Icon germanforestpants
+Colour 255 255 255
+ArmourTexture legacygermanforest47
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

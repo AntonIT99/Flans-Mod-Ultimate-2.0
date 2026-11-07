@@ -1,0 +1,33 @@
+// Identity
+Name 4x Scope (Legacy)
+ShortName LegacyFlanMW4xScope48
+AttachmentType sights
+Description Sight Attachment: variable magnification x1-x4., original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon 2xscope
+ZoomOverlay mwscope
+Model legacy.4xScope48
+Texture legacyflanmw4xscope48
+
+// Recipe
+RecipeOutput 1
+Recipe R ingotIron F ingotGold G thinGlass
+RRR
+GFG
+RRR
+
+// Modifiers
+Silencer false
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.0
+SpreadMultiplier 1.0
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+ZoomLevel 4.0
+HasVariableZoom True
+MinZoom 1
+MaxZoom 4
+ZoomAugment 0.5
+FOVZoomLevel 1.0

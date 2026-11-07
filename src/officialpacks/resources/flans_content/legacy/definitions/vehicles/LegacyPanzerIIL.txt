@@ -1,0 +1,99 @@
+// Identity
+Name Panzer II Luchs (Legacy)
+ShortName LegacyPanzerIIL
+Description German Light Tank, original model from Minecraft 1.7.10 (Flan's Mod 4.10)
+
+// Item and rendering
+Icon Luchs
+Model ww2.PanzerIILuchs
+FlashModel DefaultFlash
+Texture Skinpz2
+AddDye 10 gray
+
+// Recipe
+AddRecipeParts turret 1 lightTankBody 1 vehicleSeat
+AddRecipeParts core 1 lightTankBody
+AddRecipeParts leftTrack 1 catTrack
+AddRecipeParts rightTrack 1 catTrack
+
+// Inventory
+FuelTankSize 2000
+CargoSlots 10
+ShellSlots 1
+AllowAllAmmo False
+AddAmmo 20mmAmmo
+
+// Real-world physics
+RealMassKg 11800
+RealEnginePowerPS 180
+RealMaxSpeedKmh 60
+DriveType TRACKED
+RealMaxReverseSpeedKmh 10
+
+// Movement
+MaxThrottle 0.75
+MaxNegativeThrottle 0.65
+TurnLeftSpeed 0.55
+TurnRightSpeed 0.55
+RealTurnRateDegPerSec 30
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+Tank true
+
+// Weaponry
+BarrelPosition 43 22 0
+AddGun 20 22 -6 turret mg42
+ShootDelay 1
+ShellDelay 12
+TurretRotationSpeed 0.03
+RoundsPerMinPrimary 480
+ReloadTimePrimary 30
+ReloadRoundsPrimary 10
+ReadWeaponsFromGunTypes true
+
+// Optics
+hasScope true
+Gunsight official_20mmtank
+gunsightZoom 3.5
+
+// Health and armour
+SetupPart core 8720 -42 -4 -16 85 23 33
+SetupPart turret 8520 -18 19 -20 40 10 40
+SetupPart leftTrack 6000 -36 -10 16 78 18 8
+SetupPart rightTrack 6000 -36 -10 -24 78 18 8
+BulletDetection 7
+ArmorFrontMm 30
+ArmorSideMm 20
+ArmorRearMm 20
+ArmorTopMm 10
+ArmorBottomMm 10
+TurretArmorFrontMm 30
+TurretArmorSideMm 20
+TurretArmorRearMm 20
+TurretArmorTopMm 12
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 7.5
+WheelPosition 0 -25 -10 -18
+WheelPosition 1 -25 -10 18
+WheelPosition 2 25 -10 18
+WheelPosition 3 25 -10 -18
+Driver 0 18 0 -360 360 -2 4
+RotatedDriverOffset 0 0 0
+Passengers 0
+
+// Sounds and particles
+StartSound tankidle1
+StartSoundLength 41
+EngineSound engine_lt_pzii
+EngineSoundLength 39
+ShootSoundPrimary Flak1Shoot
+ShootParticlesPrimary flansmod.fmflame 0.58 0 0
+ShootParticlesPrimary flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPrimary flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPrimary smoke 0.2 0.035 -0.04
+ShootParticlesPrimary smoke 0.18 -0.03 0.045
+ShootParticlesPrimary crit 0.38 0.01 0
+ShootSoundSecondary MG42Shoot

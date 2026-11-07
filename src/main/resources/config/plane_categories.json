@@ -2192,7 +2192,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "chinook"
+            "chinook",
+            "legacychinook"
         ]
     },
 
@@ -5538,6 +5539,7 @@
         },
         "items": [
             "f22",
+            "legacyf22",
             "modernwarfare_f22",
             "f22mraptor",
             "f-22a"
@@ -6594,7 +6596,8 @@
         },
         "items": [
             "bf109g6",
-            "bf109"
+            "bf109",
+            "legacybf109"
         ]
     },
 
@@ -7985,6 +7988,7 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
+            "legacymustang",
             "liberionp51d",
             "ww2_plane_p51_1a",
             "ww2_plane_p51_1b",

@@ -1,0 +1,47 @@
+// Identity
+Name Trench Gun (Legacy)
+ShortName LegacyTrenchgun44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.10)
+
+// Item and rendering
+Icon trenchgun
+Colour 255 255 255
+DeployedModel None
+Model legacy.Trenchgun44
+animAimOffset 0 2.8845255 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [0.52817,0.12104,0]
+animFlashScale 2.84
+Texture legacytrenchgun44
+ModelScale 0.7
+
+// Ammunition
+Ammo trenchgunAmmo
+ReloadTime 126
+NumBullets 8
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 90.0
+
+// Ballistics
+Recoil 11
+MuzzleVelocity 400.0
+Dispersion 1.95
+
+// Damage and protection
+Damage 3
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound TrenchGunShoot
+ReloadSound TrenchGunReload

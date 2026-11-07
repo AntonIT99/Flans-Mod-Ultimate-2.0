@@ -1,0 +1,75 @@
+// Identity
+Name M16A4 (Legacy)
+ShortName LegacyM16a4_164
+Description Ammo Type : Assault Rifle, original model from Minecraft 1.6.4-1.8 (Flan's Mod 4.1-5.1)
+
+// Item and rendering
+Icon m16a4
+Colour 255 255 255
+DeployedModel None
+Model legacy.M16A4_164
+animAimOffset 0 1.089188 0
+Texture legacym16a4_164
+FlashModel DefaultFlash
+animMuzzleFlashPoint [1.5,0.33333,0]
+animFlashScale 0.75
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo m16a4Ammo
+Ammo famasAmmo
+Ammo mtarAmmo
+Ammo m4CarbineAmmo
+Ammo g36Ammo
+Ammo augAmmo
+Ammo acrAmmo
+Ammo adar15Ammo
+Ammo an94Ammo
+Ammo ash12Ammo
+Ammo galilAmmo
+Ammo hcarAmmo
+Ammo kcasmartcarbineAmmo
+Ammo fnscarAmmo
+Ammo betacmag
+Ammo apcrrifleAmmo
+Ammo l86Ammo
+ReloadTime 65
+
+// Operation
+NumBurstRounds 3
+Mode Burst SemiAuto
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 800.0
+
+// Ballistics
+Recoil 3
+MuzzleVelocity 945.0
+Dispersion 0.16
+
+// Damage and protection
+Damage 8
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound M14Shoot
+ReloadSound MWMP44Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

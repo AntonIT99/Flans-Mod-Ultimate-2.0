@@ -1,0 +1,66 @@
+// Identity
+Name RPK (Legacy)
+ShortName LegacyRpk48
+Description Ammo Type : AK, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon rpk
+Colour 255 255 255
+DeployedModel None
+Model legacy.RPK48
+animAimOffset 0 2.1563595 0
+Texture legacyrpk48
+ModelScale 1.0
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.34639,0.052711,0]
+animFlashScale 4.15
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo rpkAmmo
+Ammo ak74Ammo
+Ammo ak47Ammo
+Ammo rpdAmmo
+Ammo witheringakammo
+ReloadTime 90
+NumBullets 1
+
+// Operation
+Mode FullAuto SemiAuto
+Deployable False
+CanShootUnderwater False
+MoveSpeedModifier 0.8
+RoundsPerMin 600.0
+
+// Ballistics
+Recoil 5
+MuzzleVelocity 745.0
+Dispersion 0.3
+
+// Damage and protection
+Damage 9
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments false
+AllowAttachments flanMWRedDot flanMWACOG flanMWHCOG flanMW4xScope flanMW2xScope flanMW8xScope flanMWSingleFire flanMWBurstFire flanMWAutoFire flanMWanvilreceiver flanMWmuzzlebreak flanMWCharmjamesk2417sight flanMWCharmjthmonkeysight
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound RPDShoot
+ReloadSound MG42Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

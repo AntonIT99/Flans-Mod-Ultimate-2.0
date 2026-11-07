@@ -1,0 +1,41 @@
+// Identity
+Name M1903 Springfield (Legacy)
+ShortName LegacySpringfield44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.10)
+
+// Item and rendering
+Icon springfieldsniper
+Colour 255 255 255
+DeployedModel None
+Model legacy.Springfield44
+animAimOffset 0 0.98689448 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [0.77025,0.15405,0]
+animFlashScale 2.84
+Texture legacyspringfield44
+ModelScale 0.7
+
+// Ammunition
+Ammo springfieldAmmo
+ReloadTime 87
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 45.0
+
+// Ballistics
+Recoil 20
+MuzzleVelocity 850.0
+Dispersion 0.13
+
+// Damage and protection
+Damage 18
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound springfieldShoot
+ReloadSound springfieldReload

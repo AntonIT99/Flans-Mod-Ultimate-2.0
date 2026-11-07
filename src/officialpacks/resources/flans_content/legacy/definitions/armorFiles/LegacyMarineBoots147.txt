@@ -1,0 +1,21 @@
+// Identity
+Name Marine Boots (Legacy)
+ShortName LegacyMarineBoots147
+Description Original textures from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.4)
+
+// Item and rendering
+Icon marineboots
+Colour 255 255 255
+ArmourTexture legacymarine147
+
+// Recipe
+Enchantability 0
+Durability 0
+
+// Protection
+Type Boots
+Defence 0.02
+Toughness 0
+BulletDefence 0.00
+PenetrationResistance 0.35
+ArmorPoints 1

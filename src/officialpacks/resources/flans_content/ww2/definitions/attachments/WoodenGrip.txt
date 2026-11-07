@@ -1,0 +1,28 @@
+// Identity
+Name Wooden Grip
+ShortName WoodenGrip
+AttachmentType grip
+
+// Item and rendering
+Icon WoodenGrip
+ZoomOverlay None
+Model ww2.WoodenGrip
+Texture SkinWoodenGrip
+
+// Recipe
+RecipeOutput 1
+Recipe L log
+LLL
+ L 
+ L 
+
+// Modifiers
+Silencer false
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.0
+SpreadMultiplier 0.8
+RecoilMultiplier 0.5
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+ZoomLevel 1.0
+FOVZoomLevel 1.0

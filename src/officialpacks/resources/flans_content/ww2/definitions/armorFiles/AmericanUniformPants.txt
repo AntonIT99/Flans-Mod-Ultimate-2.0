@@ -1,10 +1,11 @@
 // Identity
 Name AmericanUniformPants
 ShortName AmericanUniformPants
+Description From the HG WW2 pack
 
 // Item and rendering
 ModelScale 1
-Icon americannpants
+Icon americanpants
 Model ww2.AmericanPants
 ArmorTexture aassault
 

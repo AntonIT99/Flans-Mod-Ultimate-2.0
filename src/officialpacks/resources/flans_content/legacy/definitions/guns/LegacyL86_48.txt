@@ -1,0 +1,79 @@
+// Identity
+Name L86 LSW (Legacy)
+ShortName LegacyL86_48
+Description Ammo Type : Assault Rifle, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon legacyl86_48
+Colour 255 255 255
+DeployedModel None
+Model legacy.L86_48
+animAimOffset 0 2.0765934 0
+Texture legacyl86_48
+ModelScale 1
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.25602,0.060241,0]
+animFlashScale 4.15
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo l86Ammo
+Ammo m16a4Ammo
+Ammo famasAmmo
+Ammo mtarAmmo
+Ammo m4CarbineAmmo
+Ammo g36Ammo
+Ammo augAmmo
+Ammo acrAmmo
+Ammo adar15Ammo
+Ammo an94Ammo
+Ammo ash12Ammo
+Ammo galilAmmo
+Ammo hcarAmmo
+Ammo kcasmartcarbineAmmo
+Ammo fnscarAmmo
+Ammo betacmag
+Ammo apcrrifleAmmo
+Ammo l86Ammo
+ReloadTime 130
+NumBullets 1
+
+// Operation
+SwitchDelay 2
+Mode FullAuto SemiAuto
+Deployable False
+CanShootUnderwater False
+MoveSpeedModifier 0.8
+RoundsPerMin 700.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 910.0
+Dispersion 0.2
+
+// Damage and protection
+Damage 8
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound l86Shoot
+ReloadSound BrowningReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

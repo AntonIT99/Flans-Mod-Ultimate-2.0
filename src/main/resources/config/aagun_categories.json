@@ -9,6 +9,7 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
+            "legacyflakvierling",
             "ww2_aagun_flak20mmvierling_1a",
             "ww2_aagun_flak20mmvierling_2a"
         ]
@@ -93,6 +94,18 @@
         },
         "items": [
             "gfs_m5sentry"
+        ]
+    },
+
+    "Bofors 40mm L/60 Towed AA Gun": {
+        "properties": {
+            "RoundsPerMin": 120.0,
+            "Dispersion": 0.35,
+            "RealMassKg": 1981.0,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "legacybofors"
         ]
     },
 

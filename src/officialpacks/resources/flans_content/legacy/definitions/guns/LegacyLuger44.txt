@@ -1,0 +1,45 @@
+// Identity
+Name Luger P08 (Legacy)
+ShortName LegacyLuger44
+Description Original model from Minecraft 1.7.10-1.8 (Flan's Mod 4.4-5.1)
+
+// Item and rendering
+Icon luger
+Colour 255 255 255
+DeployedModel None
+Model legacy.Luger44
+animAimOffset 0 0.32873363 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [0.15773,0.10844,0]
+animFlashScale 3.17
+Texture legacyluger44
+ModelScale 1
+
+// Ammunition
+Ammo lugerAmmo
+ReloadTime 40
+
+// Operation
+Mode SemiAuto
+OneHanded true
+Deployable False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 4
+MuzzleVelocity 370.0
+Dispersion 0.65
+
+// Damage and protection
+Damage 6
+
+// Optics
+Scope None
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound lugerShoot
+ReloadSound lugerReload

@@ -1,0 +1,74 @@
+// Identity
+Name ACR (Legacy)
+ShortName LegacyAcr48
+Description Ammo Type : Assault Rifle, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon acr
+Colour 255 255 255
+DeployedModel None
+Model legacy.ACR48
+animAimOffset 0 1.689188 0
+Texture legacyacr48
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.27108,0.052711,0]
+animFlashScale 4.15
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo acrAmmo
+Ammo m16a4Ammo
+Ammo famasAmmo
+Ammo mtarAmmo
+Ammo m4CarbineAmmo
+Ammo g36Ammo
+Ammo augAmmo
+Ammo adar15Ammo
+Ammo an94Ammo
+Ammo ash12Ammo
+Ammo galilAmmo
+Ammo hcarAmmo
+Ammo kcasmartcarbineAmmo
+Ammo fnscarAmmo
+Ammo betacmag
+Ammo apcrrifleAmmo
+Ammo l86Ammo
+ReloadTime 40
+
+// Operation
+Mode FullAuto SemiAuto
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 700.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 880.0
+Dispersion 0.2
+
+// Damage and protection
+Damage 8
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound FNSCARShoot
+ReloadSound MWMP44Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

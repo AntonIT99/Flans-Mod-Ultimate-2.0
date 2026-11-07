@@ -1,0 +1,93 @@
+// Identity
+Name M1-57 MM (Legacy)
+ShortName LegacyM157mm
+Description American Anti-Tank Gun, original model from Minecraft 1.7.10-1.8 (Flan's Mod 4.7-5.1)
+
+// Item and rendering
+Icon M157MM
+Model legacy.M157MM
+FlashModel DefaultFlash
+Texture M157
+AddDye 10 gray
+
+// Recipe
+AddRecipeParts core 1 tankBarrel 1 gunShield
+AddRecipeParts leftTrack 1 largeWheel
+AddRecipeParts rightTrack 1 largeWheel
+
+// Inventory
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 5
+AddAmmo shell
+AddAmmo HEshell
+AddAmmo American57APShell
+AllowAllAmmo false
+
+// Real-world physics
+RealMassKg 1225
+
+// Movement
+MaxThrottle 0
+MaxNegativeThrottle 0
+TurnLeftSpeed 0
+TurnRightSpeed 0
+RealTurnRateDegPerSec 0
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+Tank true
+
+// Weaponry
+BarrelPosition 60 15 0
+ShootDelay 1
+ShellDelay 98
+TurretRotationSpeed 0.03
+DamageModifierPrimary 30
+ShootDelayPrimarySeconds 4
+ReadWeaponsFromGunTypes true
+
+// Optics
+hasScope true
+Gunsight official_6pdrat
+gunsightZoom 3.5
+
+// Health and armour
+SetupPart core 1500 -40 -8 -18 60 24 36
+SetupPart leftTrack 1200 4 -8 -22 12 12 4
+SetupPart rightTrack 1200 4 -8 18 12 12 4
+BulletDetection 7
+ArmorFrontMm 6
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 7.5
+WheelPosition 0 -32 -10 -18
+WheelPosition 1 -32 -10 18
+WheelPosition 2 20 -10 18
+WheelPosition 3 20 -10 -18
+Driver 0 -2 0 -15 15 -10 10
+RotatedDriverOffset -8 0 -9
+Passengers 0
+
+// Sounds and particles
+StartSound
+StartSoundLength 0
+EngineSound
+EngineSoundLength 0
+ShootSoundPrimary 57mmGun
+ShootParticlesPrimary explode 0.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.95 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.46 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.28 0.07 0.07
+ShootParticlesPrimary largesmoke 0.26 -0.07 -0.07
+DriverTraverseSounds true
+PitchSound TurretTraverse1
+PitchSoundLength 61
+YawSound TurretTraverse2
+YawSoundLength 38

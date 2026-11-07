@@ -1,0 +1,29 @@
+// Identity
+Name Foregrip (Legacy)
+ShortName LegacyFlanMWForegrip164
+AttachmentType grip
+Description Under Barrel Attatchment: Vertical foregrip., original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon foregrip
+ZoomOverlay None
+Model legacy.Foregrip164
+Texture shockabsorbentstock
+
+// Recipe
+RecipeOutput 1
+Recipe F fiberglass I ingotIron
+III
+ F 
+ F 
+
+// Modifiers
+Silencer false
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.0
+SpreadMultiplier 1.0
+RecoilMultiplier 0.5
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+ZoomLevel 1.0
+FOVZoomLevel 1.0

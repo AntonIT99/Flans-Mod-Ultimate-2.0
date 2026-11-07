@@ -1,0 +1,62 @@
+// Identity
+Name Remington 700 (Legacy)
+ShortName LegacyR700_164
+Description Ammo Type : Sniper, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon r700
+Colour 255 255 255
+DeployedModel None
+Model legacy.R700_164
+Scope mwr700
+Texture legacyr700_164
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.19213,0.050859,0]
+animFlashScale 5.53
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo sniperAmmo
+Ammo hesniperAmmo
+Ammo 3006Bullet
+Ammo shulkersniperammo
+ReloadTime 80
+LoadIntoGun 4
+
+// Operation
+Mode SemiAuto
+Deployable False
+CanShootUnderwater False
+MoveSpeedModifier 0.8
+RoundsPerMin 45.0
+
+// Ballistics
+Recoil 16
+MuzzleVelocity 790.0
+Dispersion 0.12
+
+// Damage and protection
+Damage 24
+
+// Optics
+ZoomLevel 10.0
+FOVZoomLevel 1.0
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 0
+
+// Sounds
+ShootSound R700Shoot
+ReloadSound MWSpringfieldReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

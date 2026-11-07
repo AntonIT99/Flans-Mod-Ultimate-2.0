@@ -1,0 +1,25 @@
+// Identity
+Name Wooden Stock
+ShortName WoodenStock
+AttachmentType stock
+
+// Item and rendering
+Icon WoodenStock
+Model ww2.WoodenStock
+Texture SkinWoodenStock
+ModelScale 0.35
+
+// Recipe
+RecipeOutput 1
+Recipe L log
+LLL
+LL 
+
+// Modifiers
+Silencer false
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.0
+SpreadMultiplier 0.4
+RecoilMultiplier 0.8
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

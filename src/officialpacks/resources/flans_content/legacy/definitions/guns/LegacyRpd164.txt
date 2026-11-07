@@ -1,0 +1,65 @@
+// Identity
+Name RPD (Legacy)
+ShortName LegacyRpd164
+Description Ammo Type : AK, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon rpd
+Colour 255 255 255
+DeployedModel None
+Model legacy.RPD164
+animAimOffset 0 0.61857556 0
+Texture legacyrpd164
+ModelScale 1.0
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.28614,0.075301,0]
+animFlashScale 4.15
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo rpdAmmo
+Ammo ak74Ammo
+Ammo ak47Ammo
+Ammo rpkAmmo
+Ammo witheringakammo
+ReloadTime 60
+NumBullets 1
+
+// Operation
+Mode FullAuto
+Deployable False
+CanShootUnderwater False
+MoveSpeedModifier 0.8
+RoundsPerMin 650.0
+
+// Ballistics
+Recoil 5
+MuzzleVelocity 735.0
+Dispersion 0.32
+
+// Damage and protection
+Damage 9
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound RPDShoot
+ReloadSound MG42Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

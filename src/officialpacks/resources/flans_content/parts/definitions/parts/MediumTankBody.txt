@@ -4,7 +4,7 @@ ShortName mediumTankBody
 Category Chassis
 
 // Item and rendering
-Icon MediumTankBody
+Icon TankBody
 Colour 255 255 255
 StackSize 4
 

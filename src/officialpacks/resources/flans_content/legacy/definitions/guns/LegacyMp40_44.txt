@@ -1,0 +1,43 @@
+// Identity
+Name MP 40 (Legacy)
+ShortName LegacyMp40_44
+Description Original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.4-5.7)
+
+// Item and rendering
+Icon mp40
+Colour 255 255 255
+DeployedModel None
+Model legacy.Mp40_44
+animAimOffset 0 -0.5641646 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [2.2177,0.625,0]
+animFlashScale 0.62
+Texture legacymp40_44
+
+// Ammunition
+Ammo mp40Ammo
+ReloadTime 50
+
+// Operation
+Mode FullAuto
+Deployable False
+RoundsPerMin 550.0
+
+// Ballistics
+Recoil 3
+MuzzleVelocity 400.0
+Dispersion 0.38
+
+// Damage and protection
+Damage 4
+
+// Optics
+Scope None
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound mp40Shoot
+ReloadSound mp40Reload

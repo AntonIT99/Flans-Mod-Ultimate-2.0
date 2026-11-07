@@ -6,7 +6,7 @@ Description Ammo Type : Pistol
 // Item and rendering
 Model Bullet
 Colour 255 255 255
-Icon Colt45Ammo
+Icon M9Ammo
 
 // Ammunition
 MaxStackSize 4

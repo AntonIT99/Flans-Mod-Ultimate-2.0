@@ -1,0 +1,69 @@
+// Identity
+Name SIG P226 (Legacy)
+ShortName LegacySigP226_48
+Description AmmoType : Pistol_Dual Wieldable, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon sigp226
+Colour 255 255 255
+DeployedModel None
+Model legacy.SIGP226_48
+animAimOffset 0 1.4884307 0
+Texture legacysigp226_48
+ModelScale 1.0
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.16447,0.10121,0]
+animFlashScale 2.47
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo sigP226Ammo
+Ammo kcasmartpistolAmmo
+Ammo desertEagleAmmo
+Ammo glockAmmo
+Ammo m9Ammo
+Ammo m1911Ammo
+Ammo makarovAmmo
+Ammo uspAmmo
+Ammo uspPoisonAmmo
+ReloadTime 35
+NumBullets 1
+
+// Operation
+Mode SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 4
+MuzzleVelocity 360.0
+Dispersion 0.6
+
+// Damage and protection
+Damage 11
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound SIGP229Shoot
+ReloadSound MWLugerReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

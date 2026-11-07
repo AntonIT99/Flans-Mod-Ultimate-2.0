@@ -1,0 +1,40 @@
+// Identity
+Name RPG-7 (Legacy)
+ShortName LegacyRpg164
+Description Rocket Launcher : General purpose rocket launcher., original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon rpg
+Colour 255 255 255
+DeployedModel None
+animMuzzleFlashPoint [0.5,0.21875,0]
+Model legacy.RPG164
+Texture legacyrpg164
+ModelScale 1.0
+
+// Ammunition
+Ammo rpgAmmo
+ReloadTime 80
+
+// Operation
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.8
+RoundsPerMin 4.0
+
+// Ballistics
+Recoil 25
+MuzzleVelocity 115.0
+Dispersion 2.0
+
+// Damage and protection
+Damage 2
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Sounds
+ShootSound AT4Shoot
+ReloadSound MWbazookaReload

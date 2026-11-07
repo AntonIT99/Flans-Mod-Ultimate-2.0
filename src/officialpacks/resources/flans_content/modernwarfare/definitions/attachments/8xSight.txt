@@ -5,7 +5,7 @@ AttachmentType sights
 Description Sight Attachment: variable magnification x2-x8.
 
 // Item and rendering
-Icon 8xScope
+Icon 2xScope
 ZoomOverlay mwscope
 Model mw.8xScope
 Texture 8xScope

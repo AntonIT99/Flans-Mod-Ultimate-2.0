@@ -274,6 +274,12 @@
 
 * Official gun models use the original 1.12.2 sources where appropriate; `FirstPersonFrame 1.12.2` is retained for models requiring the legacy frame correction, while Z-centered Modern Warfare models and WW2 Type 100 use the default 1.7.10 authored frame; G43, Kar98k, Kar98kSniper, MG34, Thompson, Greasegun, BAR, TrenchGun, Luger, STG44, Springfield and Springfield Sniper use centered model Z placement with matching muzzle flashes and the default 1.7.10 authored frame; Springfield geometry is recentered to match the sniper rifle in third person; both variants use zero third-person Z offsets and geometry-derived `animAimOffset` corrections for horizontal ADS alignment
 * Added a crafting-table recipe for the Manus Ships German 20 cm Ship Gun used by Prinz Eugen
+* New Legacy Content Pack in the Classic Packs brings back earlier official vehicle and aircraft models, from Minecraft 1.4.7 to 1.12.2, as separate `Legacy` items alongside their remakes, each description naming the release its model comes from: M1A2 Abrams, Challenger 2, T-90MS, CH-47 Chinook, F-22, Bf 109, P-51 Mustang, Willys Jeep, Kübelwagen, M1 57mm, PaK 40, Bofors and Flakvierling AA guns, T-34, Panzer II Luchs, Chi-Ha, Churchill, two earlier generations each of the Panzer IV and M4 Sherman, and 85 earlier gun, mounted gun, attachment and grenade models from the Modern Weapons, Modern Warfare and WW2 packs, plus the original American, British, German, German desert, snow and forest, Russian, Marine and Spetsnaz uniforms
+* The WW2 pack adds the HG pack's Aperture Sight, Wooden Grip, Wooden Stock, Armor Piercing Bullet and Hollow Point Bullet attachments (already listed by the C96 and MP 34) and the WW2 Armour Box; the Modern Warfare pack adds the Shock-Absorbent Stock
+* WW2 American, British, German, German desert, forest and snow, and Russian uniform textures match the official 4.10–1.12.2 releases again, and armour from the HG WW2 pack says so in its description
+* The WW2 pack adds alternative American, British, German, Italian, Japanese and Russian uniforms from the WW2 Improved pack
+* The WW2 Chi-Ha uses the detailed remake from the HG WW2 pack; the previous model moved to the Legacy Content Pack
+* The Modern Warfare M1A2 Abrams, Challenger 2 and Leopard 2A6 play their engine start sounds again, and the T-90 its engine sound
 
 * Modern Warfare teams gain dedicated marksman, shotgun, anti-tank, ammunition bearer, demolition, MP5, HK416, MP7, AK74, RPK and pistol-and-shield loadouts, including suppressed MP5 and balaclava variants
 

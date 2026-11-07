@@ -1,0 +1,68 @@
+// Identity
+Name USP .45 (Legacy 5.1)
+ShortName LegacyUsp51
+Description Ammo Type : Pistol_Dual Wieldable, original model from Minecraft 1.8-1.12.2 (Flan's Mod 5.1-5.6)
+
+// Item and rendering
+Icon usp
+Colour 255 255 255
+DeployedModel None
+Model legacy.USP51
+animAimOffset 0 1.1686579 0
+Texture legacyusp51
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.1746,0.098684,0]
+animFlashScale 2.47
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo uspAmmo
+Ammo uspPoisonAmmo
+Ammo kcasmartpistolAmmo
+Ammo desertEagleAmmo
+Ammo glockAmmo
+Ammo m9Ammo
+Ammo m1911Ammo
+Ammo makarovAmmo
+Ammo sigP226Ammo
+ReloadTime 35
+NumBullets 1
+
+// Operation
+Mode SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 3
+MuzzleVelocity 260.0
+Dispersion 0.65
+
+// Damage and protection
+Damage 10
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound USPShoot
+ReloadSound TT33Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

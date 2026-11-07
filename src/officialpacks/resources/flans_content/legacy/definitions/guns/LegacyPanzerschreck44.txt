@@ -1,0 +1,39 @@
+// Identity
+Name Panzerschreck (Legacy)
+ShortName LegacyPanzerschreck44
+Description Original model from Minecraft 1.7.10-1.8 (Flan's Mod 4.4-5.1)
+
+// Item and rendering
+Icon panzerschreck
+Colour 255 255 255
+DeployedModel None
+animMuzzleFlashPoint [0.5,0.3125,0.25]
+Model legacy.Panzerschreck44
+Texture legacypanzerschreck44
+EjectCasings False
+
+// Ammunition
+Ammo panzerschreckAmmo
+ReloadTime 80
+
+// Operation
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.6
+KnockbackModifier 0
+RoundsPerMin 10.0
+
+// Ballistics
+Recoil 4
+MuzzleVelocity 110.0
+Dispersion 2.0
+
+// Damage and protection
+Damage 1
+
+// Optics
+Scope None
+
+// Sounds
+ShootSound bazookaShoot
+ReloadSound bazookaReload

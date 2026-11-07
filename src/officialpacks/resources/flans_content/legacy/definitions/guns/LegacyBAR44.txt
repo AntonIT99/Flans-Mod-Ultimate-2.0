@@ -1,0 +1,44 @@
+// Identity
+Name BAR (Legacy)
+ShortName LegacyBAR44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.10)
+
+// Item and rendering
+Icon legacybar44
+Colour 255 255 255
+DeployedModel None
+Model legacy.BAR44
+animAimOffset 0 0.64796311 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [0.59055,0.11565,0]
+animFlashScale 2.54
+Texture legacybar44
+ModelScale 1
+
+// Ammunition
+Ammo BARAmmo
+ReloadTime 50
+
+// Operation
+Mode FullAuto
+Deployable False
+RoundsPerMin 400.0
+
+// Ballistics
+Recoil 4
+MuzzleVelocity 860.0
+Dispersion 0.26
+
+// Damage and protection
+Damage 10
+
+// Optics
+Scope None
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound BARShoot
+ReloadSound BARReload

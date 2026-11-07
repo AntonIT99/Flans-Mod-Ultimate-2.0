@@ -1,0 +1,112 @@
+// Identity
+Name Chinook (Legacy)
+ShortName LegacyChinook
+Description American Transport Helicopter, original model from Minecraft 1.7.10 (Flan's Mod 4.8-5.0)
+
+// Item and rendering
+Icon LegacyChinook
+Model legacy.Chinook
+Texture Chinook
+AddDye 16 green
+
+// Recipe
+AddRecipeParts core 3 passengerBay
+AddRecipeParts nose 1 advancedMetalCockpit
+AddRecipeParts coreWheel 4 wheel
+AddRecipeParts blades 6 helicopterBlade
+AddRecipeParts tail 1 metalTail
+
+// Inventory
+CargoSlots 0
+BombSlots 0
+MissileSlots 0
+AllowAllAmmo False
+FuelTankSize 5000
+
+// Real-world physics
+RealMassKg 22680
+RealEnginePowerHp 9466
+RealMaxSpeedKmh 302
+RealRotorDiameterM 18.29
+RealRotorCount 2
+RealClimbRateMs 10.1
+
+// Movement
+RestingPitch 0.0
+MaxThrottle 3.5
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.25
+TurnRightSpeed 1.25
+RealTurnRateDegPerSec 17.4
+LookUpSpeed 1.25
+LookDownSpeed 1.25
+RollLeftSpeed 1.25
+RollRightSpeed 1.25
+Drag 1.0
+WheelSpringStrength 0.125
+HasGear False
+
+// Weaponry
+Mode Heli
+Primary None
+Secondary None
+ShootDelayPrimary 0
+ShootDelaySecondary 0
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ReadWeaponsFromGunTypes true
+
+// Health and armour
+SetupPart core 5000 -96 -9 -32 192 67 64
+SetupPart nose 5000 96 -8 -32 64 64 64
+SetupPart tail 4000 -128 16 -10 32 72 20
+SetupPart coreWheel 2000 69 -27 -24 12 18 48
+BulletDetection 24
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 25.0
+NumWheels 4
+WheelPosition 0 80 -27 -24
+WheelPosition 1 80 -27 24
+WheelPosition 2 -80 -27 -24
+WheelPosition 3 -80 -27 24
+HeliPropeller 0 84 48 0 blades metalPropeller
+HeliPropeller 1 -128 48 0 blades metalPropeller
+Pilot 108 16 16
+Passengers 27
+Passenger 1 108 16 -16 nose
+Passenger 2 84 18 -22 core
+Passenger 3 70 18 -22 core
+Passenger 4 56 18 -22 core
+Passenger 5 42 18 -22 core
+Passenger 6 28 18 -22 core
+Passenger 7 14 18 -22 core
+Passenger 8 0 18 -22 core
+Passenger 9 -14 18 -22 core
+Passenger 10 -28 18 -22 core
+Passenger 11 -42 18 -22 core
+Passenger 12 -56 18 -22 core
+Passenger 13 -70 18 -22 core
+Passenger 14 -84 18 -22 core
+Passenger 15 84 18 22 core
+Passenger 16 70 18 22 core
+Passenger 17 56 18 22 core
+Passenger 18 42 18 22 core
+Passenger 19 28 18 22 core
+Passenger 20 14 18 22 core
+Passenger 21 0 18 22 core
+Passenger 22 -14 18 22 core
+Passenger 23 -28 18 22 core
+Passenger 24 -42 18 22 core
+Passenger 25 -56 18 22 core
+Passenger 26 -70 18 22 core
+Passenger 27 -84 18 22 core
+
+// Sounds and particles
+StartSound HelicopterStart
+StartSoundLength 100
+PropSound Helicopter1
+PropSoundLength 93

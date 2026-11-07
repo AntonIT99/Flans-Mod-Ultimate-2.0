@@ -1,0 +1,38 @@
+// Identity
+Name AT4 (Legacy)
+ShortName LegacyAt4_48
+Description Rocket Launcher : Anti-Material weapon for common landcraft., original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon at4
+Colour 255 255 255
+DeployedModel None
+animMuzzleFlashPoint [0.21875,0.28125,0.125]
+Model legacy.AT4_48
+animAimOffset 0 0.48690753 0
+Texture legacyat4_48
+
+// Ammunition
+Ammo at4Ammo
+ReloadTime 65
+
+// Operation
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.8
+RoundsPerMin 6.0
+
+// Ballistics
+Recoil 25
+MuzzleVelocity 285.0
+Dispersion 2.0
+
+// Damage and protection
+Damage 2
+
+// Optics
+Scope None
+
+// Sounds
+ShootSound AT4Shoot
+ReloadSound MWbazookaReload

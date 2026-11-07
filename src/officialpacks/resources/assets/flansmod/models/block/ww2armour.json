@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "flansmod:block/ww2armourbox",
+    "bottom": "flansmod:block/ww2armourbox",
+    "side": "flansmod:block/ww2armourboxside"
+  }
+}

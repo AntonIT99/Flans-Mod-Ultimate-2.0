@@ -1,0 +1,53 @@
+// Identity
+Name GL1 Grenade Launcher (Legacy)
+ShortName LegacyGl1_48
+Description Ammo Type : Grenade, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon gl1
+Colour 255 255 255
+DeployedModel None
+animMuzzleFlashPoint [0.75,0.28125,0]
+Model legacy.GL1_48
+Texture legacygl1_48
+ModelScale 1.0
+
+// Ammunition
+Ammo grenadeLauncherAmmo
+Ammo grenadeLauncherBouncyAmmo
+Ammo grenadeLauncherGasAmmo
+Ammo grenadeLauncherIncendiaryAmmo
+ReloadTime 50
+
+// Operation
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.8
+KnockbackModifier 0
+RoundsPerMin 60.0
+
+// Ballistics
+Recoil 12
+MuzzleVelocity 76.0
+Dispersion 1.2
+
+// Damage and protection
+Damage 1
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments false
+AllowAttachments flanMWRedDot flanMWACOG flanMW4xScope flanMW2xScope flanMW8xScope flanMWCharmjamesk2417sight flanMWCharmjthmonkeysight
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound GrenadeLauncherShoot
+ReloadSound GrenadeLauncherReload

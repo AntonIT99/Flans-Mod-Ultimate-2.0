@@ -1,0 +1,65 @@
+// Identity
+Name M249 SAW (Legacy)
+ShortName LegacyM249_164
+Description Ammo Type : LMG, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon m249
+Colour 255 255 255
+DeployedModel None
+Model legacy.M249_164
+animAimOffset 0 1.176279 0
+Texture legacym249_164
+ModelScale 1.5
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.16953,0.023734,0]
+animFlashScale 5.53
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo m249Ammo
+Ammo m60Ammo
+Ammo devotionx55Ammo
+Ammo pr3Ammo
+Ammo pr3oscAmmo
+ReloadTime 90
+NumBullets 1
+
+// Operation
+Mode FullAuto
+Deployable False
+CanShootUnderwater False
+MoveSpeedModifier 0.8
+RoundsPerMin 850.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 915.0
+Dispersion 0.34
+
+// Damage and protection
+Damage 9
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 2
+
+// Sounds
+ShootSound M249Shoot
+ReloadSound BrowningReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

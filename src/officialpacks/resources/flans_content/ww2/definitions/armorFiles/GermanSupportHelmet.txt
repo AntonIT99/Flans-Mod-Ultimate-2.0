@@ -1,10 +1,11 @@
 // Identity
 Name GermanSupportHelmet
 ShortName GermanSupportHelmet
+Description From the HG WW2 pack
 
 // Item and rendering
 ModelScale 1
-Icon germansuhelmet
+Icon germanhelmet
 Model ww2.GermanSupportHelmet
 ArmorTexture gsupport
 

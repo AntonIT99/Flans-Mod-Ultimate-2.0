@@ -1,0 +1,68 @@
+// Identity
+Name M9 (Legacy)
+ShortName LegacyM9_164
+Description Ammo Type : Pistol_Dual Wieldable, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon m9
+Colour 255 255 255
+DeployedModel None
+Model legacy.M9_164
+animAimOffset 0 1.0215966 0
+Texture legacym9_164
+FlashModel DefaultFlash
+animMuzzleFlashPoint 0.98684 0.7085 0
+animFlashScale 2.47
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo m9Ammo
+Ammo kcasmartpistolAmmo
+Ammo desertEagleAmmo
+Ammo glockAmmo
+Ammo m1911Ammo
+Ammo makarovAmmo
+Ammo sigP226Ammo
+Ammo uspAmmo
+Ammo uspPoisonAmmo
+ReloadTime 30
+NumBullets 1
+
+// Operation
+Mode SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 380.0
+Dispersion 0.6
+
+// Damage and protection
+Damage 7
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound M9Shoot
+ReloadSound MWColtReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

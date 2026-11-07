@@ -1,0 +1,21 @@
+// Identity
+Name Marine Helmet (Legacy)
+ShortName LegacyMarineHelmet147
+Description Original textures from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.4)
+
+// Item and rendering
+Icon marinehelmet
+Colour 255 255 255
+ArmourTexture legacymarine147
+
+// Recipe
+Enchantability 0
+Durability 0
+
+// Protection
+Type Hat
+Defence 0.06
+Toughness 1
+BulletDefence 0.05
+PenetrationResistance 1.50
+ArmorPoints 2

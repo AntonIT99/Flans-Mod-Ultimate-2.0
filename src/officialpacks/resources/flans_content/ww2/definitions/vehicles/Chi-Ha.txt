@@ -7,7 +7,7 @@ Description Japanese Light Tank
 Icon ChiHa
 Model ww2.ChiHa
 FlashModel DefaultFlash
-Texture chiha
+Texture SkinChiHa
 AddDye 8 green
 
 // Recipe
@@ -45,8 +45,8 @@ FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 35 26.5 0.5
-AddGun 8 34 8 turret type99
+BarrelPosition 22.5 19 -0.5
+AddGun -12 20 -4 turret type99
 ShootDelay 1
 ShellDelay 70
 TurretRotationSpeed 0.03
@@ -60,10 +60,10 @@ Gunsight official_jap
 gunsightZoom 2.5
 
 // Health and armour
-SetupPart core 8520 -42 -4 -16 85 23 33
-SetupPart turret 8320 -18 19 -20 40 10 40
-SetupPart leftTrack 6000 -36 -10 16 78 18 8
-SetupPart rightTrack 6000 -36 -10 -24 78 18 8
+SetupPart core 8520 -43 -3 -17 76 20 34
+SetupPart turret 8320 -15 15 -12 29 11 24
+SetupPart leftTrack 6000 -46 -7 -20 87 17 7
+SetupPart rightTrack 6000 -46 -7 8 87 17 7
 BulletDetection 7
 ArmorFrontMm 25 30
 ArmorSideMm 25
@@ -82,7 +82,7 @@ WheelPosition 0 -32 -10 -18
 WheelPosition 1 -32 -10 18
 WheelPosition 2 32 -10 18
 WheelPosition 3 32 -10 -18
-Driver 0 14 0 -360 360 -3 3.5
+Driver 0 9 0 -360 360 -3 3.5
 RotatedDriverOffset 5 0 1
 Passengers 0
 

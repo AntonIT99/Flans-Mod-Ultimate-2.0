@@ -1,0 +1,21 @@
+// Identity
+Name Spetsnaz Jacket (Legacy)
+ShortName LegacySpetsnazBody147
+Description Original textures from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.4)
+
+// Item and rendering
+Icon spetsnazbody
+Colour 255 255 255
+ArmourTexture legacyspetsnaz147
+
+// Recipe
+Enchantability 0
+Durability 0
+
+// Protection
+Type Chest
+Defence 0.06
+Toughness 0
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 2

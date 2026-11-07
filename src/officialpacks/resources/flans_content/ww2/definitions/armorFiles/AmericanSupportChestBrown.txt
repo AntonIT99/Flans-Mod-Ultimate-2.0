@@ -1,6 +1,7 @@
 // Identity
 Name AmericanSupportChestBrown
 ShortName AmericanSupportChestBrown
+Description From the HG WW2 pack
 
 // Item and rendering
 ModelScale 1

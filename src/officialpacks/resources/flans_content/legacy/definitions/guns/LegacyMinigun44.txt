@@ -1,0 +1,61 @@
+// Identity
+Name Minigun (Legacy)
+ShortName LegacyMinigun44
+Description Ammo Type : HMG, original model from Minecraft 1.7.10-1.8 (Flan's Mod 4.4-5.1)
+
+// Item and rendering
+Icon minigun
+Colour 255 255 255
+DeployedModel None
+Model legacy.Minigun44
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [2.0161,0.025202,0]
+animFlashScale 1.24
+Texture minigun
+ModelScale 1.0
+
+// Ammunition
+Ammo minigunAmmo
+Ammo minigunExplosiveAmmo
+Ammo minigunPortableAmmo
+ReloadTime 100
+NumBullets 1
+
+// Operation
+Mode Minigun
+Deployable False
+MoveSpeedModifier 0.4
+KnockbackModifier 0
+RoundsPerMin 4000.0
+
+// Ballistics
+Recoil 1
+Knockback 0.5
+MuzzleVelocity 853.0
+Dispersion 0.45
+
+// Damage and protection
+Damage 2
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+
+// Attachments
+AllowAllAttachments True
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+WarmupSound MinigunWarmup
+SpinSound MinigunSpin
+CooldownSound MinigunCooldown
+WarmupSoundLength 11
+SpinSoundLength 9
+ShootSound MinigunShoot
+ReloadSound BrowningReload

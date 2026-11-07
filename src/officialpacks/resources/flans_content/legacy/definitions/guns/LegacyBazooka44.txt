@@ -1,0 +1,40 @@
+// Identity
+Name Bazooka (Legacy)
+ShortName LegacyBazooka44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.10)
+
+// Item and rendering
+Icon bazooka
+Colour 255 255 255
+DeployedModel None
+animMuzzleFlashPoint [0.75,0.21875,0.125]
+Model legacy.Bazooka44
+animAimOffset 0 1.5468059 0
+Texture legacybazooka44
+EjectCasings False
+
+// Ammunition
+Ammo bazookaAmmo
+ReloadTime 80
+
+// Operation
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.6
+KnockbackModifier 0
+RoundsPerMin 10.0
+
+// Ballistics
+Recoil 5
+MuzzleVelocity 80.0
+Dispersion 2.1
+
+// Damage and protection
+Damage 1
+
+// Optics
+Scope None
+
+// Sounds
+ShootSound bazookaShoot
+ReloadSound bazookaReload

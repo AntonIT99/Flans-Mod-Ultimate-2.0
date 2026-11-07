@@ -1,0 +1,17 @@
+// Identity
+Name British WW2 Pants (Legacy)
+ShortName LegacyBritishPants147
+Description Original textures from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.7)
+
+// Item and rendering
+Icon britishpants
+Colour 255 255 255
+ArmourTexture legacybritish147
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

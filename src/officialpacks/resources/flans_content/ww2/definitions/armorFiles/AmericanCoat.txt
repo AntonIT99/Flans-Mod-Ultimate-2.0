@@ -3,7 +3,7 @@ Name American WW2 Coat
 ShortName americanCoat
 
 // Item and rendering
-Icon americancoat
+Icon americanacoat
 Colour 255 255 255
 ArmourTexture american
 

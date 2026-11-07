@@ -1,0 +1,21 @@
+// Identity
+Name Marine Pants (Legacy)
+ShortName LegacyMarinePants147
+Description Original textures from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.4)
+
+// Item and rendering
+Icon marinepants
+Colour 255 255 255
+ArmourTexture legacymarine147
+
+// Recipe
+Enchantability 0
+Durability 0
+
+// Protection
+Type Legs
+Defence 0.05
+Toughness 0
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 2
