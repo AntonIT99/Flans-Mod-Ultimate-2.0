@@ -1,0 +1,71 @@
+// Identity
+Name TIE-Interceptor (Legacy 1.4.7)
+ShortName LegacyManusTIEInter
+Description Original model from Minecraft 1.4.7-1.5.2
+
+// Model and Rendering
+Icon legacymanustieinter
+Model manus_legacy.TIEInter
+Texture legacymanustieinter
+
+// Recipe and Inventory
+FuelTankSize 5000
+CargoSlots 0
+BombSlots 0
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 4 SMP_Part_Mat_Plate_Steel
+AddDye 5 gray
+
+// Movement and Physics
+MaxThrottle 7.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+Drag 0.98
+Lift 3.2
+RestingPitch 0.0
+HasGear True
+RealMassKg 7500
+RealEngineThrustKn 140
+RealMaxSpeedKmh 2400
+RealTurnRateDegPerSec 0
+RealWingSpanM 7.0
+RealWingAreaM2 28
+RealClimbRateMs 250
+
+// Weapons
+AddGun 95.49 53.89 34.11 leftWing ImperialLaserCannon
+AddGun 95.49 31.38 34.11 leftWing ImperialLaserCannon
+AddGun 95.49 53.89 -34.11 rightWing ImperialLaserCannon
+AddGun 95.49 31.38 -34.11 rightWing ImperialLaserCannon
+ShootDelay 5
+BombDelay 1
+BombPosition 4.775 -6.821 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 6.821
+Propeller 0 0 0 0 leftWing SMP_Part_Propeller_TurbineSpace
+Propeller 1 0 0 0 rightWing SMP_Part_Propeller_TurbineSpace
+Pilot 2.728 30.69 0
+Passengers 0
+SetupPart core 400 -11.6 27.97 -36.83 23.19 25.92 73.67
+SetupPart leftWing 250 -41.61 0 16.37 130.3 79.12 20.46
+SetupPart rightWing 250 -41.61 0 -36.83 130.3 79.12 20.46
+BulletDetection 25
+
+// Sounds
+StartSound propStart
+StartSoundLength 20
+PropSound LancasterProp
+PropSoundLength 49
+ShootSound PlaneShoot
+BombSound bomb

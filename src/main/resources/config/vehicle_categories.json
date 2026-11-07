@@ -1910,7 +1910,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "civil_vehicle_medic_1a"
+            "civil_vehicle_medic_1a",
+            "legacymanusmedic1"
         ]
     },
 
@@ -2226,7 +2227,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "civil_vehicle_banktruck_1a"
+            "civil_vehicle_banktruck_1a",
+            "legacymanusbanktruck2"
         ]
     },
 
@@ -5551,6 +5553,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacymanusflakpanzer4",
             "ww2_vehicle_flakpanzeriv_1a",
             "aatank_flakpanzeriv"
         ]
@@ -7326,6 +7329,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacymanushummel",
             "ww2_vehicle_panzerhaubitzehummel_1a",
             "spg_hummel"
         ]
@@ -12170,6 +12174,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacymanusm41",
             "m4a1sherman",
             "ww2_vehicle_m4a1_1a"
         ]
@@ -14141,6 +14146,7 @@
             ]
         },
         "items": [
+            "legacymanuspanzer4g",
             "panzer4f2",
             "44_panzerivf2",
             "ww2_vehicle_panzeriv_1a"
@@ -14199,8 +14205,10 @@
             ]
         },
         "items": [
+            "legacymanuspanzer4h",
             "legacypanzer164",
             "legacypanzer47",
+            "legacypanzer172",
             "panzer4h",
             "44_panzerivh",
             "ww2_vehicle_panzeriv_2a",
@@ -14830,7 +14838,9 @@
         },
         "items": [
             "civil_vehicle_policetruck_1a",
-            "civil_vehicle_policetruck_2a"
+            "civil_vehicle_policetruck_2a",
+            "legacymanuspolicetruck1",
+            "legacymanuspolicetruck2"
         ]
     },
 
@@ -17764,6 +17774,7 @@
             ]
         },
         "items": [
+            "legacymanust34",
             "t3485",
             "44_t3485",
             "t34",
@@ -22705,6 +22716,7 @@
             "44_kubelwagenmg34",
             "44_kubelwagenmg42",
             "legacykubel",
+            "legacymanusvwtype82",
             "ww2_vehicle_vwtype82_1a",
             "militarycar_kubelwagen"
         ]
@@ -22824,6 +22836,7 @@
             "44_willys30cal",
             "44_willys50cal",
             "legacyjeep",
+            "legacymanuswillyjeep",
             "willyjeepy",
             "jeep",
             "sasjeep",

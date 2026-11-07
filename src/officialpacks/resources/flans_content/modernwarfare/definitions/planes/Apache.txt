@@ -10,6 +10,11 @@ AddDye 8 green
 AddDye 2 black
 ModelScale 1
 
+// Paintjobs
+AdvPaintJob Green ApacheAH64 ah64apache_green green 8
+AdvPaintJob Black ApacheAH64 ah64apache_black black 8
+AdvPaintJob Grey ApacheAH64 ah64apache_grey gray 8
+
 // Recipe
 AddRecipeParts core 1 advancedMetalCockpit
 AddRecipeParts skids 3 wheel

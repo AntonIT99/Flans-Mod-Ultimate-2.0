@@ -1,0 +1,104 @@
+// Identity
+Name M4A1 Sherman (Legacy 1.4.7)
+ShortName LegacyManusM41
+Description Original model from Minecraft 1.4.7-1.5.2
+
+// Model and Rendering
+Model manus_legacy.M41
+FlashModel DefaultFlash
+Icon legacymanusm4
+Texture legacymanusm41
+RotateWheels True
+
+// Paintjobs
+AdvPaintJob Brown legacymanusm4 legacymanusm41_brown brown 8
+
+// Recipe and Inventory
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 5
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 8 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 12 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 green
+AllowAllAmmo False
+AddAmmo WW2_Shell_USA75mmAP
+AddAmmo WW2_Shell_USA75mmHE
+
+// Movement and Physics
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+Tank true
+RealMassKg 30300
+RealEnginePowerHp 400
+RealMaxSpeedKmh 39
+DriveType TRACKED
+RealMaxReverseSpeedKmh 5
+RealTurnRateDegPerSec 18
+
+// Weapons
+AddGun 16.41 30.23 6.909 turret WW2_MG_BrowningM1919_1A
+BarrelPosition 44.91 30.23 0
+ShootParticlesPrimary explode 0.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.95 0 0
+ShootParticlesPrimary flansmod.fmflame 0.58 0.07 0.05
+ShootParticlesPrimary flansmod.fmflame 0.54 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.3 0.07 0.06
+ShootParticlesPrimary largesmoke 0.28 -0.06 -0.07
+ShootParticlesPrimary smoke 0.22 0.04 -0.08
+ShootParticlesPrimary crit 0.48 0 0
+ShellDelay 110
+ShootDelay 5
+GunOrigin 1 43.18 -3.541 8.204
+ShootDelayPrimarySeconds 6
+ReadWeaponsFromGunTypes true
+
+// Protection
+IsExplosionWhenDestroyed true
+ArmorFrontMm 51 47
+ArmorSideMm 38
+ArmorRearMm 38
+ArmorTopMm 19
+ArmorBottomMm 13
+TurretArmorFrontMm 76
+TurretArmorSideMm 51
+TurretArmorRearMm 51
+TurretArmorTopMm 25
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 -30.23 -6.909 -21.59
+WheelPosition 1 -30.23 -6.909 21.59
+WheelPosition 2 36.27 -6.909 21.59
+WheelPosition 3 36.27 -6.909 -21.59
+Driver 0 28.5 0 -360 360 -10 20
+RotatedDriverOffset -6.909 0 6.045
+Passengers 1
+Passenger 1 22.45 12.95 12.09 core -30 30 -10 10 WW2_MG_BrowningM1919_1A FrontMG
+SetupPart turret 400 -21.59 25.04 -17.27 35.41 12.09 34.54
+SetupPart core 500 -45.77 -3.454 -13.82 89.81 27.64 27.64
+SetupPart leftTrack 200 -45.77 -8.636 14.68 91.54 19.86 7.772
+SetupPart rightTrack 200 -45.77 -8.636 -22.45 91.54 19.86 7.772
+BulletDetection 7
+CameraDistance 6.477
+
+// Optics
+hasScope true
+Gunsight manus_m4a3
+gunsightZoom 4
+
+// Sounds
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_m4
+EngineSoundLength 39
+ShootSoundPrimary shoot_75mmus
+ShootSoundSecondary 30calshoot

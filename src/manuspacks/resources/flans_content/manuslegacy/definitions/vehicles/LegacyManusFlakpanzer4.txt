@@ -1,0 +1,102 @@
+// Identity
+Name Flakpanzer IV - Wirbelwind (Legacy 1.4.7)
+ShortName LegacyManusFlakpanzer4
+Description Original model from Minecraft 1.4.7-1.5.2
+
+// Model and Rendering
+Model manus_legacy.Flakpanzer4
+Icon legacymanusflakpanzer4
+Texture legacymanuspanzer4
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 10
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 6 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 12 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 gray
+AllowAllAmmo False
+AddAmmo WW2_Shell_German20mmAA
+AddAmmo 44_20mmAircraftAmmo
+
+// Movement and Physics
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+RealMassKg 22000
+RealEnginePowerPS 265
+RealMaxSpeedKmh 38
+RealMaxReverseSpeedKmh 7
+DriveType TRACKED
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+RealTurnRateDegPerSec 12
+SquashMobs True
+Tank true
+
+// Weapons
+BarrelPosition 0 32 0
+ShellDelay 1
+ShootDelay 1
+RoundsPerMinPrimary 1400
+ReadWeaponsFromGunTypes true
+BarrelPosition 0 32 0
+GunOrigin 1 38 -1.68 9.2
+PlaceTimePrimary 80
+ReloadTimeSecondary 100
+ReloadTimePrimary 51
+ReloadRoundsPrimary 80
+
+// Protection
+ArmorFrontMm 80 10
+ArmorSideMm 30
+ArmorRearMm 30
+ArmorTopMm 20
+ArmorBottomMm 10
+TurretArmorFrontMm 16
+TurretArmorSideMm 16
+TurretArmorRearMm 16
+TurretArmorTopMm 0
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+
+// Parts and Seats
+WheelPosition 0 -28 -6.4 -22.4
+WheelPosition 1 -28 -6.4 22.4
+WheelPosition 2 36.8 -6.4 22.4
+WheelPosition 3 36.8 -6.4 -22.4
+Driver 0 27.2 0 -360 360 -5 85
+RotatedDriverOffset -18.4 0 0
+Passengers 1
+Passenger 1 24.8 9.6 9.6 core -30 30 -10 10 WW2_MG_MG42ZB_1A FrontMG
+SetupPart core 3000 -38.4 -1.6 -16 88.8 21.6 32
+SetupPart turret 800 -24.8 20.8 -20 43.2 16 40
+SetupPart leftTrack 300 -44 -8 17.6 88 17.6 6.4
+SetupPart rightTrack 300 -44 -8 -24 88 17.6 6.4
+BulletDetection 7
+CameraDistance 6
+
+// Optics
+hasScope true
+Gunsight manus_20mmtank
+gunsightZoom 3.5
+
+// Sounds
+StartSound TankIdle2
+StartSoundLength 41
+EngineSound TankRun2
+EngineSoundLength 41
+BackSoundLength 41
+BackSound TankBack2
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ShootSoundPrimary flakvierlingshoot
+ShootSoundSecondary Mg34Shoot
+ShootSoundPrimary flakvierlingshoot
+ShootSoundSecondary Mg34Shoot

@@ -11,6 +11,9 @@ Texture LegacyBF109
 AddDye 5 silver
 AddDye 1 yellow
 
+// Paintjobs
+AdvPaintJob Desert legacybf109desert legacybf109_desert yellow 8
+
 // Recipe
 AddRecipeParts core 1 metalCockpit
 AddRecipeParts coreWheel 2 wheel

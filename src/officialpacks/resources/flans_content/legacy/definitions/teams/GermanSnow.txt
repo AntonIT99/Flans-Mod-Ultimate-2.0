@@ -1,0 +1,23 @@
+// Identity
+Name German (Legacy Snow)
+ShortName legacyGermanSnowTeam
+
+// Appearance
+VictoryFlagTexture flag_team_germany_ww2
+TextColour Grey
+TeamColour 64 64 64
+Hat LegacyGermanSnowHelmet164
+Chest LegacyGermanSnowCoat164
+Legs LegacyGermanSnowPants164
+Shoes LegacyGermanSnowBoots164
+
+// Classes
+AddClass OfficialWW2_GermanScout
+AddClass OfficialWW2_GermanAssault
+AddClass OfficialWW2_GermanSupport
+AddClass OfficialWW2_GermanSupportPanzerfaust
+AddClass OfficialWW2_GermanSupportPanzerschreck
+AddClass OfficialWW2_GermanEngineer
+AddClass OfficialWW2_GermanRifleman
+AddClass OfficialWW2_GermanRiflemanPilot
+AddClass OfficialWW2_GermanMedic

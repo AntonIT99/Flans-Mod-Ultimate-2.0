@@ -1,5 +1,5 @@
 // Identity
-Name StG 44 (Legacy 4.10)
+Name StG 44 (Legacy 1.7.10-4.10)
 ShortName LegacyMp44_410
 Description Original model from Minecraft 1.7.10-1.8 (Flan's Mod 4.10-5.1)
 

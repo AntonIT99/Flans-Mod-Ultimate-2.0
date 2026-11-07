@@ -1,5 +1,5 @@
 // Identity
-Name Panzer IV (Legacy 4.7)
+Name Panzer IV (Legacy 1.7.10-4.7)
 ShortName LegacyPanzer47
 Description German Medium Tank, original model from Minecraft 1.7.10 (Flan's Mod 4.7-4.9)
 

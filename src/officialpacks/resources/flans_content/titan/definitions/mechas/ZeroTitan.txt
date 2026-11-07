@@ -12,6 +12,9 @@ AddDye 1 red
 AddDye 1 yellow
 ModelScale 1
 
+// Paintjobs
+AdvPaintJob MkII ZeroTitan zerotitan_mkii gray 8
+
 // Recipe
 AddRecipeParts core 1 mediumDiamondBody 1 vehicleSeat 8 iron
 AddRecipeParts leftArm 1 mediumDiamondArm 3 iron

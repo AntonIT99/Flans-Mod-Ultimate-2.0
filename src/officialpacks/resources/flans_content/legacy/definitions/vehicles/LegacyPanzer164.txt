@@ -1,7 +1,7 @@
 // Identity
 Name Panzer IV (Legacy 1.6.4)
 ShortName LegacyPanzer164
-Description German Medium Tank, original model from Minecraft 1.6.4-1.7.10 (Flan's Mod 3.1-4.4)
+Description German Medium Tank, original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.4)
 
 // Item and rendering
 Icon legacypanzer164
@@ -10,6 +10,10 @@ FlashModel DefaultFlash
 Texture LegacyPanzer164
 RotateWheels true
 AddDye 10 gray
+
+// Paintjobs
+AdvPaintJob PanzerIV legacypanzer164 legacypanzer164_panzeriv gray 8
+AdvPaintJob PanzerIII legacypanzer164 legacypanzer164_panzeriii gray 8
 
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat

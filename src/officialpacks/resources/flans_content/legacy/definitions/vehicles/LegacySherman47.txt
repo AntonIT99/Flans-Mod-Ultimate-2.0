@@ -1,5 +1,5 @@
 // Identity
-Name M4 Sherman (Legacy 4.7)
+Name M4 Sherman (Legacy 1.7.10-4.7)
 ShortName LegacySherman47
 Description American Medium Tank, original model from Minecraft 1.7.10 (Flan's Mod 4.7-4.9)
 

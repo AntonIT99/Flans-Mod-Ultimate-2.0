@@ -1,7 +1,7 @@
 // Identity
 Name M4 Sherman (Legacy 1.6.4)
 ShortName LegacySherman164
-Description American Medium Tank, original model from Minecraft 1.6.4-1.7.10 (Flan's Mod 3.1-4.4)
+Description American Medium Tank, original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.4)
 
 // Item and rendering
 Icon legacysherman164
@@ -10,6 +10,9 @@ FlashModel DefaultFlash
 Texture LegacySherman164
 RotateWheels true
 AddDye 10 green
+
+// Paintjobs
+AdvPaintJob Olive legacysherman164 legacysherman164_olive green 8
 
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat

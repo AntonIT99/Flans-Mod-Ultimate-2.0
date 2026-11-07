@@ -1,0 +1,19 @@
+// Identity
+Name Nerf Yellow
+ShortName nerfYellow
+
+// Appearance
+TextColour Yellow
+TeamColour 255 215 0
+Hat none
+Chest nerfYellowVest
+Legs nerfYellowKnees
+Shoes none
+
+// Classes
+AddClass nerfStryfeClass
+AddClass nerfRetaliatorClass
+AddClass nerfRaiderClass
+AddClass nerfLongshotClass
+AddClass nerfNitronClass
+AddClass nerfVulcanClass

@@ -1,7 +1,7 @@
 // Identity
 Name Kubelwagen (Legacy)
 ShortName LegacyKubel
-Description German Jeep, original model from Minecraft 1.6.4-1.7.10 (Flan's Mod 3.1-4.10)
+Description German Jeep, original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.10)
 
 // Item and rendering
 Icon LegacyKubel

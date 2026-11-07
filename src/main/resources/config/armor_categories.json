@@ -599,6 +599,8 @@
             "44_germanofficerhat",
             "44_germanofficerhatfeldgrau",
             "44_japanesetype3fieldcap",
+            "44_japaneseheadband",
+            "44_philippinecombatfieldhat",
             "achaemenidheadwrap",
             "americangeneralschirmmuetze",
             "americanallssschirmmuetze",
@@ -916,6 +918,8 @@
             "44_germansumpftarnm43camosmock",
             "44_germansumpftarnm45chest",
             "44_japanesetype98chestkhaki",
+            "44_philippinecombatfieldchest",
+            "44_philippinecombatfieldchest2",
             "44_sovietsummerobr43chest",
             "44_waffenm42camochest",
             "44_waffenm44camochest",
@@ -1351,7 +1355,9 @@
             "lacreatura",
             "lagoblina",
             "legacyamericancoat147",
+            "legacyamericansnowcoat164",
             "legacybritishcoat147",
+            "legacybritishdesertcoat147",
             "legacygermancoat147",
             "legacygermandesertcoat147",
             "legacygermanforestcoat47",
@@ -1660,6 +1666,8 @@
             "44_germanofficerpants",
             "44_germansumpftarnm45pants",
             "44_japanesetype98pantskhaki",
+            "44_philippinecombatfieldpants",
+            "44_philippinecombatfieldshorts",
             "44_sovietsummerobr43pants",
             "44_waffenm44camopants",
             "americanpants",
@@ -1718,7 +1726,9 @@
             "japanesepants",
             "japanesepants2",
             "legacyamericanpants147",
+            "legacyamericansnowpants164",
             "legacybritishpants147",
+            "legacybritishdesertpants147",
             "legacygermandesertpants147",
             "legacygermanforestpants47",
             "legacygermanpants147",
@@ -1933,6 +1943,7 @@
             "44_germanboots",
             "44_germanofficerboots",
             "44_japaneseboots",
+            "44_philippinecombatfieldboots",
             "44_sovietsummerobr43boots",
             "americanboots",
             "americanboots2",
@@ -1972,7 +1983,9 @@
             "japaneseboots2",
             "kskboots",
             "legacyamericanboots147",
+            "legacyamericansnowboots164",
             "legacybritishboots147",
+            "legacybritishdesertboots147",
             "legacygermanboots147",
             "legacygermandesertboots147",
             "legacygermanforestboots47",
@@ -1997,6 +2010,7 @@
             "sasboots",
             "speedboots",
             "spetsnazboots",
+            "usarmyboots",
             "waterwalkingboots",
             "wh40k_armor_catachanboots_1a",
             "wh40k_armor_commissarboots_1a",
@@ -2237,6 +2251,20 @@
         ]
     },
 
+    "Modern Atmospheric Diving Suit Helmet": {
+        "properties": {
+            "Defence": "0.04",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 2,
+            "Toughness": 0,
+            "Submarine": "true"
+        },
+        "items": [
+            "adshelmet"
+        ]
+    },
+
     "Modern Ballistic Vest": {
         "properties": {
             "Defence": "0.16",
@@ -2274,6 +2302,7 @@
             "sashelmet",
             "spetsnazhelmet",
             "swathelmet",
+            "usarmyhelmet",
             "ushelmetachdcu",
             "6b27",
             "6b27flora",
@@ -2330,6 +2359,20 @@
             "pasgtnaked",
             "khb2000",
             "mjerryhat"
+        ]
+    },
+
+    "Modern Diving Mask And Snorkel": {
+        "properties": {
+            "Defence": "0.01",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "scubamask",
+            "snorkel"
         ]
     },
 
@@ -2402,6 +2445,33 @@
         ]
     },
 
+    "Modern Scuba Air Tank (Chest)": {
+        "properties": {
+            "Defence": "0.03",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "airtank",
+            "doubleairtank"
+        ]
+    },
+
+    "Modern Scuba Helmet": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 1,
+            "Toughness": 0
+        },
+        "items": [
+            "scubahelmet"
+        ]
+    },
+
     "Modern Soft Ballistic Vest (Boots Slot)": {
         "properties": {
             "Defence": "0.06",
@@ -2455,7 +2525,8 @@
             "sasbody",
             "spetsnazbody",
             "pmc",
-            "mjerryvest"
+            "mjerryvest",
+            "usarmycoat"
         ]
     },
 
@@ -2477,7 +2548,8 @@
             "opafpants",
             "saspants",
             "spetsnazpants",
-            "mjerrypants"
+            "mjerrypants",
+            "usarmypants"
         ]
     },
 
@@ -3193,7 +3265,9 @@
             "japanesehelmet",
             "japanesehelmet2",
             "legacyamericanhelmet147",
+            "legacyamericansnowhelmet164",
             "legacybritishhelmet147",
+            "legacybritishdeserthelmet147",
             "legacygermandeserthelmet147",
             "legacygermanforesthelmet47",
             "legacygermanhelmet147",

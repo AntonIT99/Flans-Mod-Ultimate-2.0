@@ -1,5 +1,5 @@
 // Identity
-Name USP .45 (Legacy 5.1)
+Name USP .45 (Legacy 1.8-5.1)
 ShortName LegacyUsp51
 Description Ammo Type : Pistol_Dual Wieldable, original model from Minecraft 1.8-1.12.2 (Flan's Mod 5.1-5.6)
 

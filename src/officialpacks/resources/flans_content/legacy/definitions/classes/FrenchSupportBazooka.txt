@@ -1,0 +1,10 @@
+// Identity
+Name Anti-Tank (Bazooka)
+ShortName OfficialLegacy_FrenchSupportBazooka
+
+// Items
+AddItem m1Carbine
+AddItem m1CarbineAmmo 3
+AddItem bazooka
+AddItem bazookaAmmo 2
+AddItem ww2Knife

@@ -10,6 +10,9 @@ FlashModel DefaultFlash
 Texture LegacyPak40
 AddDye 10 gray
 
+// Paintjobs
+AdvPaintJob Alternate LegacyPak40 legacypak40_alternate gray 8
+
 // Recipe
 AddRecipeParts core 1 tankBarrel 1 gunShield
 AddRecipeParts leftTrack 1 largeWheel

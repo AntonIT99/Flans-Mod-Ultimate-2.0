@@ -1,0 +1,11 @@
+// Identity
+Name Assault
+ShortName OfficialLegacy_ItalianAssault
+
+// Items
+AddItem mp40
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem mp40Ammo 3
+AddItem lugerAmmo 2

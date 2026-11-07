@@ -1,0 +1,22 @@
+// Identity
+Name Soviet (Alternative)
+ShortName legacyRussianAltTeam
+
+// Appearance
+VictoryFlagTexture flag_team_ussr_ww2.svg
+TextColour Red
+TeamColour 255 0 0
+Hat russianHelmet2
+Chest russianCoat2
+Legs russianPants2
+Shoes russianBoots2
+
+// Classes
+AddClass OfficialWW2_RussianScout
+AddClass OfficialWW2_RussianAssault
+AddClass OfficialWW2_RussianSupport
+AddClass OfficialWW2_RussianSupportDP28
+AddClass OfficialWW2_RussianEngineer
+AddClass OfficialWW2_RussianRifleman
+AddClass OfficialWW2_RussianRiflemanPilot
+AddClass OfficialWW2_RussianMedic

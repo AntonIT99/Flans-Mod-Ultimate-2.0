@@ -1,0 +1,23 @@
+// Identity
+Name American (Legacy)
+ShortName legacyAmericanTeam
+
+// Appearance
+VictoryFlagTexture flag_team_usa_1912-1959
+TextColour Green
+TeamColour 0 255 0
+Hat LegacyAmericanHelmet147
+Chest LegacyAmericanCoat147
+Legs LegacyAmericanPants147
+Shoes LegacyAmericanBoots147
+
+// Classes
+AddClass OfficialWW2_AmericanScout
+AddClass OfficialWW2_AmericanAssault
+AddClass OfficialWW2_AmericanSupport
+AddClass OfficialWW2_AmericanSupportBazooka
+AddClass OfficialWW2_AmericanEngineer
+AddClass OfficialWW2_AmericanRifleman
+AddClass OfficialWW2_AmericanRiflemanPilot
+AddClass OfficialWW2_AmericanRiflemanSpringfield
+AddClass OfficialWW2_AmericanMedic
