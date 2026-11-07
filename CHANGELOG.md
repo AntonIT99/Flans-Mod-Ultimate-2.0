@@ -2,6 +2,8 @@
 
 * Wolff's Star Wars Pack blasters hit harder, sniper rifles use dedicated high-power bolts, the DC-15S and DC-17 use 50-shot power packs, and the Z-6 has a separate 200-shot supply; class loadouts carry the matching ammunition
 
+* Wolff's Germany Pack adds lightweight grey and feldgrau Wehrmacht and Special Corps uniform tunics with shared uniform trousers and boots, rendered with the default armour model for large NPC battles
+
 * `animThirdPersonOffset x y z` overrides the Java gun model's third-person offset when specified; `/flansdebug thirdPersonOffset [x y z | reset | clear]` previews the final offset locally without editing content packs
 
 * Driveable occupants can be hidden according to door state using `SetPlayerInvisibleOnDoorOpen` and `SetPlayerInvisibleOnDoorClose`
