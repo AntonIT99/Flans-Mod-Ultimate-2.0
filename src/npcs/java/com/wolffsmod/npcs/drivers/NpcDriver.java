@@ -595,7 +595,7 @@ public final class NpcDriver
             return null;
         boolean secondary = !primaryDrops;
         boolean guns = rangedBank(seat, false) && !primaryDrops || rangedBank(seat, true) && !secondaryDrops;
-        if (guns && !NpcBombTargets.worthBombing(target))
+        if (guns && !NpcBombTargets.worthBombing(npc, target))
             return null;
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
         Optional<WeaponBallistics> ballistics = seat.getDriverWeaponBallistics(secondary);
@@ -1030,7 +1030,7 @@ public final class NpcDriver
         if (dropped ? belowOwnBlast(origin.get().y, target.getY(), NpcBlastSafety.standoff(npc, blastReach(secondary))) : NpcBlastSafety.tooClose(npc, target, blastReach(secondary)))
             return false;
         if (dropped)
-            return bombsAway(origin.get(), driveable.getDeltaMovement(), ballistics.get(), target, bombLead(npc, target));
+            return bombsAway(origin.get(), driveable.getDeltaMovement(), ballistics.get(), blastReach(secondary), target, bombLead(npc, target));
         if (direction.get().dot(launch(npc, seat, secondary, line)) < FIRE_CONE)
             return false;
         ClipContext sight = new ClipContext(origin.get(), aimPoint, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc);
@@ -1056,16 +1056,19 @@ public final class NpcDriver
     /**
      * Whether a bomb dropped now, from above the target, would come down within reach of it, where the target will be by then.
      *
+     * @param reach
+     *            blocks round where it goes off within which the bomb harms, which is how far off the meeting point it may
+     *            come down
      * @param lead
      *            the target's velocity, in blocks per tick across the ground, it is met by
      */
-    private static boolean bombsAway(Vec3 origin, Vec3 velocity, WeaponBallistics ballistics, LivingEntity target, Vec3 lead)
+    private static boolean bombsAway(Vec3 origin, Vec3 velocity, WeaponBallistics ballistics, double reach, LivingEntity target, Vec3 lead)
     {
         if (origin.y < target.getY() + MIN_BOMB_HEIGHT)
             return false;
         WeaponAim.Fall fall = WeaponAim.fall(origin, velocity, ballistics.gravity(), ballistics.drag(), target.getY());
         Vec3 meeting = target.position().add(lead.x * fall.ticks(), 0D, lead.z * fall.ticks());
-        return fall.landed() && horizontal(fall.impact(), meeting) <= BOMB_RADIUS;
+        return fall.landed() && horizontal(fall.impact(), meeting) <= Math.max(BOMB_RADIUS, NpcBombTargets.releaseRadius(reach));
     }
 
     /**

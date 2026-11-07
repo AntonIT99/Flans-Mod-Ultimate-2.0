@@ -332,7 +332,7 @@ public final class NpcDriverGuns
         if (shot == null)
             return false;
         if (shot.dropped())
-            return dropBomb(context, origin, shot);
+            return dropBomb(context, origin, shot, NpcBlastSafety.reach(ammo));
         if (options.enabled(Feature.FIRE_WHEN_ALIGNED) && !state.isGunAligned())
             return false;
         // Rounds leave along the barrels, as a player's do: the turret's, or the hull's for a gun fixed to it, which waits for the
@@ -349,13 +349,19 @@ public final class NpcDriverGuns
         return true;
     }
 
-    /** A bomb falls away from the bay without a flash, only on a target worth it, and only once it would come down on it. */
-    private static boolean dropBomb(Context context, Vec3 origin, ProjectileShot shot)
+    /**
+     * A bomb falls away from the bay without a flash, only on a target worth it, and only once it would come down within
+     * reach of it.
+     *
+     * @param reach
+     *            blocks round where it goes off within which the bomb harms, which is how far off the target it may come down
+     */
+    private static boolean dropBomb(Context context, Vec3 origin, ProjectileShot shot, double reach)
     {
         EntityNPCInterface npc = context.npc();
         LivingEntity target = context.target();
         NpcVehicleState state = context.state();
-        if (!NpcBombTargets.worthBombing(target) || !state.bombDrop(npc, origin, shot.gravity(), shot.drag(), target, context.options()).hits())
+        if (!NpcBombTargets.worthBombing(npc, target) || !state.bombDrop(npc, origin, shot.gravity(), shot.drag(), reach, target, context.options()).hits())
             return false;
         return !shot.launch(origin, state.barrelDirection(npc, false), false).isEmpty();
     }

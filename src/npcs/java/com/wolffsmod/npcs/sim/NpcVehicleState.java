@@ -574,12 +574,12 @@ public final class NpcVehicleState
             bombRun = false;
             return;
         }
-        BombPlan plan = bombPlan(bombing, otherBombs, NpcBombTargets.worthBombing(target));
+        BombPlan plan = bombPlan(bombing, otherBombs, NpcBombTargets.worthBombing(npc, target));
         bombRun = plan.run();
         if (plan.run())
             aligned = bombsAway(npc, current, target, options);
         else if (plan.marksDrop())
-            bombPoint = bombDrop(npc, npc.position(), otherGravity, otherDrag, target, options).meeting();
+            bombPoint = bombDrop(npc, npc.position(), otherGravity, otherDrag, 0D, target, options).meeting();
     }
 
     /**
@@ -1134,7 +1134,7 @@ public final class NpcVehicleState
     {
         FlanModelEntity model = NpcModels.flan(npc);
         Vec3 origin = model != null && current.muzzle() != null ? NpcModels.world(npc, model, current.muzzle(), hullYaw) : npc.position();
-        BombDrop drop = bombDrop(npc, origin, shotGravity, shotDrag, target, options);
+        BombDrop drop = bombDrop(npc, origin, shotGravity, shotDrag, shotBlast, target, options);
         bombPoint = drop.meeting();
         return drop.hits();
     }
@@ -1142,8 +1142,12 @@ public final class NpcVehicleState
     /**
      * Where a bomb let go now, from the origin at the NPC's velocity, falling as given, meets the target, and whether it comes
      * down within reach of it. A moving target is met where it will be when the bomb lands, as far as the NPC leads its targets.
+     *
+     * @param reach
+     *            blocks round where it goes off within which the bomb harms, which is how far off the meeting point it may
+     *            come down; 0 for a bomb whose blast is not known, which then has to come down close
      */
-    public BombDrop bombDrop(EntityNPCInterface npc, Vec3 origin, double gravity, double drag, LivingEntity target, NpcWeaponOptions options)
+    public BombDrop bombDrop(EntityNPCInterface npc, Vec3 origin, double gravity, double drag, double reach, LivingEntity target, NpcWeaponOptions options)
     {
         WeaponAim.Fall fall = WeaponAim.fall(origin, npc.getDeltaMovement(), gravity, drag, target.getY());
         Vec3 meeting = target.position();
@@ -1156,7 +1160,8 @@ public final class NpcVehicleState
             return new BombDrop(meeting, false);
         double x = fall.impact().x - meeting.x;
         double z = fall.impact().z - meeting.z;
-        return new BombDrop(meeting, fall.landed() && x * x + z * z <= BOMB_RADIUS * BOMB_RADIUS);
+        double radius = Math.max(BOMB_RADIUS, NpcBombTargets.releaseRadius(reach));
+        return new BombDrop(meeting, fall.landed() && x * x + z * z <= radius * radius);
     }
 
     /** The point of a target a shot is aimed at: the middle of a large body, the chest of a smaller one. */
