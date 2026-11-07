@@ -116,6 +116,12 @@ AddArmour GermanFallschirmjager3 German Uniform - Fallschirmjager (Splittermuste
 44_GermanFeldgrauPants cloth.7 7
 44_GermanBoots leather 4
 
+AddArmour GermanSumpftarnM45 German Uniform - Sumpftarn M45
+44_GermanM42FeldgrauStahlhelm ingotIron 5
+44_GermanSumpftarnM45Chest cloth.12 8 44_GermanFlag 1
+44_GermanSumpftarnM45Pants cloth.12 7
+44_GermanBoots leather 4
+
 AddArmour SovietObr43 Soviet Uniform - Obr.43
 44_SovietSummerObr43Helmet ingotIron 5
 44_SovietSummerObr43Chest cloth.4 8 44_SovietFlag 1
@@ -133,4 +139,22 @@ AddArmour JapaneseType98Khaki Japanese Uniform - Type 98 Chest (Khaki)
 44_JapaneseType98ChestKhaki cloth.4 8 44_JapaneseFlag 1
 44_JapaneseType98PantsKhaki cloth.4 7
 44_JapaneseBoots leather 4
+
+AddArmour JapaneseHeadBand Japanese Uniform - Head Band
+44_JapaneseHeadBand cloth.0 2 cloth.14 1
+44_JapaneseType98ChestKhaki cloth.4 8 44_JapaneseFlag 1
+44_JapaneseType98PantsKhaki cloth.4 7
+44_JapaneseBoots leather 4
+
+AddArmour PhilippineCombatField1 Philippine Uniform - Combat Field (Short Sleeves)
+44_PhilippineCombatFieldHat cloth.13 4
+44_PhilippineCombatFieldChest cloth.13 7
+44_PhilippineCombatFieldShorts cloth.13 5
+44_PhilippineCombatFieldBoots leather 4
+
+AddArmour PhilippineCombatField2 Philippine Uniform - Combat Field (Long Sleeves)
+44_PhilippineCombatFieldHat cloth.13 4
+44_PhilippineCombatFieldChest2 cloth.13 8
+44_PhilippineCombatFieldPants cloth.13 7
+44_PhilippineCombatFieldBoots leather 4
 http://minecraft.wikia.com/wiki/Data_Values

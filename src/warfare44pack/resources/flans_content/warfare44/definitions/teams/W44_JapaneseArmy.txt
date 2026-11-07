@@ -20,6 +20,7 @@ AddClass W44_JapaneseArmyRiflemanType38
 
 // Assault and grenadiers
 AddClass W44_JapaneseArmyAssault
+AddClass W44_JapaneseArmyRaiderHachimaki
 
 // Automatic rifles and machine guns
 AddClass W44_JapaneseArmySupport

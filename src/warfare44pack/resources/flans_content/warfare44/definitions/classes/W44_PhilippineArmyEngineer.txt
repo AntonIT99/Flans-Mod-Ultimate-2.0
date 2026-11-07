@@ -1,0 +1,16 @@
+// Identity
+Name Engineer
+ShortName W44_PhilippineArmyEngineer
+Description Combat engineer with a Springfield rifle, wrench, satchel charge and land mine for demolitions and delaying actions.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_M1903Springfield
+AddItem 44_M1903SpringfieldAmmo 4
+AddItem 44_Wrench
+AddItem 44_SatchelCharge
+AddItem 44_LandMine
+AddItem 44_Bandage
+AddItem 44_AmericanKaBarKnife
