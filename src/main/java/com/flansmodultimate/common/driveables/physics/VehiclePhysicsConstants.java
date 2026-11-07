@@ -261,6 +261,13 @@ public final class VehiclePhysicsConstants
     public static final double DRAFT_RESTORING_STIFFNESS = 0.08D;
     /** Maximum blocks a draft probe will search upward for the water surface. */
     public static final int DRAFT_SURFACE_PROBE_BLOCKS = 8;
+    /**
+     * Slowest rise, in blocks per tick, a hull with a declared draft may settle
+     * at. The legacy {@code Buoyancy} key caps the restoring response, and a
+     * definition that sets it to zero would otherwise leave a hull hanging at
+     * whatever depth it was placed, never reaching the draft it declares.
+     */
+    public static final double MIN_DRAFT_RISE_BLOCKS_PER_TICK = 0.01D;
 
     // --------------------------------------------------------------- knockback
 

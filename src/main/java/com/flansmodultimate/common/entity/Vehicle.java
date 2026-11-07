@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.damage.VehicleLandingDamage;
 import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.driveables.visual.VehicleVisual;
 import com.flansmodultimate.common.physics.ModPhysics;
@@ -277,21 +278,53 @@ public class Vehicle extends Driveable implements VehicleVisual
         velocity = applyGroundFriction(current, velocity, effectiveThrottle, braking, tracked, pushed, derivedPhysics && drivetrain.isShifting() ? Math.abs(normalizedThrottle) : 0F);
         moveWithCollisions(velocity);
 
-        if (tickCount > 20 && verticalCollision && descent < -0.65D && !isInWater())
-        {
-            float damage = (float) ((-descent - 0.45D) * 30D * Math.max(0F, type.getFallDamageFactor()));
-            if (damage > 0F)
-            {
-                damagePart(EnumDriveablePart.CORE, damage, level().damageSources().fall());
-                DriveablePosition firstWheel = type.getWheelPosition(0);
-                if (firstWheel != null && firstWheel.getPart() != EnumDriveablePart.CORE)
-                    damagePart(firstWheel.getPart(), damage * 0.2F, level().damageSources().fall());
-            }
-        }
+        handleLandingImpact(type, descent);
 
         harvestConfiguredBlocks();
         if (isEngineActive() && !pushed)
             consumeFuel(DriveableControlPhysics.vehicleFuelLoad(effectiveThrottle, type.getWheelPositions().size()));
+    }
+
+    /**
+     * Applies the legacy drop response to a hull that has just met the ground.
+     *
+     * <p>
+     * Legacy Flan's ran this out of {@code fall()} as a flat hitpoint figure,
+     * which bit only on the small cores period packs authored.
+     * {@link VehicleLandingDamage} reproduces the same outcome for those hulls
+     * as a share of each part's own health, so a drop stays equally
+     * consequential for a pack authoring thousands of hitpoints or deriving them
+     * from mass through {@code UseRealisticVehicleHealth}.
+     *
+     * @param descentSpeed
+     *            the downward speed this tick's physics asked for, before the
+     *            suspension cancelled it; negative downwards
+     */
+    private void handleLandingImpact(@NotNull VehicleType type, double descentSpeed)
+    {
+        // Settling onto its suspension on the tick it is placed is not a landing,
+        // and water breaks a fall rather than stopping it dead.
+        if (level().isClientSide || tickCount <= 20 || !verticalCollision || isInWater())
+            return;
+
+        VehicleLandingDamage.Impact impact = VehicleLandingDamage.evaluate(-descentSpeed, type.getFallDamageFactor());
+        if (!impact.damaging())
+            return;
+
+        // The running gear is what is meant to meet the ground, so it takes its
+        // share on top of the hull's rather than instead of it.
+        DriveablePosition firstWheel = type.getWheelPosition(0);
+        if (firstWheel != null && firstWheel.getPart() != EnumDriveablePart.CORE)
+            damageLandingPart(firstWheel.getPart(), impact.runningGearHealthFraction());
+        damageLandingPart(EnumDriveablePart.CORE, impact.coreHealthFraction());
+    }
+
+    private void damageLandingPart(@NotNull EnumDriveablePart partType, float healthFraction)
+    {
+        DriveablePart part = driveableData == null ? null : driveableData.getPart(partType);
+        if (part == null || part.isDestroyed() || healthFraction <= 0F || part.getMaxHealth() <= 0F)
+            return;
+        damagePart(partType, part.getMaxHealth() * healthFraction, level().damageSources().fall());
     }
 
     // Forge's getStepHeight() reads this, and vanilla and other mods still call it directly.

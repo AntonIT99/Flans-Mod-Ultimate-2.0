@@ -207,7 +207,7 @@ Also define when applicable:
 
 | Property | Unit | Guidance |
 | --- | --- | --- |
-| `PenetrationAt100m` | millimetres | Perpendicular penetration at 100 m, preferably comparable RHA, for AP and heavy anti-materiel rounds. The game currently applies the authored value at every range despite the key name. |
+| `PenetrationAt100m` | millimetres | Perpendicular penetration at 100 m, preferably comparable RHA, for any small-arms round whose penetration is relevant: more than about 3 mm, which is the thinnest plate the vehicle categories authorise. That covers AP and heavy anti-materiel rounds, full-power rifle ball and intermediate-calibre AP, all of which historically defeat a splinter shield. Omit it only below that threshold, as for black-powder balls and explosive-bodied small-arms rounds, where a figure and no figure behave identically. The driveable armour gate is absolute, so a round with no figure deals **no** damage to any part with armour above 0 mm; never compress a figure to sit under an existing category, and raise the AP ladder instead so AP stays above ball for a calibre. Do not scale a light high-velocity round by muzzle energy alone, which undervalues it: penetration tracks sectional density and striking velocity. The game currently applies the authored value at every range despite the key name. |
 | `ExplosiveMassTNTg` / `ExplosiveMassTNTKg` | grams / kilograms TNT equivalent | Only for explosive ammunition; derive from filler mass/composition, never total projectile mass. |
 | `FlakParticles` | particle count | Legacy visual count, not fragment count or a researched historical statistic. Ball ammunition normally uses `0`. |
 

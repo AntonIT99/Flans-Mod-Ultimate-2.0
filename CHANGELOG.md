@@ -178,6 +178,10 @@
 * Columns of smoke over a battlefield all lean with one slow drift, stronger in the rain, and burning wrecks are heard as a roar that carries plus a crackle close to
 * Fixed the hitboxes of planes and helicopters flown by Flan's NPCs facing backwards; detached parts such as tracks and armor screens now check ground support against their rendered geometry, tip into a stable resting position, remain supported on narrow blocks and land correctly on stairs and slabs without snapping onto overhead surfaces
 * Fixed animated tracks, driveable collisions against walls and ThrownGun gravity
+* Driveables no longer damage themselves for striking a wall: `CollisionDamageEnable`, `CollisionDamageThrottle` and `CollisionDamageTimes` again only hurt the living entities a driveable runs into, as in 1.7.10, so a pack vehicle that pairs a small authored core with a large `CollisionDamageTimes` no longer explodes against a kerb; what a crash costs the hull is its authored `CollisionPoint` strikes against blocks
+* Ground vehicles take drop damage as a share of each part's own health instead of a flat figure, so a fall stays equally consequential whether a pack authors hitpoints in the hundreds or the thousands or derives them from mass through `UseRealisticVehicleHealth`; `FallDamageFactor` still scales it and zero still makes a type immune, the running gear takes a fifth of what the hull takes, and a long enough drop writes the vehicle off
+* `SquashMobs` damage is derived from the vehicle's mass and the speed it carries into a body, from the energy that body actually absorbs, instead of a flat figure a bicycle and a tank delivered alike: a hull well under a tonne hurts markedly less, a car at 60 km/h is lethal, and a slow nudge is far gentler than before
+* Ships that declare `RealDraftM` settle at their waterline even when their definition sets `Buoyancy` to zero, instead of hanging at whatever depth they were placed
 * Pointing a driveable repair tool (such as the blow torch) at a part of a driveable or Flan's NPC shows its remaining and total HP; debug mode shows it above the armor readout
 * Using a driveable repair tool on a vehicle repairs it instead of entering a seat, and repair tool tooltips show their repair amount and remaining uses
 
@@ -186,6 +190,8 @@
 * Disposable guns such as the Panzerfaust are no longer removed after firing in creative mode (`ConsumeGunOnUse`)
 
 * New gun parameter `EjectCasings` turns off casing ejection for a single gun; blasters, energy and rail weapons, rocket and missile launchers, flamethrowers, revolvers, bows, Nerf blasters, the caseless HK G11 and muzzle-loaders no longer throw out casings
+
+* Full-power rifle and machine-gun ball, cannon high-explosive shells and armour-piercing bombs carry a `PenetrationAt100m` figure in the built-in categories, so coaxial and aircraft machine guns can defeat thin plate such as a towed gun's splinter shield again instead of being stopped outright by any armour at all; small-arms armour-piercing ratings were raised to stay above ball, rounds too weak to defeat the thinnest shield carry no figure, and blast weapons such as bombs, torpedoes, missiles and high-explosive rockets work through overpressure and need none
 
 * `/rearm` and Teams vehicle spawning fill vehicle weapon ammunition slots to their item and inventory stack limits, including partially filled stacks; shell, bomb and missile banks receive a mix of every declared round of the bank's kind instead of a single type, and Teams spare vehicle supplies and `/defaultammo` include every such round too; rounds come from the driveable's own content pack whenever it has any, including the vehicle ammunition issued to NPC crews
 

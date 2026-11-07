@@ -7,6 +7,7 @@ import com.flansmodultimate.api.entity.EntityTypeProperties;
 import com.flansmodultimate.api.entity.EntityTypeProperties.Sound;
 import com.flansmodultimate.api.entity.EntityTypeProperties.Weapon;
 import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.damage.VehicleSquashDamage;
 import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.guns.*;
@@ -27,9 +28,8 @@ public final class EntityTypePropertySupport
     private static final float DEFAULT_AIM_SPEED = 8F;
     /** Radians of yaw per tick Vehicle gives a legacy wheeled hull per unit of steering control, turn speed and speed scale. */
     private static final double LEGACY_STEERING_SCALE = 0.1D;
-    /** Blocks per tick across the ground above which a driveable that squashes mobs hurts them, and the most it deals. */
+    /** Blocks per tick across the ground above which a driveable that squashes mobs hurts them. */
     public static final double SQUASH_SPEED = 0.12D;
-    private static final double MAX_SQUASH_DAMAGE = 40D;
 
     private EntityTypePropertySupport()
     {}
@@ -159,16 +159,17 @@ public final class EntityTypePropertySupport
         return Math.min(2F, Math.max(0.5F, DriveableControlPhysics.engineSoundPitch(movement, curve, 1F)));
     }
 
+    /**
+     * What a driveable that squashes mobs deals one it runs into, which
+     * {@link VehicleSquashDamage} derives from the hull's mass and the speed it
+     * carries into the body rather than from speed alone.
+     */
     public static OptionalDouble squashDamage(IContentType type, double horizontalSpeed)
     {
         boolean squashes = type instanceof VehicleType vehicle && vehicle.isSquashMobs() || type instanceof MechaType mecha && mecha.isSquashMobs();
-        return squashes && horizontalSpeed > SQUASH_SPEED ? OptionalDouble.of(squashDamage(horizontalSpeed)) : OptionalDouble.empty();
-    }
-
-    /** @return what a driveable that squashes mobs deals one it runs into at a speed across the ground in blocks per tick */
-    public static double squashDamage(double horizontalSpeed)
-    {
-        return Math.min(MAX_SQUASH_DAMAGE, 2D + horizontalSpeed * 12D);
+        if (!squashes || horizontalSpeed <= SQUASH_SPEED || !(type instanceof DriveableType driveable))
+            return OptionalDouble.empty();
+        return OptionalDouble.of(VehicleSquashDamage.damage(driveable.getImpulseMass().massKg(), horizontalSpeed));
     }
 
     public static Optional<EntityTypeProperties> read(IContentType type, boolean secondary)
