@@ -1,0 +1,119 @@
+﻿// Identity
+Name Heinkel He 111 (Legacy 1.4.7)
+ShortName LegacyManusHE111
+Description Original model from Minecraft 1.4.7-1.5.2
+
+// Model and Rendering
+Model manus_legacy.HE111
+FlashModel DefaultFlash
+Icon legacymanushe111
+Texture legacymanushe111
+
+// Recipe and Inventory
+FuelTankSize 32000
+BombSlots 16
+CargoSlots 0
+MissileSlots 0
+AddRecipeParts core 1 SMP_Part_Cockpit_Large 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Large 12 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Large 15 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Large 15 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 10 green
+AllowAllAmmo False
+AddAmmo WW2_Bomb_German250kg
+
+// Movement and Physics
+MaxThrottle 2.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+WheelSpringStrength 0.125
+Mode Plane
+LookDownSpeed 1
+LookUpSpeed 1
+RollLeftSpeed 1
+RollRightSpeed 1
+TurnLeftSpeed 1
+TurnRightSpeed 1
+RestingPitch 5.0
+RealMassKg 12030
+RealEnginePowerPS 2600
+RealMaxSpeedKmh 440
+RealTurnRateDegPerSec 14.08
+RealWingSpanM 22.6
+RealWingAreaM2 87.6
+RealClimbRateMs 2
+
+// Weapons
+Primary None
+ModePrimary FullAuto
+AlternatePrimary False
+ShootDelayPrimary 0
+Secondary Bomb
+ModeSecondary FullAuto
+AlternateSecondary False
+ShootPointSecondary 0 -10.45 0
+ShootDelaySecondary 20
+GunOrigin 1 57.46 16.09 -3.134
+GunOrigin 2 -55.37 31.76 0
+GunOrigin 3 -91.94 -5.851 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 15.67 -8.358 -45.97
+WheelPosition 1 15.67 -8.358 45.97
+WheelPosition 2 -190.2 22.99 0
+Pilot 25.08 24.03 -4.179
+Passengers 3
+Passenger 1 50.15 24.03 3.134 nose -50 50 -30 30 WW2_MG_MG81ZB_1A MG81Front
+Passenger 2 -33.43 34.48 0 core 150 210 5 50 WW2_MG_MG81ZB_1A MG81Top
+Passenger 3 -61.64 12.54 0 core 150 210 -40 -10 WW2_MG_MG81ZB_1A MG81Bottom
+SetupPart core 400 -96.12 18.81 -13.58 127.5 33.43 27.16
+SetupPart nose 130 43.88 18.81 -13.58 25.08 33.43 27.16
+SetupPart leftWing 230 -60.6 20.9 13.58 84.63 19.85 174.5
+SetupPart rightWing 230 -60.6 20.9 -188.1 84.63 19.85 174.5
+SetupPart tail 180 -218.4 18.81 -13.58 132.7 33.43 27.16
+SetupPart leftWingWheel 100 7.314 -10.45 43.88 16.72 16.72 4.179
+SetupPart rightWingWheel 100 7.314 -10.45 -48.06 16.72 16.72 4.179
+SetupPart tailWheel 100 -194.3 17.76 -1.045 8.358 8.358 2.09
+CollisionPoint 10.45 22.99 -30.3 leftWing
+CollisionPoint 10.45 22.99 -61.64 leftWing
+CollisionPoint -3.134 28.21 -92.99 leftWing
+CollisionPoint -11.49 32.39 -124.3 leftWing
+CollisionPoint -19.85 36.57 -155.7 leftWing
+CollisionPoint -33.43 38.66 -176.6 leftWing
+CollisionPoint 68.96 33.43 0 nose
+CollisionPoint -89.85 34.48 0 tail
+CollisionPoint -110.7 34.48 0 tail
+CollisionPoint -131.6 34.48 0 tail
+CollisionPoint -152.5 34.48 0 tail
+CollisionPoint -173.4 34.48 0 tail
+CollisionPoint -194.3 34.48 0 tail
+CollisionPoint 10.45 22.99 30.3 rightWing
+CollisionPoint 10.45 22.99 61.64 rightWing
+CollisionPoint -3.134 28.21 92.99 rightWing
+CollisionPoint -11.49 32.39 124.3 rightWing
+CollisionPoint -19.85 36.57 155.7 rightWing
+CollisionPoint -33.43 38.66 176.6 rightWing
+BulletDetection 25
+CameraDistance 20.9
+Propeller 0 0 0 0 leftWing SMP_Part_Propeller_RotorPlane
+Propeller 1 0 0 0 rightWing SMP_Part_Propeller_RotorPlane
+
+// Optics
+heliGuiSeat 1 true
+heliGUI manus_bombsightgui
+passengerZoom 1 0.5
+
+// Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundSecondary bomb
+PropSound LancasterProp
+PropSoundLength 49

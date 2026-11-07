@@ -1,0 +1,27 @@
+// Identity
+Name Armor Piercing Bullet
+ShortName ArmorPiercingBullet
+Description Increases Accuracy but reduces Damage
+AttachmentType barrel
+
+// Item and rendering
+Icon ArmorPiercingBullet
+Model None
+
+// Recipe
+RecipeOutput 1
+Recipe I ingotIron G gunpowder
+ I 
+GIG
+III
+
+// Modifiers
+Silencer false
+MeleeDamageMultiplier 1.0
+DamageMultiplier 0.8
+SpreadMultiplier 0.5
+RecoilMultiplier 1.2
+BulletSpeedMultiplier 0.8
+ReloadTimeMultiplier 1.0
+ZoomLevel 1.0
+FOVZoomLevel 1.0

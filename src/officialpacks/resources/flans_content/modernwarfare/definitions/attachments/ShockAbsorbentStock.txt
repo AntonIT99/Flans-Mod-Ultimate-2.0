@@ -1,0 +1,28 @@
+// Identity
+Name Shock-Absorbent Stock
+ShortName shockabsorbentstock
+AttachmentType stock
+
+// Item and rendering
+Icon shockabsorbentstock
+ZoomOverlay None
+Model mw.ShockAbsorbentStock
+Texture ShockAbsorbentStock
+
+// Recipe
+RecipeOutput 1
+Recipe F fiberglass M magma_cream P piston
+MPF
+MPF
+  F
+
+// Modifiers
+Silencer false
+MeleeDamageMultiplier 1.0
+DamageMultiplier 0.9
+SpreadMultiplier 1.0
+RecoilMultiplier 0.4
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+ZoomLevel 1.0
+FOVZoomLevel 1.0

@@ -1,0 +1,89 @@
+// Identity
+Name Dropship Mk.3 (Legacy 1.4.7)
+ShortName LegacyManusDS2
+Description Original model from Minecraft 1.4.7
+
+// Model and Rendering
+Icon legacymanusdropship2
+Model manus_legacy.Dropship2
+Texture legacymanusdropship
+
+// Recipe and Inventory
+FuelTankSize 10000
+CargoSlots 12
+BombSlots 0
+AddRecipeParts core 1 SMP_Part_Cockpit_Civil 15 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 4 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts tail 1 SMP_Part_Tail_Civil 8 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWing 1 SMP_Part_Wing_Civil 10 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts rightWing 1 SMP_Part_Wing_Civil 10 SMP_Part_Mat_Plate_Aluminium
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane 2 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane 2 SMP_Part_Mat_Plate_Steel
+AddRecipeParts coreWheel 1 SMP_Part_Wheel_Plane 1 SMP_Part_Mat_Plate_Steel
+AddDye 10 white
+
+// Movement and Physics
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 3.0
+TurnRightSpeed 3.0
+LookUpSpeed 2.8
+LookDownSpeed 2.8
+RollLeftSpeed 2.6
+RollRightSpeed 2.6
+Drag 5.0
+Lift 4.0
+RestingPitch 0.0
+HasGear True
+RealMassKg 20000
+RealEngineThrustKn 110
+RealMaxSpeedKmh 900
+RealTurnRateDegPerSec 17.68
+RealWingSpanM 18
+RealWingAreaM2 55
+RealClimbRateMs 40
+
+// Weapons
+ShootDelay 7
+BombDelay 1
+BombPosition 5.76 -8.229 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 12.34
+Propeller 0 0 0 0 leftWing SMP_Part_Propeller_TurbineSpace
+Propeller 1 0 0 0 rightWing SMP_Part_Propeller_TurbineSpace
+Pilot 45.26 11.52 -9.052 -80 80 -45 45
+Passengers 9
+Passenger 1 45.26 11.52 9.052 core -100 100 -50 10 ColonialBlasterCannon TurretGun
+GunOrigin 1 41.47 -15.31 2.469
+Passenger 2 20.57 10.7 -12.34 core 60 120 -45 45
+Passenger 3 20.57 10.7 12.34 core -120 -60 -45 45
+Passenger 4 -1.646 5.76 -14.81 core -140 -40 -45 45 ColonialBlasterCannon SideGunLeft
+GunOrigin 4 -12.84 -2.962 26.66
+Passenger 5 -1.646 5.76 14.81 core 40 140 -45 45 ColonialBlasterCannon SideGunRight
+GunOrigin 5 -12.84 -2.962 -26.66
+Passenger 6 -21.4 10.7 -12.34 core 60 120 -45 45
+Passenger 7 -21.4 10.7 12.34 core -120 -60 -45 45
+Passenger 8 -36.21 10.7 -12.34 core 60 120 -45 45
+Passenger 9 -36.21 10.7 12.34 core -120 -60 -45 45
+SetupPart rightWing 100 -54.31 16.46 -67.48 65.83 13.99 48.55
+SetupPart nose 100 54.31 4.937 -17.28 14.81 11.52 34.56
+SetupPart tail 100 -76.53 0 -18.93 36.21 36.21 37.85
+SetupPart coreWheel 100 15.64 -8.229 -3.292 16.46 8.229 6.583
+SetupPart leftWingWheel 100 -46.91 -8.229 18.93 18.1 13.17 11.52
+SetupPart core 100 -40.32 0 -18.93 94.63 32.92 37.85
+SetupPart leftWing 100 -54.31 16.46 18.93 65.83 13.99 48.55
+SetupPart rightWingWheel 100 -46.91 -8.229 -30.45 18.1 13.17 11.52
+BulletDetection 25
+
+// Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound gatling
+BombSound bomb

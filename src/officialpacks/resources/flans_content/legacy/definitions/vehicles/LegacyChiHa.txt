@@ -1,0 +1,101 @@
+// Identity
+Name Chi-Ha (Legacy)
+ShortName LegacyChiHa
+Description Japanese Light Tank, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.7-5.10)
+
+// Item and rendering
+Icon ChiHa
+Model legacy.ChiHa
+FlashModel DefaultFlash
+Texture chiha
+AddDye 8 green
+
+// Recipe
+AddRecipeParts turret 1 lightTankBody 1 vehicleSeat
+AddRecipeParts core 1 lightTankBody
+AddRecipeParts leftTrack 1 catTrack
+AddRecipeParts rightTrack 1 catTrack
+
+// Inventory
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 5
+AllowAllAmmo False
+AddAmmo shell
+AddAmmo HEshell
+AddAmmo Japanese57APShell
+AddAmmo Japanese57HEShell
+
+// Real-world physics
+RealMassKg 15000
+RealEnginePowerPS 170
+RealMaxSpeedKmh 38
+DriveType TRACKED
+RealMaxReverseSpeedKmh 12
+
+// Movement
+MaxThrottle 0.5
+MaxNegativeThrottle 0.3
+TurnLeftSpeed 0.25
+TurnRightSpeed 0.25
+RealTurnRateDegPerSec 20
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+Tank true
+
+// Weaponry
+BarrelPosition 35 26.5 0.5
+AddGun 20 26.5 -3.5 turret type99
+ShootDelay 1
+ShellDelay 70
+TurretRotationSpeed 0.03
+DamageModifierPrimary 28
+ShootDelayPrimarySeconds 4
+ReadWeaponsFromGunTypes true
+
+// Optics
+hasScope true
+Gunsight official_jap
+gunsightZoom 2.5
+
+// Health and armour
+SetupPart core 8520 -42 -4 -16 85 23 33
+SetupPart turret 8320 -18 19 -20 40 10 40
+SetupPart leftTrack 6000 -36 -10 16 78 18 8
+SetupPart rightTrack 6000 -36 -10 -24 78 18 8
+BulletDetection 7
+ArmorFrontMm 25 30
+ArmorSideMm 25
+ArmorRearMm 20
+ArmorTopMm 12
+ArmorBottomMm 8
+TurretArmorFrontMm 32
+TurretArmorSideMm 25
+TurretArmorRearMm 25
+TurretArmorTopMm 12
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 7.5
+WheelPosition 0 -32 -10 -18
+WheelPosition 1 -32 -10 18
+WheelPosition 2 32 -10 18
+WheelPosition 3 32 -10 -18
+Driver 0 14 0 -360 360 -3 3.5
+RotatedDriverOffset 5 0 1
+Passengers 0
+
+// Sounds and particles
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_chinu
+EngineSoundLength 39
+ShootSoundPrimary shoot_57mm
+ShootParticlesPrimary explode 0.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.95 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.46 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.28 0.07 0.07
+ShootParticlesPrimary largesmoke 0.26 -0.07 -0.07
+ShootSoundSecondary BrenShoot

@@ -1,0 +1,74 @@
+// Identity
+Name MTAR (Legacy)
+ShortName LegacyMtar48
+Description Ammo Type : Assault Rifle, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon legacymtar48
+Colour 255 255 255
+DeployedModel None
+Model legacy.MTAR48
+animAimOffset 0 2.2720165 0
+Texture legacymtar48
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.13554,0.048946,0]
+animFlashScale 4.15
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo mtarAmmo
+Ammo m16a4Ammo
+Ammo famasAmmo
+Ammo m4CarbineAmmo
+Ammo g36Ammo
+Ammo augAmmo
+Ammo acrAmmo
+Ammo adar15Ammo
+Ammo an94Ammo
+Ammo ash12Ammo
+Ammo galilAmmo
+Ammo hcarAmmo
+Ammo kcasmartcarbineAmmo
+Ammo fnscarAmmo
+Ammo betacmag
+Ammo apcrrifleAmmo
+Ammo l86Ammo
+ReloadTime 40
+
+// Operation
+Mode FullAuto SemiAuto
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 750.0
+
+// Ballistics
+Recoil 4
+MuzzleVelocity 910.0
+Dispersion 0.18
+
+// Damage and protection
+Damage 13
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound FNSCARShoot
+ReloadSound MWMP44Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

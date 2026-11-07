@@ -1,0 +1,27 @@
+// Identity
+Name Hollow Point Bullet
+ShortName HollowPointBullet
+Description Increases Damage but reduces Accuracy
+AttachmentType barrel
+
+// Item and rendering
+Icon HollowPointBullet
+Model None
+
+// Recipe
+RecipeOutput 1
+Recipe I ingotIron G gunpowder
+I I
+GIG
+III
+
+// Modifiers
+Silencer false
+MeleeDamageMultiplier 1.0
+DamageMultiplier 3.0
+SpreadMultiplier 1.3
+RecoilMultiplier 1.5
+BulletSpeedMultiplier 0.5
+ReloadTimeMultiplier 1.0
+ZoomLevel 1.0
+FOVZoomLevel 1.0

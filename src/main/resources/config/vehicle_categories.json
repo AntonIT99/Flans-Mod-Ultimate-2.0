@@ -427,6 +427,7 @@
         },
         "items": [
             "44_pak40",
+            "legacypak40",
             "pak40"
         ]
     },
@@ -1197,6 +1198,7 @@
         },
         "items": [
             "44_m157mm",
+            "legacym157mm",
             "m157mm"
         ]
     },
@@ -1908,7 +1910,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "civil_vehicle_medic_1a"
+            "civil_vehicle_medic_1a",
+            "legacymanusmedic1"
         ]
     },
 
@@ -2224,7 +2227,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "civil_vehicle_banktruck_1a"
+            "civil_vehicle_banktruck_1a",
+            "legacymanusbanktruck2"
         ]
     },
 
@@ -5549,6 +5553,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacymanusflakpanzer4",
             "ww2_vehicle_flakpanzeriv_1a",
             "aatank_flakpanzeriv"
         ]
@@ -5877,6 +5882,7 @@
         },
         "items": [
             "challyii",
+            "legacychallyii",
             "teapot",
             "chally",
             "challyg"
@@ -7323,6 +7329,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacymanushummel",
             "ww2_vehicle_panzerhaubitzehummel_1a",
             "spg_hummel"
         ]
@@ -8125,7 +8132,8 @@
         },
         "items": [
             "churchill7",
-            "churchill"
+            "churchill",
+            "legacychurchill47"
         ]
     },
 
@@ -10299,7 +10307,8 @@
             "UseAmmoGroup": "120mm M256"
         },
         "items": [
-            "abrams"
+            "abrams",
+            "legacyabrams"
         ]
     },
 
@@ -11718,6 +11727,7 @@
                 "44_zis2",
                 "53k",
                 "bofors37mm",
+                "legacypak40",
                 "pak36",
                 "pak40",
                 "pak43",
@@ -11735,6 +11745,7 @@
             "44_zis2",
             "53k",
             "bofors37mm",
+            "legacypak40",
             "pak36",
             "pak40",
             "pak43",
@@ -12100,6 +12111,8 @@
             "UseAmmoGroup": "75mm M3"
         },
         "items": [
+            "legacysherman164",
+            "legacysherman47",
             "m4sherman",
             "44_m4sherman",
             "sherman"
@@ -12161,6 +12174,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacymanusm41",
             "m4a1sherman",
             "ww2_vehicle_m4a1_1a"
         ]
@@ -13878,6 +13892,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacypanzeriil",
             "panzeriil"
         ]
     },
@@ -14131,6 +14146,7 @@
             ]
         },
         "items": [
+            "legacymanuspanzer4g",
             "panzer4f2",
             "44_panzerivf2",
             "ww2_vehicle_panzeriv_1a"
@@ -14189,6 +14205,10 @@
             ]
         },
         "items": [
+            "legacymanuspanzer4h",
+            "legacypanzer164",
+            "legacypanzer47",
+            "legacypanzer172",
             "panzer4h",
             "44_panzerivh",
             "ww2_vehicle_panzeriv_2a",
@@ -14818,7 +14838,9 @@
         },
         "items": [
             "civil_vehicle_policetruck_1a",
-            "civil_vehicle_policetruck_2a"
+            "civil_vehicle_policetruck_2a",
+            "legacymanuspolicetruck1",
+            "legacymanuspolicetruck2"
         ]
     },
 
@@ -17647,6 +17669,7 @@
             "UseAmmoGroup": "76mm L-11"
         },
         "items": [
+            "legacyt34",
             "t3476mod40",
             "44_t3476mod1940"
         ]
@@ -17751,6 +17774,7 @@
             ]
         },
         "items": [
+            "legacymanust34",
             "t3485",
             "44_t3485",
             "t34",
@@ -18823,6 +18847,7 @@
             "UseAmmoGroup": "125mm 2A46M-5"
         },
         "items": [
+            "legacyt90",
             "t90",
             "gfs_t90ms"
         ]
@@ -20594,6 +20619,7 @@
         "items": [
             "chiha",
             "44_chiha",
+            "legacychiha",
             "mediumtank_type97chi-ha"
         ]
     },
@@ -22689,6 +22715,8 @@
             "kubel",
             "44_kubelwagenmg34",
             "44_kubelwagenmg42",
+            "legacykubel",
+            "legacymanusvwtype82",
             "ww2_vehicle_vwtype82_1a",
             "militarycar_kubelwagen"
         ]
@@ -22807,6 +22835,8 @@
         "items": [
             "44_willys30cal",
             "44_willys50cal",
+            "legacyjeep",
+            "legacymanuswillyjeep",
             "willyjeepy",
             "jeep",
             "sasjeep",

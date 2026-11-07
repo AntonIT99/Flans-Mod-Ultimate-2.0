@@ -1,6 +1,7 @@
 // Identity
 Name AmericanSniperChestFrog
 ShortName AmericanSniperChestFrog
+Description From the HG WW2 pack
 
 // Item and rendering
 ModelScale 1

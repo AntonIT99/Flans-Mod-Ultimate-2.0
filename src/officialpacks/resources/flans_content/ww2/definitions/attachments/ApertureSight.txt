@@ -1,0 +1,29 @@
+// Identity
+Name Aperture Sight
+ShortName ApertureSight
+AttachmentType sights
+
+// Item and rendering
+Icon ApertureSight
+ZoomOverlay None
+Model ww2.ApertureSight
+Texture SkinApertureSight
+ModelScale 1
+
+// Recipe
+RecipeOutput 1
+Recipe I ingotIron G thinGlass
+ I 
+ G 
+III
+
+// Modifiers
+Silencer false
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.0
+SpreadMultiplier 0.4
+RecoilMultiplier 0.8
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+MoveSpeedMultiplier 0.0
+FOVZoomLevel 2.0

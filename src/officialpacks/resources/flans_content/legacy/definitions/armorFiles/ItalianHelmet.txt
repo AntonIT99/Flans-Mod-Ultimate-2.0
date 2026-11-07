@@ -1,0 +1,17 @@
+// Identity
+Name Italian WW2 Helmet
+ShortName italianHelmet
+Description Original textures from the WW2+ 1.9.3 pack (Minecraft 1.5.2)
+
+// Item and rendering
+Icon ItalianHelmet
+Colour 255 255 255
+ArmourTexture Italian
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

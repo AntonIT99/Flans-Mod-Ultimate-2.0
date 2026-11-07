@@ -1,0 +1,17 @@
+// Identity
+Name British WW2 Desert Coat (Legacy 1.4.7)
+ShortName LegacyBritishDesertCoat147
+Description Original textures from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.4)
+
+// Item and rendering
+Icon legacybritishdesertcoat147
+Colour 255 255 255
+ArmourTexture legacybritishdesert147
+
+// Protection
+Type Body
+Defence 0.03
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0

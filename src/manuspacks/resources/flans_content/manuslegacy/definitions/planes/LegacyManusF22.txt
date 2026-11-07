@@ -1,0 +1,123 @@
+// Identity
+Name F-22 Raptor (Legacy 1.4.7)
+ShortName LegacyManusF22
+Description Original model from Minecraft 1.4.7-1.5.2
+
+// Item and rendering
+Icon legacymanusf22
+Model manus_legacy.F22
+FlashModel DefaultFlash
+Texture legacymanusf22
+AddDye 8 silver
+AddDye 8 gray
+
+// Recipe
+AddRecipeParts core 1 advancedMetalCockpit
+AddRecipeParts coreWheel 1 wheel 1 minigun
+AddRecipeParts nose 1 metalNose
+AddRecipeParts rightWing 1 metalWingSmall
+AddRecipeParts leftWing 1 metalWingSmall
+AddRecipeParts tail 1 metalTail
+AddRecipeParts rightWingWheel 1 wheel
+AddRecipeParts leftWingWheel 1 wheel
+
+// Inventory
+CargoSlots 0
+BombSlots 0
+MissileSlots 4
+AllowAllAmmo False
+AddAmmo mk4Rocket
+FuelTankSize 6000
+
+// Real-world physics
+RealMassKg 29410
+RealEngineThrustKn 231.3
+RealMaxSpeedKmh 2414
+RealWingSpanM 13.56
+RealWingAreaM2 78.04
+RealClimbRateMs 330
+
+// Movement
+RestingPitch 5.0
+HasGear True
+MaxThrottle 8.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 2.5
+TurnRightSpeed 2.5
+RealTurnRateDegPerSec 23.47
+LookUpSpeed 3
+LookDownSpeed 3
+RollLeftSpeed 3.2
+RollRightSpeed 3.2
+Drag 1.0
+WheelSpringStrength 0.125
+
+// Weaponry
+Mode Plane
+Primary Gun
+Secondary Missile
+ShootDelayPrimary 2
+ShootDelaySecondary 20
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 27.19 17.73 14.18 core minigun
+ShootPointSecondary -35.46 9.456 -34.28 leftWing
+ShootPointSecondary -35.46 9.456 34.28 rightWing
+ReadWeaponsFromGunTypes true
+
+// Health and armour
+SetupPart nose 4000 65.01 6.501 -8.865 28.37 21.28 17.14
+SetupPart core 5000 27.19 3.546 -8.865 37.82 23.64 17.73
+SetupPart core 5000 -23.05 3.546 -8.865 51.42 20.68 17.14
+SetupPart core 5000 -23.05 2.955 8.274 68.56 18.32 13.59
+SetupPart core 5000 -23.05 2.955 -21.87 68.56 18.32 13.59
+SetupPart tail 4000 -85.69 2.955 -21.87 62.65 18.32 40.78
+SetupPart tail 4000 -75.65 14.77 13 40.19 30.73 17.14
+SetupPart tail 4000 -75.65 14.77 -30.73 39.6 30.14 17.14
+SetupPart tail 4000 -93.38 14.18 -44.32 34.87 1.773 24.82
+SetupPart tail 4000 -93.38 14.18 18.91 34.87 1.773 25.41
+SetupPart rightWing 3000 -61.46 13 18.91 70.33 5.319 48.46
+SetupPart leftWing 3000 -61.46 13 -67.97 70.33 5.319 48.46
+BulletDetection 10
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 17.73
+WheelPosition 0 -27.78 -5.91 -18.91
+WheelPosition 1 -27.78 -5.91 18.91
+WheelPosition 2 44.32 -5.91 0
+Propeller 0 31.91 0 0 core metalPropeller
+Pilot 60.87 18.32 0
+Passengers 0
+CollisionPoint 93.38 12.41 0 nose
+CollisionPoint 46.69 27.19 0 core
+CollisionPoint 36.64 14.18 -19.5 core
+CollisionPoint 36.64 14.18 19.5 core
+CollisionPoint 8.865 15.37 21.28 rightWing
+CollisionPoint -31.91 14.18 67.37 rightWing
+CollisionPoint 4.728 3.546 44.92 rightWing
+CollisionPoint 17.73 3.546 27.78 rightWing
+CollisionPoint 8.865 15.37 -21.87 leftWing
+CollisionPoint -31.91 14.18 -67.37 leftWing
+CollisionPoint 4.728 3.546 -44.92 leftWing
+CollisionPoint 17.73 3.546 -27.78 leftWing
+CollisionPoint -49.05 44.92 -29.55 tail
+CollisionPoint -49.05 44.92 29.55 tail
+CollisionPoint -75.65 15.37 44.32 tail
+CollisionPoint -75.65 15.37 -44.32 tail
+
+// Sounds and particles
+StartSound JetIdle
+StartSoundLength 140
+PropSound JetEngine2
+PropSoundLength 47
+ShootSoundPrimary MinigunShoot
+ShootSoundSecondary RocketFire2
+
+// Engine exhaust
+AddEmitter flansmod.afterburn 1 [87.21,18.29,-8.088] [1,1,1] [4,0,0] 0.65 8 0 1 tail
+AddEmitter flansmod.afterburn 1 [89.57,18.29,-8.088] [1,1,1] [6,0,0] 0.65 8 0 1 tail
+AddEmitter flansmod.afterburn 1 [87.21,18.29,8.088] [1,1,1] [4,0,0] 0.65 8 0 1 tail
+AddEmitter flansmod.afterburn 1 [89.57,18.29,8.088] [1,1,1] [6,0,0] 0.65 8 0 1 tail

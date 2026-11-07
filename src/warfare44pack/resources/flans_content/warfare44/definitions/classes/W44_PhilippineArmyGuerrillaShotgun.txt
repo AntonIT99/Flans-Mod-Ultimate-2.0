@@ -1,0 +1,18 @@
+// Identity
+Name Guerrilla (Shotgun)
+ShortName W44_PhilippineArmyGuerrillaShotgun
+Description Resistance ambusher with a pump-action trench gun for jungle close quarters.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_PhilippineCombatFieldChest
+Legs 44_PhilippineCombatFieldShorts
+
+// Items
+AddItem 44_Model10TrenchGun
+AddItem 44_Model10TrenchGunAmmo 4
+AddItem 44_Mk2Frag
+AddItem 44_Bandage
+AddItem 44_AmericanKaBarKnife

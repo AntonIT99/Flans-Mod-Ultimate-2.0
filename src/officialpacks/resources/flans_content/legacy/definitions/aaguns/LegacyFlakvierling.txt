@@ -1,0 +1,44 @@
+// Identity
+Name Flakvierling-38 AA Gun (Legacy)
+ShortName LegacyFlakvierling
+Description German AA Gun, original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.10)
+
+// Item and rendering
+Icon Flakvierling
+Model legacy.Flakvierling
+Texture LegacyFlakvierling
+
+// Recipe
+RecipeOutput 1
+Recipe I ingotIron B blockIron A aaBarrel L leather
+ AA
+LAA
+IBI
+
+// Weaponry
+Ammo flakvierlingAmmo
+NumBarrels 4
+Barrel 0 21.99 14 6.04
+Barrel 1 21.99 6 6.04
+Barrel 2 22.8 14 0.44
+Barrel 3 22.8 6 0.44
+FireAlternately True
+ReloadTime 100
+Recoil 5
+Damage 10
+Accuracy 6
+ShootDelay 10
+RoundsPerMin 800.0
+Dispersion 0.35
+GunnerPos 8 28 8
+TopViewLimit 75
+BottomViewLimit 0
+
+// Health and physics
+Health 100
+RealMassKg 1518
+UseRealisticVehicleHealth true
+
+// Sounds
+ShootSound shoot_20mmaade
+ReloadSound mp44Reload

@@ -1,0 +1,62 @@
+// Identity
+Name AK-47 (Legacy)
+ShortName LegacyAk47_164
+Description Ammo Type : AK, original model from Minecraft 1.6.4-1.8 (Flan's Mod 4.1-5.1)
+
+// Item and rendering
+Icon ak47
+Colour 255 255 255
+DeployedModel None
+Model legacy.AK47_164
+animAimOffset 0 2.1143773 0
+Texture legacyak47_164
+FlashModel DefaultFlash
+animMuzzleFlashPoint [1.5,0.29167,0]
+animFlashScale 0.75
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo ak47Ammo
+Ammo ak74Ammo
+Ammo rpkAmmo
+Ammo rpdAmmo
+Ammo witheringakammo
+ReloadTime 40
+
+// Operation
+Mode FullAuto SemiAuto
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 600.0
+
+// Ballistics
+Recoil 3
+MuzzleVelocity 715.0
+Dispersion 0.24
+
+// Damage and protection
+Damage 6
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound AK47Shoot
+ReloadSound MWMP44Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

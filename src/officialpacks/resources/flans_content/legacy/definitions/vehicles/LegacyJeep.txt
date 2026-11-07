@@ -1,0 +1,81 @@
+// Identity
+Name Willy's Jeep (Legacy)
+ShortName LegacyJeep
+Description American Jeep, original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.10)
+
+// Item and rendering
+Icon LegacyJeep
+Model legacy.Jeep
+Texture LegacyJeep
+RotateWheels false
+AddDye 5 green
+
+// Recipe
+AddRecipeParts core 1 smallChassis 3 vehicleSeat
+AddRecipeParts frontLeftWheel 1 wheel
+AddRecipeParts frontRightWheel 1 wheel
+AddRecipeParts backLeftWheel 1 wheel
+AddRecipeParts backRightWheel 1 wheel
+
+// Inventory
+FuelTankSize 1000
+CargoSlots 36
+ShellSlots 0
+
+// Real-world physics
+RealMassKg 1475
+RealEnginePowerHp 54
+RealMaxSpeedKmh 105
+DriveType AWD
+RealMaxReverseSpeedKmh 29
+
+// Movement
+MaxThrottle 0.7
+MaxNegativeThrottle 0.45
+TurnLeftSpeed 0.25
+TurnRightSpeed 0.25
+RealTurnRateDegPerSec 240
+Drag 1.0
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+
+// Weaponry
+GunOrigin 2 9 -3.6 0
+ShootDelay 999
+ShellDelay 999
+ReadWeaponsFromGunTypes true
+
+// Health and armour
+SetupPart core 1335 -24 -6 -16 48 12 32
+SetupPart backLeftWheel 35 -20 -10 -16 8 8 2
+SetupPart backRightWheel 35 -20 -10 14 8 8 2
+SetupPart frontLeftWheel 35 12 -10 -16 8 8 2
+SetupPart frontRightWheel 35 12 -10 14 8 8 2
+BulletDetection 5
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 5.0
+WheelPosition 0 -22 -10 -14
+WheelPosition 1 -22 -10 14
+WheelPosition 2 22 -10 14
+WheelPosition 3 22 -10 -14
+Driver 0 -6 -8
+RotatedDriverOffset 0 0 0
+Passengers 2
+Passenger 1 0 -6 8 core
+Passenger 2 -16 6 0 core -60 60 -30 60 browning Browning
+
+// Sounds and particles
+StartSound jeepidle
+StartSoundLength 7
+EngineSound jeepmove
+EngineSoundLength 60
+ShootSound bullet
+ShellSound shell

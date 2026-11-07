@@ -1,0 +1,17 @@
+// Identity
+Name French WW2 Pants
+ShortName frenchPants
+Description Original textures from the WW2+ 1.9.3 pack (Minecraft 1.5.2)
+
+// Item and rendering
+Icon FrenchPants
+Colour 255 255 255
+ArmourTexture French
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

@@ -191,7 +191,8 @@
             "ah1zviper",
             "ah1z",
             "gfs_ah1z",
-            "ah-1z"
+            "ah-1z",
+            "legacymanusah1"
         ]
     },
 
@@ -2192,7 +2193,8 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
-            "chinook"
+            "chinook",
+            "legacychinook"
         ]
     },
 
@@ -3137,7 +3139,9 @@
             "dropshipmk3_c_grass",
             "dropshipmk3_c_grey",
             "dropshipmk3_c_ice",
-            "dropshipmk3_c_jungle"
+            "dropshipmk3_c_jungle",
+            "legacymanusds1",
+            "legacymanusds2"
         ]
     },
 
@@ -3294,6 +3298,7 @@
         },
         "items": [
             "a10",
+            "legacymanusa10",
             "modernwarfare_a10",
             "gfs_a10c",
             "a-10c"
@@ -4518,6 +4523,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacymanushe111",
             "ww2_plane_he111_1a",
             "he111h"
         ]
@@ -5538,6 +5544,8 @@
         },
         "items": [
             "f22",
+            "legacyf22",
+            "legacymanusf22",
             "modernwarfare_f22",
             "f22mraptor",
             "f-22a"
@@ -6594,7 +6602,8 @@
         },
         "items": [
             "bf109g6",
-            "bf109"
+            "bf109",
+            "legacybf109"
         ]
     },
 
@@ -7985,6 +7994,7 @@
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
+            "legacymustang",
             "liberionp51d",
             "ww2_plane_p51_1a",
             "ww2_plane_p51_1b",
@@ -10233,6 +10243,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacymanustiefighter",
             "tiefighter"
         ]
     },
@@ -10250,6 +10261,7 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "legacymanustieinter",
             "tieinterceptor"
         ]
     },

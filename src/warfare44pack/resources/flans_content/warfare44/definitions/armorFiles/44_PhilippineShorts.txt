@@ -1,0 +1,18 @@
+// Identity
+Name Philippine Combat Field Shorts
+ShortName 44_PhilippineCombatFieldShorts
+Type Pants
+
+// Rendering
+Icon 44_PhilippineCombatFieldShorts
+Model W44.PhilippinePants
+ModelScale 1
+ArmorTexture Skin44_Phillipine
+
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
+SmokeProtection false

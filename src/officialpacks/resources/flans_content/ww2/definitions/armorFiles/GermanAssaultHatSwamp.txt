@@ -1,6 +1,7 @@
 // Identity
 Name GermanAssaultHatSwamp
 ShortName GermanAssaultHatSwamp
+Description From the HG WW2 pack
 
 // Item and rendering
 ModelScale 1

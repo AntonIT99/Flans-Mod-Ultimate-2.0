@@ -30,7 +30,7 @@ Mass 115
 DamageVsLiving 50
 DamageVsLiving 25
 DamageVsVehicles 20
-DamageVsVehicles 100
+DamageVsVehicles 50
 DamageVsPlanes 80
 Fire 0
 

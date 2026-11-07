@@ -1,0 +1,66 @@
+// Identity
+Name L96 (Legacy)
+ShortName LegacyL96_48
+Description Ammo Type : Rifle, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon l96
+Colour 255 255 255
+DeployedModel None
+Model legacy.L96_48
+Scope mwm40a3
+Texture legacyl96_48
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.21756,0.050859,0]
+animFlashScale 5.53
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo l96Ammo
+Ammo tripletakeAmmo
+Ammo sg550Ammo
+Ammo seekerrifleammo
+Ammo ntw20Ammo
+Ammo m21Ammo
+Ammo m14Ammo
+Ammo g3Ammo
+Ammo dragunovAmmo
+ReloadTime 70
+
+// Operation
+Mode SemiAuto
+Deployable False
+CanShootUnderwater False
+MoveSpeedModifier 0.8
+RoundsPerMin 45.0
+
+// Ballistics
+Recoil 20
+MuzzleVelocity 840.0
+Dispersion 0.12
+
+// Damage and protection
+Damage 26
+
+// Optics
+ZoomLevel 6.0
+FOVZoomLevel 1.0
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound L96Shoot
+ReloadSound BARReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

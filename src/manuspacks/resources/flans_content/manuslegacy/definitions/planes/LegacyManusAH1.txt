@@ -1,0 +1,83 @@
+// Identity
+Name AH-1Z Viper (Legacy 1.4.7)
+ShortName LegacyManusAH1
+Description Original model from Minecraft 1.4.7-1.5.2
+
+// Model and Rendering
+Icon legacymanusah1
+Model manus_legacy.AH1
+Texture legacymanusah1
+HasDoor True
+
+// Recipe and Inventory
+FuelTankSize 4000
+CargoSlots 0
+BombSlots 0
+AddRecipeParts core 1 SMP_Part_Cockpit_Heli 8 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 4 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Heli 12 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Heli 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Heli 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts coreWheel 10 SMP_Part_Mat_Plate_Steel
+AddDye 10 green
+
+// Movement and Physics
+Mode Heli
+MaxThrottle 2.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+Drag 0.98
+Lift 3.2
+RestingPitch 0.0
+HasGear False
+RealMassKg 8391
+RealEnginePowerHp 2680
+RealMaxSpeedKmh 296
+RealTurnRateDegPerSec 21.76
+RealRotorDiameterM 14.63
+RealClimbRateMs 14.2
+
+// Weapons
+AddGun 13.19 1.014 -27.39 leftWing M148JavelinDep
+AddGun 13.19 1.014 27.39 rightWing M148JavelinDep
+ShootDelay 7
+BombDelay 1
+BombPosition 7.101 -10.14 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 5.072
+WheelPosition 0 18.26 -8.116 -19.28 coreWheel
+WheelPosition 1 18.26 -8.116 19.28 coreWheel
+WheelPosition 2 -16.23 -8.116 -19.28 coreWheel
+WheelPosition 3 -16.23 -8.116 19.28 coreWheel
+HeliPropeller 0 0 41.59 0 blades SMP_Part_Propeller_RotorHeli
+HeliTailPropeller 0 -111 33 3 tail SMP_Part_Propeller_RotorHeli
+Pilot 13.19 7.101 0
+Passengers 1
+Passenger 1 32.46 2.029 0 nose -100 100 -50 10 M134 TURRET
+GunOrigin 1 27.39 -22.42 2.536
+SetupPart nose 100 46.67 -3.043 -9.13 20.29 20.29 18.26
+SetupPart core 400 -26.38 -3.043 -10.14 73.04 34.49 20.29
+SetupPart blades 150 -91.3 39.57 -91.3 182.6 4.058 182.6
+SetupPart tail 300 -105.5 -3.043 -9.13 79.13 23.33 18.26
+SetupPart leftWing 300 -14.2 -2.029 10.14 26.38 12.17 21.3
+SetupPart coreWheel 100 -24.35 -10.14 -20.29 51.74 10.14 40.58
+SetupPart rightWing 300 -14.2 -2.029 -31.45 26.38 12.17 21.3
+BulletDetection 25
+
+// Sounds
+StartSound HelicopterStart
+StartSoundLength 100
+PropSound Helicopter1
+PropSoundLength 93
+ShootSound gatling
+BombSound bomb

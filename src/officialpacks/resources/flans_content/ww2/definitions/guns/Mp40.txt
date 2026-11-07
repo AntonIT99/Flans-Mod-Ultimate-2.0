@@ -7,7 +7,7 @@ Icon mp40
 Colour 255 255 255
 DeployedModel None
 Model ww2.Mp40
-animAimOffset 0 1.2198762 0
+animAimOffset 0 1 0
 FlashModel DefaultFlash
 MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.28571 0.49721 0

@@ -1,0 +1,46 @@
+// Identity
+Name M1919 Browning .30 Cal (Legacy)
+ShortName LegacyBrowning147
+Description Original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.10)
+
+// Item and rendering
+Icon browning
+Colour 255 255 255
+DeployedModel legacy.Browning147
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animFlashScale 1.24
+DeployedTexture legacybrowning147
+
+// Ammunition
+Ammo browningAmmo
+ReloadTime 100
+
+// Operation
+Mode FullAuto
+Deployable True
+StandBackDistance 1.0
+TopViewLimit 30
+BottomViewLimit 20
+SideViewLimit 40
+PivotHeight 0.375
+RoundsPerMin 550.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 850.0
+Dispersion 0.33
+
+// Damage and protection
+Damage 10
+
+// Optics
+Scope None
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+DistortSound False
+ShootSound BrowningShoot
+ReloadSound BrowningReload

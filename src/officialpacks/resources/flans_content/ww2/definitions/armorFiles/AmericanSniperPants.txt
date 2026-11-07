@@ -1,6 +1,7 @@
 // Identity
 Name AmericanSniperPants
 ShortName AmericanSniperPants
+Description From the HG WW2 pack
 
 // Item and rendering
 ModelScale 1

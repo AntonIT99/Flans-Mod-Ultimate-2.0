@@ -1,0 +1,110 @@
+// Identity
+Name Panzerkampfwagen IV Ausf. G (Legacy 1.4.7)
+ShortName LegacyManusPanzer4G
+Description Original model from Minecraft 1.4.7-1.5.2
+
+// Model and Rendering
+Model manus_legacy.Panzer4
+FlashModel DefaultFlash
+Icon legacymanuspanzer4
+Texture legacymanuspanzer4
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 5
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 8 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 12 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 gray
+AllowAllAmmo False
+AddAmmo WW2_Shell_German75mmKwK40AP
+AddAmmo WW2_Shell_German75mmHE
+AddAmmo WW2_Shell_German75mmKwK40APCR
+
+// Movement and Physics
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+Tank true
+RealMassKg 23600
+RealEnginePowerPS 265
+RealMaxSpeedKmh 38
+DriveType TRACKED
+RealMaxReverseSpeedKmh 7
+RealTurnRateDegPerSec 12
+
+// Weapons
+AddGun 21.27 24.31 6.078 turret WW2_MG_MG42ZB_1A
+BarrelPosition 61.54 24.31 0
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 0.75 0 0
+ShootParticlesPrimary flansmod.fmflame 0.28 0 0.82
+ShootParticlesPrimary flansmod.fmflame 0.28 0 -0.82
+ShootParticlesPrimary flansmod.fmflame 0.24 0.12 0.68
+ShootParticlesPrimary flansmod.fmflame 0.24 -0.1 -0.68
+ShootParticlesPrimary largesmoke 0.18 0.03 0.46
+ShootParticlesPrimary largesmoke 0.18 0.03 -0.46
+ShootParticlesPrimary largesmoke 0.16 0.1 0.38
+ShootParticlesPrimary largesmoke 0.16 -0.08 -0.38
+ShellDelay 110
+ShootDelay 5
+GunOrigin 1 36.09 -1.595 8.737
+PlaceTimePrimary 80
+ReloadTimeSecondary 100
+ShootDelayPrimarySeconds 6
+ReadWeaponsFromGunTypes true
+
+// Protection
+IsExplosionWhenDestroyed true
+ArmorFrontMm 80 10
+ArmorSideMm 30
+ArmorRearMm 20
+ArmorTopMm 11
+ArmorBottomMm 10
+TurretArmorFrontMm 50
+TurretArmorSideMm 30
+TurretArmorRearMm 30
+TurretArmorTopMm 10
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 -26.59 -6.078 -21.27
+WheelPosition 1 -26.59 -6.078 21.27
+WheelPosition 2 34.95 -6.078 21.27
+WheelPosition 3 34.95 -6.078 -21.27
+Driver 0 24.31 0 -360 360 -10 20
+RotatedDriverOffset -9.876 0 0
+Passengers 1
+Passenger 1 23.55 9.116 9.116 core -30 30 -10 10 WW2_MG_MG42ZB_1A FrontMG
+SetupPart leftTrack 300 -41.78 -7.597 16.71 83.57 16.71 6.078
+SetupPart turret 3000 -27.35 19.75 -16.71 43.3 10.64 33.43
+SetupPart rightTrack 300 -41.78 -7.597 -22.79 83.57 16.71 6.078
+SetupPart core 3000 -36.47 -2.279 -16.71 84.33 21.27 33.43
+BulletDetection 7
+CameraDistance 5.698
+
+// Optics
+hasScope true
+Gunsight manus_pz4
+gunsightZoom 3.5
+
+// Sounds
+StartSound TankIdle2
+StartSoundLength 41
+EngineSound TankRun2
+EngineSoundLength 41
+BackSoundLength 41
+BackSound TankBack2
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ShootSoundPrimary 75mmShoot
+ShootSoundSecondary Mg34Shoot

@@ -1,0 +1,68 @@
+// Identity
+Name AA-12 (Legacy)
+ShortName LegacyAa12_53
+Description Ammo Type : Shotgun, original model from Minecraft 1.8-1.12.2 (Flan's Mod 5.3-5.6)
+
+// Item and rendering
+Icon legacyaa12_53
+Colour 255 255 255
+DeployedModel None
+Model legacy.AA12_53
+animAimOffset 0 0.58079157 0
+Texture legacyaa12_53
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.19213,0.040687,0]
+animFlashScale 5.53
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo 12gslugAmmo
+Ammo 12gbirdshotAmmo
+Ammo 12gbuckshotAmmo
+Ammo 12gflechetteAmmo
+Ammo 12gheAmmo
+Ammo 12gincendiaryAmmo
+Ammo 12gpoisonedflechetteAmmo
+Ammo 12gaugeShell
+Ammo 12gaugeShellIncendiary
+ReloadTime 90
+LoadIntoGun 14
+
+// Operation
+Mode FullAuto SemiAuto
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 6
+MuzzleVelocity 350.0
+Dispersion 2.0
+
+// Damage and protection
+Damage 1.8
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments false
+AllowAttachments flanMWRedDot flanMWACOG flanMWHCOG flanMW4xScope flanMW2xScope flanMW8xScope flanMWUnderBarrelLaser flanMWForegrip flanMWSingleFire flanMWintrovertedchoke flanMWextrovertedchoke flanMWCharmjamesk2417sight flanMWCharmjthmonkeysight
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound AA12Shoot
+ReloadSound AA12Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

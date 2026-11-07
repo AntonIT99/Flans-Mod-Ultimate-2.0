@@ -1,0 +1,67 @@
+// Identity
+Name Glock (Legacy)
+ShortName LegacyGlock48
+Description Ammo Type : Pistol_Dual Wieldable, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon glock
+Colour 255 255 255
+DeployedModel None
+Model legacy.Glock48
+animAimOffset 0 2.0304129 0
+Texture legacyglock48
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.21508,0.075911,0]
+animFlashScale 2.47
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo m1911Ammo
+Ammo kcasmartpistolAmmo
+Ammo desertEagleAmmo
+Ammo glockAmmo
+Ammo m9Ammo
+Ammo makarovAmmo
+Ammo sigP226Ammo
+Ammo uspAmmo
+Ammo uspPoisonAmmo
+ReloadTime 40
+
+// Operation
+Mode FullAuto SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 400.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 375.0
+Dispersion 0.7
+
+// Damage and protection
+Damage 5
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound GlockShoot
+ReloadSound MWColtReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

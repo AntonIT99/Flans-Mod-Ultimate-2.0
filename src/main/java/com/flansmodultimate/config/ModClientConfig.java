@@ -1,6 +1,7 @@
 package com.flansmodultimate.config;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.core.io.WritingException;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.AimPoseClient;
@@ -1055,8 +1056,18 @@ public final class ModClientConfig
         if (newValue.equals(value.get()))
             return false;
 
-        value.set(newValue);
         pendingChanges.set(true);
+        try
+        {
+            // The file config autosaves on every set, so this can hit the disk mid-drag
+            value.set(newValue);
+        }
+        catch (WritingException e)
+        {
+            // Another process (e.g. FML's config watcher) holds the file; the value is already applied in
+            // memory and pendingChanges makes the next flush write it again
+            FlansLog.log.warn("Could not write {} right now, will retry: {}", CONFIG_FILE_NAME, e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+        }
         return true;
     }
 
@@ -1236,7 +1247,15 @@ public final class ModClientConfig
         if (!pendingChanges.getAndSet(false) || !configSpec.isLoaded())
             return;
 
-        configSpec.save();
+        try
+        {
+            configSpec.save();
+        }
+        catch (WritingException e)
+        {
+            pendingChanges.set(true);
+            FlansLog.log.warn("Could not save {}, will retry on the next change: {}", CONFIG_FILE_NAME, e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+        }
         bake();
     }
 

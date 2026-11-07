@@ -12,6 +12,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.FluidTags;
@@ -25,6 +26,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 
@@ -35,6 +37,8 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     private static final int EFFECT_CHECK_PERIOD = 40; // every 2 seconds
     /** Deepest water an OnWaterWalking wearer may stand in; standing on a still surface is about 0.39 blocks. */
     private static final double WATER_WALKING_MAX_DEPTH = 0.5;
+    private static final float VANILLA_AIR_SECONDS = 15F;
+    private static final int AIR_REFILL_PER_TICK = 4; // as LivingEntity.increaseAirSupply
     protected static final int EFFECT_DURATION = 600; // 30 seconds
     protected static final int EFFECT_REFRESH_THRESHOLD = 60; // refresh when < 3 seconds remaining
     protected static final Map<UUID, Set<Holder<MobEffect>>> LAST_ARMOR_EFFECTS = new HashMap<>();
@@ -126,6 +130,10 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_FIRE_RESISTANCE).withStyle(ChatFormatting.DARK_GREEN));
         if (configType.isWaterBreathing())
             tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_WATER_BREATHING).withStyle(ChatFormatting.DARK_GREEN));
+        if (configType.getAirSupply() > 0F)
+            tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_AIR_SUPPLY, IFlanItem.formatDouble(configType.getAirSupply())).withStyle(ChatFormatting.DARK_GREEN));
+        if (configType.getSnorkelDepth() > 0F)
+            tooltipComponents.add(Component.translatable(TooltipKeys.BONUS_SNORKEL, IFlanItem.formatDouble(configType.getSnorkelDepth())).withStyle(ChatFormatting.DARK_GREEN));
     }
 
     private static String formatAbsorption(double absorption)
@@ -375,6 +383,46 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         {
             if (armor.getItem() instanceof CustomArmorItem armorItem && armorItem.configType.isOnWaterWalking())
                 return true;
+        }
+        return false;
+    }
+
+    /**
+     * Air left after one tick underwater, or {@code -1} when worn armour does not change vanilla's air loss. A snorkel whose tip reaches open air refills air as on land; otherwise
+     * {@code AirSupply} seconds, summed over worn pieces, skip air loss with the chance {@code bonus / (15 s + bonus)}, which stretches vanilla's 15 seconds like Respiration does.
+     */
+    public static int adjustUnderwaterAir(LivingEntity entity, int air)
+    {
+        if (!effectsEnabled(entity))
+            return -1;
+        float airSupply = 0F;
+        float snorkelDepth = 0F;
+        for (ItemStack armor : entity.getArmorSlots())
+        {
+            if (armor.getItem() instanceof CustomArmorItem armorItem)
+            {
+                airSupply += armorItem.configType.getAirSupply();
+                snorkelDepth = Math.max(snorkelDepth, armorItem.configType.getSnorkelDepth());
+            }
+        }
+        if (snorkelDepth > 0F && snorkelReachesAir(entity, snorkelDepth))
+            return Math.min(air + AIR_REFILL_PER_TICK, entity.getMaxAirSupply());
+        if (airSupply > 0F && entity.getRandom().nextFloat() * (VANILLA_AIR_SECONDS + airSupply) < airSupply)
+            return air;
+        return -1;
+    }
+
+    private static boolean snorkelReachesAir(LivingEntity entity, float depth)
+    {
+        Level level = entity.level();
+        double eyeY = entity.getEyeY();
+        for (double offset = 0.5; offset < depth + 0.5; offset += 0.5)
+        {
+            BlockPos pos = BlockPos.containing(entity.getX(), eyeY + Math.min(offset, depth), entity.getZ());
+            if (level.getBlockState(pos).isAir())
+                return true;
+            if (!level.getFluidState(pos).is(FluidTags.WATER))
+                return false;
         }
         return false;
     }

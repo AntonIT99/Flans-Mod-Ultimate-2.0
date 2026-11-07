@@ -1,0 +1,67 @@
+// Identity
+Name SIG SG 550 (Legacy)
+ShortName LegacySg550_48
+Description Ammo Type : Rifle, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon sg550
+Colour 255 255 255
+DeployedModel None
+Model legacy.SG550_48
+animAimOffset 0 -0.11663961 0
+Texture legacysg550_48
+ModelScale 0.9
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.28255,0.069507,0]
+animFlashScale 5.53
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo sg550Ammo
+Ammo tripletakeAmmo
+Ammo seekerrifleammo
+Ammo ntw20Ammo
+Ammo m21Ammo
+Ammo m14Ammo
+Ammo l96Ammo
+Ammo g3Ammo
+Ammo dragunovAmmo
+ReloadTime 40
+
+// Operation
+Mode SemiAuto FullAuto Burst
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 700.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 910.0
+Dispersion 0.16
+
+// Damage and protection
+Damage 9
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound SG550Shoot
+ReloadSound MWMP44Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

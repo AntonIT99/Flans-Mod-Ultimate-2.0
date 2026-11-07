@@ -1,0 +1,72 @@
+// Identity
+Name Bank Truck (Legacy 1.4.7)
+ShortName LegacyManusBankTruck2
+Description Original model from Minecraft 1.4.7-1.5.2
+
+// Model and Rendering
+Model manus_legacy.Bank2
+Icon legacymanusbank2
+Texture legacymanusbank2
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 1000
+CargoSlots 18
+AddRecipeParts core 1 SMP_Part_Chassis_Van 10 SMP_Part_Mat_Plate_Steel
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
+AddDye 5 green
+AddDye 5 white
+
+// Movement and Physics
+MaxThrottle 1.0
+MaxNegativeThrottle 0.5
+Drag 1
+WheelRadius 1
+SpringStrength 0.5
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+RealMassKg 7490
+RealEnginePowerHp 177
+RealMaxSpeedKmh 100
+DriveType RWD
+RealMaxReverseSpeedKmh 20
+RealTurnRateDegPerSec 198.94
+
+// Weapons
+ReadWeaponsFromGunTypes true
+
+// Protection
+ArmorFrontMm 8
+ArmorSideMm 8
+ArmorRearMm 8
+ArmorTopMm 6
+ArmorBottomMm 4
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 -28.34 -8.096 -19.23
+WheelPosition 1 -28.34 -8.096 19.23
+WheelPosition 2 28.34 -8.096 19.23
+WheelPosition 3 28.34 -8.096 -19.23
+Driver 8.096 8.096 -9.108 -80 80 -45 45
+Passengers 2
+Passenger 1 8.096 4.048 9.108 core -80 80 -45 45
+Passenger 2 -5.06 7.084 0 core 160 180 -45 45
+SetupPart frontRightWheel 150 22.26 -10.12 -19.23 12.14 12.14 5.06
+SetupPart backRightWheel 150 -34.41 -10.12 -19.23 12.14 12.14 5.06
+SetupPart frontLeftWheel 150 22.26 -10.12 14.17 12.14 12.14 5.06
+SetupPart backLeftWheel 150 -34.41 -10.12 14.17 12.14 12.14 5.06
+SetupPart core 600 -43.52 -3.036 -17.2 81.97 33.4 34.41
+BulletDetection 5
+CameraDistance 5.06
+
+// Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105

@@ -1,0 +1,18 @@
+// Identity
+Name Guerrilla (Springfield)
+ShortName W44_PhilippineArmyGuerrillaRifleman
+Description Resistance fighter of 1942-45 in short sleeves and shorts, with a Springfield rifle and scarce ammunition.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_PhilippineCombatFieldChest
+Legs 44_PhilippineCombatFieldShorts
+
+// Items
+AddItem 44_M1903Springfield
+AddItem 44_M1903SpringfieldAmmo 4
+AddItem 44_Mk2Frag
+AddItem 44_Bandage
+AddItem 44_AmericanKaBarKnife

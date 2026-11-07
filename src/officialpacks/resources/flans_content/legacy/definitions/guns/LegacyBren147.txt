@@ -1,0 +1,47 @@
+// Identity
+Name Bren (Legacy)
+ShortName LegacyBren147
+Description Original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.10)
+
+// Item and rendering
+Icon bren
+Colour 255 255 255
+DeployedModel legacy.Bren147
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animFlashScale 1.24
+DeployedTexture legacybren147
+
+// Ammunition
+Ammo brenAmmo30
+Ammo brenAmmo100
+ReloadTime 40
+
+// Operation
+Mode FullAuto SemiAuto
+Deployable True
+StandBackDistance 1.5
+TopViewLimit 30
+BottomViewLimit 20
+SideViewLimit 40
+PivotHeight 0.375
+RoundsPerMin 500.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 745.0
+Dispersion 0.3
+
+// Damage and protection
+Damage 9
+
+// Optics
+Scope None
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+DistortSound False
+ShootSound BrenShoot
+ReloadSound BrenReload

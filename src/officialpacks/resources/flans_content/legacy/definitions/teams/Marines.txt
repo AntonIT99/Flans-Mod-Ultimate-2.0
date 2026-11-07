@@ -1,0 +1,25 @@
+// Identity
+Name U.S. Marines (Legacy)
+ShortName legacyMarinesTeam
+
+// Appearance
+VictoryFlagTexture flag_team_usa
+TextColour Blue
+TeamColour 0 0 255
+Hat LegacyMarineHelmet147
+Chest LegacyMarineBody147
+Legs LegacyMarinePants147
+Shoes LegacyMarineBoots147
+
+// Classes
+AddClass marineSniper1
+AddClass marineSniper2
+AddClass marineDualWield1
+AddClass marineAssault1
+AddClass marineAssault2
+AddClass marineMedic1
+AddClass marineEngineer1
+AddClass marineDesignatedMarksman
+AddClass marineShotgun
+AddClass marineAntiTank
+AddClass marineAmmoBearer

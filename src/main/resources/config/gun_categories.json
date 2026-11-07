@@ -7068,7 +7068,8 @@
             "Dispersion": 2.00
         },
         "items": [
-            "aa12"
+            "aa12",
+            "legacyaa12_53"
         ]
     },
 
@@ -7290,7 +7291,8 @@
         "items": [
             "acr",
             "cowwestacr",
-            "acrrem"
+            "acrrem",
+            "legacyacr48"
         ]
     },
 
@@ -7402,7 +7404,8 @@
         "items": [
             "ak47",
             "kalashkinov",
-            "ar_ak-47"
+            "ar_ak-47",
+            "legacyak47_164"
         ]
     },
 
@@ -7432,6 +7435,7 @@
             "ak74",
             "ak74tyrant",
             "ak74m",
+            "legacyak74_164",
             "mpik74",
             "mpiks74",
             "type88ak",
@@ -7911,7 +7915,8 @@
             "Dispersion": 2.0
         },
         "items": [
-            "at4"
+            "at4",
+            "legacyat4_48"
         ]
     },
 
@@ -8339,7 +8344,8 @@
             "Dispersion": 0.13
         },
         "items": [
-            "barrett"
+            "barrett",
+            "legacybarrett53"
         ]
     },
 
@@ -8461,6 +8467,7 @@
             "Dispersion": 1.60
         },
         "items": [
+            "legacym1014_164",
             "m1014",
             "sg_m4super90"
         ]
@@ -8599,6 +8606,7 @@
             "Dispersion": 0.60
         },
         "items": [
+            "legacym9_164",
             "m9"
         ]
     },
@@ -9097,7 +9105,8 @@
         "items": [
             "bren",
             "44_bren",
-            "brenmk1"
+            "brenmk1",
+            "legacybren147"
         ]
     },
 
@@ -10654,7 +10663,8 @@
         },
         "items": [
             "deserteagle",
-            "deagle"
+            "deagle",
+            "legacydeserteagle164"
         ]
     },
 
@@ -10825,7 +10835,8 @@
         },
         "items": [
             "dragunov",
-            "guerrillarifle"
+            "guerrillarifle",
+            "legacydragunov164"
         ]
     },
 
@@ -11204,7 +11215,8 @@
             "Dispersion": 2.10
         },
         "items": [
-            "executioner"
+            "executioner",
+            "legacyexecutioner53"
         ]
     },
 
@@ -11382,7 +11394,8 @@
         },
         "items": [
             "fg42",
-            "44_fg42"
+            "44_fg42",
+            "legacyfg42_44"
         ]
     },
 
@@ -11471,6 +11484,7 @@
             "Dispersion": 0.5
         },
         "items": [
+            "legacystinger48",
             "stinger",
             "fim92estinger",
             "debugstinger",
@@ -11664,7 +11678,8 @@
             "Dispersion": 0.38
         },
         "items": [
-            "fmg"
+            "fmg",
+            "legacyfmg51"
         ]
     },
 
@@ -11949,6 +11964,7 @@
             "Dispersion": 0.34
         },
         "items": [
+            "legacyp90_164",
             "p90"
         ]
     },
@@ -11977,7 +11993,8 @@
         },
         "items": [
             "fnscar",
-            "fnherstalscarl"
+            "fnherstalscarl",
+            "legacyfnscar48"
         ]
     },
 
@@ -12677,7 +12694,8 @@
             "EjectCasings": "false"
         },
         "items": [
-            "gl1"
+            "gl1",
+            "legacygl1_48"
         ]
     },
 
@@ -12705,7 +12723,8 @@
             "EjectCasings": "false"
         },
         "items": [
-            "gl6"
+            "gl6",
+            "legacygl6_48"
         ]
     },
 
@@ -12734,7 +12753,8 @@
         "items": [
             "glock17",
             "glock",
-            "g17"
+            "g17",
+            "legacyglock48"
         ]
     },
 
@@ -13166,7 +13186,8 @@
         },
         "items": [
             "hk416",
-            "ar_hk416"
+            "ar_hk416",
+            "legacyhk416_51"
         ]
     },
 
@@ -13197,7 +13218,8 @@
             "g3a3",
             "g3a1",
             "g3a4",
-            "ar_g3"
+            "ar_g3",
+            "legacyg3_164"
         ]
     },
 
@@ -13394,7 +13416,8 @@
         },
         "items": [
             "g36",
-            "g36compact"
+            "g36compact",
+            "legacyg36_164"
         ]
     },
 
@@ -13504,6 +13527,7 @@
             "Dispersion": 0.34
         },
         "items": [
+            "legacymp5_164",
             "mp5",
             "bestfriend",
             "smg_mp5a2"
@@ -13560,6 +13584,7 @@
             "Dispersion": 0.34
         },
         "items": [
+            "legacymp7_51",
             "mp7",
             "smg_mp7"
         ]
@@ -13673,6 +13698,8 @@
             "Dispersion": 0.65
         },
         "items": [
+            "legacyusp164",
+            "legacyusp51",
             "usp"
         ]
     },
@@ -14664,7 +14691,8 @@
             "EjectCasings": "false"
         },
         "items": [
-            "jury"
+            "jury",
+            "legacyjury53"
         ]
     },
 
@@ -14694,7 +14722,9 @@
             "kar98k",
             "kar98ksniper",
             "44_kar98k",
-            "karabiner98kurz"
+            "karabiner98kurz",
+            "legacykar98k44",
+            "legacykar98ksniper44"
         ]
     },
 
@@ -15299,6 +15329,7 @@
         },
         "items": [
             "l86",
+            "legacyl86_48",
             "lsw"
         ]
     },
@@ -15326,7 +15357,8 @@
             "Dispersion": 0.12
         },
         "items": [
-            "l96"
+            "l96",
+            "legacyl96_48"
         ]
     },
 
@@ -15864,6 +15896,7 @@
             "Dispersion": 0.65
         },
         "items": [
+            "legacyluger44",
             "luger",
             "44_luger",
             "p8"
@@ -15950,7 +15983,8 @@
         },
         "items": [
             "bazooka",
-            "44_bazooka"
+            "44_bazooka",
+            "legacybazooka44"
         ]
     },
 
@@ -15977,6 +16011,7 @@
             "Dispersion": 0.18
         },
         "items": [
+            "legacym1garand44",
             "m1garand",
             "44_m1garand",
             "ermeysgarand",
@@ -16007,6 +16042,7 @@
             "Dispersion": 0.22
         },
         "items": [
+            "legacym1carbine44",
             "m1carbine",
             "44_m1carbine"
         ]
@@ -16035,6 +16071,7 @@
             "Dispersion": 0.40
         },
         "items": [
+            "legacythompson44",
             "thompson",
             "44_thompsonm1a1",
             "thompsonearly"
@@ -16298,6 +16335,7 @@
             "Dispersion": 0.20
         },
         "items": [
+            "legacym14_164",
             "m14"
         ]
     },
@@ -16353,6 +16391,7 @@
             "Dispersion": 0.16
         },
         "items": [
+            "legacym16a4_164",
             "m16a4",
             "sixteen"
         ]
@@ -16409,6 +16448,7 @@
             "Dispersion": 0.14
         },
         "items": [
+            "legacym21_164",
             "m21"
         ]
     },
@@ -16436,6 +16476,7 @@
             "Dispersion": 0.12
         },
         "items": [
+            "legacym40a3_164",
             "m40a3"
         ]
     },
@@ -16577,6 +16618,7 @@
             "Dispersion": 0.36
         },
         "items": [
+            "legacym60_164",
             "m60"
         ]
     },
@@ -16634,6 +16676,7 @@
             "Dispersion": 0.8
         },
         "items": [
+            "legacym72law48",
             "m72law",
             "m72lawbot"
         ]
@@ -16691,6 +16734,7 @@
             "Dispersion": 0.45
         },
         "items": [
+            "legacyminigun44",
             "minigun",
             "chicagotypewriter",
             "m134",
@@ -16750,6 +16794,7 @@
             "Dispersion": 0.34
         },
         "items": [
+            "legacym249_164",
             "m249"
         ]
     },
@@ -16777,6 +16822,7 @@
             "Dispersion": 0.13
         },
         "items": [
+            "legacyspringfield44",
             "springfield",
             "springfieldsniper",
             "44_m1903springfield",
@@ -16809,6 +16855,8 @@
         },
         "items": [
             "colt",
+            "legacycolt44",
+            "legacym1911_164",
             "m1911",
             "44_colt",
             "shirleysm1911",
@@ -16952,7 +17000,8 @@
         },
         "items": [
             "bar",
-            "44_bar"
+            "44_bar",
+            "legacybar44"
         ]
     },
 
@@ -16984,6 +17033,7 @@
             "browninghand",
             "44_30cal",
             "browningm1918a4",
+            "legacybrowning147",
             "m1919",
             "ww2_mg_browningm1919_1a",
             "coaxm1919"
@@ -17166,6 +17216,7 @@
             "Dispersion": 0.68
         },
         "items": [
+            "legacymakarov48",
             "makarov",
             "makarovpm",
             "makarovpmm"
@@ -18039,6 +18090,7 @@
             "Dispersion": 0.38
         },
         "items": [
+            "legacymg42147",
             "mg42",
             "mg42hand",
             "maschinengewehr42",
@@ -18263,6 +18315,7 @@
             "Dispersion": 0.40
         },
         "items": [
+            "legacyuzi164",
             "uzi"
         ]
     },
@@ -18876,6 +18929,7 @@
             "Dispersion": 0.38
         },
         "items": [
+            "legacymp40_44",
             "mp40",
             "44_mp40",
             "smg_mp40e"
@@ -19017,6 +19071,7 @@
             "Dispersion": 0.18
         },
         "items": [
+            "legacymtar48",
             "mtar"
         ]
     },
@@ -20023,6 +20078,7 @@
             "EjectCasings": "false"
         },
         "items": [
+            "legacypanzerfaust3_48",
             "panzerfaust3"
         ]
     },
@@ -20649,7 +20705,8 @@
         },
         "items": [
             "bizon",
-            "bizonnew"
+            "bizonnew",
+            "legacybizon48"
         ]
     },
 
@@ -21472,6 +21529,7 @@
             "Dispersion": 0.12
         },
         "items": [
+            "legacyr700_164",
             "r700"
         ]
     },
@@ -21499,6 +21557,7 @@
             "Dispersion": 1.90
         },
         "items": [
+            "legacyr870_48",
             "r870"
         ]
     },
@@ -21801,6 +21860,7 @@
             "Dispersion": 0.32
         },
         "items": [
+            "legacyrpd164",
             "rpd",
             "cowrpd"
         ]
@@ -21859,6 +21919,7 @@
             "EjectCasings": "false"
         },
         "items": [
+            "legacyrpg164",
             "rpg",
             "rpg7",
             "cow_rpg"
@@ -22001,6 +22062,7 @@
             "Dispersion": 0.30
         },
         "items": [
+            "legacyrpk48",
             "rpk",
             "cow_rpk"
         ]
@@ -22088,6 +22150,7 @@
             "EjectCasings": "false"
         },
         "items": [
+            "legacypanzerschreck44",
             "panzerschreck",
             "44_panzerschreck",
             "rl_panzerschrecke8"
@@ -22720,6 +22783,7 @@
             "Dispersion": 0.60
         },
         "items": [
+            "legacysigp226_48",
             "sigp226"
         ]
     },
@@ -22747,6 +22811,7 @@
             "Dispersion": 0.70
         },
         "items": [
+            "legacysigp232_51",
             "sigp232"
         ]
     },
@@ -22801,6 +22866,7 @@
             "Dispersion": 0.16
         },
         "items": [
+            "legacysg550_48",
             "sg550",
             "sig"
         ]
@@ -23061,6 +23127,7 @@
             "Dispersion": 1.7
         },
         "items": [
+            "legacyspas48",
             "spas",
             "spas12"
         ]
@@ -23437,7 +23504,8 @@
             "aug",
             "auga1",
             "auga3",
-            "ar_auga3sf"
+            "ar_auga3sf",
+            "legacyaug48"
         ]
     },
 
@@ -23573,6 +23641,8 @@
             "Dispersion": 0.24
         },
         "items": [
+            "legacymp44_410",
+            "legacymp44_44",
             "mp44",
             "44_stg44",
             "stg44",
@@ -23838,7 +23908,8 @@
             "Dispersion": 2.2
         },
         "items": [
-            "judge"
+            "judge",
+            "legacyjudge53"
         ]
     },
 
@@ -24458,6 +24529,7 @@
             "Dispersion": 0.45
         },
         "items": [
+            "legacytype100_47",
             "type100",
             "44_type100",
             "geaw_ija_smg_type100_40"
@@ -24852,6 +24924,7 @@
             "Dispersion": 0.48
         },
         "items": [
+            "legacyskorpion164",
             "skorpion"
         ]
     },
@@ -25163,6 +25236,7 @@
             "Dispersion": 1.90
         },
         "items": [
+            "legacyw1200_164",
             "w1200"
         ]
     },
@@ -25244,6 +25318,7 @@
             "Dispersion": 1.95
         },
         "items": [
+            "legacytrenchgun44",
             "trenchgun"
         ]
     },

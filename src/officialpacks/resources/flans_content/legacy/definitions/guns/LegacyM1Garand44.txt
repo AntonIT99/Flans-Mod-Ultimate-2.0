@@ -1,0 +1,45 @@
+// Identity
+Name M1 Garand (Legacy)
+ShortName LegacyM1Garand44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.10)
+
+// Item and rendering
+Icon m1garand
+Colour 255 255 255
+DeployedModel None
+Model legacy.M1Garand44
+animAimOffset 0 0.47849803 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [0.77025,0.15405,0]
+animFlashScale 2.84
+Texture legacym1garand44
+ModelScale 0.7
+
+// Ammunition
+Ammo m1GarandAmmo
+ReloadTime 30
+CanForceReload false
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 240.0
+
+// Ballistics
+Recoil 5
+MuzzleVelocity 850.0
+Dispersion 0.18
+
+// Damage and protection
+Damage 7
+
+// Optics
+Scope None
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound m1garandShoot
+ReloadSound m1garandReload

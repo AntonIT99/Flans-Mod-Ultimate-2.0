@@ -1,0 +1,23 @@
+// Identity
+Name German (Legacy Forest)
+ShortName legacyGermanForestTeam
+
+// Appearance
+VictoryFlagTexture flag_team_germany_ww2
+TextColour Grey
+TeamColour 64 64 64
+Hat LegacyGermanForestHelmet47
+Chest LegacyGermanForestCoat47
+Legs LegacyGermanForestPants47
+Shoes LegacyGermanForestBoots47
+
+// Classes
+AddClass OfficialWW2_GermanScout
+AddClass OfficialWW2_GermanAssault
+AddClass OfficialWW2_GermanSupport
+AddClass OfficialWW2_GermanSupportPanzerfaust
+AddClass OfficialWW2_GermanSupportPanzerschreck
+AddClass OfficialWW2_GermanEngineer
+AddClass OfficialWW2_GermanRifleman
+AddClass OfficialWW2_GermanRiflemanPilot
+AddClass OfficialWW2_GermanMedic

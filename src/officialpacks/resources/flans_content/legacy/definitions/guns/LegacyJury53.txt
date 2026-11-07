@@ -1,0 +1,64 @@
+// Identity
+Name Jury Autorevolver (Legacy)
+ShortName LegacyJury53
+Description Ammo Type : Revolver_Dual Wieldable, original model from Minecraft 1.8-1.12.2 (Flan's Mod 5.3-5.6)
+
+// Item and rendering
+Icon jury
+Colour 255 255 255
+DeployedModel None
+Model legacy.Jury53
+FirstPersonFrame 1.12.2
+animAimOffset 0 2.5212963 0
+Texture legacyjury53
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.24038,0.075911,0]
+animFlashScale 2.47
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo juryAmmo
+Ammo 357Magnum
+Ammo highexpistolammo
+Ammo appistolammo
+ReloadTime 75
+LoadIntoGun 6
+
+// Operation
+Mode SemiAuto
+OneHanded True
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 300
+
+// Ballistics
+Recoil 10
+MuzzleVelocity 350
+Dispersion 0.6
+
+// Damage and protection
+Damage 10
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound JuryShoot
+ReloadSound JuryReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

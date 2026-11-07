@@ -1,0 +1,61 @@
+// Identity
+Name Barrett .50 Cal (Legacy)
+ShortName LegacyBarrett53
+Description Ammo Type : .50 Cal Sniper, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon barrett
+Colour 255 255 255
+DeployedModel None
+Model legacy.Barrett53
+Scope mwbarrett
+Texture legacybarrett53
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.16218,0.031646,0]
+animFlashScale 7.9
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo barrettAmmo
+Ammo barrettExplosiveAmmo
+Ammo barrettCompactAmmo
+Ammo kcasmart50Ammo
+ReloadTime 40
+
+// Operation
+Mode SemiAuto
+Deployable False
+CanShootUnderwater False
+MoveSpeedModifier 0.8
+RoundsPerMin 50.0
+
+// Ballistics
+Recoil 30
+MuzzleVelocity 853.0
+Dispersion 0.13
+
+// Damage and protection
+Damage 34
+
+// Optics
+ZoomLevel 10.0
+FOVZoomLevel 1.0
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound BarrettShoot
+ReloadSound BARReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

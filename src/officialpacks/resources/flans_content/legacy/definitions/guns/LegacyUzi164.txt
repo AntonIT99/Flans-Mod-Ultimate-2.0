@@ -1,0 +1,66 @@
+// Identity
+Name Mini-Uzi (Legacy)
+ShortName LegacyUzi164
+Description AmmoType : SMG_Dual Wieldable, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon miniuzi
+Colour 255 255 255
+DeployedModel None
+Model legacy.MiniUzi164
+animAimOffset 0 1.0220165 0
+Texture legacyuzi164
+ModelScale 1.0
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.12669,0.052787,0]
+animFlashScale 4.44
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo uziAmmo
+Ammo mp5Ammo
+Ammo mp5kAmmo
+Ammo skorpionAmmo
+Ammo mp7Ammo
+Ammo honeybadgerAmmo
+Ammo smg100ammo
+ReloadTime 40
+
+// Operation
+Mode FullAuto SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 950.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 400.0
+Dispersion 0.4
+
+// Damage and protection
+Damage 5
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound MiniUziShoot
+ReloadSound MWColtReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

@@ -105,6 +105,12 @@ public class ArmorType extends InfoType
     /** If true, the player can breathe underwater */
     @Getter
     protected boolean waterBreathing;
+    /** Extra seconds of underwater air; worn pieces add up and slow air loss like Respiration does */
+    @Getter
+    protected float airSupply;
+    /** The wearer breathes normally while the water surface is at most this many blocks above their eyes (0 = off) */
+    @Getter
+    protected float snorkelDepth;
     /** If true, the player can walk on water */
     @Getter
     protected boolean onWaterWalking;
@@ -173,6 +179,8 @@ public class ArmorType extends InfoType
         fireResistance = readValue("FireResistance", fireResistance, file);
         waterBreathing = readValue("WaterBreathing", waterBreathing, file);
         waterBreathing = readValue("Submarine", waterBreathing, file);
+        airSupply = Math.max(0F, readValue("AirSupply", airSupply, file));
+        snorkelDepth = Math.max(0F, readValue("SnorkelDepth", snorkelDepth, file));
         smokeProtection = readValue("SmokeProtection", smokeProtection, file);
         onWaterWalking = readValue("OnWaterWalking", onWaterWalking, file);
         hunger = readValue("Hunger", hunger, file);

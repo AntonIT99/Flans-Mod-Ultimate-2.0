@@ -25,7 +25,7 @@ BreaksGlass True
 
 // Damage
 DamageVsLiving 25
-DamageVsVehicles 65
+DamageVsVehicles 50
 DamageVsPlanes 85
 Fire 0
 

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "flansmod:item/sigp226ammo"
+    "layer0": "flansmod:item/kcasmartpistolammo"
   }
 }

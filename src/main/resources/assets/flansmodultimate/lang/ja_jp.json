@@ -531,6 +531,8 @@
   "tooltip.flansmodultimate.bonus.night_vision": "+暗視",
   "tooltip.flansmodultimate.bonus.smoke_protection": "+煙幕防護",
   "tooltip.flansmodultimate.bonus.water_breathing": "+水中呼吸",
+  "tooltip.flansmodultimate.bonus.air_supply": "+%s秒の空気供給",
+  "tooltip.flansmodultimate.bonus.snorkel": "シュノーケル (深さ%sブロック)",
   "tooltip.flansmodultimate.box": "ボックス",
   "tooltip.flansmodultimate.bullet_absorption": "弾丸吸収",
   "tooltip.flansmodultimate.bullet_speed": "弾速",

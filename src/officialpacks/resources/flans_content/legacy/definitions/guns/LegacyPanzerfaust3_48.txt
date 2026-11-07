@@ -1,0 +1,38 @@
+// Identity
+Name Panzerfaust 3 (Legacy)
+ShortName LegacyPanzerfaust3_48
+Description Rocket Launcher : General purpose rocket launcher., original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon panzerfaust3
+Colour 255 255 255
+DeployedModel None
+animMuzzleFlashPoint [0.125,0.35938,0.1]
+Model legacy.Panzerfaust3_48
+animAimOffset 0 -1.5340797 0
+Texture legacypanzerfaust3_48
+
+// Ammunition
+Ammo panzerfaust3Ammo
+ReloadTime 95
+
+// Operation
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.8
+RoundsPerMin 5.0
+
+// Ballistics
+Recoil 25
+MuzzleVelocity 165.0
+Dispersion 2.0
+
+// Damage and protection
+Damage 2
+
+// Optics
+Scope None
+
+// Sounds
+ShootSound AT4Shoot
+ReloadSound MWbazookaReload

@@ -1,0 +1,17 @@
+// Identity
+Name Russian WW2 Helmet (Alternative)
+ShortName russianHelmet2
+Description Alternative uniform from the WW2 Improved pack
+
+// Item and rendering
+Icon russianhelmet
+Colour 255 255 255
+ArmourTexture russian2
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

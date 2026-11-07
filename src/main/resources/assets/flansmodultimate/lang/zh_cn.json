@@ -531,6 +531,8 @@
   "tooltip.flansmodultimate.bonus.night_vision": "+夜视",
   "tooltip.flansmodultimate.bonus.smoke_protection": "+烟雾防护",
   "tooltip.flansmodultimate.bonus.water_breathing": "+水下呼吸",
+  "tooltip.flansmodultimate.bonus.air_supply": "+%s秒空气供应",
+  "tooltip.flansmodultimate.bonus.snorkel": "呼吸管（深度%s格）",
   "tooltip.flansmodultimate.box": "箱子",
   "tooltip.flansmodultimate.bullet_absorption": "子弹伤害吸收",
   "tooltip.flansmodultimate.bullet_speed": "子弹速度",

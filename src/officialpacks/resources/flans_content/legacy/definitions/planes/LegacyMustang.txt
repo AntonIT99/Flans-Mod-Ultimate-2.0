@@ -1,0 +1,112 @@
+// Identity
+Name P-51 Mustang (Legacy)
+ShortName LegacyMustang
+Description American Fighter, original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.10)
+
+// Item and rendering
+Icon Mustang
+Model legacy.BF109
+FlashModel DefaultFlash
+Texture Mustang
+AddDye 6 lightBlue
+
+// Recipe
+AddRecipeParts core 1 metalCockpit
+AddRecipeParts coreWheel 2 wheel
+AddRecipeParts nose 1 metalNose
+AddRecipeParts rightWing 1 metalWingSmall
+AddRecipeParts leftWing 1 metalWingSmall
+AddRecipeParts bay 1 bombBay
+AddRecipeParts tail 1 metalTail
+AddRecipeParts tailWheel 1 wheel
+
+// Inventory
+CargoSlots 0
+BombSlots 4
+MissileSlots 0
+AllowAllAmmo False
+AddAmmo largeBomb
+AddAmmo smallBomb
+AddAmmo napalm
+FuelTankSize 4000
+
+// Real-world physics
+RealMassKg 4175
+RealEnginePowerHp 1490
+RealMaxSpeedKmh 703
+RealWingSpanM 11.28
+RealWingAreaM2 21.83
+RealClimbRateMs 16.3
+
+// Movement
+RestingPitch 5.0
+MaxThrottle 4.8
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.6
+TurnRightSpeed 1.6
+RealTurnRateDegPerSec 28.22
+LookUpSpeed 1.2
+LookDownSpeed 0.8
+RollLeftSpeed 1.2
+RollRightSpeed 1.2
+Drag 1.0
+WheelSpringStrength 0.125
+
+// Weaponry
+Mode Plane
+Primary Gun
+Secondary Bomb
+ShootDelayPrimary 3
+ShootDelaySecondary 80
+AlternatePrimary True
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 60 3 5 nose 50Cal
+ShootPointPrimary 60 3 -5 nose 50Cal
+ShootPointSecondary -30 -12 0
+DamageModifierPrimary 25
+ReadWeaponsFromGunTypes true
+
+// Health and armour
+SetupPart core 1000 -17 -7 -10 20 24 20
+SetupPart coreWheel 250 0 -20 -8 6 13 16
+SetupPart nose 1000 3 -7 -10 48 18 20
+SetupPart rightWing 500 -7 -5 10 32 2 78
+SetupPart leftWing 500 -7 -5 -88 32 2 78
+SetupPart bay 1000 -70 -7 -10 53 18 20
+SetupPart tail 500 -93 -5 -8 23 14 16
+SetupPart tailWheel 250 -85 -12 -2 6 7 4
+BulletDetection 10
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 10.0
+NumWheels 3
+WheelPosition 0 3 -17 -7
+WheelPosition 1 3 -17 7
+WheelPosition 2 -82 -9 0
+Propeller 0 54 2 0 nose metalPropeller
+Pilot -4 -4 0
+Passengers 0
+CollisionPoint 9 -3 80 rightWing
+CollisionPoint 9 -3 60 rightWing
+CollisionPoint 9 -3 40 rightWing
+CollisionPoint 9 -3 20 rightWing
+CollisionPoint 9 -3 -80 leftWing
+CollisionPoint 9 -3 -60 leftWing
+CollisionPoint 9 -3 -40 leftWing
+CollisionPoint 9 -3 -20 leftWing
+CollisionPoint 20 2 0 nose
+CollisionPoint 40 2 0 nose
+CollisionPoint -60 2 0 bay
+CollisionPoint -40 2 0 bay
+CollisionPoint -80 2 0 tail
+
+// Sounds and particles
+StartSound propStart
+StartSoundLength 20
+PropSound propSound
+PropSoundLength 30
+ShootSoundPrimary 50CalShoot
+ShootSoundSecondary bomb

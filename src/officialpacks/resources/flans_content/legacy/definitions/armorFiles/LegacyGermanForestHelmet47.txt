@@ -1,0 +1,17 @@
+// Identity
+Name German WW2 Forest Helmet (Legacy)
+ShortName LegacyGermanForestHelmet47
+Description Original textures from Minecraft 1.7.10 (Flan's Mod 4.7-4.9)
+
+// Item and rendering
+Icon germanforesthelmet
+Colour 255 255 255
+ArmourTexture legacygermanforest47
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

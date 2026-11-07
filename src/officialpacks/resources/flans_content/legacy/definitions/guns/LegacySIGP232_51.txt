@@ -1,0 +1,69 @@
+// Identity
+Name SIG P232 (Legacy)
+ShortName LegacySIGP232_51
+Description Ammo Type : Pistol_Dual Wieldable, original model from Minecraft 1.8-1.12.2 (Flan's Mod 5.1-5.6)
+
+// Item and rendering
+Icon sigp232
+Colour 255 255 255
+DeployedModel None
+Model legacy.SIGP232_51
+animAimOffset 0 3.6649891 0
+Texture sigp232_2
+ModelScale 0.64
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.21761,0.12019,0]
+animFlashScale 2.47
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo sigP226Ammo
+Ammo kcasmartpistolAmmo
+Ammo desertEagleAmmo
+Ammo glockAmmo
+Ammo m9Ammo
+Ammo m1911Ammo
+Ammo makarovAmmo
+Ammo uspAmmo
+Ammo uspPoisonAmmo
+ReloadTime 35
+NumBullets 1
+
+// Operation
+Mode SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 290.0
+Dispersion 0.7
+
+// Damage and protection
+Damage 8
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound M9Shoot
+ReloadSound MWColtReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

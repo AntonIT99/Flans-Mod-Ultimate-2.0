@@ -1,0 +1,44 @@
+// Identity
+Name Philippine Army
+ShortName W44_PhilippineArmy
+
+// Appearance
+VictoryFlagTexture flag_team_philippines
+TextColour Blue
+TeamColour 0 56 168
+Hat 44_PhilippineCombatFieldHat
+Chest 44_PhilippineCombatFieldChest2
+Legs 44_PhilippineCombatFieldPants
+Shoes 44_PhilippineCombatFieldBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Riflemen and uniform variants
+AddClass W44_PhilippineArmyRifleman
+AddClass W44_PhilippineArmyRiflemanScouts
+
+// Assault
+AddClass W44_PhilippineArmyAssault
+
+// Automatic rifles and machine guns
+AddClass W44_PhilippineArmySupport
+AddClass W44_PhilippineArmyMachineGunner
+
+// Reconnaissance
+AddClass W44_PhilippineArmyScout
+
+// Engineers
+AddClass W44_PhilippineArmyEngineer
+
+// Medical support
+AddClass W44_PhilippineArmyMedic
+
+// Command
+AddClass W44_PhilippineArmySquadLeader
+
+// Guerrillas (1942-1945)
+AddClass W44_PhilippineArmyGuerrillaRifleman
+AddClass W44_PhilippineArmyGuerrillaShotgun
+AddClass W44_PhilippineArmyGuerrillaCarbine
+AddClass W44_PhilippineArmyGuerrillaAntiTank

@@ -26,7 +26,8 @@
             "francemodernd",
             "francemodernw",
             "franceww2",
-            "gign"
+            "gign",
+            "legacyfrenchteam"
         ]
     },
 
@@ -78,6 +79,11 @@
             "germanyearly",
             "germanymidwar",
             "germanysnow",
+            "legacygermanaltteam",
+            "legacygermandesertteam",
+            "legacygermanforestteam",
+            "legacygermansnowteam",
+            "legacygermanteam",
             "officialww2_germaninfantryteam",
             "panzerkorps",
             "w44_fallschirmjager",
@@ -140,7 +146,9 @@
             "VictoryFlagTexture": "replace"
         },
         "items": [
-            "italian"
+            "italian",
+            "legacyitalianaltteam",
+            "legacyitalianteam"
         ]
     },
 
@@ -168,7 +176,20 @@
             "japaneseearly",
             "japaneselate",
             "japaneseteam",
+            "legacyjapanesealtteam",
             "w44_japanesearmy"
+        ]
+    },
+
+    "Philippines - World War II": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_philippines"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "w44_philippinearmy"
         ]
     },
 
@@ -193,6 +214,7 @@
             "VictoryFlagTexture": "replace"
         },
         "items": [
+            "legacyspetsnazteam",
             "ru",
             "rusmodern",
             "rusmodernd",
@@ -237,6 +259,8 @@
             "VictoryFlagTexture": "replace"
         },
         "items": [
+            "legacyrussianaltteam",
+            "legacyrussianteam",
             "russian",
             "russianseelow",
             "russianteam",
@@ -347,6 +371,9 @@
             "britishmidwar",
             "britishteam",
             "britmodern",
+            "legacybritishaltteam",
+            "legacybritishdesertteam",
+            "legacybritishteam",
             "sas",
             "w44_britisharmy"
         ]
@@ -363,6 +390,7 @@
             "americancitizens",
             "bf2us",
             "fbi",
+            "legacymarinesteam",
             "marines",
             "swat",
             "us",
@@ -390,6 +418,9 @@
             "americansnow",
             "americansnowteam",
             "americanteam",
+            "legacyamericanaltteam",
+            "legacyamericansnowteam",
+            "legacyamericanteam",
             "officialww2_americaninfantryteam",
             "w44_usairborne",
             "w44_usarmy",

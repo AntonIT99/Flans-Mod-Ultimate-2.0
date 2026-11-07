@@ -1,0 +1,69 @@
+// Identity
+Name M1014 (Legacy)
+ShortName LegacyM1014_164
+Description Ammo Type : Shotgun, original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 4.1-5.6)
+
+// Item and rendering
+Icon m1014
+Colour 255 255 255
+DeployedModel None
+Model legacy.M1014_164
+animAimOffset 0 0.59758446 0
+Texture legacym1014_164
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.20344,0.045208,0]
+animFlashScale 5.53
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo 12gslugAmmo
+Ammo 12gbirdshotAmmo
+Ammo 12gbuckshotAmmo
+Ammo 12gflechetteAmmo
+Ammo 12gheAmmo
+Ammo 12gincendiaryAmmo
+Ammo 12gpoisonedflechetteAmmo
+Ammo 12gaugeShell
+Ammo 12gaugeShellIncendiary
+ReloadTime 60
+NumBullets 1
+LoadIntoGun 4
+
+// Operation
+Mode SemiAuto
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 10
+MuzzleVelocity 400.0
+Dispersion 1.6
+
+// Damage and protection
+Damage 2.2
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments false
+AllowAttachments flanMWRedDot flanMWACOG flanMWHCOG flanMW4xScope flanMW2xScope flanMW8xScope flanMWForegrip flanMWFlashlight flanMWintrovertedchoke flanMWextrovertedchoke flanMWCharmjamesk2417sight flanMWCharmjthmonkeysight
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound M1014Shoot
+ReloadSound M1014Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

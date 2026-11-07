@@ -1,0 +1,52 @@
+// Identity
+Name RGD-33 Stick Grenade (Legacy)
+ShortName LegacyRgd33_164
+Description Original model from Minecraft 1.6.4-1.12.2 (Flan's Mod 3.1-5.7)
+Mass 500
+
+// Item and rendering
+Icon rgd33
+Colour 255 255 255
+Model legacy.StickGrenade164
+Texture legacyrgd33_164
+SpinWhenThrown true
+
+// Ammunition
+StackSize 4
+
+// Throwing
+ThrowDelay 10
+Bounciness 0.8
+ThrowSpeedMs 12
+Sticky false
+
+// Ballistics
+FallSpeed 1.0
+BreaksGlass true
+PenetratesBlocks false
+HitBoxSize 0.5
+
+// Damage and detonation
+DetonateOnImpact false
+HitEntityDamage 1
+VehicleProximityTrigger -1.0
+LivingProximityTrigger -1.0
+Fuse 70
+DetonateWhenShot true
+Remote false
+PrimeDelay 0
+FireRadius 0.0
+ExplosionRadius 4.0
+ExplosionBreaksBlocks true
+MeleeDamage 4
+ExplosiveMassTNTg 85
+FragType SLEEVE_FRAG
+
+// Smoke and effects
+SmokeTime 0
+
+// Sounds and particles
+TrailParticles false
+ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2

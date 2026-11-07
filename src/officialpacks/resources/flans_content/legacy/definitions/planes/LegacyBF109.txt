@@ -1,0 +1,116 @@
+// Identity
+Name BF109 (Legacy)
+ShortName LegacyBF109
+Description German Fighter, original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.10)
+
+// Item and rendering
+Icon LegacyBF109
+Model legacy.BF109
+FlashModel DefaultFlash
+Texture LegacyBF109
+AddDye 5 silver
+AddDye 1 yellow
+
+// Paintjobs
+AdvPaintJob Desert legacybf109desert legacybf109_desert yellow 8
+
+// Recipe
+AddRecipeParts core 1 metalCockpit
+AddRecipeParts coreWheel 2 wheel
+AddRecipeParts nose 1 metalNose
+AddRecipeParts rightWing 1 metalWingSmall
+AddRecipeParts leftWing 1 metalWingSmall
+AddRecipeParts bay 1 bombBay
+AddRecipeParts tail 1 metalTail
+AddRecipeParts tailWheel 1 wheel
+
+// Inventory
+CargoSlots 0
+BombSlots 3
+MissileSlots 0
+AllowAllAmmo False
+AddAmmo largeBomb
+AddAmmo smallBomb
+AddAmmo napalm
+FuelTankSize 6000
+
+// Real-world physics
+RealMassKg 3100
+RealEnginePowerPS 1475
+RealMaxSpeedKmh 630
+RealWingSpanM 9.925
+RealWingAreaM2 16.05
+RealClimbRateMs 14.1
+
+// Movement
+RestingPitch 5.0
+MaxThrottle 4.5
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.6
+TurnRightSpeed 1.6
+RealTurnRateDegPerSec 32.07
+LookUpSpeed 1.5
+LookDownSpeed 1.0
+RollLeftSpeed 1.15
+RollRightSpeed 1.15
+Drag 1.0
+WheelSpringStrength 0.125
+
+// Weaponry
+Mode Plane
+Primary Gun
+Secondary Bomb
+ShootDelayPrimary 2
+ShootDelaySecondary 100
+AlternatePrimary True
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 60 3 5 nose mg42
+ShootPointPrimary 60 3 -5 nose mg42
+ShootPointSecondary -30 -12 0
+DamageModifierPrimary 50
+ReadWeaponsFromGunTypes true
+
+// Health and armour
+SetupPart core 1000 -17 -7 -10 20 24 20
+SetupPart coreWheel 250 0 -20 -8 6 13 16
+SetupPart nose 500 3 -7 -10 48 18 20
+SetupPart rightWing 500 -7 -5 10 32 2 78
+SetupPart leftWing 500 -7 -5 -88 32 2 78
+SetupPart bay 1000 -70 -7 -10 53 18 20
+SetupPart tail 500 -93 -5 -8 23 14 16
+SetupPart tailWheel 250 -85 -12 -2 6 7 4
+BulletDetection 10
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 10.0
+NumWheels 3
+WheelPosition 0 3 -17 -7
+WheelPosition 1 3 -17 7
+WheelPosition 2 -82 -9 0
+Propeller 0 54 2 0 nose metalPropeller
+Pilot -4 -4 0
+Passengers 0
+CollisionPoint 9 -3 80 rightWing
+CollisionPoint 9 -3 60 rightWing
+CollisionPoint 9 -3 40 rightWing
+CollisionPoint 9 -3 20 rightWing
+CollisionPoint 9 -3 -80 leftWing
+CollisionPoint 9 -3 -60 leftWing
+CollisionPoint 9 -3 -40 leftWing
+CollisionPoint 9 -3 -20 leftWing
+CollisionPoint 20 2 0 nose
+CollisionPoint 40 2 0 nose
+CollisionPoint -60 2 0 bay
+CollisionPoint -40 2 0 bay
+CollisionPoint -80 2 0 tail
+
+// Sounds and particles
+StartSound propStart
+StartSoundLength 20
+PropSound propSound
+PropSoundLength 30
+ShootSoundPrimary MG42Shoot
+ShootSoundSecondary bomb

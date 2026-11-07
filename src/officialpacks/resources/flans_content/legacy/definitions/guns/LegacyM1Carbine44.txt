@@ -1,0 +1,44 @@
+// Identity
+Name M1 Carbine (Legacy)
+ShortName LegacyM1Carbine44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.10)
+
+// Item and rendering
+Icon m1carbine
+Colour 255 255 255
+DeployedModel None
+Model legacy.M1Carbine44
+animAimOffset 0 0.23123724 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [0.55751,0.2054,0]
+animFlashScale 2.13
+Texture legacym1carbine44
+ModelScale 0.8
+
+// Ammunition
+Ammo m1CarbineAmmo
+ReloadTime 60
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 4
+MuzzleVelocity 605.0
+Dispersion 0.22
+
+// Damage and protection
+Damage 6
+
+// Optics
+Scope None
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound m1carbineShoot
+ReloadSound m1carbineReload

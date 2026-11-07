@@ -1,0 +1,45 @@
+// Identity
+Name Colt M1911 (Legacy)
+ShortName LegacyColt44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.10)
+
+// Item and rendering
+Icon colt
+Colour 255 255 255
+DeployedModel None
+Model legacy.Colt44
+animAimOffset 0 0.31896563 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [0.33416,0.22432,0]
+animFlashScale 2.02
+Texture legacycolt44
+ModelScale 0.7
+
+// Ammunition
+Ammo coltAmmo
+ReloadTime 40
+
+// Operation
+Mode SemiAuto
+OneHanded true
+Deployable False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 6
+MuzzleVelocity 250.0
+Dispersion 0.72
+
+// Damage and protection
+Damage 5
+
+// Optics
+Scope None
+
+// Attachments
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound coltShoot
+ReloadSound coltReload

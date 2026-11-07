@@ -1,0 +1,17 @@
+// Identity
+Name British WW2 Desert Helmet (Legacy 1.4.7)
+ShortName LegacyBritishDesertHelmet147
+Description Original textures from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.4)
+
+// Item and rendering
+Icon legacybritishdeserthelmet147
+Colour 255 255 255
+ArmourTexture legacybritishdesert147
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

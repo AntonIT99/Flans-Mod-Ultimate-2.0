@@ -487,6 +487,7 @@
             "FragType": "HIGH_FRAG"
         },
         "items": [
+            "legacym67_164",
             "m67",
             "grenade_m67"
         ]
@@ -533,6 +534,7 @@
             "Fuse": 80
         },
         "items": [
+            "legacymillsbomb164",
             "millsbomb"
         ]
     },
@@ -549,6 +551,7 @@
             "Fuse": 80
         },
         "items": [
+            "legacymk2frag164",
             "mk2frag",
             "44_mk2frag"
         ]
@@ -718,6 +721,7 @@
             "Fuse": 70
         },
         "items": [
+            "legacyrgd33_164",
             "rgd33"
         ]
     },
@@ -841,6 +845,7 @@
             "Fuse": 80
         },
         "items": [
+            "legacystielhandgranate164",
             "stielhandgranate",
             "stielhandgranate24",
             "44_stielhandgranate"
@@ -966,6 +971,7 @@
             "Fuse": 80
         },
         "items": [
+            "legacytype97_164",
             "type97"
         ]
     },

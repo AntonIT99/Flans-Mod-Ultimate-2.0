@@ -1,0 +1,66 @@
+// Identity
+Name MP7 (Legacy)
+ShortName LegacyMP7_51
+Description Ammo Type : SMG_Dual Wieldable, original model from Minecraft 1.8-1.12.2 (Flan's Mod 5.1-5.6)
+
+// Item and rendering
+Icon mp7
+Colour 255 255 255
+DeployedModel None
+Model legacy.MP7_51
+animAimOffset 0 4.1599512 0
+Texture skinmp7
+ModelScale 0.64
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.18064,0.081286,0]
+animFlashScale 3.46
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo mp7Ammo
+Ammo mp5Ammo
+Ammo mp5kAmmo
+Ammo skorpionAmmo
+Ammo uziAmmo
+Ammo honeybadgerAmmo
+Ammo smg100ammo
+ReloadTime 50
+
+// Operation
+Mode FullAuto SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 950.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 735.0
+Dispersion 0.34
+
+// Damage and protection
+Damage 6
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound MiniUziShoot
+ReloadSound MWColtReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

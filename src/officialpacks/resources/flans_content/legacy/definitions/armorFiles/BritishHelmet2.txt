@@ -1,0 +1,17 @@
+// Identity
+Name British WW2 Helmet (Alternative)
+ShortName britishHelmet2
+Description Alternative uniform from the WW2 Improved pack
+
+// Item and rendering
+Icon britishhelmet
+Colour 255 255 255
+ArmourTexture british2
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

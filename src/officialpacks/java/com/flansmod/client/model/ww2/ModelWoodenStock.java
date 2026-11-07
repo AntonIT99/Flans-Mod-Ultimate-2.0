@@ -1,4 +1,3 @@
-
 package com.flansmod.client.model.ww2;
 
 import com.flansmod.client.model.ModelAttachment;

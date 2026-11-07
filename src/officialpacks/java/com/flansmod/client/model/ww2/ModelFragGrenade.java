@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ModelFragGrenade extends ModelBase {
    int textureX = 256;
-   int textureY = 256;
+   int textureY = 128;
    public ModelRendererTurbo[] fraggrenadeModel = new ModelRendererTurbo[96];
 
    public ModelFragGrenade() {

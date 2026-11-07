@@ -1,0 +1,23 @@
+// Identity
+Name American (Legacy Snow)
+ShortName legacyAmericanSnowTeam
+
+// Appearance
+VictoryFlagTexture flag_team_usa_1912-1959
+TextColour Green
+TeamColour 0 255 0
+Hat LegacyAmericanSnowHelmet164
+Chest LegacyAmericanSnowCoat164
+Legs LegacyAmericanSnowPants164
+Shoes LegacyAmericanSnowBoots164
+
+// Classes
+AddClass OfficialWW2_AmericanScout
+AddClass OfficialWW2_AmericanAssault
+AddClass OfficialWW2_AmericanSupport
+AddClass OfficialWW2_AmericanSupportBazooka
+AddClass OfficialWW2_AmericanEngineer
+AddClass OfficialWW2_AmericanRifleman
+AddClass OfficialWW2_AmericanRiflemanPilot
+AddClass OfficialWW2_AmericanRiflemanSpringfield
+AddClass OfficialWW2_AmericanMedic

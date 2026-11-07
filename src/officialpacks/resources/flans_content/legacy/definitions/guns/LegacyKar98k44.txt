@@ -1,0 +1,49 @@
+// Identity
+Name Karabiner 98k (Legacy)
+ShortName LegacyKar98k44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.9)
+
+// Item and rendering
+Icon kar98k
+Colour 255 255 255
+DeployedModel None
+Model legacy.Kar98k44
+animAimOffset 0 0.98689448 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [1.3178,0.26355,0]
+animFlashScale 1.66
+Texture legacykar98k44
+ModelScale 0.7
+
+// Ammunition
+Ammo kar98kAmmo
+ReloadTime 60
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 45.0
+
+// Ballistics
+Recoil 10
+MuzzleVelocity 760.0
+Dispersion 0.15
+
+// Damage and protection
+Damage 10
+
+// Optics
+Scope None
+
+// Attachments
+AllowAttachments ZF4Scope
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound kar98kShoot
+ReloadSound kar98kReload

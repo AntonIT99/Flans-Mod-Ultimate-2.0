@@ -1,0 +1,17 @@
+// Identity
+Name British WW2 Boots (Legacy)
+ShortName LegacyBritishBoots147
+Description Original textures from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.7)
+
+// Item and rendering
+Icon britishboots
+Colour 255 255 255
+ArmourTexture legacybritish147
+
+// Protection
+Type Boots
+Defence 0.02
+BulletDefence 0.00
+PenetrationResistance 0.35
+ArmorPoints 1
+Toughness 0

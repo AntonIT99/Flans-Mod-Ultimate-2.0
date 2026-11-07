@@ -1,0 +1,18 @@
+// Identity
+Name Guerrilla (M1 Carbine)
+ShortName W44_PhilippineArmyGuerrillaCarbine
+Description Resistance fighter armed with an M1 Carbine from the submarine supply runs of 1943-44.
+
+// Availability
+UnlockLevel 0
+
+// Armour overrides; remaining slots inherit the team uniform.
+Chest 44_PhilippineCombatFieldChest
+Legs 44_PhilippineCombatFieldShorts
+
+// Items
+AddItem 44_M1Carbine
+AddItem 44_M1CarbineAmmo 5
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage
+AddItem 44_AmericanKaBarKnife

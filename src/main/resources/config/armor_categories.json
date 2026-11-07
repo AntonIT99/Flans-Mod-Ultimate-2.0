@@ -599,6 +599,8 @@
             "44_germanofficerhat",
             "44_germanofficerhatfeldgrau",
             "44_japanesetype3fieldcap",
+            "44_japaneseheadband",
+            "44_philippinecombatfieldhat",
             "achaemenidheadwrap",
             "americangeneralschirmmuetze",
             "americanallssschirmmuetze",
@@ -916,6 +918,8 @@
             "44_germansumpftarnm43camosmock",
             "44_germansumpftarnm45chest",
             "44_japanesetype98chestkhaki",
+            "44_philippinecombatfieldchest",
+            "44_philippinecombatfieldchest2",
             "44_sovietsummerobr43chest",
             "44_waffenm42camochest",
             "44_waffenm44camochest",
@@ -925,8 +929,8 @@
             "americanassaultchestbrown",
             "americanassaultchestgreen",
             "americanassaultchestkhaki",
-            "americanchest",
             "americancoat",
+            "americancoat2",
             "americanengineerchest",
             "americanengineerchestblack",
             "americanengineerchestbrown",
@@ -953,6 +957,7 @@
             "blacksweater",
             "britishairborne",
             "britishcoat",
+            "britishcoat2",
             "britishdesertcoat",
             "britishww1coat",
             "britww2",
@@ -1002,6 +1007,7 @@
             "germ",
             "germanairborne",
             "germanairbornecamo",
+            "germancoat2",
             "germangeneralcoatbrigadecommander",
             "germanallsscoatbrigadefuehrer",
             "germangeneralcoatgruppencommander",
@@ -1046,7 +1052,6 @@
             "germanassaultchestpea",
             "germanassaultchestsplinter",
             "germanassaultchestswamp",
-            "germanchest",
             "germancoat",
             "germancoatfeldwebel",
             "germancoatfeldwebelfeldgrau",
@@ -1333,8 +1338,10 @@
             "ignacy",
             "imperialrobe",
             "italiancoat",
+            "italiancoat2",
             "japanese64pcoat",
             "japanesecoat",
+            "japanesecoat2",
             "japaneseofficer",
             "japanesesoldier",
             "japuniformww2",
@@ -1347,6 +1354,15 @@
             "labcoat",
             "lacreatura",
             "lagoblina",
+            "legacyamericancoat147",
+            "legacyamericansnowcoat164",
+            "legacybritishcoat147",
+            "legacybritishdesertcoat147",
+            "legacygermancoat147",
+            "legacygermandesertcoat147",
+            "legacygermanforestcoat47",
+            "legacygermansnowcoat164",
+            "legacyrussiancoat147",
             "limitanei",
             "ludwigcoat",
             "luzextinguido",
@@ -1397,6 +1413,7 @@
             "ppgendarmerievestepsig",
             "romangambeson",
             "russiancoat",
+            "russiancoat2",
             "russianforestcoat",
             "russiansnowcoat",
             "russianww1coat",
@@ -1649,9 +1666,12 @@
             "44_germanofficerpants",
             "44_germansumpftarnm45pants",
             "44_japanesetype98pantskhaki",
+            "44_philippinecombatfieldpants",
+            "44_philippinecombatfieldshorts",
             "44_sovietsummerobr43pants",
             "44_waffenm44camopants",
             "americanpants",
+            "americanpants2",
             "americansniperpants",
             "americansniperpantsfrog",
             "americansnowpants",
@@ -1662,6 +1682,7 @@
             "blacktrousers",
             "britishdesertpants",
             "britishpants",
+            "britishpants2",
             "britishww1pants",
             "chinesepants",
             "dutchpants",
@@ -1689,6 +1710,7 @@
             "germangeneralfeldhosefeldgrau",
             "germanluftwaffefeldhose",
             "germanpants",
+            "germanpants2",
             "germansniperpants",
             "germansniperpantssplinter",
             "germansnowpants",
@@ -1699,8 +1721,19 @@
             "germanww1pants",
             "hungarianpants",
             "italianpants",
+            "italianpants2",
             "japanese64ppants",
             "japanesepants",
+            "japanesepants2",
+            "legacyamericanpants147",
+            "legacyamericansnowpants164",
+            "legacybritishpants147",
+            "legacybritishdesertpants147",
+            "legacygermandesertpants147",
+            "legacygermanforestpants47",
+            "legacygermanpants147",
+            "legacygermansnowpants164",
+            "legacyrussianpants147",
             "ludwigfeldhose",
             "polishpants",
             "pp_afrikakorpspants",
@@ -1716,6 +1749,7 @@
             "romantriariipants",
             "russianforestpants",
             "russianpants",
+            "russianpants2",
             "russiansnowpants",
             "russianww1pants",
             "vcnlfclotheslong",
@@ -1909,8 +1943,10 @@
             "44_germanboots",
             "44_germanofficerboots",
             "44_japaneseboots",
+            "44_philippinecombatfieldboots",
             "44_sovietsummerobr43boots",
             "americanboots",
+            "americanboots2",
             "americansnowboots",
             "americanuniformboots",
             "americanww1boots",
@@ -1918,6 +1954,7 @@
             "azaboots",
             "belgianboots",
             "britishboots",
+            "britishboots2",
             "britishdesertboots",
             "britishww1boots",
             "chineseboots",
@@ -1928,6 +1965,7 @@
             "french1915boots",
             "frenchboots",
             "germanboots",
+            "germanboots2",
             "germandesertboots",
             "germanforestboots",
             "germansnowboots",
@@ -1939,9 +1977,22 @@
             "gignboots",
             "hungarianboots",
             "italianboots",
+            "italianboots2",
             "japanese64pboots",
             "japaneseboots",
+            "japaneseboots2",
             "kskboots",
+            "legacyamericanboots147",
+            "legacyamericansnowboots164",
+            "legacybritishboots147",
+            "legacybritishdesertboots147",
+            "legacygermanboots147",
+            "legacygermandesertboots147",
+            "legacygermanforestboots47",
+            "legacygermansnowboots164",
+            "legacymarineboots147",
+            "legacyrussianboots147",
+            "legacyspetsnazboots147",
             "marineboots",
             "nofalldamageboots",
             "opafboots",
@@ -1952,12 +2003,14 @@
             "romanboots",
             "romangreaves",
             "russianboots",
+            "russianboots2",
             "russianforestboots",
             "russiansnowboots",
             "russianww1boots",
             "sasboots",
             "speedboots",
             "spetsnazboots",
+            "usarmyboots",
             "waterwalkingboots",
             "wh40k_armor_catachanboots_1a",
             "wh40k_armor_commissarboots_1a",
@@ -2198,6 +2251,20 @@
         ]
     },
 
+    "Modern Atmospheric Diving Suit Helmet": {
+        "properties": {
+            "Defence": "0.04",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.10",
+            "ArmorPoints": 2,
+            "Toughness": 0,
+            "Submarine": "true"
+        },
+        "items": [
+            "adshelmet"
+        ]
+    },
+
     "Modern Ballistic Vest": {
         "properties": {
             "Defence": "0.16",
@@ -2227,12 +2294,15 @@
             "azahelmet",
             "gignhelmet",
             "kskhelmet",
+            "legacymarinehelmet147",
+            "legacyspetsnazhelmet147",
             "marinehelmet",
             "opafhelmet",
             "ppcasquepsig",
             "sashelmet",
             "spetsnazhelmet",
             "swathelmet",
+            "usarmyhelmet",
             "ushelmetachdcu",
             "6b27",
             "6b27flora",
@@ -2289,6 +2359,20 @@
             "pasgtnaked",
             "khb2000",
             "mjerryhat"
+        ]
+    },
+
+    "Modern Diving Mask And Snorkel": {
+        "properties": {
+            "Defence": "0.01",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "scubamask",
+            "snorkel"
         ]
     },
 
@@ -2361,6 +2445,33 @@
         ]
     },
 
+    "Modern Scuba Air Tank (Chest)": {
+        "properties": {
+            "Defence": "0.03",
+            "BulletDefence": "0.01",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 0,
+            "Toughness": 0
+        },
+        "items": [
+            "airtank",
+            "doubleairtank"
+        ]
+    },
+
+    "Modern Scuba Helmet": {
+        "properties": {
+            "Defence": "0.02",
+            "BulletDefence": "0.00",
+            "PenetrationResistance": "1.00",
+            "ArmorPoints": 1,
+            "Toughness": 0
+        },
+        "items": [
+            "scubahelmet"
+        ]
+    },
+
     "Modern Soft Ballistic Vest (Boots Slot)": {
         "properties": {
             "Defence": "0.06",
@@ -2407,12 +2518,15 @@
             "azabody",
             "gignbody",
             "kskbody",
+            "legacymarinebody147",
+            "legacyspetsnazbody147",
             "marinebody",
             "opafbody",
             "sasbody",
             "spetsnazbody",
             "pmc",
-            "mjerryvest"
+            "mjerryvest",
+            "usarmycoat"
         ]
     },
 
@@ -2428,11 +2542,14 @@
             "azapants",
             "gignpants",
             "kskpants",
+            "legacymarinepants147",
+            "legacyspetsnazpants147",
             "marinepants",
             "opafpants",
             "saspants",
             "spetsnazpants",
-            "mjerrypants"
+            "mjerrypants",
+            "usarmypants"
         ]
     },
 
@@ -3028,6 +3145,7 @@
             "americanassaulthelmet",
             "americanengineerhelmet",
             "americanhelmet",
+            "americanhelmet2",
             "americanmedichelmet",
             "americanofficerhelmet",
             "americansniperhelmet",
@@ -3038,6 +3156,7 @@
             "belgianhelmet",
             "britishdeserthelmet",
             "britishhelmet",
+            "britishhelmet2",
             "britishww1helmet",
             "broadiemk2",
             "broadiemk2desert",
@@ -3052,6 +3171,7 @@
             "germanengineerhelmet",
             "germanforesthelmet",
             "germanhelmet",
+            "germanhelmet2",
             "germanluftwaffestahlhelm",
             "germanmedichelmet",
             "germansnowhelmet",
@@ -3140,8 +3260,19 @@
             "germanww1helmet",
             "hungarianhelmet",
             "italianhelmet",
+            "italianhelmet2",
             "japanese64phelmet",
             "japanesehelmet",
+            "japanesehelmet2",
+            "legacyamericanhelmet147",
+            "legacyamericansnowhelmet164",
+            "legacybritishhelmet147",
+            "legacybritishdeserthelmet147",
+            "legacygermandeserthelmet147",
+            "legacygermanforesthelmet47",
+            "legacygermanhelmet147",
+            "legacygermansnowhelmet164",
+            "legacyrussianhelmet147",
             "m18stahlhelm",
             "m1pot",
             "m1potfrog",
@@ -3163,6 +3294,7 @@
             "pp_waffenhelmet",
             "russianforesthelmet",
             "russianhelmet",
+            "russianhelmet2",
             "russiansnowhelmet",
             "russianww1helmet",
             "ssh36",

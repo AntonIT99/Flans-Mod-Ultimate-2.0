@@ -6,6 +6,8 @@
 
 * Crews inherit per-seat `invisiblePassenger` / `SetPassengerInvisible` definitions, soldiers benefit from compatible worn reload pouches, and vehicle models play ammunition-specific armor impact sounds
 
+* Soldiers of the Warfare 44 Philippine Army team use Spanish-derived names
+
 * Vehicle NPC crews inherit content-pack door-dependent occupant visibility, using the model doors option and preserving explicitly hidden seats
 
 First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPCs.

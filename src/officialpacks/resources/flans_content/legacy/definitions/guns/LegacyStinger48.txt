@@ -1,0 +1,40 @@
+// Identity
+Name FIM-92 Stinger (Legacy)
+ShortName LegacyStinger48
+Description Rocket Launcher : anti-aircraft target finding rocket launcher., original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon stinger
+Colour 255 255 255
+DeployedModel None
+animMuzzleFlashPoint [0.75,0.21875,0.125]
+Model legacy.Stinger48
+Texture legacystinger48
+ModelScale 1.0
+
+// Ammunition
+Ammo stingerAmmo
+ReloadTime 80
+
+// Operation
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.8
+RoundsPerMin 3.0
+
+// Ballistics
+Recoil 25
+BulletSpeed 3.0
+Dispersion 0.5
+
+// Damage and protection
+Damage 2
+
+// Optics
+Scope mwstinger
+ZoomLevel 8.0
+FOVZoomLevel 1.0
+
+// Sounds
+ShootSound AT4Shoot
+ReloadSound MWbazookaReload

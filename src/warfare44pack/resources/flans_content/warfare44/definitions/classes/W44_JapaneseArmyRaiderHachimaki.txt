@@ -1,0 +1,19 @@
+// Identity
+Name Raider (Hachimaki)
+ShortName W44_JapaneseArmyRaiderHachimaki
+Description Close-assault infantry wearing the hachimaki head band, with a Type 38 rifle, extra grenades and a satchel charge for attacking tanks at close range.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Armour overrides; remaining slots inherit the team uniform.
+Hat 44_JapaneseHeadBand
+
+// Items
+AddItem 44_Type38
+AddItem 44_Type3899Ammo 5
+AddItem 44_Mk2Frag 4
+AddItem 44_SatchelCharge
+AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

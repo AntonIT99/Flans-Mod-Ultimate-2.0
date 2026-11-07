@@ -1,0 +1,17 @@
+// Identity
+Name Italian WW2 Pants (Alternative)
+ShortName italianPants2
+Description Alternative uniform from the WW2 Improved pack
+
+// Item and rendering
+Icon ItalianPants
+Colour 255 255 255
+ArmourTexture italian2
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

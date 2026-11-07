@@ -1,0 +1,69 @@
+// Identity
+Name Judge Shotgun (Legacy)
+ShortName LegacyJudge53
+Description Ammo Type : Shotgun_Dual Wieldable, original model from Minecraft 1.8-1.12.2 (Flan's Mod 5.3-5.6)
+
+// Item and rendering
+Icon legacyjudge53
+Colour 255 255 255
+DeployedModel None
+Model legacy.Judge53
+animAimOffset 0 2.5304129 0
+Texture legacyjudge53
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.10172,0.033906,0]
+animFlashScale 5.53
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo 12gslugAmmo
+Ammo 12gbirdshotAmmo
+Ammo 12gbuckshotAmmo
+Ammo 12gflechetteAmmo
+Ammo 12gheAmmo
+Ammo 12gincendiaryAmmo
+Ammo 12gpoisonedflechetteAmmo
+Ammo 12gaugeShell
+Ammo 12gaugeShellIncendiary
+ReloadTime 50
+NumBullets 1
+LoadIntoGun 5
+
+// Operation
+OneHanded True
+Mode SemiAuto
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 60
+
+// Ballistics
+Recoil 17
+MuzzleVelocity 250
+Dispersion 2.2
+
+// Damage and protection
+Damage 2.2
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound ExecutionerShoot
+ReloadSound JudgeReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

@@ -1,0 +1,65 @@
+// Identity
+Name FMG-9 (Legacy)
+ShortName LegacyFMG51
+Description AmmoType : SMG_Dual Wieldable, original model from Minecraft 1.8-1.12.2 (Flan's Mod 5.1-5.6)
+
+// Item and rendering
+Icon fmg
+Colour 255 255 255
+DeployedModel None
+Model legacy.FMG51
+animAimOffset 0 1.0410773 0
+Texture skinfmg
+ModelScale 0.7
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.19418,0.090318,0]
+animFlashScale 3.46
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo mp7Ammo
+Ammo mp5Ammo
+Ammo skorpionAmmo
+Ammo uziAmmo
+Ammo mp7Ammo
+Ammo honeybadgerAmmo
+ReloadTime 40
+
+// Operation
+Mode FullAuto SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 600.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 400.0
+Dispersion 0.38
+
+// Damage and protection
+Damage 5
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound G36Shoot
+ReloadSound MWMP40Reload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

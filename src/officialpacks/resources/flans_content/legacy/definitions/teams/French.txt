@@ -1,0 +1,21 @@
+// Identity
+Name French (Legacy)
+ShortName legacyFrenchTeam
+
+// Appearance
+VictoryFlagTexture flag_team_france
+TextColour Blue
+TeamColour 0 0 128
+Hat frenchHelmet
+Chest frenchCoat
+Legs frenchPants
+Shoes frenchBoots
+
+// Classes
+AddClass OfficialLegacy_FrenchScout
+AddClass OfficialLegacy_FrenchAssault
+AddClass OfficialLegacy_FrenchSupport
+AddClass OfficialLegacy_FrenchSupportBazooka
+AddClass OfficialLegacy_FrenchEngineer
+AddClass OfficialLegacy_FrenchRifleman
+AddClass OfficialLegacy_FrenchMedic

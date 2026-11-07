@@ -1,0 +1,113 @@
+// Identity
+Name F22 Raptor (Legacy)
+ShortName LegacyF22
+Description American Stealth Fighter, original model from Minecraft 1.7.10 (Flan's Mod 4.9-5.0)
+
+// Item and rendering
+Icon LegacyF22
+Model legacy.F22
+FlashModel DefaultFlash
+Texture F22
+AddDye 5 silver
+AddDye 5 gray
+
+// Recipe
+AddRecipeParts core 1 advancedMetalCockpit
+AddRecipeParts coreWheel 1 wheel 1 minigun
+AddRecipeParts nose 1 metalNose
+AddRecipeParts rightWing 1 metalWingSmall
+AddRecipeParts leftWing 1 metalWingSmall
+AddRecipeParts tail 1 metalTail
+AddRecipeParts rightWingWheel 1 wheel
+AddRecipeParts leftWingWheel 1 wheel
+
+// Inventory
+CargoSlots 0
+BombSlots 0
+MissileSlots 4
+AllowAllAmmo False
+AddAmmo mk4Rocket
+FuelTankSize 6000
+
+// Real-world physics
+RealMassKg 29410
+RealEngineThrustKn 231.3
+RealMaxSpeedKmh 2414
+RealWingSpanM 13.56
+RealWingAreaM2 78.04
+RealClimbRateMs 330
+
+// Movement
+RestingPitch 5.0
+HasGear True
+MaxThrottle 8.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 2.5
+TurnRightSpeed 2.5
+RealTurnRateDegPerSec 23.47
+LookUpSpeed 3
+LookDownSpeed 3
+RollLeftSpeed 3.2
+RollRightSpeed 3.2
+Drag 1.0
+WheelSpringStrength 0.125
+
+// Weaponry
+Mode Plane
+Primary Gun
+Secondary Missile
+ShootDelayPrimary 2
+ShootDelaySecondary 20
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 60 3 0 nose minigun
+ShootPointSecondary -60 16 -58 leftWing
+ShootPointSecondary -60 16 58 rightWing
+ReadWeaponsFromGunTypes true
+
+// Health and armour
+SetupPart nose 4000 46 10 -9 64 24 18
+SetupPart core 5000 -93 8 -32 139 16 64
+SetupPart tailWheel 1000 -72 -12 -18 12 24 36
+SetupPart leftWing 3000 -72 16 -92 60 3 60
+SetupPart rightWing 3000 -72 16 32 60 3 60
+SetupPart coreWheel 1000 50 -10 -3 10 20 6
+BulletDetection 10
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 15.0
+NumWheels 3
+WheelPosition 0 -92 -12 -15
+WheelPosition 1 -92 -12 15
+WheelPosition 2 12 -9 0
+Propeller 0 54 0 0 core metalPropeller
+Pilot 80 14 0
+Passengers 0
+CollisionPoint -43 28 -18 leftWing
+CollisionPoint -43 28 -101 leftWing
+CollisionPoint -3 28 -18 leftWing
+CollisionPoint -3 28 -101 leftWing
+CollisionPoint -43 28 18 rightWing
+CollisionPoint -43 28 101 rightWing
+CollisionPoint -3 28 18 rightWing
+CollisionPoint -3 28 101 rightWing
+CollisionPoint 81 28 0 nose
+CollisionPoint 46 28 0 nose
+CollisionPoint -134 29 0 tail
+
+// Sounds and particles
+StartSound JetIdle
+StartSoundLength 140
+PropSound JetEngine2
+PropSoundLength 47
+ShootSoundPrimary MinigunShoot
+ShootSoundSecondary RocketFire2
+
+// Engine exhaust
+AddEmitter flansmod.afterburn 1 [130,20,-10] [1,1,1] [4,0,0] 0.65 8 0 1 core
+AddEmitter flansmod.afterburn 1 [134,20,-10] [1,1,1] [6,0,0] 0.65 8 0 1 core
+AddEmitter flansmod.afterburn 1 [130,20,10] [1,1,1] [4,0,0] 0.65 8 0 1 core
+AddEmitter flansmod.afterburn 1 [134,20,10] [1,1,1] [6,0,0] 0.65 8 0 1 core

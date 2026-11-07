@@ -1,0 +1,24 @@
+// Identity
+Name Russian Spetsnaz (Legacy)
+ShortName legacySpetsnazTeam
+
+// Appearance
+VictoryFlagTexture flag_team_russia
+TextColour Red
+TeamColour 128 0 0
+Hat LegacySpetsnazHelmet147
+Chest LegacySpetsnazBody147
+Legs LegacySpetsnazPants147
+Shoes LegacySpetsnazBoots147
+
+// Classes
+AddClass spetsnazSniper1
+AddClass spetsnazSniper2
+AddClass spetsnazDualWield1
+AddClass spetsnazAssault1
+AddClass spetsnazAssault2
+AddClass spetsnazMedic1
+AddClass spetsnazEngineer1
+AddClass spetsnazRiflemanAK74
+AddClass spetsnazSupportRPK
+AddClass spetsnazAntiTank

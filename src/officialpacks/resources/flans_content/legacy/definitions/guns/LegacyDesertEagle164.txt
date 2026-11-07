@@ -1,0 +1,69 @@
+// Identity
+Name Desert Eagle (Legacy)
+ShortName LegacyDesertEagle164
+Description Ammo Type : Pistol_Dual Wieldable, original model from Minecraft 1.6.4-1.8 (Flan's Mod 4.1-5.1)
+
+// Item and rendering
+Icon deserteagle
+Colour 255 255 255
+DeployedModel None
+Model legacy.DesertEagle164
+animAimOffset 0 1.9766604 0
+ModelScale 0.8
+Texture legacydeserteagle164
+FlashModel DefaultFlash
+animMuzzleFlashPoint [1.3393,0.51339,0]
+animFlashScale 0.56
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo desertEagleAmmo
+Ammo kcasmartpistolAmmo
+Ammo glockAmmo
+Ammo m9Ammo
+Ammo m1911Ammo
+Ammo makarovAmmo
+Ammo sigP226Ammo
+Ammo uspAmmo
+Ammo uspPoisonAmmo
+ReloadTime 55
+NumBullets 1
+
+// Operation
+Mode SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 3
+MuzzleVelocity 470.0
+Dispersion 0.72
+
+// Damage and protection
+Damage 10
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound DesertEagleShoot
+ReloadSound MWLugerReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

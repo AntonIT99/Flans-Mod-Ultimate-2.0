@@ -28,7 +28,7 @@ BreaksGlass True
 // Damage
 Mass 608
 DamageVsLiving 50
-DamageVsVehicles 100
+DamageVsVehicles 70
 DamageVsPlanes 95
 Fire 0
 

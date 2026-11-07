@@ -6,7 +6,7 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 
 public class ModelMG42 extends ModelMG {
    int textureX = 64;
-   int textureY = 64;
+   int textureY = 32;
 
    public ModelMG42() {
       this.bipodModel = new ModelRendererTurbo[3];

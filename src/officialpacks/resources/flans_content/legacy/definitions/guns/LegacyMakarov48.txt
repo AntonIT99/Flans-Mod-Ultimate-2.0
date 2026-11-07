@@ -1,0 +1,68 @@
+// Identity
+Name Makarov PM (Legacy)
+ShortName LegacyMakarov48
+Description Ammo Type : Pistol_Dual Wieldable, original model from Minecraft 1.7.10-1.12.2 (Flan's Mod 4.8-5.6)
+
+// Item and rendering
+Icon makarov
+Colour 255 255 255
+DeployedModel None
+Model legacy.Makarov48
+animAimOffset 0 1.2615209 0
+Texture legacymakarov48
+FlashModel DefaultFlash
+animMuzzleFlashPoint [0.16447,0.10438,0]
+animFlashScale 2.47
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
+Ammo makarovAmmo
+Ammo kcasmartpistolAmmo
+Ammo desertEagleAmmo
+Ammo glockAmmo
+Ammo m9Ammo
+Ammo m1911Ammo
+Ammo sigP226Ammo
+Ammo uspAmmo
+Ammo uspPoisonAmmo
+ReloadTime 30
+NumBullets 1
+
+// Operation
+Mode SemiAuto
+OneHanded true
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 300.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 315.0
+Dispersion 0.68
+
+// Damage and protection
+Damage 6
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.2
+
+// Attachments
+AllowAllAttachments true
+AllowBarrelAttachments true
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound MakarovShoot
+ReloadSound MWColtReload
+DistortSound True
+
+// Tooltip
+ShowAccuracy true
+ShowReloadTime true
+ShowDamage true
+ShowRecoil true

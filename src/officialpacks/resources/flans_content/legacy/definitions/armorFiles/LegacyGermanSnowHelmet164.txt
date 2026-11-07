@@ -1,0 +1,17 @@
+// Identity
+Name German WW2 Snow Helmet (Legacy)
+ShortName LegacyGermanSnowHelmet164
+Description Original textures from Minecraft 1.6.4-1.7.10 (Flan's Mod 4.1-4.4)
+
+// Item and rendering
+Icon germansnowhelmet
+Colour 255 255 255
+ArmourTexture legacygermansnow164
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

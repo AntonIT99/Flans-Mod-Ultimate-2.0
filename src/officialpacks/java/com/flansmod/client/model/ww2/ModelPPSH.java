@@ -17,7 +17,7 @@ import com.flansmod.common.vector.Vector3f;
 
 public class ModelPPSH extends ModelGun
 {
-    int textureX = 512;
+    int textureX = 64;
     int textureY = 512;
 
     public ModelPPSH()

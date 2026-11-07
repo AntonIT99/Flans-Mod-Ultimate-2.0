@@ -1,0 +1,48 @@
+// Identity
+Name StG 44 (Legacy 1.7.10-4.4)
+ShortName LegacyMp44_44
+Description Original model from Minecraft 1.7.10 (Flan's Mod 4.4-4.9)
+
+// Item and rendering
+Icon mp44
+Colour 255 255 255
+DeployedModel None
+Model legacy.Mp44_44
+animAimOffset 0 0.01857556 0
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint [0.095458,0.026628,0]
+animFlashScale 12.44
+Texture mp44
+
+// Ammunition
+Ammo mp44Ammo
+ReloadTime 50
+
+// Operation
+Mode FullAuto SemiAuto
+Deployable False
+RoundsPerMin 550.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 685.0
+Dispersion 0.24
+
+// Damage and protection
+Damage 6
+
+// Optics
+Scope None
+
+// Attachments
+AllowAttachments ZF4Scope
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound mp44Shoot
+ReloadSound mp44Reload

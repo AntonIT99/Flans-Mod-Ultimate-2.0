@@ -1,0 +1,12 @@
+// Identity
+Name Medic
+ShortName OfficialLegacy_ItalianMedic
+
+// Items
+AddItem kar98k
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2MedKit
+AddItem ww2Knife
+AddItem kar98kAmmo 2
+AddItem lugerAmmo 2

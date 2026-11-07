@@ -1,0 +1,29 @@
+// Identity
+Name ZF-4 Scope (Legacy)
+ShortName LegacyZF4Scope410
+Description Original model from Minecraft 1.7.10-1.8 (Flan's Mod 4.10-5.1)
+AttachmentType sights
+
+// Item and rendering
+Icon zf4scope
+ZoomOverlay official_ww2_german
+Model legacy.ZF4Scope410
+Texture skinzf-4
+
+// Recipe
+RecipeOutput 1
+Recipe I ingotIron G thinGlass
+III
+G G
+III
+
+// Modifiers
+Silencer false
+MeleeDamageMultiplier 1.0
+DamageMultiplier 1.0
+SpreadMultiplier 0.4
+RecoilMultiplier 0.8
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0
+ZoomLevel 2.5
+FOVZoomLevel 2.0

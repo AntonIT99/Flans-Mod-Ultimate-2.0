@@ -113,7 +113,7 @@ YawSoundLength 21
 PitchSound TurretTraverse2
 PitchSoundLength 20
 StartEngineSound ChallengerIdle
-StartEngineSound 40
+StartEngineSoundLength 40
 EngineSound ChallengerRun
 EngineSoundLength 40
 ShootSoundPrimary 90mm

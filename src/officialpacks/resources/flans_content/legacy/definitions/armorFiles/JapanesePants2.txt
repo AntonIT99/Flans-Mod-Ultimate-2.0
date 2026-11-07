@@ -1,0 +1,17 @@
+// Identity
+Name Japanese WW2 Pants (Alternative)
+ShortName japanesePants2
+Description Alternative uniform from the WW2 Improved pack
+
+// Item and rendering
+Icon japanesepants
+Colour 255 255 255
+ArmourTexture japanese2
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

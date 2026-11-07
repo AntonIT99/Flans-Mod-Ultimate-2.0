@@ -1,0 +1,12 @@
+// Identity
+Name Scout
+ShortName OfficialLegacy_FrenchScout
+
+// Items
+AddItem springfieldSniper
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem ww2Binoculars
+AddItem springfieldAmmo 3
+AddItem coltAmmo 2

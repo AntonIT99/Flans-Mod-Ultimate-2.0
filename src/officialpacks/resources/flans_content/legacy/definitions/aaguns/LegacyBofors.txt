@@ -1,0 +1,40 @@
+// Identity
+Name Bofors 40mm AA Gun (Legacy)
+ShortName LegacyBofors
+Description British AA Gun, original model from Minecraft 1.4.7-1.7.10 (Flan's Mod 2-4.4)
+
+// Item and rendering
+Icon Bofors
+Model legacy.Bofors
+Texture LegacyBofors
+
+// Recipe
+RecipeOutput 1
+Recipe A aaBarrel B blockIron L leather W wheel
+  A
+LB 
+W W
+
+// Weaponry
+Ammo boforsAmmo
+NumBarrels 1
+Barrel 0 30.39 10 7.26
+FireAlternately True
+ReloadTime 20
+Recoil 5
+Damage 10
+Accuracy 6
+ShootDelay 20
+RoundsPerMin 120.0
+GunnerPos 8 28 8
+TopViewLimit 75
+BottomViewLimit 0
+
+// Health and physics
+Health 100
+RealMassKg 1981
+UseRealisticVehicleHealth true
+
+// Sounds
+ShootSound aagun_40mm_boforsfire
+ReloadSound BARReload

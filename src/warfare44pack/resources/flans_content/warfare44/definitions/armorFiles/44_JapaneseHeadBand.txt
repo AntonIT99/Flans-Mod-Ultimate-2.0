@@ -1,0 +1,18 @@
+// Identity
+Name Japanese Head Band
+ShortName 44_JapaneseHeadBand
+Type Helmet
+
+// Rendering
+Icon 44_JapaneseHeadBand
+Model W44.JapaneseHeadBand
+ModelScale 1
+ArmorTexture Skin44_JapaneseHeadBand
+
+// Protection
+ArmorPoints 0
+Defence 0.01
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

@@ -1,0 +1,17 @@
+// Identity
+Name Japanese WW2 Helmet (Alternative)
+ShortName japaneseHelmet2
+Description Alternative uniform from the WW2 Improved pack
+
+// Item and rendering
+Icon japanesehelmet
+Colour 255 255 255
+ArmourTexture japanese2
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

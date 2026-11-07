@@ -1,0 +1,21 @@
+// Identity
+Name Italian (Alternative)
+ShortName legacyItalianAltTeam
+
+// Appearance
+VictoryFlagTexture flag_team_italy_1861-1946
+TextColour Green
+TeamColour 0 128 0
+Hat italianHelmet2
+Chest italianCoat2
+Legs italianPants2
+Shoes italianBoots2
+
+// Classes
+AddClass OfficialLegacy_ItalianScout
+AddClass OfficialLegacy_ItalianAssault
+AddClass OfficialLegacy_ItalianSupport
+AddClass OfficialLegacy_ItalianSupportPanzerfaust
+AddClass OfficialLegacy_ItalianEngineer
+AddClass OfficialLegacy_ItalianRifleman
+AddClass OfficialLegacy_ItalianMedic
