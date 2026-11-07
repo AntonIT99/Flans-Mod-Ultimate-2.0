@@ -1097,6 +1097,8 @@
   "tooltip.flansmodultimate.bonus.night_vision": "+Night Vision",
   "tooltip.flansmodultimate.bonus.smoke_protection": "+Smoke Protection",
   "tooltip.flansmodultimate.bonus.water_breathing": "+Water Breathing",
+  "tooltip.flansmodultimate.bonus.air_supply": "+%s s Air Supply",
+  "tooltip.flansmodultimate.bonus.snorkel": "Snorkel (%s blocks deep)",
   "tooltip.flansmodultimate.box": "Box",
   "tooltip.flansmodultimate.bullet_absorption": "Bullet Absorption",
   "tooltip.flansmodultimate.bullet_speed": "Bullet Speed",

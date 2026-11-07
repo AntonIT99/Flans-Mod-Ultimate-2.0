@@ -20,6 +20,8 @@ public final class TooltipKeys
     public static final String BONUS_NIGHT_VISION = "tooltip.flansmodultimate.bonus.night_vision";
     public static final String BONUS_SMOKE_PROTECTION = "tooltip.flansmodultimate.bonus.smoke_protection";
     public static final String BONUS_WATER_BREATHING = "tooltip.flansmodultimate.bonus.water_breathing";
+    public static final String BONUS_AIR_SUPPLY = "tooltip.flansmodultimate.bonus.air_supply";
+    public static final String BONUS_SNORKEL = "tooltip.flansmodultimate.bonus.snorkel";
     public static final String BOX = "tooltip.flansmodultimate.box";
     public static final String BULLET_ABSORPTION = "tooltip.flansmodultimate.bullet_absorption";
     public static final String BULLET_SPEED = "tooltip.flansmodultimate.bullet_speed";

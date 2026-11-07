@@ -531,6 +531,8 @@
   "tooltip.flansmodultimate.bonus.night_vision": "+Visão noturna",
   "tooltip.flansmodultimate.bonus.smoke_protection": "+Proteção contra fumaça",
   "tooltip.flansmodultimate.bonus.water_breathing": "+Respiração aquática",
+  "tooltip.flansmodultimate.bonus.air_supply": "+%s s de reserva de ar",
+  "tooltip.flansmodultimate.bonus.snorkel": "Snorkel (%s blocos de profundidade)",
   "tooltip.flansmodultimate.box": "Caixa",
   "tooltip.flansmodultimate.bullet_absorption": "Absorção de balas",
   "tooltip.flansmodultimate.bullet_speed": "Velocidade da bala",

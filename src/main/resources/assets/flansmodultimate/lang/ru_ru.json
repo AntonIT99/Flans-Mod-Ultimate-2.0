@@ -531,6 +531,8 @@
   "tooltip.flansmodultimate.bonus.night_vision": "+Ночное зрение",
   "tooltip.flansmodultimate.bonus.smoke_protection": "+Защита от дыма",
   "tooltip.flansmodultimate.bonus.water_breathing": "+Подводное дыхание",
+  "tooltip.flansmodultimate.bonus.air_supply": "+%s с запаса воздуха",
+  "tooltip.flansmodultimate.bonus.snorkel": "Трубка (глубина %s бл.)",
   "tooltip.flansmodultimate.box": "Ящик",
   "tooltip.flansmodultimate.bullet_absorption": "Поглощение пуль",
   "tooltip.flansmodultimate.bullet_speed": "Скорость пули",

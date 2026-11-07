@@ -531,6 +531,8 @@
   "tooltip.flansmodultimate.bonus.night_vision": "+야간 투시",
   "tooltip.flansmodultimate.bonus.smoke_protection": "+연막 보호",
   "tooltip.flansmodultimate.bonus.water_breathing": "+수중 호흡",
+  "tooltip.flansmodultimate.bonus.air_supply": "+%s초 공기 공급",
+  "tooltip.flansmodultimate.bonus.snorkel": "스노클 (깊이 %s블록)",
   "tooltip.flansmodultimate.box": "상자",
   "tooltip.flansmodultimate.bullet_absorption": "탄환 흡수",
   "tooltip.flansmodultimate.bullet_speed": "탄환 속도",

@@ -1092,6 +1092,8 @@
   "tooltip.flansmodultimate.bonus.night_vision": "+Nachtsicht",
   "tooltip.flansmodultimate.bonus.smoke_protection": "+Rauchschutz",
   "tooltip.flansmodultimate.bonus.water_breathing": "+Wasseratmung",
+  "tooltip.flansmodultimate.bonus.air_supply": "+%s s Luftvorrat",
+  "tooltip.flansmodultimate.bonus.snorkel": "Schnorchel (%s Blöcke tief)",
   "tooltip.flansmodultimate.box": "Kiste",
   "tooltip.flansmodultimate.bullet_absorption": "Geschossabsorption",
   "tooltip.flansmodultimate.bullet_speed": "Geschossgeschwindigkeit",
