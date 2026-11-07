@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ModelStickGrenade extends ModelBase {
    int textureX = 128;
-   int textureY = 128;
+   int textureY = 64;
    public ModelRendererTurbo[] stickgrenadeModel = new ModelRendererTurbo[20];
 
    public ModelStickGrenade() {

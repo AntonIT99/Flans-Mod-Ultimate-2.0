@@ -8,7 +8,7 @@ import com.flansmod.client.tmt.Shape2D;
 
 public class ModelM157MM extends ModelVehicle {
    int textureX = 256;
-   int textureY = 256;
+   int textureY = 128;
 
    public ModelM157MM() {
       this.bodyModel = new ModelRendererTurbo[37];

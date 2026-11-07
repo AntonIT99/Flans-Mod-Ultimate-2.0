@@ -8,7 +8,7 @@ import com.flansmod.client.tmt.Shape2D;
 
 public class ModelChaffee extends ModelVehicle {
    int textureX = 1024;
-   int textureY = 1024;
+   int textureY = 512;
 
    public ModelChaffee() {
       this.bodyModel = new ModelRendererTurbo[158];
