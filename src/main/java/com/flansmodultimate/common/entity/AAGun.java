@@ -41,6 +41,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Inventory;
@@ -668,7 +669,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (gunner != null)
             return gunner.hurt(source, amount);
 
-        if (attacker instanceof Player player && FlansMod.teamsManager.isCanBreakAAGuns())
+        if (attacker instanceof Player player && source.is(DamageTypes.PLAYER_ATTACK) && FlansMod.teamsManager.isCanBreakAAGuns())
         {
             if (FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_PICKUP))
                 discard();
