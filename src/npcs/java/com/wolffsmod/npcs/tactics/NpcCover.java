@@ -105,6 +105,8 @@ public final class NpcCover
         private final long started;
         private final List<Candidate> choices = new ArrayList<>();
         private final List<BlockPos> accepted = new ArrayList<>();
+        /** Positions already weighed, so that angles that round to the same block are not traced again. */
+        private final Set<BlockPos> considered = new HashSet<>();
         private int sample;
         private int validated;
         private boolean sorted;
@@ -158,10 +160,12 @@ public final class NpcCover
             while (sample < 128 && checked++ < 16)
             {
                 BlockPos point = sample(npc, origin, sample, radius);
-                if (point != null)
+                // The inner rings reach the same block from several angles, and each ring is sampled at three heights.
+                if (point != null && !considered.contains(point))
                 {
                     if (!slice.reserve(sources.size() * 4 + (overhead ? 1 : 0)))
                         return false;
+                    considered.add(point);
                     consider(npc, allies, point);
                 }
                 sample++;

@@ -148,6 +148,7 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 * NPC path searches run on worker threads (`asyncPathfinding`), using separate path finders and node caches; overloaded queues defer requests, reserve room for urgent cover and escape paths and discard superseded requests, while an existing path to the requested destination can continue
 * `budgetTargetMillisPerTick` works out the target and path search limits from how long the server's ticks are taking, so a battle gives up search cadence rather than tick rate and operators need not guess numbers for their hardware; 0 keeps the `SearchBudget` and `PathBudget` settings as they are set. Overdue searches share a bounded extra allowance; cover searches resume across decisions under a shared raycast budget, with additional capacity for hurt or pinned soldiers
 * Target searches, call-outs to allies and duties share one list of the level's living entities per tick; nearby target searches in large populations use Minecraft's live entity sections, and searches with many rejected candidates avoid repeatedly scanning the whole candidate list
+* A held weapon's statistics are read once a tick per NPC instead of once for every goal, range measurement and readout that asks for them; the round an NPC inherits its model's statistics with is chosen every few ticks rather than every tick; and a cover search no longer traces sight lines to a position two of its sampling angles reach
 
 ## Tools
 

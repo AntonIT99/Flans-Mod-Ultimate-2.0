@@ -17,6 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -155,6 +156,35 @@ class NpcCoverSchedulingTest
                 }
             }
             fail("a deferred cover search did not recover");
+        }
+    }
+
+    @Test
+    @SuppressWarnings("java:S8714") // fail bounds a resumable search; the try-with-resources only closes static mocks.
+    void aSafeSearchWeighsEachSampledPositionOnlyOnce() throws ReflectiveOperationException
+    {
+        try (Fixture fixture = new Fixture(true))
+        {
+            List<Vec3> traced = new ArrayList<>();
+            fixture.sight.when(() -> NpcSight.clear(eq(fixture.level), any(), any(), eq(0), eq(fixture.npc))).thenAnswer(call ->
+            {
+                fixture.rays++;
+                traced.add(call.getArgument(2));
+                return true;
+            });
+            for (int tick = 0; tick < 30; tick++)
+            {
+                fixture.now = tick;
+                if (NpcCover.safePositions(fixture.npc, SOURCES, 8).complete())
+                {
+                    // Open ground hides nothing, so each ray stands for one position weighed.
+                    assertFalse(traced.isEmpty());
+                    assertEquals(traced.size(), new HashSet<>(traced).size(), "a position was weighed more than once");
+                    assertTrue(traced.size() < 128, "angles and heights that reach the same block must be weighed once");
+                    return;
+                }
+            }
+            fail("the search did not finish");
         }
     }
 

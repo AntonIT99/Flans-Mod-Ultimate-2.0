@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.sim.NpcTuning.Throwing;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.tactics.NpcInfantryRole;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -178,8 +179,10 @@ class NpcThrownWeaponTest
     {
         for (boolean grenade : List.of(false, true))
         {
-            EntityNPCInterface npc = mock(EntityNPCInterface.class, withSettings().extraInterfaces(NpcThrowPresentation.class, NpcEquipmentRangedGoal.Holder.class));
+            EntityNPCInterface npc = mock(EntityNPCInterface.class,
+                withSettings().extraInterfaces(NpcThrowPresentation.class, NpcEquipmentRangedGoal.Holder.class, NpcTacticState.Holder.class));
             when(npc.getPersistentData()).thenReturn(new CompoundTag());
+            when(((NpcTacticState.Holder) npc).wolffsmodnpcsTacticState()).thenReturn(new NpcTacticState());
             var aiField = EntityNPCInterface.class.getField("ais");
             aiField.setAccessible(true);
             aiField.set(npc, new DataAI(npc));

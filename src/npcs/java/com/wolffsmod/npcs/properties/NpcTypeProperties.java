@@ -32,6 +32,12 @@ import java.util.*;
 public final class NpcTypeProperties
 {
     /**
+     * Ticks between readings of the round the NPC fires. Choosing it scores every magazine the NPC carries against its
+     * target, which is too much work for every tick of every NPC; an inspection of its own reads it again itself, and one is
+     * due at least every twenty ticks regardless, so a round the NPC switches to is still inherited promptly.
+     */
+    private static final int AMMUNITION_INTERVAL = 4;
+    /**
      * Switches that change nothing a model lends the NPC; there are more switches than bits in the signature, so theirs must
      * not stand for a model switch.
      */
@@ -47,6 +53,9 @@ public final class NpcTypeProperties
     private boolean lastSecondary;
     private Optional<MechaMeleeProperties> lastMelee = Optional.empty();
     private int nextInspection;
+    /** The round the NPC fires, and the tick it is read again in. */
+    private ItemStack lastAmmunition = ItemStack.EMPTY;
+    private int nextAmmunition;
     @Nullable
     private EntityTypeProperties type;
     /** Every value the model offers, including those the NPC keeps its own value for. */
@@ -69,7 +78,7 @@ public final class NpcTypeProperties
         NpcCombatSettings combat = settings.wolffsmodnpcsCombat();
         LivingEntity model = options.enabled(Feature.TYPE_PROPERTIES) && npc instanceof EntityCustomNpc custom ? custom.modelData.getEntity(npc) : null;
         IContentType selected = model instanceof FlanModelEntity flan ? flan.getInfoType() : null;
-        ItemStack ammunition = NpcAmmunition.modelTemplate(npc);
+        ItemStack ammunition = ammunition(npc);
         boolean nativeAttack = NpcRangedAttack.usesFlanProjectile(options, ammunition);
         Optional<MechaMeleeProperties> melee = NpcMechaTools.properties(npc);
         // There are more switches than fit beside the signature, so the two are mixed rather than packed side by side.
@@ -77,6 +86,9 @@ public final class NpcTypeProperties
         boolean secondary = NpcEquipment.secondaryBank(npc, selected);
         if (model != lastModel || selected != lastType || flags != lastFlags || nativeAttack != lastNative || secondary != lastSecondary || !melee.equals(lastMelee) || npc.tickCount >= nextInspection)
         {
+            // An inspection reads the ammunition itself, so it never works from a remembered round.
+            ammunition = template(npc);
+            nativeAttack = NpcRangedAttack.usesFlanProjectile(options, ammunition);
             lastModel = model;
             lastType = selected;
             lastFlags = flags;
@@ -96,6 +108,20 @@ public final class NpcTypeProperties
             npc.updateClient = true;
             npc.updateAI = true;
         }
+    }
+
+    /** @return the round the NPC fires, read again only when {@link #AMMUNITION_INTERVAL} ticks have passed */
+    private ItemStack ammunition(EntityNPCInterface npc)
+    {
+        return npc.tickCount >= nextAmmunition ? template(npc) : lastAmmunition;
+    }
+
+    /** @return the round the NPC fires, read now and remembered until it is due again */
+    private ItemStack template(EntityNPCInterface npc)
+    {
+        nextAmmunition = npc.tickCount + AMMUNITION_INTERVAL;
+        lastAmmunition = NpcAmmunition.modelTemplate(npc);
+        return lastAmmunition;
     }
 
     /**

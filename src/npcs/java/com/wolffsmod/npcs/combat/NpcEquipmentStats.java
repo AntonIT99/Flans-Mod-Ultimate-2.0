@@ -65,7 +65,7 @@ public final class NpcEquipmentStats
         else if (item == npc.getOffhandItem())
             flan = NpcEquipment.flan(npc, InteractionHand.OFF_HAND);
         else
-            flan = FlansEquipment.getWeaponProperties(item, ItemStack.EMPTY);
+            flan = NpcEquipment.properties(npc, item, ItemStack.EMPTY);
         if (flan.isPresent())
         {
             EquippedWeaponProperties properties = flan.get();

@@ -207,7 +207,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         if (decisions && main.reloading <= 0 && charging <= 0 && main.cadence.ready())
             NpcWeaponChoice.select(npc, target);
         ItemStack weapon = NpcEquipment.rangedWeapon(npc);
-        var properties = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
+        var properties = NpcEquipment.properties(npc, weapon, ItemStack.EMPTY);
         if (weapon != main.lastWeapon)
         {
             cancelUse();

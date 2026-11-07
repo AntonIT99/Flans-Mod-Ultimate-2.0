@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.tactics;
 
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.tactics.NpcCover.Cover;
 import lombok.Getter;
@@ -10,10 +11,12 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -83,6 +86,8 @@ public final class NpcTacticState
     /** The firing range the NPC's weapon gives it, and the tick it was worked out in. */
     private int weaponRange;
     private long weaponRangeTick = Long.MIN_VALUE;
+    /** Readings of the weapons the NPC asks about within one tick: both hands, each with and without its spare round. */
+    private final HeldWeapon[] heldWeapons = {new HeldWeapon(), new HeldWeapon(), new HeldWeapon(), new HeldWeapon()};
     private final List<Threat> threats = new ArrayList<>();
     @Getter
     private final NpcCover.Searches coverSearches = new NpcCover.Searches();
@@ -96,6 +101,34 @@ public final class NpcTacticState
     /** A position learned from incoming fire; a hidden attacker's subsequent movement is not followed. */
     public record Threat(LivingEntity entity, Vec3 position, long until)
     {}
+
+    /**
+     * One reading of what a held weapon fires, for the tick it was read in. The stacks are held by identity: an NPC keeps
+     * the same stack objects while it carries them, and any swap or reload puts another stack in their place.
+     */
+    private static final class HeldWeapon
+    {
+        private long tick = Long.MIN_VALUE;
+        @Nullable
+        private ItemStack weapon;
+        @Nullable
+        private ItemStack ammunition;
+        private Optional<EquippedWeaponProperties> properties = Optional.empty();
+
+        private boolean matches(long now, ItemStack held, ItemStack round)
+        {
+            return tick == now && weapon == held && ammunition == round;
+        }
+
+        private Optional<EquippedWeaponProperties> read(long now, ItemStack held, ItemStack round, Optional<EquippedWeaponProperties> value)
+        {
+            tick = now;
+            weapon = held;
+            ammunition = round;
+            properties = value;
+            return value;
+        }
+    }
 
     /** Starts the tactic over when it or the target changes. */
     public void prepare(Tactic current, int target, long now, int defaultSide)
@@ -212,6 +245,28 @@ public final class NpcTacticState
             weaponRange = measure.getAsInt();
         }
         return weaponRange;
+    }
+
+    /**
+     * Reading a Flan weapon's statistics copies the stack and works out its damage, muzzle velocity, spread, cadence and
+     * reload time with its attachments and ammunition, which a target search, a firing goal and a range measurement would
+     * each repeat within one tick.
+     *
+     * @param measure
+     *            reads the weapon, asked only when this tick has no reading of that weapon and round yet
+     * @return what the weapon fires, or empty for an item that is not a Flan weapon
+     */
+    public Optional<EquippedWeaponProperties> weaponProperties(long now, ItemStack weapon, ItemStack ammunition, Supplier<Optional<EquippedWeaponProperties>> measure)
+    {
+        HeldWeapon oldest = heldWeapons[0];
+        for (HeldWeapon held : heldWeapons)
+        {
+            if (held.matches(now, weapon, ammunition))
+                return held.properties;
+            if (held.tick < oldest.tick)
+                oldest = held;
+        }
+        return oldest.read(now, weapon, ammunition, measure.get());
     }
 
     public static NpcTacticState of(EntityNPCInterface npc)
