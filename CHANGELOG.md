@@ -1,5 +1,7 @@
 # Flan's Mod Ultimate 2.2
 
+* Classic Packs translations in German, Spanish, Russian and Simplified Chinese cover all current items, blocks and classes, including legacy variants, with consistent clothing and ammunition names
+
 * Wolff's Star Wars Pack blasters hit harder, sniper rifles use dedicated high-power bolts, the DC-15S and DC-17 use 50-shot power packs, and the Z-6 has a separate 200-shot supply; class loadouts carry the matching ammunition
 
 * Wolff's Germany Pack adds lightweight grey and feldgrau Wehrmacht and Special Corps uniform tunics with shared uniform trousers and boots, rendered with the default armour model for large NPC battles
