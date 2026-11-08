@@ -21,6 +21,9 @@ import net.minecraft.world.item.ItemStack;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcTactics
 {
+    /** Blocks from its target a transport stops at when its tactic distance is automatic, far enough out for the troops to walk the last stretch. */
+    static final int UNLOAD_DISTANCE = 48;
+
     /** @return the tactic the NPC fights by: Custom NPCs' own, unless one of these is set and fits the NPC */
     public static Tactic of(EntityNPCInterface npc)
     {
@@ -30,6 +33,9 @@ public final class NpcTactics
         if (stored == Tactic.CUSTOM_NPCS && TacticKind.of(npc) == TacticKind.STANDARD && NpcInfantryRole.of(npc) == ClassRole.SKIRMISHER && NpcEquipment.fightsAtRange(npc)
             && NpcCombatMovement.allowed(npc) && CustomNpcsPlatform.tacticalVariant(npc) == 0)
             return Tactic.STAND_OFF;
+        // A vehicle with nothing to fight with carries the troops it is loaded with rather than driving at the enemy itself.
+        if (stored == Tactic.CUSTOM_NPCS && TacticKind.of(npc) == TacticKind.VEHICLE && !NpcEquipment.fightsAtRange(npc) && NpcEquipment.enabled(npc, Feature.TRANSPORT_TACTIC))
+            return Tactic.TRANSPORT;
         if (stored == Tactic.CUSTOM_NPCS && npc.getTarget() != null && TacticKind.of(npc) == TacticKind.VEHICLE && NpcEquipment.enabled(npc, Feature.ADAPTIVE_VEHICLE_COMBAT)
             && NpcCombatMovement.allowed(npc))
             return Tactic.STAND_OFF;
@@ -45,7 +51,7 @@ public final class NpcTactics
      */
     static Tactic resolve(Tactic stored, TacticKind kind, boolean atRange)
     {
-        return atRange && stored.appliesTo(kind) ? stored : Tactic.CUSTOM_NPCS;
+        return (atRange || !stored.needsWeapon()) && stored.appliesTo(kind) ? stored : Tactic.CUSTOM_NPCS;
     }
 
     /** @return whether a tactic of the mod's own moves the NPC along a path; a plane flies its own */
@@ -63,6 +69,17 @@ public final class NpcTactics
         int distance = NpcTuning.of(npc).get(Value.TACTIC_DISTANCE);
         Engagement base = Engagement.of(NpcWeaponRange.firing(npc), distance, role(npc), NpcBlastSafety.standoff(npc));
         return TacticKind.of(npc) == TacticKind.STANDARD ? NpcInfantryRole.engagement(base, NpcInfantryRole.of(npc), distance == 0) : base;
+    }
+
+    /**
+     * @return the distances the Transport tactic works with: where the vehicle stops to put the troops it carries down,
+     *         from its tactic distance, which a transport keeps rather than fires from
+     */
+    public static Engagement unloading(EntityNPCInterface npc)
+    {
+        int distance = NpcTuning.of(npc).get(Value.TACTIC_DISTANCE);
+        int stop = distance > 0 ? distance : UNLOAD_DISTANCE;
+        return Engagement.of(stop, stop, WeaponRole.GENERAL);
     }
 
     /** @return the role of the ranged weapon the NPC holds; a projectile fired from the slot alone counts as a rifle */

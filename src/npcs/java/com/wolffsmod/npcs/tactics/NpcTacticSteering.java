@@ -53,7 +53,8 @@ public final class NpcTacticSteering
         long now = npc.level().getGameTime();
         NpcTacticState memory = NpcTacticState.of(npc);
         memory.prepare(tactic, target.getId(), now, (npc.getId() & 1) == 0 ? 1 : -1);
-        Engagement engagement = NpcTactics.engagement(npc);
+        // A transport keeps its tactic distance rather than firing from it, so its own distances stand in for a weapon's.
+        Engagement engagement = tactic == Tactic.TRANSPORT ? NpcTactics.unloading(npc) : NpcTactics.engagement(npc);
         if (tactic == Tactic.COVER)
             refreshCover(npc, target, memory, engagement, now);
         boolean hit = npc.getLastHurtByMob() != null && npc.tickCount - npc.getLastHurtByMobTimestamp() < HIT_TICKS;
@@ -62,8 +63,10 @@ public final class NpcTacticSteering
             home = TeamsBots.combatIntent(npc).map(NpcCombatIntent::destination).orElse(home);
         Situation situation = new Situation(npc.getSensing().hasLineOfSight(target), npc.position(), target.position(), home, engagement, memory.isReloading(now), hit);
         Order order = TacticDecision.decide(tactic, situation, memory, now);
-        // A vehicle without a shot from where it would stand, or close in from, drives to where it has one; one that holds stays put.
-        if (tactic != Tactic.HOLD && (order.move() != TacticDecision.Move.GO_TO || NpcVehicleCombat.armorFlank(npc, target) != null) && NpcFiringPosition.reposition(npc, target))
+        // A vehicle without a shot from where it would stand, or close in from, drives to where it has one; one that holds or
+        // carries troops stays put, a transport having no shot to look for.
+        if (tactic != Tactic.HOLD && tactic != Tactic.TRANSPORT && (order.move() != TacticDecision.Move.GO_TO || NpcVehicleCombat.armorFlank(npc, target) != null)
+            && NpcFiringPosition.reposition(npc, target))
         {
             memory.order(null, now);
             return;

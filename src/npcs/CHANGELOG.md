@@ -14,7 +14,7 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 ## Vehicles, Aircraft & Ships
 
 * NPC models support Flan vehicles, aircraft, ships, mechas and AA guns, with part hitboxes, armour, weapon groups and damage effects
-* Vehicle crews operate independent seat guns, dismount to fight and bail out with parachutes; players can board and change seats, or walk on moving hulls
+* Vehicle crews operate independent seat guns, dismount to fight and bail out with parachutes; unarmed transports bring their troops up and put them down instead of driving at the enemy; players can board and change seats, or walk on moving hulls
 * Vehicles select ammunition for their target, seek better firing angles, avoid their own blast and break contact when out of ammunition; crew and mounted weapons respect operator skill
 * Ground vehicles follow hull-width paths around obstacles, align with terrain and lose mobility when critical parts are destroyed
 * Aircraft support fighter, bomber and ground-attack roles, interception, strafing and terrain-aware bomb releases that favour closer hits while retaining practical drop opportunities; crippled aircraft crash with impact explosions and crew evacuation

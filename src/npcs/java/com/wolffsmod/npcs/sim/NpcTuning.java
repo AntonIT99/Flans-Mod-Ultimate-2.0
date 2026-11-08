@@ -415,16 +415,29 @@ public final class NpcTuning
         /** Circles its target at its tactic distance, firing whenever its guns bear. */
         ORBIT(EnumSet.of(TacticKind.PLANE), true),
         /** Hovers at its tactic distance and side-slips one way and the other while it fires. */
-        STRAFE(EnumSet.of(TacticKind.HELICOPTER), true);
+        STRAFE(EnumSet.of(TacticKind.HELICOPTER), true),
+        /**
+         * Carries the crew it is loaded with to its tactic distance from the target, stops there to put them down and keeps
+         * that distance. The one tactic a vehicle without a weapon of its own can follow.
+         */
+        TRANSPORT(EnumSet.of(TacticKind.VEHICLE), true, false);
 
         private final Set<TacticKind> kinds;
         /** Whether the tactic distance setting means anything to it. */
         private final boolean distanceMatters;
+        /** Whether the tactic needs something to fight at range with; one that does not applies to an unarmed NPC too. */
+        private final boolean needsWeapon;
 
         Tactic(Set<TacticKind> kinds, boolean distanceMatters)
         {
+            this(kinds, distanceMatters, true);
+        }
+
+        Tactic(Set<TacticKind> kinds, boolean distanceMatters, boolean needsWeapon)
+        {
             this.kinds = Set.copyOf(kinds);
             this.distanceMatters = distanceMatters;
+            this.needsWeapon = needsWeapon;
         }
 
         public boolean appliesTo(TacticKind kind)
@@ -435,6 +448,12 @@ public final class NpcTuning
         public boolean usesDistance()
         {
             return distanceMatters;
+        }
+
+        /** @return whether the tactic needs a weapon that fights at range, which an unarmed NPC has none of */
+        public boolean needsWeapon()
+        {
+            return needsWeapon;
         }
 
         /** @return whether a plane flies the tactic itself rather than following a path */

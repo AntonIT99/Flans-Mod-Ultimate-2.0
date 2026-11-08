@@ -111,6 +111,7 @@ public final class TacticDecision
             case FLANK -> flank(situation, memory, now);
             case CIRCLE -> circle(situation, memory);
             case STRAFE -> strafe(situation, memory, now);
+            case TRANSPORT -> transport(situation);
             case CUSTOM_NPCS, STRAFING_RUN, ORBIT -> throw new IllegalArgumentException(tactic + " is not decided here");
         };
     }
@@ -135,6 +136,22 @@ public final class TacticDecision
             return retreat(situation, engagement.near() - distance);
         if (!situation.inSight() || distance > engagement.far())
             return Order.closeIn(distance > engagement.far() * 2D ? RUN : WALK);
+        return Order.STAND;
+    }
+
+    /**
+     * Brings the troops it carries up to where they can walk the rest and stops there, backing away if the target closes on
+     * it. Unlike the tactics that fire, it does not need to see its target, having nothing to shoot it with: a transport that
+     * closed in for a sight of it would carry its troops into the fight it is meant to drop them short of.
+     */
+    private static Order transport(Situation situation)
+    {
+        Engagement engagement = situation.engagement();
+        double distance = situation.targetDistance();
+        if (distance < engagement.near())
+            return retreat(situation, engagement.near() - distance);
+        if (distance > engagement.preferred())
+            return Order.closeIn(distance > engagement.preferred() * 2D ? RUN : WALK);
         return Order.STAND;
     }
 

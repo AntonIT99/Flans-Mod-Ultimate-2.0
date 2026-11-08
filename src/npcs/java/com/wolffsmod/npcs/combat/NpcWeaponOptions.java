@@ -141,7 +141,12 @@ public final class NpcWeaponOptions
          * The body stays after the death animation, for the Corpse time tuning value, when the NPC does not respawn. Teams bots
          * follow the Teams corpses rule instead.
          */
-        KEEP_CORPSE(false);
+        KEEP_CORPSE(false),
+        /**
+         * A vehicle with no weapon of its own follows the Transport tactic rather than Custom NPCs' own AI, which would drive
+         * it at the enemy. Off, it drives as Custom NPCs says; the Transport tactic can still be chosen for it by hand.
+         */
+        TRANSPORT_TACTIC(true);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

@@ -15,7 +15,8 @@ import java.util.EnumSet;
  * fires. It comes before every Custom NPCs goal that moves an NPC in a fight. Within melee range, or with Custom NPCs'
  * tactics selected, it leaves the NPC to them. An NPC firing from its projectile slot follows its tactic from Custom NPCs'
  * ranged attack instead, which moves it as well as firing.
- * Physical commanders also hold their rear position without a ranged weapon, yielding to melee only at close range.
+ * Physical commanders also hold their rear position without a ranged weapon, yielding to melee only at close range, and a
+ * vehicle carrying troops keeps its distance on this goal alone, having no ranged attack of its own to follow.
  */
 public final class NpcTacticGoal extends Goal
 {
@@ -37,9 +38,17 @@ public final class NpcTacticGoal extends Goal
             LivingEntity target = npc.getTarget();
             return npc.isAlive() && !npc.isKilled() && target != null && target.isAlive() && !npc.isInRange(target, Math.max(2D, npc.stats.melee.getRange()));
         }
+        Tactic chosen = NpcTactics.of(npc);
+        // A transport has no ranged attack to follow its tactic from, so it keeps its distance on this goal alone.
+        if (chosen == Tactic.TRANSPORT)
+        {
+            tactic = chosen;
+            LivingEntity target = npc.getTarget();
+            return npc.isAlive() && !npc.isKilled() && target != null && target.isAlive() && target.level() == npc.level();
+        }
         if (!NpcEquipmentRangedGoal.engages(npc))
             return false;
-        tactic = NpcTactics.of(npc);
+        tactic = chosen;
         return NpcTactics.followsPath(tactic);
     }
 
