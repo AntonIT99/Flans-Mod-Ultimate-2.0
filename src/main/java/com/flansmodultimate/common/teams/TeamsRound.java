@@ -58,11 +58,11 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
 
     private RoundRules rules = new RoundRules();
     private final UUID id;
-    private final String mapId;
-    private final String gameTypeId;
-    private final List<String> teamIds;
+    private String mapId;
+    private String gameTypeId;
+    private List<String> teamIds;
     /** Side of each team, parallel to {@link #teamIds} and numbered from 0 in order of first appearance. */
-    private final List<Integer> sides;
+    private List<Integer> sides;
     private int timeLimitMinutes;
     private int scoreLimit;
     private final float popularity;
@@ -187,6 +187,29 @@ public final class TeamsRound implements Comparable<TeamsRound>, ITeamsRound
     public void setTimeLimitMinutes(int timeLimitMinutes)
     {
         this.timeLimitMinutes = Math.max(1, timeLimitMinutes);
+    }
+
+    /**
+     * Changes what this round is played on and by whom, keeping the round itself: its id, and with it its rules, its
+     * place in the rotation and its history. An attacking side its new teams or game type no longer allow is forgotten.
+     *
+     * <p>
+     * The teams keep their round team ids by position, so a lineup that inserts or reorders teams changes which team
+     * the bases of the map belong to. Callers warn whoever asked for the change.
+     * </p>
+     *
+     * @param sides
+     *            the side of each team, parallel to {@code teamIds}; teams given the same number are allied. Anything
+     *            that does not line up with the teams puts each team on its own side.
+     */
+    public void setDefinition(String mapId, String gameTypeId, List<String> teamIds, List<Integer> sides)
+    {
+        this.mapId = Objects.requireNonNull(mapId).toLowerCase(Locale.ROOT);
+        this.gameTypeId = Objects.requireNonNull(gameTypeId).toLowerCase(Locale.ROOT);
+        this.teamIds = teamIds.stream().map(idValue -> idValue.toLowerCase(Locale.ROOT)).toList();
+        this.sides = normaliseSides(sides, this.teamIds.size());
+        if (attackingSide >= getSideCount() || !canBeAttack())
+            attackingSide = -1;
     }
 
     public void markPlayed()

@@ -22,3 +22,4 @@ AddClass spetsnazEngineer1
 AddClass spetsnazRiflemanAK74
 AddClass spetsnazSupportRPK
 AddClass spetsnazAntiTank
+AddClass spetsnazParatrooper

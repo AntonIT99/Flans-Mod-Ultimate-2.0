@@ -1,0 +1,12 @@
+// Identity
+Name Paratrooper (Type 100)
+ShortName OfficialWW2_JapaneseParatrooper
+
+// Items
+AddItem type100
+AddItem type14
+AddItem type97 2
+AddItem ww2Knife
+AddItem ww2Parachute
+AddItem type100Ammo 3
+AddItem type14Ammo 2

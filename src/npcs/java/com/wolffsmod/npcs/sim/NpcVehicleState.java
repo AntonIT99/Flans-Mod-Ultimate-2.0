@@ -162,6 +162,9 @@ public final class NpcVehicleState
     /** Where a ground vehicle drives to for a shot its main weapon cannot make from where it stands. */
     @Getter
     private final NpcFiringPosition firingPosition = new NpcFiringPosition();
+    /** How long it has been fighting the target it holds, which decides when a vehicle puts the crew it carries down. */
+    @Getter
+    private final NpcContact contact = new NpcContact();
     /** Shows a standing hull's front armour to the enemy vehicle that threatens it. */
     private final NpcHullAngling angling = new NpcHullAngling();
     private int targetId = -1;

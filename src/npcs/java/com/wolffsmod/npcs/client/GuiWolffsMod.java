@@ -528,7 +528,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         MODEL_STATS(Section.MODEL, Scope.ALL, Tab.of(Feature.TYPE_PROPERTIES, Feature.MODEL_WEAPON_STATS)),
         MODEL(Section.MODEL, Scope.MODELS, Tab.of(Feature.ANIMATED_MODEL, Feature.DOORS_OPEN, Feature.GEAR_UP, Feature.WINGS_FOLDED, Feature.ENGINE_RUNNING, Feature.FULL_THROTTLE,
             Layout.COLUMN, Feature.RIDER_AT_SEAT, Feature.MODEL_CULLING)),
-        CREW(Section.MODEL, Scope.DRIVEABLES, Tab.named(CrewPage.TAB), Tab.named(CrewPage.RULES_TAB)),
+        CREW(Section.MODEL, Scope.DRIVEABLES, Tab.named(CrewPage.TAB), Tab.named(CrewPage.RULES_TAB), Tab.named("crew_dismount", Feature.TRANSPORT_TACTIC, Value.DISEMBARK_DELAY)),
         EQUIPMENT(Section.WEAPONS, Scope.STANDARD, Tab.of(Feature.ITEM_WEAPONS, Feature.DUAL_WIELD, Feature.MELEE_DUAL_WIELD, Feature.CONSUME_AMMO, Feature.FITTING_SLOT_AMMO, Layout.COLUMN,
             Feature.ITEM_ARMOR,
             Feature.ARMOR_POTION_EFFECTS, Layout.BELOW, Feature.TACTICAL_WEAPON_SWITCH, Value.WEAPON_SWITCH)),

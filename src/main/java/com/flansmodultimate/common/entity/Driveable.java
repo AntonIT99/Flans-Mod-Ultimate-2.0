@@ -6591,6 +6591,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     private void landWreck(double fallSpeed, boolean water)
     {
+        boolean firstImpact = !wreckLanded;
         wreckLanded = true;
         wreckImpactCooldown = WRECK_IMPACT_COOLDOWN;
         float severity = WreckPhysics.impactSeverity(fallSpeed);
@@ -6600,6 +6601,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         float radius = Math.max(3F, getBbWidth() * 1.5F);
         if (getDamageClass().flies())
         {
+            if (firstImpact && configType != null)
+            {
+                DriveableCrashExplosion.Blast blast = DriveableCrashExplosion.evaluate(configType.getDeathExplosionRadius(), severity, wreckLoad.fuel());
+                if (blast.happens())
+                    createExplosion(new DriveableExplosion(water ? 0F : Math.max(configType.getDeathFireRadius(), blast.fireRadius()), blast.radius(),
+                        configType.isDeathExplosionBreaksBlocks(), configType.getDeathExplosionDamageVsLiving(), configType.getDeathExplosionDamageVsPlayer(),
+                        configType.getDeathExplosionDamageVsPlane(), configType.getDeathExplosionDamageVsVehicle()), position());
+            }
             if (level() instanceof ServerLevel server)
                 AircraftCrashEffects.crash(server, position(), radius, water, getId());
             return;

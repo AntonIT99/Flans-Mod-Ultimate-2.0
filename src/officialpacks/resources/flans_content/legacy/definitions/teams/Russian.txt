@@ -20,3 +20,4 @@ AddClass OfficialWW2_RussianEngineer
 AddClass OfficialWW2_RussianRifleman
 AddClass OfficialWW2_RussianRiflemanPilot
 AddClass OfficialWW2_RussianMedic
+AddClass OfficialWW2_RussianParatrooper

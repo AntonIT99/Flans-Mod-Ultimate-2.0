@@ -17,8 +17,8 @@ import java.util.stream.IntStream;
 
 /**
  * The rotation: its rounds in the order they are played, starting or queueing one, moving it, changing its length,
- * score limit and attackers, removing it, and a builder that adds a round by picking its map, game type and the teams
- * of each side.
+ * score limit and attackers, removing it, and a builder that adds a round, or changes one it is opened on, by picking
+ * its map, game type and the teams of each side.
  */
 final class RotationPage extends TeamsPage
 {
@@ -34,6 +34,12 @@ final class RotationPage extends TeamsPage
     private String map = "";
     private String gameType = "";
     private final List<List<String>> sides = new ArrayList<>();
+    /** The round the builder is changing by its place in the rotation, or -1 when it is adding one. */
+    private int editedIndex = -1;
+    /** The id of the round being changed, so that it is shown again once the builder closes. */
+    private String editedId = "";
+    /** Whether a save has been sent and the builder is waiting for the round to come back changed. */
+    private boolean awaitedEdit;
     private int activeSide;
     /** The size the rotation had when the builder added a round, until the round shows up; -1 when none is awaited. */
     private int awaitedSize = -1;
@@ -63,6 +69,21 @@ final class RotationPage extends TeamsPage
         sides.forEach(List::clear);
         activeSide = 0;
         awaitedSize = -1;
+        editedIndex = -1;
+        editedId = "";
+        awaitedEdit = false;
+    }
+
+    /** Opens the builder on a round of the rotation, filled in with what it is played on and by whom. */
+    private void startEditing(TeamsData.Round round)
+    {
+        startBuilding(round.map());
+        gameType = round.gameType();
+        editedIndex = round.index();
+        editedId = round.id();
+        List<List<String>> bySide = round.teamsBySide();
+        for (int side = 0; side < sides.size() && side < bySide.size(); side++)
+            sides.get(side).addAll(bySide.get(side));
     }
 
     @Override
@@ -74,6 +95,14 @@ final class RotationPage extends TeamsPage
             building = false;
             awaitedSize = -1;
             selected = data.rounds().get(data.rounds().size() - 1).id();
+        }
+        // A refused save leaves the round as it was, and the builder open with what the operator picked.
+        if (awaitedEdit && data.roundById(editedId).filter(round -> matchesBuilder(round, data)).isPresent())
+        {
+            building = false;
+            awaitedEdit = false;
+            editedIndex = -1;
+            selected = editedId;
         }
         if (building)
             initBuilder(view, data);
@@ -149,6 +178,13 @@ final class RotationPage extends TeamsPage
             if (score.isPresent())
                 run(view, "teams admin round limits", index, minutes.getAsInt(), score.getAsInt());
         });
+        y += ROW;
+        Button edit = button(view, tr("edit_round"), x, y, width, tr("edit_round.tip"), () ->
+        {
+            startEditing(round);
+            view.rebuild();
+        });
+        edit.active = index != data.current();
         y += ROW;
         button(view, tr("round_rules.title"), x, y, width, () -> RoundRulesPage.open(view, round.id()));
         y += ROW;
@@ -234,19 +270,36 @@ final class RotationPage extends TeamsPage
             toggleTeam(team);
             view.rebuild();
         });
-        int fieldWidth = 46;
-        int defaultScore = data.gameType(gameType).map(TeamsData.GameTypeInfo::defaultScore).orElse(1);
-        view.addField(NEW_MINUTES, left, bottom, fieldWidth, Integer.toString(DEFAULT_MINUTES), tr(MINUTES)).setTooltip(Tooltip.create(tr(MINUTES)));
-        view.addField(NEW_SCORE, left + fieldWidth + GAP, bottom, fieldWidth + 10, Integer.toString(defaultScore), tr(SCORE_LIMIT)).setTooltip(Tooltip.create(tr(SCORE_LIMIT)));
-        int buttonsLeft = left + 2 * fieldWidth + 10 + 2 * GAP;
+        // A round being edited keeps the length and score limit it has; they are changed on the round itself.
+        int buttonsLeft = left;
+        if (editedIndex < 0)
+        {
+            int fieldWidth = 46;
+            int defaultScore = data.gameType(gameType).map(TeamsData.GameTypeInfo::defaultScore).orElse(1);
+            view.addField(NEW_MINUTES, left, bottom, fieldWidth, Integer.toString(DEFAULT_MINUTES), tr(MINUTES)).setTooltip(Tooltip.create(tr(MINUTES)));
+            view.addField(NEW_SCORE, left + fieldWidth + GAP, bottom, fieldWidth + 10, Integer.toString(defaultScore), tr(SCORE_LIMIT)).setTooltip(Tooltip.create(tr(SCORE_LIMIT)));
+            buttonsLeft = left + 2 * fieldWidth + 10 + 2 * GAP;
+        }
         int buttonWidth = (left + width - buttonsLeft - 2 * GAP) / 3;
-        button(view, tr("builder.add"), buttonsLeft, bottom, buttonWidth, () -> addRound(view, data));
+        button(view, tr(editedIndex < 0 ? "builder.add" : "builder.save"), buttonsLeft, bottom, buttonWidth, () -> addRound(view, data));
         button(view, tr("builder.clear"), buttonsLeft + buttonWidth + GAP, bottom, buttonWidth, () ->
         {
             sides.forEach(List::clear);
             view.rebuild();
         });
         button(view, tr("cancel"), buttonsLeft + 2 * (buttonWidth + GAP), bottom, buttonWidth, () -> cancel(view));
+    }
+
+    /** Whether a round is already played on what the builder shows and by whom, which is how a save is seen to land. */
+    private boolean matchesBuilder(TeamsData.Round round, TeamsData data)
+    {
+        List<List<String>> picked = sides.stream().limit(maxSides(data)).filter(side -> !side.isEmpty()).map(RotationPage::lowerCase).toList();
+        return round.map().equalsIgnoreCase(map) && round.gameType().equalsIgnoreCase(gameType) && round.teamsBySide().stream().map(RotationPage::lowerCase).toList().equals(picked);
+    }
+
+    private static List<String> lowerCase(List<String> teams)
+    {
+        return teams.stream().map(team -> team.toLowerCase(Locale.ROOT)).toList();
     }
 
     private int maxSides(TeamsData data)
@@ -276,15 +329,33 @@ final class RotationPage extends TeamsPage
     {
         building = false;
         awaitedSize = -1;
+        if (editedIndex >= 0)
+            selected = editedId;
+        editedIndex = -1;
+        awaitedEdit = false;
         view.rebuild();
     }
 
+    /** Adds the round the builder describes, or saves it over the round being edited. */
     private void addRound(ICommandCentreView view, TeamsData data)
     {
         List<String> lineup = sides.stream().limit(maxSides(data)).filter(side -> !side.isEmpty()).map(side -> quote(String.join("+", side))).toList();
         if (lineup.isEmpty())
         {
             view.showMessage(tr("builder.no_teams"), true);
+            return;
+        }
+        if (editedIndex >= 0)
+        {
+            int index = editedIndex;
+            String id = editedId;
+            // The bases of the map belong to a team by its place in the round, so the teams of a base can change under it.
+            view.confirm(tr("builder.save.confirm"), () ->
+            {
+                awaitedEdit = true;
+                run(view, "teams admin round edit", index, map, gameType, String.join(" vs ", lineup));
+                view.rebuild();
+            });
             return;
         }
         OptionalInt minutes = number(view, NEW_MINUTES, 1, 1440, tr(MINUTES));
@@ -333,7 +404,7 @@ final class RotationPage extends TeamsPage
     {
         int left = view.getLeft() + 6;
         int width = view.getWidth() - 12;
-        view.drawPanel(graphics, view.getLeft(), view.getTop(), view.getWidth(), view.getHeight(), tr("builder.title"));
+        view.drawPanel(graphics, view.getLeft(), view.getTop(), view.getWidth(), view.getHeight(), editedIndex < 0 ? tr("builder.title") : tr("builder.title_edit", editedIndex));
         if (data.maps().isEmpty())
         {
             paragraph(view, graphics, tr("builder.no_maps"), left, view.getTop() + 20, width, CentreStyle.DIM);
@@ -360,8 +431,11 @@ final class RotationPage extends TeamsPage
             lineTop += 12;
         }
         paragraph(view, graphics, tr("builder.help"), left, lineTop + 6, half - 4, CentreStyle.MUTED);
-        int bottom = view.getTop() + view.getHeight() - WIDGET_HEIGHT - 6;
-        label(view, graphics, tr(MINUTES), left, bottom - 10, 46, CentreStyle.MUTED);
-        label(view, graphics, tr(SCORE_LIMIT), left + 46 + GAP, bottom - 10, 56, CentreStyle.MUTED);
+        if (editedIndex < 0)
+        {
+            int bottom = view.getTop() + view.getHeight() - WIDGET_HEIGHT - 6;
+            label(view, graphics, tr(MINUTES), left, bottom - 10, 46, CentreStyle.MUTED);
+            label(view, graphics, tr(SCORE_LIMIT), left + 46 + GAP, bottom - 10, 56, CentreStyle.MUTED);
+        }
     }
 }

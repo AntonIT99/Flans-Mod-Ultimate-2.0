@@ -1,14 +1,8 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.FlansModEntities;
-import com.flansmodultimate.FlansModParticles;
-import com.flansmodultimate.api.driveables.AircraftDamage;
-import com.flansmodultimate.api.driveables.AircraftMode;
-import com.flansmodultimate.api.driveables.CrashMode;
-import com.flansmodultimate.api.driveables.CrashMotion;
-import com.flansmodultimate.api.driveables.DriveableAttitude;
+import com.flansmodultimate.*;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
@@ -1804,10 +1798,12 @@ public class Plane extends Driveable implements PlaneVisual
      */
     private void handleGroundImpact(@NotNull PlaneType type, @NotNull Vec3 impactVelocity)
     {
-        if (level().isClientSide || crashImpactCooldown > 0 || impactVelocity.y >= -0.01D || !verticalCollision && !horizontalCollision && !isSupportedByGround())
+        if (level().isClientSide || crashImpactCooldown > 0 || (!horizontalCollision && impactVelocity.y >= -0.01D) || (!verticalCollision && !horizontalCollision && !isSupportedByGround()))
             return;
 
-        PlaneCrashDamage.Impact impact = PlaneCrashDamage.evaluate(impactVelocity.length(), -impactVelocity.y, Mth.clamp(getUpVector().y, -1D, 1D), type.getFallDamageFactor());
+        // A wall takes the forward energy even in level flight; an ordinary touchdown only takes the descent.
+        double normalImpactSpeed = horizontalCollision ? Math.max(-impactVelocity.y, impactVelocity.horizontalDistance()) : -impactVelocity.y;
+        PlaneCrashDamage.Impact impact = PlaneCrashDamage.evaluate(impactVelocity.length(), normalImpactSpeed, Mth.clamp(getUpVector().y, -1D, 1D), type.getFallDamageFactor());
         if (!impact.damaging())
             return;
 
@@ -1825,7 +1821,7 @@ public class Plane extends Driveable implements PlaneVisual
 
         damageCrashPart(struckPart(), loss);
         damageCrashPart(EnumDriveablePart.CORE, loss * 0.5F);
-        if (impact.catastrophic())
+        if (impact.catastrophic() || destroyed)
         {
             explodeOnCrash(type, impact.severity());
             writeOffAirframe();

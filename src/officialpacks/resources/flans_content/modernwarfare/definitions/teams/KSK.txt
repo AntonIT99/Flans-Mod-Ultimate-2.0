@@ -23,3 +23,4 @@ AddClass kskAssaultHK416
 AddClass kskMP7
 AddClass kskAntiTank
 AddClass kskMP7Balaclava
+AddClass kskParatrooper

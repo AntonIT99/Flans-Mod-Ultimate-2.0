@@ -8,9 +8,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Per-NPC numbers and choices behind the simulation switches: aim speeds, turn rates, terrain limits, line-of-sight
@@ -210,7 +208,12 @@ public final class NpcTuning
         /** Greatest extra spread of a vehicle's guns, in tenths of a degree, while its hull runs at speed and turns hard; 0 keeps them steady. */
         MOVING_SPREAD(25, 0, 200),
         /** Seconds the body of an NPC that keeps its corpse stays after the death animation; 0 keeps it until it is removed. */
-        CORPSE_TIME(60, 0, 86400);
+        CORPSE_TIME(60, 0, 86400),
+        /**
+         * Seconds a vehicle fights a target further off than it would close to before it puts the crew it carries down; 0
+         * puts them down as soon as it has one to fight. Crew it has closed with its target get out whatever this says.
+         */
+        DISEMBARK_DELAY(5, 0, 120);
 
         private final int fallback;
         private final int minimum;
@@ -412,16 +415,29 @@ public final class NpcTuning
         /** Circles its target at its tactic distance, firing whenever its guns bear. */
         ORBIT(EnumSet.of(TacticKind.PLANE), true),
         /** Hovers at its tactic distance and side-slips one way and the other while it fires. */
-        STRAFE(EnumSet.of(TacticKind.HELICOPTER), true);
+        STRAFE(EnumSet.of(TacticKind.HELICOPTER), true),
+        /**
+         * Carries the crew it is loaded with to its tactic distance from the target, stops there to put them down and keeps
+         * that distance. The one tactic a vehicle without a weapon of its own can follow.
+         */
+        TRANSPORT(EnumSet.of(TacticKind.VEHICLE), true, false);
 
         private final Set<TacticKind> kinds;
         /** Whether the tactic distance setting means anything to it. */
         private final boolean distanceMatters;
+        /** Whether the tactic needs something to fight at range with; one that does not applies to an unarmed NPC too. */
+        private final boolean needsWeapon;
 
         Tactic(Set<TacticKind> kinds, boolean distanceMatters)
         {
+            this(kinds, distanceMatters, true);
+        }
+
+        Tactic(Set<TacticKind> kinds, boolean distanceMatters, boolean needsWeapon)
+        {
             this.kinds = Set.copyOf(kinds);
             this.distanceMatters = distanceMatters;
+            this.needsWeapon = needsWeapon;
         }
 
         public boolean appliesTo(TacticKind kind)
@@ -432,6 +448,12 @@ public final class NpcTuning
         public boolean usesDistance()
         {
             return distanceMatters;
+        }
+
+        /** @return whether the tactic needs a weapon that fights at range, which an unarmed NPC has none of */
+        public boolean needsWeapon()
+        {
+            return needsWeapon;
         }
 
         /** @return whether a plane flies the tactic itself rather than following a path */

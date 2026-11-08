@@ -1,0 +1,12 @@
+// Identity
+Name Paratrooper (M1A1 Thompson)
+ShortName OfficialWW2_AmericanParatrooper
+
+// Items
+AddItem thompson
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem ww2Parachute
+AddItem thompsonAmmo 4
+AddItem coltAmmo 2

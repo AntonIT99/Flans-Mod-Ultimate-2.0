@@ -43,6 +43,9 @@ AddClass W44_BritishArmyFieldMedic
 // Command
 AddClass W44_BritishArmySquadLeader
 
+// Airborne
+AddClass W44_BritishArmyParatrooper
+
 // Vehicle and air crews
 AddClass W44_BritishArmyTankCrew
 AddClass W44_BritishArmyPilot

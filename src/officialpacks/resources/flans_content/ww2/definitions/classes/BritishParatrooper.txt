@@ -1,0 +1,12 @@
+// Identity
+Name Paratrooper (Sten)
+ShortName OfficialWW2_BritishParatrooper
+
+// Items
+AddItem sten
+AddItem webley
+AddItem millsBomb 2
+AddItem ww2Knife
+AddItem ww2Parachute
+AddItem stenAmmo 4
+AddItem webleyAmmo 2

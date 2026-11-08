@@ -57,6 +57,9 @@ AddClass W44_USArmyFieldMedic
 // Command
 AddClass W44_USArmySquadLeader
 
+// Airborne
+AddClass W44_USArmyParatrooper
+
 // Vehicle and air crews
 AddClass W44_USArmyTankCrew
 AddClass W44_USArmyPilot

@@ -23,3 +23,4 @@ AddClass marineDesignatedMarksman
 AddClass marineShotgun
 AddClass marineAntiTank
 AddClass marineAmmoBearer
+AddClass marineParatrooper

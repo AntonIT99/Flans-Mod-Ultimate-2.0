@@ -730,28 +730,76 @@ public final class TeamsManager
         com.flansmodultimate.common.teams.GameType type = Optional.ofNullable(com.flansmodultimate.common.teams.GameType.get(gameTypeId))
             .orElseThrow(() -> new IllegalArgumentException("Unknown game type: " + gameTypeId));
 
+        String refusal = describeLineupRefusal(type, teamIds, sides);
+        if (refusal != null)
+            throw new IllegalArgumentException(refusal);
+
+        TeamsRound round = new TeamsRound(map.getShortName(), type.getId(), teamIds, sides, minutes, scoreLimit);
+        Objects.requireNonNull(savedData).rounds.add(round);
+        markDirty();
+
+        return round;
+    }
+
+    /**
+     * Changes a round of the rotation: the map it is played on, its game type and its teams, keeping the round itself,
+     * which is to say its id, and with it its rules, its place in the rotation and its history. The round being played
+     * is refused, so that a round cannot change under the players fighting it.
+     *
+     * @param sides
+     *            the side of each team, parallel to {@code teamIds}; teams given the same number are allied. Empty for
+     *            a round without alliances.
+     * @return why the round cannot be played so, or null once it is changed
+     */
+    @Nullable
+    public String setRound(int index, String mapId, String gameTypeId, List<String> teamIds, List<Integer> sides)
+    {
+        ensureData();
+        List<TeamsRound> rounds = Objects.requireNonNull(savedData).rounds;
+        if (index < 0 || index >= rounds.size())
+            return "Invalid round index";
+        TeamsRound round = rounds.get(index);
+        if (round.getId().equals(currentRoundId))
+            return "The round being played cannot be changed; stop it or start another round first";
+        TeamsMap map = getMap(mapId).orElse(null);
+        if (map == null)
+            return "Unknown map: " + mapId;
+        com.flansmodultimate.common.teams.GameType type = com.flansmodultimate.common.teams.GameType.get(gameTypeId);
+        if (type == null)
+            return "Unknown game type: " + gameTypeId;
+        String refusal = describeLineupRefusal(type, teamIds, sides);
+        if (refusal != null)
+            return refusal;
+        round.setDefinition(map.getShortName(), type.getId(), teamIds, sides);
+        markDirty();
+        syncAll(PacketTeamsState.OpenScreen.NONE);
+        return null;
+    }
+
+    /**
+     * Why these teams cannot play a game type, or null when they can: an unknown or repeated team, a side missing from
+     * a team, or more or fewer teams or sides than the game type takes. A team listed twice could end up fighting
+     * itself, or on two sides at once.
+     */
+    @Nullable
+    private static String describeLineupRefusal(com.flansmodultimate.common.teams.GameType type, List<String> teamIds, List<Integer> sides)
+    {
         if (!sides.isEmpty() && sides.size() != teamIds.size())
-            throw new IllegalArgumentException("Every team needs a side");
+            return "Every team needs a side";
 
         Set<String> seen = new HashSet<>();
         for (String teamId : teamIds)
         {
             Team team = Team.getTeam(teamId);
             if (team == null || team == Team.SPECTATORS)
-                throw new IllegalArgumentException("Unknown team: " + teamId);
-            // A team listed twice could end up fighting itself, or on two sides at once.
+                return "Unknown team: " + teamId;
             if (!seen.add(team.getShortName()))
-                throw new IllegalArgumentException("Team listed twice: " + teamId);
+                return "Team listed twice: " + teamId;
         }
 
-        TeamsRound round = new TeamsRound(map.getShortName(), type.getId(), teamIds, sides, minutes, scoreLimit);
-        String refusal = type.getTeamLimits().describeRefusal(teamIds.size(), round.getSideCount());
-        if (refusal != null)
-            throw new IllegalArgumentException(type.getName() + " " + refusal);
-        Objects.requireNonNull(savedData).rounds.add(round);
-        markDirty();
-
-        return round;
+        int sideCount = (int) TeamsRound.normaliseSides(sides, teamIds.size()).stream().distinct().count();
+        String refusal = type.getTeamLimits().describeRefusal(teamIds.size(), sideCount);
+        return refusal == null ? null : type.getName() + " " + refusal;
     }
 
     /**

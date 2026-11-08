@@ -1,0 +1,16 @@
+// Identity
+Name Paratrooper (M16A4)
+ShortName marineParatrooper
+Description Airborne infantry with a parachute, a rifle, a sidearm and fragmentation grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem m16a4
+AddItem m16a4Ammo 3
+AddItem m9
+AddItem m9Ammo 2
+AddItem m67 2
+AddItem mwParachute
+AddItem mwKnife

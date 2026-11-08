@@ -46,6 +46,9 @@ AddClass W44_JapaneseArmyFieldMedic
 // Command
 AddClass W44_JapaneseArmySquadLeader
 
+// Airborne
+AddClass W44_JapaneseArmyParatrooper
+
 // Vehicle and air crews
 AddClass W44_JapaneseArmyTankCrew
 AddClass W44_JapaneseArmyPilot

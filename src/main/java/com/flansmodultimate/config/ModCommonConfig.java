@@ -586,9 +586,9 @@ public final class ModCommonConfig
         EXPLOSION_SOUND_RANGE = builder.comment("Maximum range in blocks at which explosions are heard. Each explosion is heard at 6 blocks per block of blast radius (at least 48), up to this cap.")
             .defineInRange("explosionSoundRange", 1024.0, 1.0, 4096.0);
         VEHICLE_SOUND_RANGE = builder.comment("Range in blocks for the engine start, running and reverse sounds of ground vehicles, ships and mechas, and for walker and mecha footsteps.",
-            "StartSoundRange, EngineSoundRange and BackSoundRange in a content pack can replace it, see overridePackSoundRanges.").defineInRange("vehicleSoundRange", 128.0, 1.0, 4096.0);
+            "StartSoundRange, EngineSoundRange and BackSoundRange in a content pack can replace it, see overridePackSoundRanges.").defineInRange("vehicleSoundRange", 256.0, 1.0, 4096.0);
         PLANE_SOUND_RANGE = builder.comment("Range in blocks for the engine start, running and reverse sounds of planes and helicopters.",
-            "StartSoundRange, EngineSoundRange and BackSoundRange in a content pack can replace it, see overridePackSoundRanges.").defineInRange("planeSoundRange", 256.0, 1.0, 4096.0);
+            "StartSoundRange, EngineSoundRange and BackSoundRange in a content pack can replace it, see overridePackSoundRanges.").defineInRange("planeSoundRange", 512.0, 1.0, 4096.0);
         VEHICLE_UTILITY_SOUND_RANGE = builder.comment("Range in blocks for mecha tools, rocket packs and turret traverse sounds.").defineInRange("vehicleUtilitySoundRange", 64.0, 1.0, 4096.0);
         VEHICLE_FLARE_SOUND_RANGE = builder.comment("Range in blocks for vehicle flare sounds.").defineInRange("vehicleFlareSoundRange", 96.0, 1.0, 4096.0);
         VEHICLE_LOCK_ON_SOUND_RANGE = builder.comment("Range in blocks for the lock-on sound heard by the vehicle operator.").defineInRange("vehicleLockOnSoundRange", 10.0, 1.0, 4096.0);

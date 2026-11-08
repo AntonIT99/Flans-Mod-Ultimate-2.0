@@ -22,3 +22,4 @@ AddClass OfficialWW2_AmericanRifleman
 AddClass OfficialWW2_AmericanRiflemanPilot
 AddClass OfficialWW2_AmericanRiflemanSpringfield
 AddClass OfficialWW2_AmericanMedic
+AddClass OfficialWW2_AmericanParatrooper

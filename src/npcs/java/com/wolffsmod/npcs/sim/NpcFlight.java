@@ -294,8 +294,9 @@ public final class NpcFlight
         stopNavigating(npc);
         npc.setYRot(yaw);
         npc.setYBodyRot(yaw);
-        if (++crashTicks > MAX_CRASH_TICKS || npc.onGround() || npc.horizontalCollision || npc.isInWater())
-            strike(npc);
+        boolean impact = npc.onGround() || npc.horizontalCollision || npc.isInWater();
+        if (++crashTicks > MAX_CRASH_TICKS || impact)
+            strike(npc, impact);
     }
 
     /** @return what is left of the parts that keep the aircraft in the air; whole for an NPC without a part body */
@@ -314,13 +315,18 @@ public final class NpcFlight
             navigation.stop();
     }
 
-    /** The aircraft goes in: a fireball, or a splash in water, and it is lost, if it was not already. */
-    private void strike(EntityNPCInterface npc)
+    /** Ends the fall, with a blast at impact; the airborne timeout only retires the aircraft. */
+    private void strike(EntityNPCInterface npc, boolean impact)
     {
         crash = null;
         crashed = true;
-        if (npc.level() instanceof ServerLevel server)
-            FlansAircraftCrashes.crash(server, npc.position(), Math.max(MIN_CRASH_RADIUS, npc.getBbWidth() * CRASH_RADIUS_PER_WIDTH), npc.isInWater());
+        if (impact && npc.level() instanceof ServerLevel server)
+        {
+            // Vehicle NPCs have no fuel inventory. Keep their impact blast bounded and leave terrain intact.
+            float radius = Math.max(MIN_CRASH_RADIUS, npc.getBbWidth() * CRASH_RADIUS_PER_WIDTH);
+            server.explode(npc, npc.getX(), npc.getY(), npc.getZ(), Math.min(4F, radius * 0.4F), false, Level.ExplosionInteraction.NONE);
+            FlansAircraftCrashes.crash(server, npc.position(), radius, npc.isInWater());
+        }
         npc.setDeltaMovement(npc.getDeltaMovement().multiply(0.3D, 0D, 0.3D));
         if (!npc.isKilled() && npc.getHealth() > 0F)
             npc.setHealth(0F);

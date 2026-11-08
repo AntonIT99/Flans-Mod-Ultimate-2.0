@@ -1,0 +1,16 @@
+// Identity
+Name Paratrooper (AK-74)
+ShortName spetsnazParatrooper
+Description Airborne infantry with a parachute, an assault rifle, a sidearm and fragmentation grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem ak74
+AddItem ak74Ammo 3
+AddItem desertEagle
+AddItem desertEagleAmmo 2
+AddItem m67 2
+AddItem mwParachute
+AddItem mwKnife

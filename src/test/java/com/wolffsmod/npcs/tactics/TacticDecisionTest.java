@@ -184,6 +184,53 @@ class TacticDecisionTest
         assertTrue(NpcTactics.followsPath(Tactic.STRAFE));
     }
 
+    @Test
+    void theTransportTacticIsTheOneAVehicleWithoutAWeaponKeeps()
+    {
+        assertEquals(Tactic.TRANSPORT, NpcTactics.resolve(Tactic.TRANSPORT, TacticKind.VEHICLE, false), "it needs nothing to fight at range with");
+        assertEquals(Tactic.TRANSPORT, NpcTactics.resolve(Tactic.TRANSPORT, TacticKind.VEHICLE, true), "an armed vehicle may be given it too");
+        assertEquals(Tactic.CUSTOM_NPCS, NpcTactics.resolve(Tactic.TRANSPORT, TacticKind.STANDARD, false), "but it is written for vehicles only");
+        // Every other tactic still needs a weapon, so an unarmed NPC keeps Custom NPCs' own movement.
+        assertEquals(Tactic.CUSTOM_NPCS, NpcTactics.resolve(Tactic.STAND_OFF, TacticKind.VEHICLE, false));
+        assertTrue(NpcTactics.followsPath(Tactic.TRANSPORT));
+        assertTrue(Tactic.TRANSPORT.usesDistance());
+    }
+
+    @Test
+    void aTransportBringsItsTroopsUpToItsDistanceAndStopsThere()
+    {
+        Engagement unloading = unloading();
+        assertEquals(NpcTactics.UNLOAD_DISTANCE, unloading.preferred(), 1.0E-9D);
+        assertEquals(Order.closeIn(TacticDecision.RUN), decide(Tactic.TRANSPORT, at(97D), true, unloading), "runs while far off");
+        assertEquals(Order.closeIn(TacticDecision.WALK), decide(Tactic.TRANSPORT, at(60D), true, unloading));
+        assertEquals(Order.STAND, decide(Tactic.TRANSPORT, at(48D), true, unloading), "stops at its distance");
+        assertEquals(Order.STAND, decide(Tactic.TRANSPORT, at(40D), true, unloading), "and stays within the band");
+    }
+
+    @Test
+    void aTransportDoesNotCarryItsTroopsIntoTheFightMerelyToSeeTheTarget()
+    {
+        Engagement unloading = unloading();
+        // A tactic that fires closes in while it has no line of sight; a transport has nothing to shoot with, so it holds.
+        assertEquals(Order.closeIn(TacticDecision.WALK), decide(Tactic.STAND_OFF, at(40D), false, unloading));
+        assertEquals(Order.STAND, decide(Tactic.TRANSPORT, at(40D), false, unloading));
+    }
+
+    @Test
+    void aTransportBacksAwayWhenTheTargetClosesOnIt()
+    {
+        Order order = decide(Tactic.TRANSPORT, at(10D), true, unloading());
+        assertEquals(TacticDecision.Move.GO_TO, order.move());
+        assertNotNull(order.point());
+        assertTrue(order.point().distanceTo(TARGET) > 10D, "it goes away from the target, not toward it");
+    }
+
+    /** @return the distances a transport works with when its tactic distance is left automatic */
+    private static Engagement unloading()
+    {
+        return Engagement.of(NpcTactics.UNLOAD_DISTANCE, NpcTactics.UNLOAD_DISTANCE, WeaponRole.GENERAL);
+    }
+
     private static NpcTacticState peekAndGetHit(NpcTacticState memory, Cover cover)
     {
         long now = memory.getPhaseStarted() + TacticDecision.HIDE_TICKS;

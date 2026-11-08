@@ -37,7 +37,7 @@ public final class TeamsEditorCommand
     {
         root.then(Commands.literal("editor").requires(EditorPermissions::mayEdit).executes(context -> open(context, "list", ""))
             .then(Commands.literal("team").then(id(true).executes(context -> open(context, "team", key(context, true)))))
-            .then(Commands.literal("class").then(id(false).executes(context -> open(context, "class", key(context, false)))))
+            .then(Commands.literal("class").executes(context -> open(context, "classes", "")).then(id(false).executes(context -> open(context, "class", key(context, false)))))
             .then(Commands.literal("reload").executes(context -> run(context, () -> TeamEditorService.get().reload())))
             .then(Commands.literal("export").then(
                 Commands.argument("preset", StringArgumentType.word()).executes(context -> run(context, () -> TeamEditorService.get().exportPreset(StringArgumentType.getString(context, "preset"))))))
@@ -263,7 +263,7 @@ public final class TeamsEditorCommand
     private static int help(CommandContext<CommandSourceStack> context)
     {
         context.getSource().sendSuccess(() -> Component.literal(
-            "/teams editor [reload|import <preset>|export <preset>]\n/teams edit <team|class> create <id> <name>\n/teams edit <team|class> <id> [set <field> <value>|patch <json>|duplicate <id>|disable|enable|delete|restore]\nClass: item set/clear/copy <slot>, armour <slot> <item JSON|inherit|empty>, skin add/remove <texture>, capture\nTeam: class add/remove <class>, armour <slot> <item JSON|empty>"),
+            "/teams editor [team <id>|class [<id>]|reload|import <preset>|export <preset>]\n/teams edit <team|class> create <id> <name>\n/teams edit <team|class> <id> [set <field> <value>|patch <json>|duplicate <id>|disable|enable|delete|restore]\nClass: item set/clear/copy <slot>, armour <slot> <item JSON|inherit|empty>, skin add/remove <texture>, capture\nTeam: class add/remove <class>, armour <slot> <item JSON|empty>"),
             false);
         return 1;
     }

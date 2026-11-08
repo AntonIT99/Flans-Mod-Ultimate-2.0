@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -169,5 +170,60 @@ class TeamsRoundTest
         round.setAttackingSide(0);
         round.setAttackingSide(-1);
         assertTrue(round.getAttackingSide().isEmpty());
+    }
+
+    @Test
+    void aRoundChangedInPlaceKeepsItsIdentityAndHistory()
+    {
+        TeamsRound round = new TeamsRound("harbour", "tdm", List.of("red", "blue"), 10, 30);
+        round.markSkipped();
+        RoundRules rules = round.getRules();
+        UUID id = round.getId();
+
+        round.setDefinition("Airfield", "CON", List.of("us", "germany", "uk"), List.of(0, 1, 0));
+
+        assertEquals(id, round.getId(), "the round keeps its id, and with it the rules set on it");
+        assertSame(rules, round.getRules());
+        assertEquals(1, round.getRoundsSincePlayed());
+        assertEquals("airfield", round.getMapId(), "a map id is kept in lower case, as the constructor keeps it");
+        assertEquals("con", round.getGameTypeId());
+        assertEquals("us+uk vs germany", round.describeTeams());
+        assertEquals(30, round.getScoreLimit(), "the length and score limit are changed on their own");
+
+        TeamsRound loaded = TeamsRound.load(round.save());
+        assertEquals(id, loaded.getId());
+        assertEquals("airfield", loaded.getMapId());
+        assertEquals(List.of(0, 1, 0), loaded.getSides());
+    }
+
+    @Test
+    void changingATeamOfARoundHandsItsBasesToAnotherTeam()
+    {
+        TeamsRound round = new TeamsRound("map", "con", List.of("us", "germany"), 10, 300);
+        assertEquals(List.of("us", "germany"), round.getTeamIds());
+
+        round.setDefinition("map", "con", List.of("us", "uk", "germany"), List.of(0, 0, 1));
+
+        // A base belongs to a team by its place in the round, so inserting one hands the bases of every later place on.
+        assertEquals(List.of("us", "uk", "germany"), round.getTeamIds());
+        assertEquals(List.of(0, 0, 1), round.getSides());
+        assertEquals("us+uk vs germany", round.describeTeams());
+    }
+
+    @Test
+    void anAttackingSideTheChangedRoundNoLongerAllowsIsForgotten()
+    {
+        TeamsRound round = new TeamsRound("map", "con", List.of("red", "blue", "green"), 10, 300);
+        round.setAttackingSide(2);
+
+        round.setDefinition("map", "con", List.of("red", "blue", "green"), List.of(0, 1, 1));
+        assertTrue(round.getAttackingSide().isEmpty(), "the third side is gone");
+
+        round.setAttackingSide(1);
+        round.setDefinition("map", "con", List.of("red", "green", "blue"), List.of(0, 1, 1));
+        assertEquals(1, round.getAttackingSide().getAsInt(), "a side that is still there is kept");
+
+        round.setDefinition("map", "tdm", List.of("red", "green", "blue"), List.of(0, 1, 1));
+        assertTrue(round.getAttackingSide().isEmpty(), "only Domination and Conquest are played attacker against defender");
     }
 }
