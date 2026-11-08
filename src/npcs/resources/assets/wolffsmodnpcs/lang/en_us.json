@@ -1891,6 +1891,8 @@
   "wolffsmodnpcs.tuning.attack_height.help": "Blocks above the terrain a plane the NPC flies makes for its target at, before it dives on it.",
   "wolffsmodnpcs.tuning.moving_spread": "Spread on the move (tenths of a degree)",
   "wolffsmodnpcs.tuning.moving_spread.help": "Greatest extra spread of a vehicle's guns while its hull runs at speed and turns hard; its speed and its turn each account for part of it. 0 keeps its guns steady whatever it does. Needs Unsteady on the move.",
+  "wolffsmodnpcs.tuning.disembark_delay": "Dismount delay (s)",
+  "wolffsmodnpcs.tuning.disembark_delay.help": "Seconds a vehicle fights a target further off than 32 blocks before the crew who get out do so, once it is standing still. 0 puts them down as soon as it has a target to fight. Crew get out at once once it has closed within 32 blocks, whatever this says. Needs Passengers get out, or the seat's own choice.",
   "wolffsmodnpcs.tuning.corpse_time": "Corpse time (s)",
   "wolffsmodnpcs.tuning.corpse_time.help": "Seconds the body stays after the death animation, without the red tint. 0 keeps it until the NPC is removed. Needs Keep corpse.",
   "wolffsmodnpcs.tuning.blast_margin": "Blast safety margin (blocks)",

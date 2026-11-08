@@ -8,9 +8,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Per-NPC numbers and choices behind the simulation switches: aim speeds, turn rates, terrain limits, line-of-sight
@@ -210,7 +208,12 @@ public final class NpcTuning
         /** Greatest extra spread of a vehicle's guns, in tenths of a degree, while its hull runs at speed and turns hard; 0 keeps them steady. */
         MOVING_SPREAD(25, 0, 200),
         /** Seconds the body of an NPC that keeps its corpse stays after the death animation; 0 keeps it until it is removed. */
-        CORPSE_TIME(60, 0, 86400);
+        CORPSE_TIME(60, 0, 86400),
+        /**
+         * Seconds a vehicle fights a target further off than it would close to before it puts the crew it carries down; 0
+         * puts them down as soon as it has one to fight. Crew it has closed with its target get out whatever this says.
+         */
+        DISEMBARK_DELAY(5, 0, 120);
 
         private final int fallback;
         private final int minimum;

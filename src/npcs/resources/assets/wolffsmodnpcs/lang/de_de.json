@@ -1816,6 +1816,8 @@
   "wolffsmodnpcs.tuning.attack_height.help": "Blöcke über dem Gelände, in denen ein vom NPC geflogenes Flugzeug auf sein Ziel zufliegt, bevor es im Sturzflug angreift.",
   "wolffsmodnpcs.tuning.moving_spread": "Streuung in Fahrt (Zehntelgrad)",
   "wolffsmodnpcs.tuning.moving_spread.help": "Größte zusätzliche Streuung der Fahrzeugwaffen, während der Rumpf mit Tempo fährt und stark lenkt; Geschwindigkeit und Lenkeinschlag machen je einen Teil davon aus. 0 hält die Waffen ruhig, was das Fahrzeug auch tut. Benötigt Unruhig in Fahrt.",
+  "wolffsmodnpcs.tuning.disembark_delay": "Absetzverzögerung (s)",
+  "wolffsmodnpcs.tuning.disembark_delay.help": "Sekunden, die ein Fahrzeug ein Ziel jenseits von 32 Blöcken bekämpft, bevor die aussteigende Besatzung dies tut, sobald es steht. 0 setzt sie ab, sobald es ein Ziel hat. Hat es sich dem Ziel auf 32 Blöcke genähert, steigt die Besatzung unabhängig davon sofort aus. Benötigt Mitfahrer steigen aus bzw. die Wahl des Sitzes.",
   "wolffsmodnpcs.tuning.corpse_time": "Leichendauer (s)",
   "wolffsmodnpcs.tuning.corpse_time.help": "Sekunden, die der Körper nach der Todesanimation ohne rote Färbung liegen bleibt. 0 behält ihn, bis der NPC entfernt wird. Benötigt Leiche behalten.",
   "wolffsmodnpcs.tuning.blast_margin": "Sprengsicherheitsabstand (Blöcke)",

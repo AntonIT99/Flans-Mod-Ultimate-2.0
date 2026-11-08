@@ -7,23 +7,23 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * The first page of the command centre: the round being played with its clock and standings, starting, skipping and
- * stopping rounds, switching Teams on and off, and what is still missing before a first round can be played.
+ * stopping rounds, switching Teams on and off, the way into the teams and classes editor, and what is still missing
+ * before a first round can be played.
  */
 final class OverviewPage extends TeamsPage
 {
     static final String ID = "flansmodultimate:overview";
-    private static final int TEAMS_PANEL = 86;
+    private static final int TEAMS_PANEL = 107;
     /** The steps a round needs before it can start: Teams on, a map, a round and bases on its map. */
     private static final int SET_UP_STEPS = 4;
     private static final String NEXT = "teams admin next";
     private static final String ENABLE = "teams admin enabled true";
     private static final String KIT = "teams admin kit";
+    private static final String EDITOR = "teams editor";
 
     /** A step of setting up a first round, done or not, with where to go to do it. */
     private record Step(Component text, boolean done, Runnable go)
@@ -64,6 +64,12 @@ final class OverviewPage extends TeamsPage
         }
 
         toggle(view, tr("teams_enabled"), data.enabled(), rightLeft + 6, view.getTop() + 18, rightWidth - 12, tr("teams_enabled.tip"), enabled -> run(view, "teams admin enabled", enabled));
+        int editorY = view.getTop() + TEAMS_PANEL - WIDGET_HEIGHT * 2 - GAP - 6;
+        int editorHalf = (rightWidth - 12 - GAP) / 2;
+        Component editorTip = Component.translatable("gui.flansmodultimate.editor.title");
+        button(view, Component.translatable("gui.flansmodultimate.editor.teams"), rightLeft + 6, editorY, editorHalf, editorTip, () -> run(view, EDITOR));
+        button(view, Component.translatable("gui.flansmodultimate.editor.classes"), rightLeft + 6 + editorHalf + GAP, editorY, rightWidth - 12 - editorHalf - GAP, editorTip,
+            () -> run(view, EDITOR, "class"));
         button(view, tr("kit"), rightLeft + 6, view.getTop() + TEAMS_PANEL - WIDGET_HEIGHT - 6, rightWidth - 12, tr("kit.tip"), () -> run(view, KIT));
 
         int stepsBottom = view.getTop() + view.getHeight() - WIDGET_HEIGHT - 6;
