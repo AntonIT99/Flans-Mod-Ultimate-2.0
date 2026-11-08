@@ -221,6 +221,7 @@ public final class BotEditorScreen extends Screen
         addCompactField(left, 4, "capture_infantry", Float.toString(settings.getInfantryCaptureWeight()));
         addCompactField(second, 4, "capture_vehicles", Float.toString(settings.getVehicleCaptureWeight()));
         addRenderableWidget(switchButton(second, y(1), COLUMN_WIDTH, "suppression", settings.isSuppression(), settings::setSuppression));
+        addRenderableWidget(switchButton(second, y(3), COLUMN_WIDTH, "consume_ammo", settings.isConsumeAmmo(), settings::setConsumeAmmo));
     }
 
     private void initCommander(int left)

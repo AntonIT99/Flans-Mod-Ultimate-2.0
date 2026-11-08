@@ -10,3 +10,4 @@ AddItem ww2Mine 2
 AddItem ww2Knife
 AddItem type100Ammo 2
 AddItem type14Ammo 2
+AddItem blowTorch

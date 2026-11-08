@@ -81,6 +81,13 @@ bots do not replace real-client rendering, GUI or modded-physics checks.
 
 ## Repository Rules
 
+- When adding or renaming config options exposed in the options screen, add or update
+  their translation keys in the same change. `ConfigOptionFactory` uses
+  `options.flansmodultimate.<config leaf key>` for captions, the optional `.tooltip`
+  suffix for localized descriptions, and `options.flansmodultimate.value.<enum type
+  without Enum, lowercase>.<constant, lowercase>` for enum labels. Keep required
+  tooltip variants in sync with their callers and update every available locale
+  in the owning namespace, following `src/main/resources/assets/AGENTS.md`.
 - Keep gameplay state server-authoritative. Do not initialize client-only classes
   from common or server code.
 - Keep Forge and NeoForge references (`net.minecraftforge`, `net.neoforged`) in `platform/` or `mixin/`.

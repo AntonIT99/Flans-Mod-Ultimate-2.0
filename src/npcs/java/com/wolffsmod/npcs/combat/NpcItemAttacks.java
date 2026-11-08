@@ -214,7 +214,10 @@ public final class NpcItemAttacks
                 npc.setItemInHand(hand, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
             return thrown;
         }
-        double blast = NpcBlastSafety.reach(FlansEquipment.getLoadedAmmunition(weapon).orElse(ItemStack.EMPTY));
+        ItemStack ammunition = FlansEquipment.getLoadedAmmunition(weapon).orElse(ItemStack.EMPTY);
+        double blast = NpcBlastSafety.reach(ammunition);
+        if (!NpcVehicleCombat.mayFire(npc, target, npc.getEyePosition(), FlansProjectiles.getArmorPerformance(ammunition, FlansEquipment.getLoadedRoundIndex(weapon)), blast > 0D))
+            return false;
         if (NpcBlastSafety.tooClose(npc, target, blast))
             return false;
         Vec3 aim = target.getEyePosition().subtract(npc.getEyePosition());

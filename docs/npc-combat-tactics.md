@@ -52,6 +52,13 @@ use authored nominal plates and the round's penetration and warhead type;
 missing protection remains unknown. Directly targeted occupants are not assumed
 to be protected merely because their vehicle has armour.
 
+In the Teams command centre, open the round's bot editor and its Combat tab to
+enable **Consume ammunition** (off by default). The server-wide Ammunition use
+override still takes priority. Bots using finite ammunition can deliver carried
+ammunition to nearby allies with a compatible weapon, including a stowed weapon.
+They keep ammunition that fits any weapon they carry and transfer actual items
+with their remaining rounds; finite-ammunition support duties do not create ammo.
+
 Ground vehicles coordinate their main weapon choice with aiming and spacing.
 Independent seat guns can search without a vehicle main target, while still
 requiring an occupant or the existing unmanned-firing permission. Shared-turret

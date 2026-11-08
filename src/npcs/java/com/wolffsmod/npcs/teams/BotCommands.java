@@ -1,15 +1,8 @@
 package com.wolffsmod.npcs.teams;
 
-import com.flansmodultimate.api.teams.FlansTeams;
-import com.flansmodultimate.api.teams.ITeam;
-import com.flansmodultimate.api.teams.ITeamsLiveRound;
-import com.flansmodultimate.api.teams.ITeamsRound;
-import com.flansmodultimate.api.teams.TeamsCapturePoint;
+import com.flansmodultimate.api.teams.*;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.arguments.*;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -21,17 +14,12 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.ObjIntConsumer;
-import java.util.function.UnaryOperator;
+import java.util.function.*;
 
 /**
  * {@code /teams ai}: sets up the bots of each round of the rotation, the squad templates and the map markers, and lets
@@ -155,6 +143,7 @@ public final class BotCommands
         round.then(switchSetting("commanderbot", BotSettings::setCommanderBot));
         round.then(intSetting("commanderdisruption", 0, BotSettings::setCommanderDisruptionSeconds));
         round.then(switchSetting("suppression", BotSettings::setSuppression));
+        round.then(switchSetting("consumeammo", BotSettings::setConsumeAmmo));
         round.then(switchSetting("rallypoints", BotSettings::setRallyPoints));
         round.then(switchSetting("vehicles", BotSettings::setVehiclesEnabled));
         round.then(switchSetting("vehiclecrews", BotSettings::setVehicleCrews));

@@ -139,6 +139,12 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         return BotTag.read(npc).flatMap(data -> BotBattles.get(data.instance())).map(battle -> battle.getSettings().isEmplacements()).orElse(true);
     }
 
+    /** Whether a battle bot consumes ammunition; ordinary NPCs keep their own switch. Server thread. */
+    public static boolean consumesAmmo(EntityNPCInterface npc, boolean own)
+    {
+        return BotBattles.of(npc).map(battle -> battle.getSettings().isConsumeAmmo()).orElse(own);
+    }
+
     /** Whether allied players may deploy into seats occupied by bots of this battle. */
     public static boolean playerSeatDeployment(EntityNPCInterface npc)
     {

@@ -16,3 +16,4 @@ AddItem ww2Mine 2
 AddItem ww2Knife
 AddItem thompsonAmmo 4
 AddItem coltAmmo 2
+AddItem blowTorch

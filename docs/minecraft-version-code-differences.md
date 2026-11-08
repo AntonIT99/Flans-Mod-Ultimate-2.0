@@ -6,6 +6,9 @@ target version, then by class or resource location. Update an existing entry
 when its adaptation changes; do not add a section for each merge run. Commit
 history and validation belong in the merge commit and task result.
 
+For shared helper usage and data ownership, see
+[Platform-independent development practices](platform-independent-practices.md).
+
 The 1.21.1 entries consolidate the maintained porting notes, the historical
 `master` to `1.21.1` port audit, and fixes prompted by the main-module parity
 audit. Paths name the 1.21.1 branch unless explicitly stated otherwise.
