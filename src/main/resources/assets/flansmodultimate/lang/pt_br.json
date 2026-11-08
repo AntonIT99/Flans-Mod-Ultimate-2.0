@@ -694,6 +694,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "Recarregar ao disparar sem munição",
   "options.flansmodultimate.reloadSoundRange": "Alcance do som de recarga",
   "options.flansmodultimate.ricochetSparkCount": "Quantidade de faíscas de ricochete",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "Quantidade de faíscas = round(valor * clamp(raiz cúbica de (massa do projétil em gramas / 1000), 0.2, 2.5)). Padrão: 4; balas pequenas produzem cerca de 1 faísca. 0 desativa as faíscas de ricochete; o clarão do impacto permanece.",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "Buscar modelos em outros pacotes",
   "options.flansmodultimate.server.disableCrosshairForGuns": "Servidor: sem mira de armas",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "Oculta a mira de todos os jogadores segurando uma arma que não seja corpo a corpo. Aplica-se a todo o servidor.",

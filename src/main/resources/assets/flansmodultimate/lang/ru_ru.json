@@ -694,6 +694,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "Перезаряжать при выстреле без патронов",
   "options.flansmodultimate.reloadSoundRange": "Дальность звука перезарядки",
   "options.flansmodultimate.ricochetSparkCount": "Количество искр при рикошете",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "Число искр = round(значение * clamp(кубический корень из (масса снаряда в граммах / 1000), 0.2, 2.5)). По умолчанию: 4; небольшие пули создают примерно 1 искру. 0 отключает искры рикошета; вспышка попадания остаётся.",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "Искать модели в других паках",
   "options.flansmodultimate.server.disableCrosshairForGuns": "Сервер: без перекрестия оружия",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "Скрывает перекрестие у всех игроков с огнестрельным оружием, кроме оружия ближнего боя. Действует на весь сервер.",

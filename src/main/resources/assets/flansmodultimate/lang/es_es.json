@@ -694,6 +694,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "Recargar al disparar sin munición",
   "options.flansmodultimate.reloadSoundRange": "Alcance del sonido de recarga",
   "options.flansmodultimate.ricochetSparkCount": "Cantidad de chispas de rebote",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "Cantidad de chispas = round(valor * clamp(raíz cúbica de (masa del proyectil en gramos / 1000), 0.2, 2.5)). Predeterminado: 4; las balas pequeñas producen aproximadamente 1 chispa. 0 desactiva las chispas de rebote; el destello del impacto permanece.",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "Buscar modelos en otros paquetes",
   "options.flansmodultimate.server.disableCrosshairForGuns": "Servidor: sin mira de armas",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "Oculta la mira de todos los jugadores que sostienen un arma que no sea cuerpo a cuerpo. Se aplica a todo el servidor.",

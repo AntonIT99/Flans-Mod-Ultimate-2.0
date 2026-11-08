@@ -694,6 +694,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "空仓开火时换弹",
   "options.flansmodultimate.reloadSoundRange": "换弹音效范围",
   "options.flansmodultimate.ricochetSparkCount": "跳弹火花数量",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "火花数量 = round(设置值 * clamp(立方根(弹丸质量（克）/ 1000), 0.2, 2.5))。默认值：4；小型子弹约产生1个火花。设为0可禁用跳弹火花；命中闪光仍会显示。",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "在其他内容包中搜索模型",
   "options.flansmodultimate.server.disableCrosshairForGuns": "服务器：禁用枪械准星",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "隐藏所有手持非近战枪械玩家的准星。对整个服务器生效。",

@@ -694,6 +694,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "Recharger en tirant à vide",
   "options.flansmodultimate.reloadSoundRange": "Portée du son de rechargement",
   "options.flansmodultimate.ricochetSparkCount": "Nombre d’étincelles de ricochet",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "Nombre d’étincelles = round(réglage * clamp(racine cubique de (masse du projectile en grammes / 1000), 0.2, 2.5)). Par défaut : 4 ; les petites balles produisent environ 1 étincelle. 0 désactive les étincelles de ricochet ; le flash d’impact reste visible.",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "Chercher les modèles dans d’autres packs",
   "options.flansmodultimate.server.disableCrosshairForGuns": "Serveur : pas de réticule d’arme",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "Masque le réticule de tous les joueurs tenant une arme qui n’est pas de mêlée. S’applique à tout le serveur.",

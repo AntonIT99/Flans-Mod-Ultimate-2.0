@@ -1018,6 +1018,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "Przeładuj przy strzale bez amunicji",
   "options.flansmodultimate.reloadSoundRange": "Zasięg dźwięku przeładowania",
   "options.flansmodultimate.ricochetSparkCount": "Liczba iskier rykoszetu",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "Liczba iskier = round(ustawienie * clamp(pierwiastek sześcienny z (masa pocisku w gramach / 1000), 0.2, 2.5)). Domyślnie: 4; małe pociski wytwarzają około 1 iskry. 0 wyłącza iskry rykoszetu; błysk trafienia pozostaje.",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "Szukaj modeli w innych pakietach",
   "options.flansmodultimate.server.disableCrosshairForGuns": "Serwer: brak celownika broni",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "Ukrywa celownik każdego gracza trzymającego broń inną niż broń biała. Dotyczy całego serwera.",

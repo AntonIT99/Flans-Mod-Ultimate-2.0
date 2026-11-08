@@ -694,6 +694,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "빈 탄창으로 사격 시 재장전",
   "options.flansmodultimate.reloadSoundRange": "재장전 소리 범위",
   "options.flansmodultimate.ricochetSparkCount": "도탄 불꽃 수",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "불꽃 수 = round(설정값 * clamp(세제곱근(발사체 질량(그램) / 1000), 0.2, 2.5)). 기본값: 4. 작은 탄환은 약 1개의 불꽃을 생성합니다. 0으로 설정하면 도탄 불꽃이 비활성화되며 충돌 섬광은 유지됩니다.",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "다른 콘텐츠 팩에서 모델 검색",
   "options.flansmodultimate.server.disableCrosshairForGuns": "서버: 총기 조준점 숨기기",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "근접 무기가 아닌 총기를 든 모든 플레이어의 조준점을 숨깁니다. 서버 전체에 적용됩니다.",

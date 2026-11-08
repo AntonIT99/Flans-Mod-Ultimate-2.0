@@ -1018,6 +1018,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "Reload On Empty Fire",
   "options.flansmodultimate.reloadSoundRange": "Reload Sound Range",
   "options.flansmodultimate.ricochetSparkCount": "Ricochet Spark Count",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "Spark count = round(setting * clamp(cube root of (projectile mass in grams / 1000), 0.2, 2.5)). Default: 4; small bullets produce about 1 spark. Set to 0 to disable ricochet sparks; the impact flash remains.",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "Search Models In Other Packs",
   "options.flansmodultimate.server.disableCrosshairForGuns": "Server: No Gun Crosshair",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "Hides the crosshair of every player holding a non-melee gun. Applies to the whole server.",

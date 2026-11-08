@@ -694,6 +694,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "Ricarica sparando a vuoto",
   "options.flansmodultimate.reloadSoundRange": "Portata del suono di ricarica",
   "options.flansmodultimate.ricochetSparkCount": "Numero di scintille di rimbalzo",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "Numero di scintille = round(valore * clamp(radice cubica di (massa del proiettile in grammi / 1000), 0.2, 2.5)). Predefinito: 4; i proiettili piccoli producono circa 1 scintilla. 0 disattiva le scintille di rimbalzo; il lampo di impatto rimane.",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "Cerca modelli in altri pacchetti",
   "options.flansmodultimate.server.disableCrosshairForGuns": "Server: nessun mirino per le armi",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "Nasconde il mirino a tutti i giocatori che impugnano un'arma non da mischia. Si applica a tutto il server.",

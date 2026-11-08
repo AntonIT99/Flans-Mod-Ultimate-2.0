@@ -694,6 +694,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "空撃ち時にリロード",
   "options.flansmodultimate.reloadSoundRange": "リロード音の範囲",
   "options.flansmodultimate.ricochetSparkCount": "跳弾の火花数",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "火花の数 = round(設定値 * clamp(立方根(弾体の質量（グラム）/ 1000), 0.2, 2.5))。既定値：4。小さな弾丸では約1個の火花が発生します。0で跳弾の火花を無効にします。着弾時の閃光は残ります。",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "他のコンテンツパックからモデルを検索",
   "options.flansmodultimate.server.disableCrosshairForGuns": "サーバー: 銃のクロスヘアなし",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "近接武器以外の銃を持つすべてのプレイヤーのクロスヘアを非表示にします。サーバー全体に適用されます。",

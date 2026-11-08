@@ -1018,6 +1018,7 @@
   "options.flansmodultimate.reloadOnEmptyFire": "Bei leerem Abzug nachladen",
   "options.flansmodultimate.reloadSoundRange": "Reichweite Nachladegeräusch",
   "options.flansmodultimate.ricochetSparkCount": "Anzahl der Abprallfunken",
+  "options.flansmodultimate.ricochetSparkCount.tooltip": "Funkenanzahl = round(Einstellung * clamp(Kubikwurzel aus (Projektilmasse in Gramm / 1000), 0.2, 2.5)). Standard: 4; kleine Geschosse erzeugen etwa 1 Funken. 0 deaktiviert Abprallfunken; der Aufprallblitz bleibt.",
   "options.flansmodultimate.searchModelsInOtherContentPacks": "Modelle in anderen Paketen suchen",
   "options.flansmodultimate.server.disableCrosshairForGuns": "Server: Kein Waffenfadenkreuz",
   "options.flansmodultimate.server.disableCrosshairForGuns.tooltip": "Blendet das Fadenkreuz jedes Spielers aus, der eine Nicht-Nahkampfwaffe hält. Gilt für den ganzen Server.",

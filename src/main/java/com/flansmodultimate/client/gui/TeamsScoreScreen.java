@@ -1,9 +1,7 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-import com.flansmodultimate.client.teams.TeamFlagTextures;
-import com.flansmodultimate.client.teams.TeamsClientState;
-import com.flansmodultimate.client.teams.TeamsRoundResult;
+import com.flansmodultimate.client.teams.*;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.client.teams.PacketTeamsState;
 import com.flansmodultimate.platform.client.ClientPlatform;
@@ -23,7 +21,6 @@ public final class TeamsScoreScreen extends Screen
     private static final int RESULT_TOP = 12;
     private static final int RESULT_FLAG_WIDTH = 48;
     private static final int RESULT_FLAG_HEIGHT = 32;
-    private static final int MANY_SIDES_MAX_COLUMN_WIDTH = 150;
 
     /** A line of a side's column: a player and the colour their name is drawn in. */
     private record Row(PacketTeamsState.PlayerScore player, int colour)
@@ -103,68 +100,50 @@ public final class TeamsScoreScreen extends Screen
 
     private void renderTwoSides(GuiGraphics graphics, PacketTeamsState state)
     {
-        List<Integer> sideIds = state.getSideIds();
-        int lines = sideIds.stream().mapToInt(sideId -> rows(state, sideId).size()).max().orElse(0);
-        int guiHeight = 78 + 9 * lines;
-        int left = width / 2 - 156;
-        int top = height / 2 - guiHeight / 2;
-        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSSCORES2, left, top, 100, 0, 312, 66, 512, 256);
-        for (int line = 0; line < lines; line++)
-            graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSSCORES2, left, top + 66 + 9 * line, 100, 71, 312, 9, 512, 256);
-        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSSCORES2, left, top + 66 + lines * 9, 100, 168, 312, 12, 512, 256);
-
-        graphics.drawString(font, state.getMapName(), left + 6, top + 6, 0xFFFFFF, false);
-        graphics.drawString(font, state.getGameType(), left + 306 - font.width(state.getGameType()), top + 6, 0xFFFFFF, false);
-        String time = timeText(state);
-        graphics.drawString(font, time, left + 10, top + 20, 0xFFFFFF, false);
-        String limit = Component.translatable("gui.flansmod.teams.score_limit", state.getScoreLimit()).getString();
-        graphics.drawString(font, limit, left + 302 - font.width(limit), top + 20, 0xFFFFFF, false);
-
-        for (int column = 0; column < 2; column++)
-        {
-            int sideId = sideIds.get(column);
-            PacketTeamsState.TeamScore side = state.getTeamScore(sideId);
-            if (side == null)
-                continue;
-            int x = left + 10 + 151 * column;
-            int colour = 0xFF000000 | side.colour();
-            graphics.drawString(font, font.plainSubstrByWidth(state.getSideName(sideId), 118), x, top + 39, colour, false);
-            graphics.drawString(font, Integer.toString(side.score()), left + 133 + 151 * column, top + 39, colour, false);
-            List<Row> rows = rows(state, sideId);
-            for (int row = 0; row < rows.size(); row++)
-            {
-                PacketTeamsState.PlayerScore player = rows.get(row).player();
-                int y = top + 67 + 9 * row;
-                graphics.drawString(font, font.plainSubstrByWidth(player.displayName().getString(), 88), left + 12 + 151 * column, y, rows.get(row).colour(), false);
-                drawCentered(graphics, Integer.toString(player.score()), left + 111 + 151 * column, y);
-                drawCentered(graphics, Integer.toString(state.isShowZombieScore() ? player.zombieScore() : player.kills()), left + 127 + 151 * column, y);
-                drawCentered(graphics, Integer.toString(player.deaths()), left + 143 + 151 * column, y);
-            }
-        }
+        renderManySides(graphics, state);
     }
 
-    /**
-     * Three or four sides do not fit the legacy two-column sheet, so they get plain columns of
-     * their own: the side and its score on top, then name, score, kills and deaths of each player.
-     */
+    /** Shares measured statistic columns across teams so even large scores stay aligned. */
     private void renderManySides(GuiGraphics graphics, PacketTeamsState state)
     {
         List<Integer> sideIds = state.getSideIds();
-        int lines = sideIds.stream().mapToInt(sideId -> rows(state, sideId).size()).max().orElse(0);
-        int columnWidth = Math.min(MANY_SIDES_MAX_COLUMN_WIDTH, (width - 24) / sideIds.size());
+        List<List<Row>> sideRows = sideIds.stream().map(sideId -> rows(state, sideId)).toList();
+        String[] headings = { Component.translatable("gui.flansmod.teams.score").getString(), Component.translatable("gui.flansmod.teams.kills").getString(),
+            Component.translatable("gui.flansmod.teams.deaths").getString() };
+        int[] statisticWidths = new int[3];
+        for (int statistic = 0; statistic < statisticWidths.length; statistic++)
+            statisticWidths[statistic] = font.width(headings[statistic]);
+        int nameWidth = 90;
+        int teamWidth = 0;
+        for (int column = 0; column < sideIds.size(); column++)
+        {
+            PacketTeamsState.TeamScore side = state.getTeamScore(sideIds.get(column));
+            if (side != null)
+                teamWidth = Math.max(teamWidth, font.width(state.getSideName(sideIds.get(column))) + font.width(Integer.toString(side.score())) + 24);
+            for (Row row : sideRows.get(column))
+            {
+                nameWidth = Math.max(nameWidth, Math.min(150, font.width(row.player().displayName())));
+                int[] values = statistics(state, row.player());
+                for (int statistic = 0; statistic < statisticWidths.length; statistic++)
+                    statisticWidths[statistic] = Math.max(statisticWidths[statistic], font.width(Integer.toString(values[statistic])));
+            }
+        }
+        int columnWidth = Math.max(teamWidth, nameWidth + statisticWidths[0] + statisticWidths[1] + statisticWidths[2] + 44);
         int guiWidth = columnWidth * sideIds.size() + 8;
-        int guiHeight = 50 + 9 * lines;
-        int left = width / 2 - guiWidth / 2;
-        int top = Math.max(RESULT_TOP + RESULT_FLAG_HEIGHT, height / 2 - guiHeight / 2);
-        graphics.fill(left, top, left + guiWidth, top + guiHeight, 0xC0101010);
-        graphics.fill(left, top + 30, left + guiWidth, top + 31, 0xFF505050);
-
-        graphics.drawString(font, state.getMapName(), left + 6, top + 5, 0xFFFFFF, false);
-        graphics.drawString(font, state.getGameType(), left + guiWidth - 6 - font.width(state.getGameType()), top + 5, 0xFFFFFF, false);
-        graphics.drawString(font, timeText(state), left + 6, top + 17, 0xFFFFFF, false);
+        int lines = sideRows.stream().mapToInt(List::size).max().orElse(0);
+        int guiHeight = 76 + 13 * lines;
+        float scale = Math.min(1F, Math.min((width - 16F) / guiWidth, (height - 64F) / guiHeight));
+        int left = -guiWidth / 2;
+        int top = 0;
+        graphics.pose().pushPose();
+        graphics.pose().translate(width / 2F, Math.max(48F, (height - guiHeight * scale) / 2F), 0F);
+        graphics.pose().scale(scale, scale, 1F);
+        graphics.fill(left, top, left + guiWidth, guiHeight, 0xEE15191F);
+        graphics.drawString(font, font.plainSubstrByWidth(state.getMapName(), guiWidth / 2 - 12), left + 8, 7, 0xFFFFFF, false);
+        graphics.drawString(font, state.getGameType(), left + guiWidth - 8 - font.width(state.getGameType()), 7, 0xFFFFFF, false);
+        graphics.drawString(font, timeText(state), left + 8, 22, 0xDDDDDD, false);
         String limit = Component.translatable("gui.flansmod.teams.score_limit", state.getScoreLimit()).getString();
-        graphics.drawString(font, limit, left + guiWidth - 6 - font.width(limit), top + 17, 0xFFFFFF, false);
-
+        graphics.drawString(font, limit, left + guiWidth - 8 - font.width(limit), 22, 0xDDDDDD, false);
         for (int column = 0; column < sideIds.size(); column++)
         {
             int sideId = sideIds.get(column);
@@ -172,22 +151,37 @@ public final class TeamsScoreScreen extends Screen
             if (side == null)
                 continue;
             int x = left + 4 + columnWidth * column;
-            int right = x + columnWidth - 4;
+            int right = x + columnWidth - 8;
             int colour = 0xFF000000 | side.colour();
+            graphics.fill(x, 37, x + columnWidth - 4, 39, colour);
             String score = Integer.toString(side.score());
-            graphics.drawString(font, font.plainSubstrByWidth(state.getSideName(sideId), columnWidth - 12 - font.width(score)), x + 2, top + 35, colour, false);
-            graphics.drawString(font, score, right - font.width(score), top + 35, colour, false);
-            List<Row> rows = rows(state, sideId);
-            for (int row = 0; row < rows.size(); row++)
+            graphics.drawString(font, font.plainSubstrByWidth(state.getSideName(sideId), columnWidth - 24 - font.width(score)), x + 4, 44, colour, true);
+            graphics.drawString(font, score, right - font.width(score), 44, 0xFFFFFF, false);
+            int[] edges = { right - statisticWidths[2] - statisticWidths[1] - 16, right - statisticWidths[2] - 8, right };
+            graphics.drawString(font, Component.translatable("gui.flansmod.teams.name"), x + 4, 60, 0xBBBBBB, false);
+            for (int statistic = 0; statistic < headings.length; statistic++)
+                graphics.drawString(font, headings[statistic], edges[statistic] - font.width(headings[statistic]), 60, 0xBBBBBB, false);
+            List<Row> players = sideRows.get(column);
+            for (int row = 0; row < players.size(); row++)
             {
-                PacketTeamsState.PlayerScore player = rows.get(row).player();
-                int y = top + 46 + 9 * row;
-                graphics.drawString(font, font.plainSubstrByWidth(player.displayName().getString(), columnWidth - 60), x + 2, y, rows.get(row).colour(), false);
-                drawCentered(graphics, Integer.toString(player.score()), right - 42, y);
-                drawCentered(graphics, Integer.toString(player.kills()), right - 24, y);
-                drawCentered(graphics, Integer.toString(player.deaths()), right - 8, y);
+                int y = 73 + 13 * row;
+                graphics.fill(x, y - 2, x + columnWidth - 4, y + 10, row % 2 == 0 ? 0xFF2A3038 : 0xFF20262D);
+                graphics.drawString(font, font.plainSubstrByWidth(players.get(row).player().displayName().getString(), edges[0] - statisticWidths[0] - x - 12), x + 4, y,
+                    players.get(row).colour(), false);
+                int[] values = statistics(state, players.get(row).player());
+                for (int statistic = 0; statistic < values.length; statistic++)
+                {
+                    String value = Integer.toString(values[statistic]);
+                    graphics.drawString(font, value, edges[statistic] - font.width(value), y, 0xFFFFFF, false);
+                }
             }
         }
+        graphics.pose().popPose();
+    }
+
+    private static int[] statistics(PacketTeamsState state, PacketTeamsState.PlayerScore player)
+    {
+        return new int[] { player.score(), state.isShowZombieScore() ? player.zombieScore() : player.kills(), player.deaths() };
     }
 
     private void renderFreeForAll(GuiGraphics graphics, PacketTeamsState state)
@@ -225,11 +219,6 @@ public final class TeamsScoreScreen extends Screen
             return TeamsClientState.clock(state);
         int seconds = Math.max(0, state.getTimeLeftTicks() / 20);
         return Component.translatable("gui.flansmod.teams.time_left", seconds / 60, String.format("%02d", seconds % 60)).getString();
-    }
-
-    private void drawCentered(GuiGraphics graphics, String value, int x, int y)
-    {
-        graphics.drawString(font, value, x - font.width(value) / 2, y, 0xFFFFFF, false);
     }
 
     @Override
