@@ -373,7 +373,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     @Getter @Setter
     protected Vector3f aimOffset = new Vector3f();
     /** This offsets the render position for third person */
-    @Getter @Setter
+    @Setter
     protected Vector3f thirdPersonOffset = new Vector3f();
     /** This offsets the render position for item frames */
     @Getter @Setter
