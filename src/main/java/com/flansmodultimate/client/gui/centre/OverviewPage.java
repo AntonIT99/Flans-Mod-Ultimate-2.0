@@ -140,13 +140,29 @@ final class OverviewPage extends TeamsPage
             return;
         TeamsData.Round round = next.get();
         int width = rightWidth - 12;
-        label(view, graphics, Component.literal("#" + round.index() + " ").append(data.title(round)), rightLeft + 6, top + 18, width, CentreStyle.TEXT);
-        label(view, graphics, data.lineup(round), rightLeft + 6, top + 29, width, CentreStyle.DIM);
-        label(view, graphics, tr("limits", round.minutes(), round.scoreLimit()), rightLeft + 6, top + 40, width, CentreStyle.DIM);
+        List<Component> lines = new ArrayList<>();
+        List<Integer> colours = new ArrayList<>();
+        lines.add(Component.literal("#" + round.index() + " ").append(data.title(round)));
+        colours.add(CentreStyle.TEXT);
+        lines.add(data.shortLineup(round));
+        colours.add(CentreStyle.DIM);
+        lines.add(tr("limits", round.minutes(), round.scoreLimit()));
+        colours.add(CentreStyle.DIM);
         if (data.queued() >= 0)
-            label(view, graphics, tr("queued"), rightLeft + 6, top + 51, width, CentreStyle.ACCENT);
+        {
+            lines.add(tr("queued"));
+            colours.add(CentreStyle.ACCENT);
+        }
         else if (data.settings().getBoolean(TeamsSection.VOTING))
-            label(view, graphics, tr("vote_may_change"), rightLeft + 6, top + 51, width, CentreStyle.MUTED);
+        {
+            lines.add(tr("vote_may_change"));
+            colours.add(CentreStyle.MUTED);
+        }
+        // The button of the panel takes its last row, so a line that would run into it is left out.
+        int lastLine = top + height - WIDGET_HEIGHT - 6 - 11;
+        int y = top + 18;
+        for (int i = 0; i < lines.size() && y <= lastLine; i++, y += 11)
+            label(view, graphics, lines.get(i), rightLeft + 6, y, width, colours.get(i));
     }
 
     private void renderRound(ICommandCentreView view, GuiGraphics graphics, TeamsData data)
@@ -167,13 +183,13 @@ final class OverviewPage extends TeamsPage
             data.round(data.next()).ifPresent(round ->
             {
                 label(view, graphics, tr("next_is", data.title(round)), left + 6, y, width, CentreStyle.TEXT);
-                label(view, graphics, data.lineup(round), left + 6, y + 11, width, CentreStyle.DIM);
+                lineup(view, graphics, data, round, left + 6, y + 11, width, top + view.getHeight() - WIDGET_HEIGHT - 10);
             });
             return;
         }
         TeamsData.LiveRound round = live.get();
         label(view, graphics, data.title(round.round()), left + 6, top + 19, width, CentreStyle.TEXT);
-        label(view, graphics, data.lineup(round.round()), left + 6, top + 30, width, CentreStyle.DIM);
+        label(view, graphics, data.shortLineup(round.round()), left + 6, top + 30, width, CentreStyle.DIM);
         int elapsed = view.getTicksSinceUpdate();
         boolean breakTime = !"NONE".equals(round.phase());
         String clock = CentreStyle.clock(breakTime ? round.intermissionLeft() - elapsed : round.timeLeft() - elapsed);

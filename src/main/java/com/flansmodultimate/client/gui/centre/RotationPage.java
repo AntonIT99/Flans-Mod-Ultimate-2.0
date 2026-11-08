@@ -125,7 +125,8 @@ final class RotationPage extends TeamsPage
         List<CommandCentreRow> rows = new ArrayList<>();
         for (TeamsData.Round round : data.rounds())
         {
-            CommandCentreRow row = CommandCentreRow.of(round.id(), Component.literal("#" + round.index() + "  ").append(data.title(round)), data.lineup(round)).selected(round.id().equals(selected));
+            CommandCentreRow row = CommandCentreRow.of(round.id(), Component.literal("#" + round.index() + "  ").append(data.title(round)), data.shortLineup(round))
+                .selected(round.id().equals(selected));
             if (round.index() == data.current())
                 row = row.withBadge(tr("badge.live"), CommandCentreRow.GOOD);
             else if (round.index() == data.queued())
@@ -150,7 +151,8 @@ final class RotationPage extends TeamsPage
         int width = view.getWidth() - listWidth - 18;
         int half = (width - GAP) / 2;
         int index = round.index();
-        int y = view.getTop() + 54;
+        // Under the line-up of the round, and the warning that it cannot be played when there is one.
+        int y = view.getTop() + (playable(data, round) ? 34 : 45);
         button(view, tr("start_now"), x, y, half, tr("start_now.tip"), () -> run(view, "teams admin start", index));
         button(view, tr("play_next"), x + half + GAP, y, half, tr("play_next.tip"), () -> run(view, "teams admin setnext", index)).active = index != data.queued();
         y += ROW;
@@ -165,30 +167,30 @@ final class RotationPage extends TeamsPage
                 side -> run(view, "teams admin round attackers", index, side < 0 ? "none" : Integer.toString(side + 1)));
             y += ROW;
         }
-        // The limits are labelled above their fields.
-        y += 10;
-        limitsTop = y;
+        // What the round is kept as sits at the bottom of the panel, so that it stays inside it in a short window.
+        int removeTop = view.getTop() + view.getHeight() - WIDGET_HEIGHT;
+        int actionsTop = removeTop - ROW;
+        // The limits are labelled above their fields, and give way to the buttons under them when the panel is short.
+        limitsTop = Math.min(y + 10, actionsTop - WIDGET_HEIGHT - 2);
         int fieldWidth = (width - 60 - 2 * GAP) / 2;
-        view.addField("minutes@" + round.id(), x, y, fieldWidth, Integer.toString(round.minutes()), tr(MINUTES)).setTooltip(Tooltip.create(tr(MINUTES)));
-        view.addField("score@" + round.id(), x + fieldWidth + GAP, y, fieldWidth, Integer.toString(round.scoreLimit()), tr(SCORE_LIMIT)).setTooltip(Tooltip.create(tr(SCORE_LIMIT)));
-        button(view, tr("apply"), x + width - 60, y, 60, tr("limits.tip"), () ->
+        view.addField("minutes@" + round.id(), x, limitsTop, fieldWidth, Integer.toString(round.minutes()), tr(MINUTES)).setTooltip(Tooltip.create(tr(MINUTES)));
+        view.addField("score@" + round.id(), x + fieldWidth + GAP, limitsTop, fieldWidth, Integer.toString(round.scoreLimit()), tr(SCORE_LIMIT))
+            .setTooltip(Tooltip.create(tr(SCORE_LIMIT)));
+        button(view, tr("apply"), x + width - 60, limitsTop, 60, tr("limits.tip"), () ->
         {
             OptionalInt minutes = number(view, "minutes@" + round.id(), 1, 1440, tr(MINUTES));
             OptionalInt score = minutes.isPresent() ? number(view, "score@" + round.id(), 1, Integer.MAX_VALUE, tr(SCORE_LIMIT)) : OptionalInt.empty();
             if (score.isPresent())
                 run(view, "teams admin round limits", index, minutes.getAsInt(), score.getAsInt());
         });
-        y += ROW;
-        Button edit = button(view, tr("edit_round"), x, y, width, tr("edit_round.tip"), () ->
+        Button edit = button(view, tr("edit_round"), x, actionsTop, half, tr("edit_round.tip"), () ->
         {
             startEditing(round);
             view.rebuild();
         });
         edit.active = index != data.current();
-        y += ROW;
-        button(view, tr("round_rules.title"), x, y, width, () -> RoundRulesPage.open(view, round.id()));
-        y += ROW;
-        button(view, tr("remove_round"), x, y, width, () -> view.confirm(tr("remove_round.confirm", data.title(round)), () -> run(view, "teams admin round remove", index)));
+        button(view, tr("round_rules.title"), x + half + GAP, actionsTop, half, () -> RoundRulesPage.open(view, round.id()));
+        button(view, tr("remove_round"), x, removeTop, width, () -> view.confirm(tr("remove_round.confirm", data.title(round)), () -> run(view, "teams admin round remove", index)));
     }
 
     /** Whether a round's game type can be played on its map: objective modes need capture points there. */
@@ -386,15 +388,10 @@ final class RotationPage extends TeamsPage
         }
         TeamsData.Round round = shown.get();
         view.drawPanel(graphics, x, view.getTop(), width, view.getHeight(), Component.literal("#" + round.index() + "  ").append(data.title(round)));
-        label(view, graphics, data.lineup(round), x + 6, view.getTop() + 18, width - 12, CentreStyle.TEXT);
-        label(view, graphics, tr("limits", round.minutes(), round.scoreLimit()), x + 6, view.getTop() + 29, width - 12, CentreStyle.DIM);
-        Component attackers = round.attackers() >= 0 && round.attackers() < round.sideCount()
-            ? tr("attack_round", sideName(data, round.teamsBySide().get(round.attackers())))
-            : tr(round.canAttack() ? "every_side_captures" : "no_attackers");
-        if (playable(data, round))
-            label(view, graphics, attackers, x + 6, view.getTop() + 40, width - 12, CentreStyle.DIM);
-        else
-            label(view, graphics, tr("unplayable"), x + 6, view.getTop() + 40, width - 12, CentreStyle.BAD);
+        // The length, score limit and attackers of the round are shown by the controls under this, not said twice here.
+        label(view, graphics, data.shortLineup(round), x + 6, view.getTop() + 18, width - 12, CentreStyle.TEXT);
+        if (!playable(data, round))
+            label(view, graphics, tr("unplayable"), x + 6, view.getTop() + 30, width - 12, CentreStyle.BAD);
         int fieldWidth = (width - 12 - 60 - 2 * GAP) / 2;
         label(view, graphics, tr(MINUTES), x + 6, limitsTop - 10, fieldWidth, CentreStyle.MUTED);
         label(view, graphics, tr(SCORE_LIMIT), x + 6 + fieldWidth + GAP, limitsTop - 10, fieldWidth, CentreStyle.MUTED);
