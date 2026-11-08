@@ -186,6 +186,7 @@ public final class ParticleHelper
 
     /** Tactical smoke has its own bounded source allowances and must survive client graphics reductions. */
     @Nullable
+    @SuppressWarnings("java:S107") // Matches the existing position, velocity and scale particle API.
     static Particle createTacticalSmoke(String type, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         return createFromString(type, x, y, z, vx, vy, vz, scale, 1F, true);
@@ -205,7 +206,12 @@ public final class ParticleHelper
         boolean landmark = normalized.equals(FlanParticles.FM_NU_FLASH) || normalized.equals(FlanParticles.FM_TANK_DEATH) || normalized.equals(FlanParticles.FM_SHIP_DEATH)
             || normalized.equals(FlanParticles.FM_NUKE);
         double range = landmark ? Math.max(320D, landmarkRangeOverride) : landmarkRangeOverride;
-        if (!(tacticalSmoke ? shouldSpawnTacticalSmoke(x, y, z) : range > DEFAULT_PARTICLE_RANGE ? shouldSpawnLandmark(x, y, z, range) : shouldSpawn(x, y, z)))
+        boolean allowed;
+        if (tacticalSmoke)
+            allowed = shouldSpawnTacticalSmoke(x, y, z);
+        else
+            allowed = range > DEFAULT_PARTICLE_RANGE ? shouldSpawnLandmark(x, y, z, range) : shouldSpawn(x, y, z);
+        if (!allowed)
             return null;
 
         Optional<LegacyResourceRequest> legacyRequest = LegacyResourceRequest.parse(normalized, false);

@@ -47,12 +47,13 @@ class TacticalSmokeTest
         when(renderer.getMainCamera()).thenReturn(camera);
         when(camera.getPosition()).thenReturn(Vec3.ZERO);
         Particle puff = mock(Particle.class);
+        ModClientConfig preferences = mock(ModClientConfig.class);
         when(engine.createParticle(eq(ParticleTypes.SMOKE), anyDouble(), anyDouble(), anyDouble(), anyDouble(), anyDouble(), anyDouble())).thenReturn(puff);
         try (var game = mockStatic(Minecraft.class); var client = mockStatic(ModClientConfig.class); var common = mockStatic(ModCommonConfig.class))
         {
             game.when(Minecraft::getInstance).thenReturn(minecraft);
             // Zero-initialized client preferences remove decorative particles even nearby.
-            client.when(ModClientConfig::get).thenReturn(mock(ModClientConfig.class));
+            client.when(ModClientConfig::get).thenReturn(preferences);
             common.when(ModCommonConfig::smokeParticlesRange).thenReturn(32D);
             assertNull(ParticleHelper.createFromString(FlanParticles.SMOKE, 1D, 0D, 0D, 0D, 0D, 0D, 1F, 1F));
             for (int i = 0; i < 128; i++)
