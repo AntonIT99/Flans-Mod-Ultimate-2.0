@@ -541,8 +541,7 @@ public final class NpcFlight
         // Guns are led at where the target will be; a bomber flies over where its bomb meets the target.
         NpcVehicleState state = NpcVehicleState.of(npc);
         // Only a bomber steers for the drop point; a plane making a gun run flies at the target, bombs beside its guns or not.
-        Vec3 attackPoint = target == null ? npc.position() : state.isBombRun() ? state.bombPoint().orElse(target.position()) : target.position();
-        Vec3 toTarget = (state.isBombRun() ? WeaponAim.bombApproach(npc.position(), motion, attackPoint) : attackPoint).subtract(npc.position());
+        Vec3 toTarget = attackPoint(npc, target, state, motion).subtract(npc.position());
         Vec3 aim = target != null && !state.isBombRun() ? state.aimDirection().orElse(toTarget) : toTarget;
         // The horizontal speed of a diving or climbing plane is only part of its airspeed.
         int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
@@ -591,6 +590,14 @@ public final class NpcFlight
             pitch += Mth.clamp((float) -Math.toDegrees(Math.atan2(climb, speed)) - pitch, -pitchRate, pitchRate);
         Vec3 forward = Vec3.directionFromRotation(0F, yaw);
         npc.setDeltaMovement(forward.x * horizontal, climb, forward.z * horizontal);
+    }
+
+    private static Vec3 attackPoint(EntityNPCInterface npc, @Nullable LivingEntity target, NpcVehicleState state, Vec3 motion)
+    {
+        Vec3 point = target == null ? npc.position() : target.position();
+        if (state.isBombRun())
+            return WeaponAim.bombApproach(npc.position(), motion, target == null ? point : state.bombPoint().orElse(point));
+        return point;
     }
 
     private static Vec3 flightAim(EntityNPCInterface npc, @Nullable LivingEntity target, NpcVehicleState state, double speed, Vec3 fallback)
