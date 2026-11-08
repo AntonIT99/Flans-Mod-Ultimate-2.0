@@ -358,7 +358,12 @@ public class BulletType extends ShootableType
         hitSoundRange = readValue("HitSoundRange", hitSoundRange, file);
         readCombatFeedback(file);
 
-        penetrates = readValue("Penetrates", true, file);
+        // 0 and 1 remain the boolean shorthand; other numbers give the power directly. Penetration and PenetratingPower take precedence.
+        String configuredPenetrates = readValue("Penetrates", null, file);
+        if (isPlainNumber(configuredPenetrates) && !"0".equals(configuredPenetrates) && !"1".equals(configuredPenetrates))
+            penetratingPower = Float.parseFloat(configuredPenetrates);
+        else
+            penetrates = readValue("Penetrates", true, file);
         penetratingPower = readValue("Penetration", penetratingPower, file);
         penetratingPower = readValue("PenetratingPower", penetratingPower, file);
         penetrationDecay = readValue("PenetrationDecay", penetrationDecay, file);

@@ -2,11 +2,14 @@ package com.flansmodultimate.util;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.config.ContentLoadingConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,6 +18,13 @@ public class TypeReaderUtils
     private static final String A_FLOAT = "a float";
     private static final String A_BOOLEAN = "a boolean";
     private static final String FLOAT_VALUES_USAGE = "<float values>";
+    private static final String KEY_SHORT_NAME = "ShortName";
+    private static final Pattern LEADING_INTEGER = Pattern.compile("^[+-]?\\d+");
+    private static final Pattern LEADING_DECIMAL = Pattern.compile("^[+-]?(\\d+(\\.\\d*)?|\\.\\d+)");
+    private static final Pattern NUMBER_THEN_NAME = Pattern.compile("([+-]?\\d+(?:\\.\\d*)?)([A-Za-z]\\S*)");
+    private static final Pattern PLAIN_NUMBER = Pattern.compile("[+-]?(\\d+(\\.\\d*)?|\\.\\d+)");
+    private static final Set<String> TRUE_TYPOS = Set.of("ture", "treu", "tru");
+    private static final Set<String> FALSE_TYPOS = Set.of("flase", "fasle", "fales", "flse", "fals");
 
     private TypeReaderUtils()
     {}
@@ -62,16 +72,27 @@ public class TypeReaderUtils
                     String[] split = splitValues(line);
                     if (split.length == 0)
                     {
-                        logError(incorrectFormat(key, "<single value>"), file);
+                        logRecoverable(incorrectFormat(key, "<single value>"), file);
                         return defaultValue;
                     }
+                    if (split.length > 1 && key.equalsIgnoreCase(split[0]))
+                    {
+                        logRecoverable("Incorrect format for '" + key + "': the key is repeated before its value", file);
+                        split = Arrays.copyOfRange(split, 1, split.length);
+                    }
                     if (split.length > 1)
-                        logError("Incorrect format for '" + key + "': expected one value but found " + split.length + "; using '" + split[0] + "'", file);
+                    {
+                        // Keeping only the first word of a name would give unrelated items the same identifier.
+                        String value = KEY_SHORT_NAME.equalsIgnoreCase(key) ? String.join(StringUtils.EMPTY, split) : split[0];
+                        logRecoverable("Incorrect format for '" + key + "': expected one value but found " + split.length + "; using '" + value + "'", file);
+                        return value;
+                    }
                     return split[0];
                 }
                 else
                 {
-                    logError(incorrectFormat(key, "<single value>"), file);
+                    // A key without a value carries no data and is equivalent to omitting it.
+                    logRecoverable(incorrectFormat(key, "<single value>"), file);
                 }
             }
         }
@@ -80,19 +101,8 @@ public class TypeReaderUtils
 
     public static int readValue(String key, int defaultValue, TypeFile file)
     {
-        String strValue = readValue(key, null, file);
-        if (strValue != null)
-        {
-            try
-            {
-                return Integer.parseInt(strValue);
-            }
-            catch (Exception e)
-            {
-                logError(incorrectFormatWrongType(key, strValue, "an integer"), file);
-            }
-        }
-        return defaultValue;
+        Integer value = readInteger(key, file);
+        return value != null ? value : defaultValue;
     }
 
     @Nullable
@@ -105,9 +115,14 @@ public class TypeReaderUtils
             {
                 return Integer.parseInt(strValue);
             }
-            catch (Exception e)
+            catch (NumberFormatException e)
             {
-                logError(incorrectFormatWrongType(key, strValue, "an integer"), file);
+                Integer recovered = recoverInteger(strValue);
+                if (recovered != null)
+                    logRecoverable(recoveredValue(key, strValue, recovered), file);
+                else
+                    logError(incorrectFormatWrongType(key, strValue, "an integer"), file);
+                return recovered;
             }
         }
         return null;
@@ -115,19 +130,8 @@ public class TypeReaderUtils
 
     public static float readValue(String key, float defaultValue, TypeFile file)
     {
-        String strValue = readValue(key, null, file);
-        if (strValue != null)
-        {
-            try
-            {
-                return Float.parseFloat(strValue);
-            }
-            catch (Exception e)
-            {
-                logError(incorrectFormatWrongType(key, strValue, A_FLOAT), file);
-            }
-        }
-        return defaultValue;
+        Float value = readFloat(key, file);
+        return value != null ? value : defaultValue;
     }
 
     @Nullable
@@ -140,9 +144,10 @@ public class TypeReaderUtils
             {
                 return Float.parseFloat(strValue);
             }
-            catch (Exception e)
+            catch (NumberFormatException e)
             {
-                logError(incorrectFormatWrongType(key, strValue, A_FLOAT), file);
+                Double recovered = recoverDecimal(strValue, key, file);
+                return recovered != null ? recovered.floatValue() : null;
             }
         }
         return null;
@@ -150,19 +155,8 @@ public class TypeReaderUtils
 
     public static double readValue(String key, double defaultValue, TypeFile file)
     {
-        String strValue = readValue(key, null, file);
-        if (strValue != null)
-        {
-            try
-            {
-                return Double.parseDouble(strValue);
-            }
-            catch (Exception e)
-            {
-                logError(incorrectFormatWrongType(key, strValue, A_FLOAT), file);
-            }
-        }
-        return defaultValue;
+        Double value = readDouble(key, file);
+        return value != null ? value : defaultValue;
     }
 
     @Nullable
@@ -175,9 +169,9 @@ public class TypeReaderUtils
             {
                 return Double.parseDouble(strValue);
             }
-            catch (Exception e)
+            catch (NumberFormatException e)
             {
-                logError(incorrectFormatWrongType(key, strValue, A_FLOAT), file);
+                return recoverDecimal(strValue, key, file);
             }
         }
         return null;
@@ -185,19 +179,8 @@ public class TypeReaderUtils
 
     public static boolean readValue(String key, boolean defaultValue, TypeFile file)
     {
-        String strValue = readValue(key, null, file);
-        if (strValue != null)
-        {
-            strValue = strValue.equals("1") ? Boolean.TRUE.toString() : strValue;
-            strValue = strValue.equals("0") ? Boolean.FALSE.toString() : strValue;
-            if (!Boolean.TRUE.toString().equalsIgnoreCase(strValue) && !Boolean.FALSE.toString().equalsIgnoreCase(strValue))
-            {
-                logError(incorrectFormatWrongType(key, strValue, A_BOOLEAN), file);
-                return defaultValue;
-            }
-            return Boolean.parseBoolean(strValue);
-        }
-        return defaultValue;
+        Boolean value = readBoolean(key, file);
+        return value != null ? value : defaultValue;
     }
 
     @Nullable
@@ -210,8 +193,12 @@ public class TypeReaderUtils
             strValue = strValue.equals("0") ? Boolean.FALSE.toString() : strValue;
             if (!Boolean.TRUE.toString().equalsIgnoreCase(strValue) && !Boolean.FALSE.toString().equalsIgnoreCase(strValue))
             {
-                logError(incorrectFormatWrongType(key, strValue, A_BOOLEAN), file);
-                return null;
+                Boolean recovered = recoverBoolean(strValue);
+                if (recovered != null)
+                    logRecoverable(recoveredValue(key, strValue, recovered), file);
+                else
+                    logError(incorrectFormatWrongType(key, strValue, A_BOOLEAN), file);
+                return recovered;
             }
             return Boolean.parseBoolean(strValue);
         }
@@ -321,7 +308,18 @@ public class TypeReaderUtils
             value = value.replace(',', '.');
         }
 
-        return Float.parseFloat(value);
+        try
+        {
+            return Float.parseFloat(value);
+        }
+        catch (NumberFormatException exception)
+        {
+            Double recovered = recoverDecimal(value);
+            if (recovered == null)
+                throw exception;
+            logRecoverable("vector '" + raw + "': reading it as " + recovered);
+            return recovered.floatValue();
+        }
     }
 
     public static String readValues(String key, String defaultValue, TypeFile file)
@@ -337,7 +335,7 @@ public class TypeReaderUtils
                 if (line != null)
                     return line;
                 else
-                    logError(incorrectFormat(key, "<values separated by whitespaces>"), file);
+                    logRecoverable(incorrectFormat(key, "<values separated by whitespaces>"), file);
             }
 
         }
@@ -491,6 +489,12 @@ public class TypeReaderUtils
      */
     static String[] splitValues(@Nullable String raw)
     {
+        return tokenize(raw, () -> logRecoverable("value '" + raw + "': repaired mistyped vector brackets"));
+    }
+
+    /** @param onBracketRepair notified for each mistyped vector bracket the tokenizer repairs */
+    static String[] tokenize(@Nullable String raw, Runnable onBracketRepair)
+    {
         if (StringUtils.isBlank(raw))
             return new String[0];
 
@@ -529,7 +533,10 @@ public class TypeReaderUtils
             if (c == '[' && bracketDepth > 0)
             {
                 String completedToken = token.toString().trim();
-                if (!completedToken.isEmpty())
+                // A lone opening bracket is a doubled "[[" rather than an unclosed vector.
+                if ("[".equals(completedToken))
+                    onBracketRepair.run();
+                else if (!completedToken.isEmpty())
                     tokens.add(completedToken);
                 token.setLength(0);
                 bracketDepth = 0;
@@ -548,7 +555,16 @@ public class TypeReaderUtils
                 }
             }
             else
+            {
                 token.append(c);
+                // Adjacent vectors sometimes lack the whitespace between them.
+                if (c == ']' && bracketDepth == 0 && i + 1 < value.length() && value.charAt(i + 1) == '[')
+                {
+                    tokens.add(token.toString());
+                    token.setLength(0);
+                    onBracketRepair.run();
+                }
+            }
         }
         if (!token.isEmpty())
             tokens.add(token.toString());
@@ -646,6 +662,96 @@ public class TypeReaderUtils
     private static String lastNonNull(List<String> list)
     {
         return IntStream.iterate(list.size() - 1, i -> i >= 0, i -> i - 1).mapToObj(list::get).filter(StringUtils::isNotBlank).findFirst().orElse(null);
+    }
+
+    /** Whether a vanilla invalid path message concerns a content pack file the mod reads directly rather than as a resource. */
+    public static boolean isDirectlyReadPackFileMessage(String message)
+    {
+        return message.startsWith("Invalid path in pack: flansmod:animations/") || (message.startsWith("Invalid path in pack: flansmod:models/") && message.endsWith(".obj, ignoring"));
+    }
+
+    /** Separates a number and a name missing the space between them, such as "-0leftWing", or returns null for anything else. */
+    public static String @Nullable [] splitNumberThenName(String raw)
+    {
+        Matcher matcher = NUMBER_THEN_NAME.matcher(raw);
+        return matcher.matches() ? new String[]{matcher.group(1), matcher.group(2)} : null;
+    }
+
+    /** Whether a value is only a number, for keys whose meaning depends on the form of their value. */
+    public static boolean isPlainNumber(@Nullable String raw)
+    {
+        return raw != null && PLAIN_NUMBER.matcher(raw.trim()).matches();
+    }
+
+    /** Reads the integer a mistyped value such as "80s" clearly starts with, or null when it has none. */
+    @Nullable
+    public static Integer recoverInteger(String raw)
+    {
+        Matcher matcher = LEADING_INTEGER.matcher(raw.trim());
+        if (!matcher.find())
+            return null;
+        try
+        {
+            return Integer.valueOf(matcher.group());
+        }
+        catch (NumberFormatException e)
+        {
+            return null;
+        }
+    }
+
+    /** Reads a decimal comma, or the number a mistyped value such as "1.75.2" clearly starts with; null when it has none. */
+    @Nullable
+    public static Double recoverDecimal(String raw)
+    {
+        String value = raw.trim();
+        if (value.indexOf('.') < 0)
+            value = value.replace(',', '.');
+        Matcher matcher = LEADING_DECIMAL.matcher(value);
+        return matcher.find() ? Double.valueOf(matcher.group()) : null;
+    }
+
+    /** Reads common misspellings of true and false, or returns null for anything else. */
+    @Nullable
+    public static Boolean recoverBoolean(String raw)
+    {
+        String value = raw.trim().toLowerCase(Locale.ROOT);
+        if (value.startsWith("true") || TRUE_TYPOS.contains(value))
+            return Boolean.TRUE;
+        if (value.startsWith("false") || FALSE_TYPOS.contains(value))
+            return Boolean.FALSE;
+        return null;
+    }
+
+    @Nullable
+    private static Double recoverDecimal(String raw, String key, TypeFile file)
+    {
+        Double recovered = recoverDecimal(raw);
+        if (recovered != null)
+            logRecoverable(recoveredValue(key, raw, recovered), file);
+        else
+            logError(incorrectFormatWrongType(key, raw, A_FLOAT), file);
+        return recovered;
+    }
+
+    private static String recoveredValue(String key, String raw, Object recovered)
+    {
+        return String.format("Incorrect format for '%s %s': using '%s'", key, raw, recovered);
+    }
+
+    /** Reports an issue the parser repaired or could ignore without side effects. */
+    public static void logRecoverable(String s, TypeFile file)
+    {
+        logRecoverable(String.format("%s/%s/%s: %s", file.getContentPack().getName(), file.getType().getConfigFolderName(), file.getName(), s));
+    }
+
+    /** Reports a recovered issue where the parser has no file context. */
+    public static void logRecoverable(String s)
+    {
+        if (ContentLoadingConfig.isShowAllParsingIssuesInErrorLog())
+            FlansLog.log.error("Error in {}", s);
+        else
+            FlansLog.log.debug("Recovered parsing issue in {}", s);
     }
 
     public static void logError(String s, TypeFile file)

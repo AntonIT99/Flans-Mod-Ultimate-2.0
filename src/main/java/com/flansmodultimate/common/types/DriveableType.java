@@ -239,6 +239,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected float yOffset = 10F / 16F;
     protected float cameraDistance = 5F;
     protected final List<ParticleEmitter> emitters = new ArrayList<>();
+    /** Exhaust drawn only while an afterburner is lit. */
+    protected final List<ParticleEmitter> afterburnEmitters = new ArrayList<>();
     protected boolean emittersRequireOccupant = true;
 
     protected float maxThrottle = 1F;
@@ -455,7 +457,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         super.read(file);
         engine = readValue("Engine", engine, file).trim();
         readSeats(file);
-        optics = VehicleOpticsReader.read(file, seats, warning -> logError(warning, file));
+        optics = VehicleOpticsReader.read(file, seats, warning -> logError(warning, file), issue -> logRecoverable(issue, file));
         readWheels(file);
         readPartsAndRecipes(file);
         readWeapons(file);
@@ -679,6 +681,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void addPartRecipe(String[] values, TypeFile file, String context)
     {
+        if (values.length > 2 && values[0].equalsIgnoreCase(values[1]))
+        {
+            logRecoverable("Part name '" + values[0] + "' is repeated in " + context, file);
+            addPartRecipe(Arrays.copyOfRange(values, 1, values.length), file, context);
+            return;
+        }
         EnumDriveablePart part = EnumDriveablePart.getPart(values[0]);
         List<RecipeIngredient> refs;
         if (values.length == 2 && !isInteger(values[1]))
@@ -688,7 +696,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         driveableRecipe.addAll(refs);
         if (part == null)
         {
-            logError("Unknown driveable part in " + context + ": " + values[0] + "; assigning ingredients to core", file);
+            logRecoverable("Unknown driveable part in " + context + ": " + values[0] + "; assigning ingredients to core", file);
             part = EnumDriveablePart.CORE;
         }
         partwiseRecipe.computeIfAbsent(part, ignored -> new ArrayList<>()).addAll(refs);
@@ -826,8 +834,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         {
             int seat = Integer.parseInt(values[0]);
             if (seat > 0 && getSeat(seat) != null && getSeat(seat).isPassengerHasParticles())
-                shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>()).add(new ShootParticle(values[1],
-                    Float.parseFloat(values[4]), Float.parseFloat(values[5]), Float.parseFloat(values[6]), Float.parseFloat(values[2]), Float.parseFloat(values[3])));
+                shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>())
+                    .add(new ShootParticle(values[1], Float.parseFloat(values[4]), Float.parseFloat(values[5]), Float.parseFloat(values[6]), Float.parseFloat(values[2]), Float.parseFloat(values[3])));
         });
         readLegacyGuns(file);
         readLegacyWeaponPosition("BombPosition", EnumDriveablePart.CORE, EnumWeaponType.BOMB, file);
@@ -1047,6 +1055,10 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             emitters.add(new ParticleEmitter(values[0], Integer.parseInt(values[1]), origin, extents, velocity, Float.parseFloat(values[5]), Float.parseFloat(values[6]), Float.parseFloat(values[7]),
                 Float.parseFloat(values[8]), EnumDriveablePart.getPart(values[9])));
         };
+        Consumer<String[]> afterburnParser = values -> afterburnEmitters.add(new ParticleEmitter(values[0], Integer.parseInt(values[1]), parseVector(values[2], 1F / 16F), parseVector(values[3], 1F / 16F),
+            parseVector(values[4], 1F / 16F), -1F, 1F, 0F, 1F, EnumDriveablePart.getPart(values[5])));
+        forEachLine("particleAfterBurn", file, 6, afterburnParser);
+        forEachLine("particleTrailBurner", file, 6, afterburnParser);
         forEachLine("AddParticle", file, 10, parser);
         forEachLine("AddEmitter", file, 10, parser);
     }
@@ -1837,6 +1849,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         {
             if (values.length == 0)
                 continue;
+            if (values.length == 1 && "none".equalsIgnoreCase(values[0]))
+                continue;
             if (values.length < 3)
             {
                 logError(key + " expects at least x y z", file);
@@ -2091,7 +2105,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 continue;
             if (values.length < minimumValues)
             {
-                logError(key + " expects at least " + minimumValues + " values", file);
+                String message = key + " expects at least " + minimumValues + " values";
+                if (isIgnorableIncompleteLine(key))
+                    logRecoverable(message, file);
+                else
+                    logError(message, file);
                 continue;
             }
             try
@@ -2103,6 +2121,16 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 logError(COULD_NOT_PARSE + key, file, ex);
             }
         }
+    }
+
+    /** Incomplete lines of these keys cannot be interpreted and leave the driveable as if they were omitted. */
+    private static boolean isIgnorableIncompleteLine(String key)
+    {
+        return switch (key)
+        {
+            case "SetupArmoredPart", "RotatedPassengerOffset", "PassengerAimSpeed" -> true;
+            default -> false;
+        };
     }
 
     private static Vector3f rawVector(String[] values, int start)
@@ -2121,7 +2149,23 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         String[] values = cleaned.trim().split("\\s+");
         if (values.length < 3)
             throw new IllegalArgumentException("Expected three vector values");
-        return new Vector3f(Float.parseFloat(values[0]) * scale, Float.parseFloat(values[1]) * scale, Float.parseFloat(values[2]) * scale);
+        return new Vector3f(parseVectorComponent(values[0], raw) * scale, parseVectorComponent(values[1], raw) * scale, parseVectorComponent(values[2], raw) * scale);
+    }
+
+    private static float parseVectorComponent(String component, String vector)
+    {
+        try
+        {
+            return Float.parseFloat(component);
+        }
+        catch (NumberFormatException exception)
+        {
+            Double recovered = recoverDecimal(component);
+            if (recovered == null)
+                throw exception;
+            logRecoverable("vector '" + vector + "': reading '" + component + "' as " + recovered);
+            return recovered.floatValue();
+        }
     }
 
     private static boolean parseBoolean(String raw)

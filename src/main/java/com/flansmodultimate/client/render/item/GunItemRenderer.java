@@ -316,14 +316,14 @@ public final class GunItemRenderer
         EnumGunFirstPersonFrame frame = AimOffsetDebugCommand.resolveFrame();
         if (frame == EnumGunFirstPersonFrame.FLANS_TAP)
         {
-            // Tyrants and Plebeians (Labjac fork) RenderGun frame (1.7.10 base, retuned; its per-model offsets are zero here)
+            // Tyrants and Plebeians (Labjac fork) RenderGun frame (1.7.10 base, retuned)
             LegacyHeldItemFrames.firstPerson(poseStack);
             poseStack.mulPose(Axis.ZP.rotationDegrees(25F - 5F * adsSwitch));
             poseStack.mulPose(Axis.XP.rotationDegrees(-5F));
             poseStack.mulPose(Axis.XP.rotationDegrees(5F));
             poseStack.mulPose(Axis.YP.rotationDegrees(-5F));
             poseStack.translate(0F, -0.03F * adsSwitch, 0F);
-            poseStack.translate(0.15F, 0.2F + 0.205F * adsSwitch, -0.8F - 0.205F * adsSwitch);
+            poseStack.translate(0.15F + model.getOffsetX(), 0.2F + model.getOffsetY() + (0.205F - model.getOffsetY()) * adsSwitch, -0.8F + model.getOffsetZ() - (0.205F + model.getOffsetZ()) * adsSwitch);
             poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
             poseStack.translate(model.getCrouchZoom() * adsSwitch, -0.03F * adsSwitch, 0F);
             if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())

@@ -284,16 +284,27 @@ public abstract class InfoType implements IContentType
                 recipeTokens.addAll(Arrays.asList(split).subList(1, split.length));
                 shapeless = false;
 
+                int consumedRows = 0;
+                boolean gridEnded = false;
                 for (int row = 0; row < 3; row++)
                 {
-                    String recipeRow = getRecipeRow((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY);
+                    String recipeRow = gridEnded ? StringUtils.EMPTY : getRecipeRow((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY);
+                    if (isDefinitionLine(recipeRow))
+                    {
+                        TypeReaderUtils.logRecoverable("Recipe of " + originalShortName + " has fewer than three rows; '" + recipeRow + "' is not part of its grid", file);
+                        gridEnded = true;
+                        recipeRow = StringUtils.EMPTY;
+                    }
+                    else if (!gridEnded)
+                        consumedRows++;
+
                     if (hasRecipeContentAfterGrid(recipeRow))
                         TypeReaderUtils.logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
 
                     recipePattern.add(padRecipeRow(recipeRow));
                 }
                 addToRecipeGrid(recipePattern);
-                i += 3;
+                i += consumedRows;
             }
             else
             {
@@ -353,6 +364,12 @@ public abstract class InfoType implements IContentType
         if (row.regionMatches(true, 0, KEY_RECIPE, 0, KEY_RECIPE.length()) && row.length() > KEY_RECIPE.length() && Character.isWhitespace(row.charAt(KEY_RECIPE.length())))
             return row.substring(KEY_RECIPE.length() + 1);
         return row;
+    }
+
+    /** A grid row holds at most three symbols, so a longer first word starts an ordinary definition line. */
+    private static boolean isDefinitionLine(String recipeRow)
+    {
+        return WHITESPACE.split(recipeRow.trim())[0].length() > 3;
     }
 
     private static boolean hasRecipeContentAfterGrid(String recipeRow)
@@ -459,7 +476,14 @@ public abstract class InfoType implements IContentType
         }
         catch (NumberFormatException exception)
         {
-            TypeReaderUtils.logError("Incorrect format for '" + key + "': expected an integer but found '" + configuredLength + "'", file);
+            String message = "Incorrect format for '" + key + "': expected an integer but found '" + configuredLength + "'";
+            Integer recovered = TypeReaderUtils.recoverInteger(configuredLength);
+            if (recovered != null)
+            {
+                TypeReaderUtils.logRecoverable(message + "; using '" + recovered + "'", file);
+                return recovered;
+            }
+            TypeReaderUtils.logError(message, file);
             return defaultValue;
         }
     }

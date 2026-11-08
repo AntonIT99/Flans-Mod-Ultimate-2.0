@@ -202,6 +202,8 @@ minecraft {
 sourceSets {
     // flan/ was the old copy target of run/flan; packsManagerJar now bundles run/flan directly.
     packsmanager.resources.exclude 'flan/**'
+    // Models Tyrants and Plebeians expects from the mod; shipped in the main jar until that pack has its own mod.
+    tapcompat {}
 }
 
 // Development-only files never ship in any jar.
@@ -226,6 +228,7 @@ def configureModSourceSet = { SourceSet sourceSet, String modId ->
 }
 
 configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
+configureModSourceSet(sourceSets.tapcompat, mod_id)
 
 /*
  * Registers an optional module described by src/<module>/fmu-module.gradle.
@@ -470,6 +473,7 @@ tasks.matching { it.name == 'copyIntellijResources' }.configureEach { Copy task 
 tasks.named('jar', Jar) {
     // The API package is MIT licensed and ships inside this jar, so its notice must too.
     from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
+    from(sourceSets.tapcompat.output)
     manifest {
         attributes([
                 'Specification-Title'     : mod_id,

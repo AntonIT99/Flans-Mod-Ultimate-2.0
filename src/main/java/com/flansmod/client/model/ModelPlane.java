@@ -14,6 +14,7 @@ import com.mojang.math.Axis;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 
 /** Extensible, pass-aware model base for legacy plane content packs. */
 @SuppressWarnings({"unused", "java:S1104"})
@@ -72,6 +73,34 @@ public class ModelPlane extends ModelDriveable
     public ModelRendererTurbo[] leftWingPos1Model = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] leftWingPos2Model = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] hudModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] throttleModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] fuelIndicatorModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] altimeterIndicatorModel1 = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] altimeterIndicatorModel2 = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] compassIndicatorModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] airspeedIndicatorModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] turnCoordinatorModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] VSIndicatorModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] oilIndicatorModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] RPMIndicatorModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] waterIndicatorModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] timeIndicatorModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] controlStickModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] leftAnimWingFlapModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] rightAnimWingFlapModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] bodyAnimCoverModel1 = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] bodyAnimCoverModel2 = new ModelRendererTurbo[0];
+    public Vector3f leftWingFlapAttach = new Vector3f();
+    public Vector3f rightWingFlapAttach = new Vector3f();
+    public Vector3f bodyCover1Attach = new Vector3f();
+    public Vector3f bodyCover2Attach = new Vector3f();
+    public float throttleModelMaxRot;
+    public float fuelIndicatorModelMaxRot;
+    public float speedTypeMutliplier = 1F;
+    public float VSILimitMultiplier = 1F;
+    public float oilIndicatorModelMaxRot = 1F;
+    public float RPMIndicatorModelMaxRot = 1F;
+    public float waterIndicatorModelMaxRot = 1F;
 
     /** Valkyrie joint geometry, indexed like {@link ValkyrieAnimation} joints. Used when the type sets Valkyrie. */
     public ModelRendererTurbo[][] valkyrie = new ModelRendererTurbo[0][0];
@@ -126,9 +155,56 @@ public class ModelPlane extends ModelDriveable
         if (driveable.isPartDrawn(EnumDriveablePart.CORE))
             renderWithRotation(hudModel, RotationAxis.X, -state.roll() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE))
+            renderInstruments(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+
         if (driveable.isPartDrawn(EnumDriveablePart.CORE) && driveable instanceof PlaneVisual plane && plane.getValkyrieAnimation() != null && valkyrie.length > 0)
             renderValkyriePart(plane, state, plane.getValkyrieAnimation().getCore(), null, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderRegisteredGuns(driveable, state, GunMountFilter.ALL, GunYawConvention.PLANE, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+    }
+
+    /** Cockpit gauges and the control stick. Oil and water needles read the simulated engine heat. */
+    private void renderInstruments(DriveableVisual driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
+        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        Entity entity = driveable instanceof Entity value ? value : null;
+        float height = entity == null ? 0F : (float) entity.getY();
+        float speed = entity == null ? 0F : (float) entity.getDeltaMovement().length() * 20F;
+        float throttle = state.throttle();
+        float fuel = driveable.getDriveableData() != null && driveable.getConfigType() != null && driveable.getConfigType().getFuelTankSize() > 0
+            ? driveable.getDriveableData().getFuelInTank() / driveable.getConfigType().getFuelTankSize()
+            : 0F;
+        float yawFlap = driveable instanceof PlaneVisual plane ? plane.getFlapYaw() * Mth.DEG_TO_RAD : 0F;
+        float leftPitch = driveable instanceof PlaneVisual plane ? plane.getFlapPitchLeft() * Mth.DEG_TO_RAD : 0F;
+        float rightPitch = driveable instanceof PlaneVisual plane ? plane.getFlapPitchRight() * Mth.DEG_TO_RAD : 0F;
+        float dayTicks = entity == null ? 0F : entity.level().getDayTime();
+
+        RotationAxis x = RotationAxis.X;
+        renderWithRotation(throttleModel, RotationAxis.Z, throttle * throttleModelMaxRot * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(fuelIndicatorModel, x, -fuel * fuelIndicatorModelMaxRot * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(altimeterIndicatorModel1, x, -height / 160F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(altimeterIndicatorModel2, x, -height / 1600F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(compassIndicatorModel, x, -state.yaw() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(airspeedIndicatorModel, x, -speed * speedTypeMutliplier * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(turnCoordinatorModel, x, -yawFlap, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(VSIndicatorModel, x, speed * 0.86898F * Mth.sin(state.pitch() * Mth.DEG_TO_RAD) * 0.5144F * VSILimitMultiplier * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight,
+            packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(oilIndicatorModel, x, -state.oilHeat() * oilIndicatorModelMaxRot * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(RPMIndicatorModel, x, -throttle * RPMIndicatorModelMaxRot * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(waterIndicatorModel, x, -state.waterHeat() * waterIndicatorModelMaxRot * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(timeIndicatorModel, x, -dayTicks / 1200F / Mth.PI, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        ModelRendererTurbo.renderRotated(controlStickModel, -yawFlap - rightPitch + leftPitch, 0F, -(rightPitch + leftPitch) / 2F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
+            alpha, scale, renderPass, oldRotateOrder);
+    }
+
+    /** Item and preview renders show landing flaps and wheel covers at their attachment points. */
+    private void renderRestingCoversAndFlaps(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        EnumRenderPass renderPass)
+    {
+        renderPartAt(leftAnimWingFlapModel, leftWingFlapAttach, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPartAt(rightAnimWingFlapModel, rightWingFlapAttach, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPartAt(bodyAnimCoverModel1, bodyCover1Attach, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPartAt(bodyAnimCoverModel2, bodyCover2Attach, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
     private void renderIfIntact(DriveableVisual driveable, EnumDriveablePart part, ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
@@ -168,6 +244,20 @@ public class ModelPlane extends ModelDriveable
         renderPart(leftWingPos1Model, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(rightWingPos1Model, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(hudModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(throttleModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(fuelIndicatorModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(altimeterIndicatorModel1, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(altimeterIndicatorModel2, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(compassIndicatorModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(airspeedIndicatorModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(turnCoordinatorModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(VSIndicatorModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(oilIndicatorModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(RPMIndicatorModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(waterIndicatorModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(timeIndicatorModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(controlStickModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderRestingCoversAndFlaps(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(yawFlapModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(pitchFlapLeftModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(pitchFlapRightModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -269,6 +359,20 @@ public class ModelPlane extends ModelDriveable
     {
         if (!(driveable.getConfigType() instanceof PlaneType planeType))
             return;
+
+        if (driveable.isPartDrawn(EnumDriveablePart.LEFT_WING))
+            renderConfigured(leftAnimWingFlapModel, leftWingFlapAttach, state.wingFlapTransform(), state.partialTick(), false, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
+                alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.RIGHT_WING))
+            renderConfigured(rightAnimWingFlapModel, rightWingFlapAttach, state.wingFlapTransform(), state.partialTick(), true, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
+                alpha, scale, renderPass);
+        if (driveable.isPartDrawn(EnumDriveablePart.CORE_WHEEL))
+        {
+            renderConfigured(bodyAnimCoverModel1, bodyCover1Attach, state.wheelCoverTransform(), state.partialTick(), false, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
+                alpha, scale, renderPass);
+            renderConfigured(bodyAnimCoverModel2, bodyCover2Attach, state.wheelCoverTransform(), state.partialTick(), true, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
+                alpha, scale, renderPass);
+        }
 
         if (driveable.isPartDrawn(EnumDriveablePart.LEFT_WING))
             renderConfigured(leftAnimWingModel, leftWingAttach, state.wingTransform(), state.partialTick(), false, true, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
@@ -500,6 +604,23 @@ public class ModelPlane extends ModelDriveable
         flip(leftWingPos1Model);
         flip(leftWingPos2Model);
         flip(hudModel);
+        flip(throttleModel);
+        flip(fuelIndicatorModel);
+        flip(altimeterIndicatorModel1);
+        flip(altimeterIndicatorModel2);
+        flip(compassIndicatorModel);
+        flip(airspeedIndicatorModel);
+        flip(turnCoordinatorModel);
+        flip(VSIndicatorModel);
+        flip(oilIndicatorModel);
+        flip(RPMIndicatorModel);
+        flip(waterIndicatorModel);
+        flip(timeIndicatorModel);
+        flip(controlStickModel);
+        flip(leftAnimWingFlapModel);
+        flip(rightAnimWingFlapModel);
+        flip(bodyAnimCoverModel1);
+        flip(bodyAnimCoverModel2);
         flip(leftAnimWingModel);
         flip(rightAnimWingModel);
         flip(bodyAnimWheelModel);
@@ -542,6 +663,23 @@ public class ModelPlane extends ModelDriveable
         translate(leftWingPos1Model, x, y, z);
         translate(leftWingPos2Model, x, y, z);
         translate(hudModel, x, y, z);
+        translate(throttleModel, x, y, z);
+        translate(fuelIndicatorModel, x, y, z);
+        translate(altimeterIndicatorModel1, x, y, z);
+        translate(altimeterIndicatorModel2, x, y, z);
+        translate(compassIndicatorModel, x, y, z);
+        translate(airspeedIndicatorModel, x, y, z);
+        translate(turnCoordinatorModel, x, y, z);
+        translate(VSIndicatorModel, x, y, z);
+        translate(oilIndicatorModel, x, y, z);
+        translate(RPMIndicatorModel, x, y, z);
+        translate(waterIndicatorModel, x, y, z);
+        translate(timeIndicatorModel, x, y, z);
+        translate(controlStickModel, x, y, z);
+        translate(leftAnimWingFlapModel, x, y, z);
+        translate(rightAnimWingFlapModel, x, y, z);
+        translate(bodyAnimCoverModel1, x, y, z);
+        translate(bodyAnimCoverModel2, x, y, z);
         translate(leftAnimWingModel, x, y, z);
         translate(rightAnimWingModel, x, y, z);
         translate(bodyAnimWheelModel, x, y, z);

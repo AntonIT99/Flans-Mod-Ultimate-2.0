@@ -297,6 +297,15 @@ public final class ModCommonConfig
     private static final Supplier<Double> AIR_BRAKE_EFFECTIVENESS;
     private static final Supplier<Double> AIR_BRAKE_ASSIST_DECELERATION;
     private static final Supplier<Double> AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH;
+    private static final Supplier<Double> LANDING_FLAP_DRAG_EFFECTIVENESS;
+    private static final Supplier<Double> LANDING_FLAP_ASSIST_DECELERATION;
+    private static final Supplier<Double> LANDING_FLAP_GEAR_DRAG_MULTIPLIER;
+    private static final Supplier<Boolean> ENABLE_AFTERBURNERS;
+    private static final Supplier<Double> AFTERBURNER_JET_DRY_THRUST_RATIO;
+    private static final Supplier<Double> AFTERBURNER_PISTON_DRY_POWER_RATIO;
+    private static final Supplier<Double> AFTERBURNER_THROTTLE_DETENT;
+    private static final Supplier<Double> AFTERBURNER_SPOOL_SECONDS;
+    private static final Supplier<Double> AFTERBURNER_FUEL_MULTIPLIER;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
     private static final Supplier<Double> REALISTIC_PLANE_SPEED_SCALE;
@@ -667,6 +676,18 @@ public final class ModCommonConfig
         AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH = builder
             .comment("Speed in km/h at which air-brake assistance reaches full strength.", "Below this speed assistance fades with speed squared, independently of the aircraft lift reference speed.")
             .defineInRange("airBrakeAssistReferenceSpeedKmh", 150D, 1D, 10000D);
+        LANDING_FLAP_DRAG_EFFECTIVENESS = builder.comment("Multiplier on the drag of lowered landing flaps in both flight models; 0 disables it.").defineInRange("landingFlapDragEffectiveness", 1D, 0D, 10D);
+        LANDING_FLAP_ASSIST_DECELERATION = builder.comment("Minimum deceleration in m/s squared from lowered landing flaps at 150 km/h and above, fading with speed squared below it.",
+            "Uses the stronger of this and the drag derived from the wing area, so aircraft without real-world wing data still slow down.").defineInRange("landingFlapAssistDeceleration", 1.5D, 0D, 100D);
+        LANDING_FLAP_GEAR_DRAG_MULTIPLIER = builder.comment("Multiplier on landing flap drag while the landing gear is also down.").defineInRange("landingFlapGearDragMultiplier", 1.5D, 1D, 10D);
+        ENABLE_AFTERBURNERS = builder.comment("Enable the afterburner and war emergency power switch. Off gives aircraft that have one their full rating at all times.").define("enableAfterburners", true);
+        AFTERBURNER_JET_DRY_THRUST_RATIO = builder.comment("Share of a jet's thrust available without its afterburner, when neither RealDryThrustKn nor a cruise speed is defined.")
+            .defineInRange("afterburnerJetDryThrustRatio", 0.62D, 0.05D, 1D);
+        AFTERBURNER_PISTON_DRY_POWER_RATIO = builder.comment("Share of a propeller engine's power available without war emergency power, when neither RealDryPowerHp nor a cruise speed is defined.")
+            .defineInRange("afterburnerPistonDryPowerRatio", 0.87D, 0.05D, 1D);
+        AFTERBURNER_THROTTLE_DETENT = builder.comment("Throttle from which an armed afterburner lights, from 0 to 1.").defineInRange("afterburnerThrottleDetent", 0.95D, 0D, 1D);
+        AFTERBURNER_SPOOL_SECONDS = builder.comment("Seconds an afterburner takes to reach and to lose its full extra thrust.").defineInRange("afterburnerSpoolSeconds", 2D, 0D, 30D);
+        AFTERBURNER_FUEL_MULTIPLIER = builder.comment("Multiplier on each aircraft's AfterBurnFuelPenalty.").defineInRange("afterburnerFuelMultiplier", 1D, 0D, 10D);
         REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder.comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
             "This changes the speed at which lift equals weight, so it affects takeoff, low-speed lift and stall-like behaviour together.",
             "0.5 halves the physically derived reference speed for shorter Minecraft runways; 1.0 keeps the physical result.", "Legacy aircraft, helicopters, VTOL and six-DOF craft are unaffected.")
@@ -839,7 +860,8 @@ public final class ModCommonConfig
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
             FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(),
             AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get(), ENABLE_REALISTIC_AIRCRAFT_DAMAGE.get(), VEHICLE_SCREEN_SHAKE.get(), GUN_SCREEN_SHAKE.get(), EXPLOSION_SCREEN_SHAKE.get(),
-            EXPLOSION_SHAKE_INTENSITY.get(), EXPLOSION_SHAKE_DURATION.get(), SUPPRESSION_DURATION.get(), SUPPRESSION_CAMERA_ROLL.get(), SUPPRESSION_VIGNETTE.get());
+            EXPLOSION_SHAKE_INTENSITY.get(), EXPLOSION_SHAKE_DURATION.get(), SUPPRESSION_DURATION.get(), SUPPRESSION_CAMERA_ROLL.get(), SUPPRESSION_VIGNETTE.get(), LANDING_FLAP_DRAG_EFFECTIVENESS.get(), LANDING_FLAP_ASSIST_DECELERATION.get(), LANDING_FLAP_GEAR_DRAG_MULTIPLIER.get(), ENABLE_AFTERBURNERS.get(), AFTERBURNER_JET_DRY_THRUST_RATIO.get(), AFTERBURNER_PISTON_DRY_POWER_RATIO.get(), AFTERBURNER_THROTTLE_DETENT.get(),
+            AFTERBURNER_SPOOL_SECONDS.get(), AFTERBURNER_FUEL_MULTIPLIER.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1008,6 +1030,60 @@ public final class ModCommonConfig
     {
         var config = get();
         return config == null ? 150D : config.airBrakeAssistReferenceSpeedKmh();
+    }
+
+    public static double afterburnerJetDryThrustRatio()
+    {
+        var config = get();
+        return config == null ? 0.62D : config.afterburnerJetDryThrustRatio();
+    }
+
+    public static double afterburnerPistonDryPowerRatio()
+    {
+        var config = get();
+        return config == null ? 0.87D : config.afterburnerPistonDryPowerRatio();
+    }
+
+    public static double afterburnerThrottleDetent()
+    {
+        var config = get();
+        return config == null ? 0.95D : config.afterburnerThrottleDetent();
+    }
+
+    public static double afterburnerSpoolSeconds()
+    {
+        var config = get();
+        return config == null ? 2D : config.afterburnerSpoolSeconds();
+    }
+
+    public static double afterburnerFuelMultiplier()
+    {
+        var config = get();
+        return config == null ? 1D : config.afterburnerFuelMultiplier();
+    }
+
+    public static boolean enableAfterburners()
+    {
+        var config = get();
+        return config == null || config.enableAfterburners();
+    }
+
+    public static double landingFlapDragEffectiveness()
+    {
+        var config = get();
+        return config == null ? 1D : config.landingFlapDragEffectiveness();
+    }
+
+    public static double landingFlapAssistDeceleration()
+    {
+        var config = get();
+        return config == null ? 1.5D : config.landingFlapAssistDeceleration();
+    }
+
+    public static double landingFlapGearDragMultiplier()
+    {
+        var config = get();
+        return config == null ? 1.5D : config.landingFlapGearDragMultiplier();
     }
 
     /** Server-authoritative arcade scale for derived fixed-wing lift and takeoff speed. */

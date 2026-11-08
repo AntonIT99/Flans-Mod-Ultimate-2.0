@@ -290,6 +290,10 @@ Every aircraft category requires:
 | `RealWingAreaM2` | m², finite and > 0 | Planform/reference area, not span squared or legacy `WingArea`. |
 | exactly one of `RealEnginePowerKw`, `RealEnginePowerHp`, `RealEnginePowerPS`, or `RealEngineThrustKn` | source unit, finite and > 0 | Use shaft power for piston/turboprop craft and kN thrust for jets. Do not confuse kN, N, and kgf. |
 | `RealClimbRateMs` | m/s, finite and > 0 | Sustained climb corresponding as closely as practical to selected mass and engine setting; not zoom climb. |
+| `HasAfterBurner` | `"true"`/`"false"`, optional | Whether the exact variant has reheat, water injection or an emergency power rating. `"false"` overrides a pack that claims one the aircraft never had. |
+| `RealDryThrustKn`, `RealDryPowerKw`, `RealDryPowerHp` or `RealDryPowerPS` | same source unit as the engine rating, optional | Unboosted rating: military thrust, or the highest rating usable without emergency boost. The engine rating and `RealMaxSpeedKmh` are then the **boosted** maxima; the unboosted top speed follows from it. |
+| `AfterBurnFuelPenalty` | ratio, optional | Boosted fuel flow relative to unboosted fuel flow at full throttle. Category values replace pack values. |
+| `AfterBurnName` | text, optional | HUD label, such as `Afterburner`, `WEP` or `Water Injection`. |
 | `RealTurnRateDegPerSec` | ground heading degrees/second, finite and > 0 | Full-input taxi turn rate at 10 km/h. It overrides ground yaw only, not flight rudder, banked-turn performance or rotor hover yaw. |
 
 Aircraft categories do not use the ground-vehicle armour keys.

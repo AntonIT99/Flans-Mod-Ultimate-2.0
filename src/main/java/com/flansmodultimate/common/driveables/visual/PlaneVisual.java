@@ -9,6 +9,16 @@ public interface PlaneVisual extends DriveableVisual
 {
     EnumPlaneMode getPlaneMode();
 
+    default boolean isAfterburnerBurning()
+    {
+        return false;
+    }
+
+    default boolean isLandingFlapsDeployed()
+    {
+        return false;
+    }
+
     float getPropellerAngle();
 
     float getPrevPropellerAngle();

@@ -1255,6 +1255,13 @@ public final class ClientHudOverlays
             g.drawString(font, Component.translatable(airBrakeOn ? "hud.flansmodultimate.driveable.air_brake.on" : "hud.flansmodultimate.driveable.air_brake.off"), leftX, y,
                 airBrakeOn ? HUD_GOLD : HUD_WHITE, false);
         }
+        if (driveable instanceof Plane plane && plane.getPlaneType() != null && plane.getPlaneType().isHasAfterBurner() && ModCommonConfig.enableAfterburners())
+        {
+            boolean armed = plane.isAfterburnerArmed();
+            y += LEGACY_HUD_LINE_HEIGHT;
+            g.drawString(font, Component.translatable(armed ? "hud.flansmodultimate.driveable.afterburner.on" : "hud.flansmodultimate.driveable.afterburner.off", plane.getPlaneType().getAfterBurnName()),
+                leftX, y, plane.isAfterburnerBurning() ? HUD_GOLD : HUD_WHITE, false);
+        }
         AircraftCockpit.renderWarnings(driveable, g, font, leftX, y + LEGACY_HUD_LINE_HEIGHT, LEGACY_HUD_LINE_HEIGHT);
 
         boolean isVehicle = driveable instanceof Vehicle;

@@ -43,6 +43,7 @@ import java.util.*;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Plane extends Driveable implements PlaneVisual
 {
+    private float afterburnerSpool;
     private int stukaSoundDelay;
     private static final Vec3 MODEL_FLIGHT_FORWARD = LegacyDriveableCoordinates.applyPlaneModelFacing(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
     private static final Vec3 MODEL_FLIGHT_UP = LegacyDriveableCoordinates.toLocal(new Vec3(0D, 1D, 0D));
@@ -285,6 +286,78 @@ public class Plane extends Driveable implements PlaneVisual
             ModCommonConfig.airBrakeAssistReferenceSpeedKmh(), type.getAirBrakeStrengthMultiplier());
     }
 
+    private boolean simulatesAfterburner(@Nullable PlaneType type)
+    {
+        return type != null && type.isHasAfterBurner() && ModCommonConfig.enableAfterburners();
+    }
+
+    /** Lit once armed and at the top of the throttle range. Pilots that are not players have no switch to arm. */
+    @Override
+    public boolean isAfterburnerBurning()
+    {
+        if (!simulatesAfterburner(getPlaneType()) || !isEngineActive() || getThrottle() < ModCommonConfig.afterburnerThrottleDetent())
+            return false;
+        return isAfterburnerArmed() || (getControllingEntity() != null && !(getControllingEntity() instanceof Player));
+    }
+
+    private void advanceAfterburnerSpool()
+    {
+        float step = 1F / (Math.max(0.05F, (float) ModCommonConfig.afterburnerSpoolSeconds()) * 20F);
+        afterburnerSpool = Mth.clamp(afterburnerSpool + (isAfterburnerBurning() ? step : -step), 0F, 1F);
+    }
+
+    /** Share of the engine rating in use. Drag stays calibrated to the boosted rating, so the lower top speed follows from it. */
+    private double derivedAfterburnerShare(PlaneType type, double thrustKn, double powerKw)
+    {
+        advanceAfterburnerSpool();
+        if (!simulatesAfterburner(type))
+            return 1D;
+        boolean jet = thrustKn > 0D;
+        double dryShare = AircraftPerformancePhysics.afterburnerDryShare(jet ? type.getRealDryThrustKn() : type.getRealDryPowerKw(), jet ? thrustKn : powerKw, type.getAfterburnCruiseRatio(), jet,
+            jet ? ModCommonConfig.afterburnerJetDryThrustRatio() : ModCommonConfig.afterburnerPistonDryPowerRatio());
+        return dryShare + (1D - dryShare) * afterburnerSpool;
+    }
+
+    private float legacyAfterburnerShare(PlaneType type)
+    {
+        advanceAfterburnerSpool();
+        if (!simulatesAfterburner(type) || type.getAfterburnCruiseRatio() <= 0F)
+            return 1F;
+        return type.getAfterburnCruiseRatio() + (1F - type.getAfterburnCruiseRatio()) * afterburnerSpool;
+    }
+
+    @Override
+    protected void consumeFuel(float load)
+    {
+        PlaneType type = getPlaneType();
+        float penalty = simulatesAfterburner(type) ? type.getAfterBurnFuelPenalty() * (float) ModCommonConfig.afterburnerFuelMultiplier() : 1F;
+        super.consumeFuel(load * Math.max(0F, 1F + (penalty - 1F) * afterburnerSpool));
+    }
+
+    @Override
+    protected void toggleAfterburner(@NotNull Player player)
+    {
+        PlaneType type = getPlaneType();
+        if (!simulatesAfterburner(type))
+            return;
+        boolean armed = !isAfterburnerArmed();
+        setAfterburnerArmed(armed);
+        player.displayClientMessage(Component.translatable(armed ? "message.flansmodultimate.driveable.afterburner.on" : "message.flansmodultimate.driveable.afterburner.off", type.getAfterBurnName()), true);
+        if (type.isAfterburnWing())
+            setWingFolded(armed);
+        else if (type.isAfterburnWingFlipped())
+            setWingFolded(!armed);
+    }
+
+    private double landingFlapDecelerationMs2(PlaneType type, double speedMs)
+    {
+        if (!isLandingFlapsDeployed() || !type.hasLandingFlaps())
+            return 0D;
+        Float wingArea = type.getResolvedPhysics().source().aircraft().effectiveWingAreaM2();
+        return AircraftPerformancePhysics.landingFlapDecelerationMs2(speedMs, wingArea == null ? 0D : wingArea, type.getResolvedPhysics().massKg(), ModCommonConfig.dragFactor(level()),
+            ModCommonConfig.landingFlapDragEffectiveness(), ModCommonConfig.landingFlapAssistDeceleration(), isGearDeployed(), ModCommonConfig.landingFlapGearDragMultiplier());
+    }
+
     /** Retracted gear is stowed inside the airframe, so it cannot be shot. */
     @Override
     public boolean canHitPart(@Nullable EnumDriveablePart part)
@@ -311,6 +384,11 @@ public class Plane extends Driveable implements PlaneVisual
         {
             setWingFolded(!isWingFolded());
             player.displayClientMessage(Component.translatable("message.flansmodultimate.driveable.wings.switched"), true);
+        }
+        if (type.getMode() == EnumPlaneMode.PLANE && type.hasLandingFlaps())
+        {
+            setLandingFlapsDeployed(!isLandingFlapsDeployed());
+            player.displayClientMessage(Component.translatable(isLandingFlapsDeployed() ? "message.flansmodultimate.driveable.landing_flaps.down" : "message.flansmodultimate.driveable.landing_flaps.up"), true);
         }
         if (type.getMode() == EnumPlaneMode.VTOL)
         {
@@ -969,7 +1047,7 @@ public class Plane extends Driveable implements PlaneVisual
 
         float throttle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
         float effectiveThrottle = effectivePropellerThrottle(type, throttle);
-        float engine = engineThrustShare();
+        float engine = engineThrustShare() * legacyAfterburnerShare(type);
         float thrust = LegacyPlanePhysics.thrust(effectiveThrottle, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater()) * engine;
         float drag = Math.max(0F, LegacyPlanePhysics.drag(type.getDrag()) - (float) Math.sqrt(angularYaw * angularYaw + angularPitch * angularPitch + angularRoll * angularRoll) / 100F);
         double speed = Math.min(current.length(), type.isNewFlightControl() ? type.getMaxSpeed() : 2D);
@@ -995,7 +1073,8 @@ public class Plane extends Driveable implements PlaneVisual
         if (brakeSpeed > 0D)
         {
             double loss = VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(
-                airBrakeDecelerationMs2(type, VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(brakeSpeed)));
+                airBrakeDecelerationMs2(type, VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(brakeSpeed))
+                    + landingFlapDecelerationMs2(type, VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(brakeSpeed)));
             velocity = velocity.scale(Math.max(0D, brakeSpeed - loss) / brakeSpeed);
         }
         if (isWingFolded())
@@ -1213,7 +1292,8 @@ public class Plane extends Driveable implements PlaneVisual
         // The lever meters power at the default exponent of one; the config can
         // bend it toward a speed-linear response instead.
         double throttleDemand = AircraftPerformancePhysics.throttleThrustFactor(throttle, ModCommonConfig.realisticAircraftThrottleResponse());
-        double thrustNewtons = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, airspeedMs, terminalMs) * throttleDemand * propellerFraction * engineThrustShare();
+        double afterburnerShare = derivedAfterburnerShare(type, thrustKn, powerKw);
+        double thrustNewtons = AircraftPerformancePhysics.thrustNewtons(thrustKn * afterburnerShare, powerKw * afterburnerShare, airspeedMs, terminalMs) * throttleDemand * propellerFraction * engineThrustShare();
 
         // The angle between the nose and the flight path is the angle of attack
         // the model otherwise lacks, so it is what decides how hard the wing is
@@ -1259,6 +1339,7 @@ public class Plane extends Driveable implements PlaneVisual
         // Air brakes apply the stronger of physical drag and configured assist;
         // both increase with speed and vanish at a standstill.
         accelerationMs2 -= airBrakeDecelerationMs2(type, airspeedMs);
+        accelerationMs2 -= landingFlapDecelerationMs2(type, airspeedMs);
         double newSpeed = Math.max(0D, airspeedBlocksPerTick + VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(accelerationMs2));
         newSpeed = Math.min(newSpeed, terminalBlocksPerTick * (type.isSupersonic() ? 1.2D : 1D));
         // A closed throttle below walking pace on the ground is parked. Without

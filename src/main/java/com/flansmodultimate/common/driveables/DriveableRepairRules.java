@@ -16,7 +16,7 @@ public final class DriveableRepairRules
     {
         return switch (type)
         {
-            case ERA, ERA_2, ERA_3, APS, ADS -> maximum;
+            case ERA, ERA_1, ERA_2, ERA_3, APS, ADS -> maximum;
             default -> Math.min(maximum, Math.max(1F, maximum * 0.1F));
         };
     }

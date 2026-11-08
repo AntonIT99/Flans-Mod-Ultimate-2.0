@@ -164,6 +164,10 @@ public final class VehiclePhysicsConstants
      * flat plate, which is where the 1.2 comes from.
      */
     public static final double AIR_BRAKE_DRAG_COEFFICIENT = 1.2D;
+    /** Extra drag coefficient of fully lowered landing flaps, referred to the wing area. */
+    public static final double LANDING_FLAP_DRAG_COEFFICIENT = 0.08D;
+    /** Speed at which the landing flap drag assistance reaches full strength. */
+    public static final double LANDING_FLAP_ASSIST_REFERENCE_SPEED_KMH = 150D;
     /**
      * Air brake area as a fraction of wing area, used when a pack does not state
      * {@code RealAirBrakeAreaM2}. Real speed brake installations sit in the low

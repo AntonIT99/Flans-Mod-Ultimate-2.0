@@ -185,10 +185,19 @@ public record CommonConfigSnapshot(
     double explosionShakeDuration,
     double suppressionDuration,
     double suppressionCameraRoll,
-    double suppressionVignette
+    double suppressionVignette,
+    double landingFlapDragEffectiveness,
+    double landingFlapAssistDeceleration,
+    double landingFlapGearDragMultiplier,
+    boolean enableAfterburners,
+    double afterburnerJetDryThrustRatio,
+    double afterburnerPistonDryPowerRatio,
+    double afterburnerThrottleDetent,
+    double afterburnerSpoolSeconds,
+    double afterburnerFuelMultiplier
 )
 {
-    public static final int CURRENT_VERSION = 54;
+    public static final int CURRENT_VERSION = 56;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -381,6 +390,15 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.suppressionDuration);
         buf.writeDouble(s.suppressionCameraRoll);
         buf.writeDouble(s.suppressionVignette);
+        buf.writeDouble(s.landingFlapDragEffectiveness);
+        buf.writeDouble(s.landingFlapAssistDeceleration);
+        buf.writeDouble(s.landingFlapGearDragMultiplier);
+        buf.writeBoolean(s.enableAfterburners);
+        buf.writeDouble(s.afterburnerJetDryThrustRatio);
+        buf.writeDouble(s.afterburnerPistonDryPowerRatio);
+        buf.writeDouble(s.afterburnerThrottleDetent);
+        buf.writeDouble(s.afterburnerSpoolSeconds);
+        buf.writeDouble(s.afterburnerFuelMultiplier);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -559,6 +577,15 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
             buf.readBoolean(),
             buf.readDouble(),
             buf.readDouble(),

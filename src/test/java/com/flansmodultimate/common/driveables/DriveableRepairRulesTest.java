@@ -29,7 +29,7 @@ class DriveableRepairRulesTest
     {
         assertEquals(115F, DriveableRepairRules.rebuildHealth(EnumDriveablePart.CORE, 1150F));
         assertEquals(0.5F, DriveableRepairRules.rebuildHealth(EnumDriveablePart.CORE, 0.5F));
-        for (EnumDriveablePart type : new EnumDriveablePart[]{EnumDriveablePart.ERA, EnumDriveablePart.ERA_2, EnumDriveablePart.ERA_3, EnumDriveablePart.APS, EnumDriveablePart.ADS})
+        for (EnumDriveablePart type : new EnumDriveablePart[]{EnumDriveablePart.ERA, EnumDriveablePart.ERA_1, EnumDriveablePart.ERA_2, EnumDriveablePart.ERA_3, EnumDriveablePart.APS, EnumDriveablePart.ADS})
             assertEquals(1150F, DriveableRepairRules.rebuildHealth(type, 1150F));
     }
 

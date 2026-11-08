@@ -24,6 +24,11 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     @Getter
     protected GunType type;
 
+    /** First-person gun position adjustments, which fade out towards the sights while aiming */
+    protected float offsetX;
+    protected float offsetY;
+    protected float offsetZ;
+
     /** Static models with no animation */
     protected ModelRendererTurbo[] gunModel = new ModelRendererTurbo[0];
     protected ModelRendererTurbo[] backpackModel = new ModelRendererTurbo[0]; // For flamethrowers and such like. Rendered on the player's back
