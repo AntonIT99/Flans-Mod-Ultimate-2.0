@@ -4,8 +4,7 @@ import com.flansmodultimate.content.IContentProvider;
 import com.wolffsmod.api.client.model.IModelBase;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
+import java.nio.file.*;
 
 /**
  * Loads legacy model classes from the class files of one content pack.
@@ -83,6 +82,10 @@ public final class ContentPackClassLoader extends ClassLoader
         try
         {
             return Files.readAllBytes(contentProvider.getModelPath(className, fs));
+        }
+        catch (InvalidPathException e)
+        {
+            throw new IOException(className + " is no legal class file path in " + contentProvider.getPath(), e);
         }
         finally
         {

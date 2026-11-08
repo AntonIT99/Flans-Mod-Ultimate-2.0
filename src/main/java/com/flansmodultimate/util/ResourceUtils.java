@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ResourceUtils
@@ -22,6 +23,12 @@ public final class ResourceUtils
     private static final String ITEM_INFIX = ":item/";
     private static final String MODEL_ITEM_GENERATED = "minecraft:item/generated";
     private static final String KEY_LAYER0 = "layer0";
+    /**
+     * Characters that cannot occur in a file name on the platforms Minecraft runs on, so no asset this
+     * mod reads is named with them. Dropping them instead of replacing them lets a definition that
+     * pasted them in, such as {@code Navalgun_3rdYear:Type}, still name the file it means.
+     */
+    private static final Pattern IMPOSSIBLE_IN_FILE_NAMES = Pattern.compile("[:*?\"<>|/\\\\]");
 
     /** Recognize only the basic cube shape emitted by this mod, so authored geometry survives regeneration. */
     public static boolean isGeneratedBlockModel(JsonObject model)
@@ -38,7 +45,7 @@ public final class ResourceUtils
         if (name == null)
             return StringUtils.EMPTY;
         // Lowercase + swap spaces; keep only chars valid in resource paths
-        return name.toLowerCase(Locale.ROOT).replace(' ', '_').replaceAll("[^a-z0-9._\\-]", "_");
+        return IMPOSSIBLE_IN_FILE_NAMES.matcher(name.toLowerCase(Locale.ROOT)).replaceAll(StringUtils.EMPTY).replace(' ', '_').replaceAll("[^a-z0-9._\\-]", "_");
     }
 
     public static String sanitizeFileNameStem(@Nullable String name)

@@ -576,6 +576,44 @@ public abstract class InfoType implements IContentType
     }
 
     /**
+     * Whether a {@code Model} entry can name a class at all. Definitions are written by hand, and a name
+     * carrying characters no Java name holds, such as a colon or a path separator, names no class file in
+     * any pack; resolving it anyway would build a path that platforms like Windows reject outright.
+     * <p>
+     * Leading digits stay allowed: the resolved class names prefix the entry with {@code Model}.
+     */
+    static boolean isValidModelName(String modelName)
+    {
+        if (modelName.isEmpty() || modelName.startsWith(".") || modelName.endsWith(".") || modelName.contains(".."))
+            return false;
+
+        for (int i = 0; i < modelName.length(); i++)
+        {
+            char character = modelName.charAt(i);
+            if (character != '.' && !Character.isJavaIdentifierPart(character))
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Drops the characters a {@code Model} entry cannot hold, so a name a pack author pasted its display
+     * name into, such as {@code 155mm_3rdYear:Type} for {@code Model155mm_3rdYearType}, still finds its
+     * class. Only characters no class and no file name can carry are removed, never legal ones.
+     */
+    private static String repairModelName(String modelName)
+    {
+        StringBuilder repaired = new StringBuilder(modelName.length());
+        for (int i = 0; i < modelName.length(); i++)
+        {
+            char character = modelName.charAt(i);
+            if (character == '.' || Character.isJavaIdentifierPart(character))
+                repaired.append(character);
+        }
+        return repaired.toString();
+    }
+
+    /**
      * Resolves the model class name a {@code Model} entry refers to inside its own content pack. Content
      * packs are free to ship equally named model classes, every pack loads its own class files.
      */
@@ -584,7 +622,19 @@ public abstract class InfoType implements IContentType
         String modelClassName = StringUtils.EMPTY;
         if (StringUtils.isNotBlank(modelName) && !modelName.equalsIgnoreCase("null") && !modelName.equalsIgnoreCase("none"))
         {
-            String[] modelNameSplit = modelName.split("\\.");
+            String resolvedModelName = modelName;
+            if (!isValidModelName(resolvedModelName))
+            {
+                resolvedModelName = repairModelName(modelName);
+                if (!isValidModelName(resolvedModelName))
+                {
+                    FlansLog.log.error("'{}' of content pack {} cannot name a model class; no model is loaded for it.", modelName, contentPack.getName());
+                    return StringUtils.EMPTY;
+                }
+                FlansLog.log.warn("Model '{}' of content pack {} carries characters no class name holds; reading it as '{}'.", modelName, contentPack.getName(), resolvedModelName);
+            }
+
+            String[] modelNameSplit = resolvedModelName.split("\\.");
             Optional<FileSystem> fs = Optional.ofNullable(FileUtils.createFileSystem(contentPack));
 
             if (modelNameSplit.length > 1)
@@ -594,7 +644,7 @@ public abstract class InfoType implements IContentType
                 modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + MODEL_CLASS_PREFIX + modelSimpleName;
 
                 // Try 1.12.2 package format
-                if (!Files.exists(contentPack.getModelPath(modelClassName, fs.orElse(null))))
+                if (!contentPack.hasModelPath(modelClassName, fs.orElse(null)))
                 {
                     if (modelNameSplit[0].equals("jamespostmodernweapons"))
                         modelNameSplit[0] = "modernweapons";
@@ -623,13 +673,13 @@ public abstract class InfoType implements IContentType
                     }
 
                     // Fallback to default
-                    if (!Files.exists(contentPack.getModelPath(modelClassName, fs.orElse(null))))
+                    if (!contentPack.hasModelPath(modelClassName, fs.orElse(null)))
                         modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + MODEL_CLASS_PREFIX + modelSimpleName;
                 }
             }
             else
             {
-                modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model.Model" + modelName;
+                modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model.Model" + resolvedModelName;
             }
 
             FileUtils.closeFileSystem(fs.orElse(null), contentPack);

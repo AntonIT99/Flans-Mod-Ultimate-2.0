@@ -6,9 +6,7 @@ import com.flansmodultimate.util.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.Locale;
 
 /** Internal side of a content pack: where and how it is loaded. */
@@ -132,6 +130,23 @@ public interface IContentProvider extends IContentPack
             return fs.getPath("/" + modelFullClassName.replace(".", "/") + FileUtils.CLASS_EXTENSION);
         }
         return getPath().resolve(modelFullClassName.replace(".", "/") + FileUtils.CLASS_EXTENSION);
+    }
+
+    /**
+     * Whether this provider ships the named model class. Model class names come from content-pack
+     * definitions, so a name no platform accepts as a path resolves to no class file here instead
+     * of failing the caller with an {@link InvalidPathException}.
+     */
+    default boolean hasModelPath(String modelFullClassName, @Nullable FileSystem fs)
+    {
+        try
+        {
+            return Files.exists(getModelPath(modelFullClassName, fs));
+        }
+        catch (InvalidPathException e)
+        {
+            return false;
+        }
     }
 
     boolean equals(Object obj);

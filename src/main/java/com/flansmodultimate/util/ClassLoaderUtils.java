@@ -9,8 +9,7 @@ import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
+import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -118,6 +117,11 @@ public final class ClassLoaderUtils
         try
         {
             return (contentProvider.isDirectory() || contentProvider.isArchive()) && Files.isRegularFile(contentProvider.getModelPath(className, fs));
+        }
+        // A name read from a content pack may be no legal path on this platform, and then names no class file.
+        catch (InvalidPathException e)
+        {
+            return false;
         }
         finally
         {
