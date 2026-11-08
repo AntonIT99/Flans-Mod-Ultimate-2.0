@@ -70,6 +70,7 @@ public record CommonConfigSnapshot(
     boolean cancelReloadOnWeaponSwitch,
     boolean combineAmmoOnReload,
     boolean ammoToUpperInventoryOnReload,
+    boolean preferOffhandAmmoOnReload,
     boolean realisticRecoil,
     boolean enableSightDownwardMovement,
     boolean disableSprintHipFireByDefault,
@@ -254,6 +255,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.cancelReloadOnWeaponSwitch);
         buf.writeBoolean(s.combineAmmoOnReload);
         buf.writeBoolean(s.ammoToUpperInventoryOnReload);
+        buf.writeBoolean(s.preferOffhandAmmoOnReload);
         buf.writeBoolean(s.realisticRecoil);
         buf.writeBoolean(s.enableSightDownwardMovement);
         buf.writeBoolean(s.disableSprintHipFireByDefault);
@@ -444,6 +446,7 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),

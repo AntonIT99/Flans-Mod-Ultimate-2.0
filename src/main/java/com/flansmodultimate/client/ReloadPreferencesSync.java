@@ -23,6 +23,6 @@ public final class ReloadPreferencesSync
         if (config == null || minecraft.getConnection() == null)
             return;
 
-        PacketHandler.sendToServer(new PacketReloadPreferences(config.combineAmmoOnReload, config.ammoToUpperInventoryOnReload));
+        PacketHandler.sendToServer(new PacketReloadPreferences(config.combineAmmoOnReload, config.ammoToUpperInventoryOnReload, config.preferOffhandAmmoOnReload));
     }
 }

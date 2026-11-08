@@ -138,6 +138,7 @@ public final class ModClientConfig
 
     public final boolean combineAmmoOnReload;
     public final boolean ammoToUpperInventoryOnReload;
+    public final boolean preferOffhandAmmoOnReload;
 
     public final boolean enableArms;
     public final EnumAimPose aimPose;
@@ -296,6 +297,7 @@ public final class ModClientConfig
 
     private static final Supplier<Boolean> COMBINE_AMMO_ON_RELOAD;
     private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
+    private static final Supplier<Boolean> PREFER_OFFHAND_AMMO_ON_RELOAD;
 
     private static final Supplier<Boolean> ENABLE_ARMS;
     public static final EnumValue<EnumAimPose> AIM_POSE;
@@ -367,8 +369,7 @@ public final class ModClientConfig
             readouts, team information and the kill feed. The vanilla HUD is not affected.
             """).define("showFlansHud", true);
         SHOW_TEAMS_CONTROLS = builder.comment("Show compact reminders of the current teams key bindings during an active round.").define("showTeamsControls", true);
-        KILL_FEED_LINES = builder.comment("Maximum number of recent kills displayed at once in the HUD kill feed. Older messages are discarded.")
-            .defineInRange("killFeedLines", 3, 1, 20);
+        KILL_FEED_LINES = builder.comment("Maximum number of recent kills displayed at once in the HUD kill feed. Older messages are discarded.").defineInRange("killFeedLines", 3, 1, 20);
         KILL_FEED_SCALE = builder.comment("Scale of the HUD kill feed's text, icons and line spacing. 1.0 is full size.").defineInRange("killFeedScale", 0.65D, 0.1D, 2D);
         HIDE_CROSSHAIR_FOR_GUNS = builder.comment("""
             Personal preference: hide the vanilla crosshair while holding a non-melee Flan gun.
@@ -565,47 +566,65 @@ public final class ModClientConfig
         builder.push("Explosion Visual Settings");
         EXPLOSION_FLASH_SCALE = builder.comment("Size of the initial white flash. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionFlashScale", 1D, 0D, 4D);
-        EXPLOSION_AFTERGLOW_SCALE = builder.comment("Size of the warm glow after the flash. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_AFTERGLOW_SCALE = builder
+            .comment("Size of the warm glow after the flash. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionAfterglowScale", 1D, 0D, 4D);
-        EXPLOSION_FIREBALL_SCALE = builder.comment("Size of fireball particles, including fire in the rising stem. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_FIREBALL_SCALE = builder
+            .comment("Size of fireball particles, including fire in the rising stem. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionFireballScale", 1D, 0D, 4D);
-        EXPLOSION_EJECTA_SCALE = builder.comment("Size of burning ejecta and debris particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_EJECTA_SCALE = builder
+            .comment("Size of burning ejecta and debris particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionEjectaScale", 1D, 0D, 4D);
-        EXPLOSION_LAYER_SCALE = builder.comment("Size of the extra burst layers around the fireball. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_LAYER_SCALE = builder
+            .comment("Size of the extra burst layers around the fireball. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionLayerScale", 1D, 0D, 4D);
-        EXPLOSION_SHOCKWAVE_SCALE = builder.comment("Size of shockwave dust particles; does not change the ring radius. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_SHOCKWAVE_SCALE = builder
+            .comment(
+                "Size of shockwave dust particles; does not change the ring radius. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionShockwaveScale", 1D, 0D, 4D);
-        EXPLOSION_FRAG_SPARK_SCALE = builder.comment("Size of fragmentation sparks; count uses fragSparkMultiplier and maxFragSparks. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_FRAG_SPARK_SCALE = builder.comment(
+            "Size of fragmentation sparks; count uses fragSparkMultiplier and maxFragSparks. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionFragSparkScale", 1D, 0D, 4D);
-        EXPLOSION_SMOKE_SCALE = builder.comment("Size of the initial smoke column particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_SMOKE_SCALE = builder
+            .comment("Size of the initial smoke column particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionSmokeScale", 1D, 0D, 4D);
-        EXPLOSION_DUST_SCALE = builder.comment("Size of staged ground dust skirt particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_DUST_SCALE = builder
+            .comment("Size of staged ground dust skirt particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionDustScale", 1D, 0D, 4D);
         EXPLOSION_STEM_SCALE = builder.comment("Size of rising smoke stem particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionStemScale", 1D, 0D, 4D);
         EXPLOSION_CAP_SCALE = builder.comment("Size of mushroom cap particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionCapScale", 1D, 0D, 4D);
-        EXPLOSION_BLOCK_PARTICLE_SCALE = builder.comment("Size of crater block-burst smoke and puffs. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_BLOCK_PARTICLE_SCALE = builder
+            .comment("Size of crater block-burst smoke and puffs. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionBlockParticleScale", 1D, 0D, 4D);
         EXPLOSION_SPLASH_SCALE = builder.comment("Size of explosion water splashes. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionSplashScale", 1D, 0D, 4D);
         EXPLOSION_FIREBALL_DENSITY = builder.comment("Number of fireball particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionFireballDensity", 1D, 0D, 4D);
-        EXPLOSION_EJECTA_DENSITY = builder.comment("Number of burning ejecta and debris particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_EJECTA_DENSITY = builder
+            .comment("Number of burning ejecta and debris particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionEjectaDensity", 1D, 0D, 4D);
-        EXPLOSION_LAYER_DENSITY = builder.comment("Number of extra burst layer particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_LAYER_DENSITY = builder
+            .comment("Number of extra burst layer particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionLayerDensity", 1D, 0D, 4D);
-        EXPLOSION_SHOCKWAVE_DENSITY = builder.comment("Number of shockwave ring particles; does not change its radius. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_SHOCKWAVE_DENSITY = builder
+            .comment(
+                "Number of shockwave ring particles; does not change its radius. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionShockwaveDensity", 1D, 0D, 4D);
-        EXPLOSION_SMOKE_DENSITY = builder.comment("Number of initial smoke column particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_SMOKE_DENSITY = builder
+            .comment("Number of initial smoke column particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionSmokeDensity", 1D, 0D, 4D);
-        EXPLOSION_DUST_DENSITY = builder.comment("Number of particles in each staged dust skirt wave. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_DUST_DENSITY = builder
+            .comment("Number of particles in each staged dust skirt wave. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionDustDensity", 1D, 0D, 4D);
-        EXPLOSION_STEM_DENSITY = builder.comment("Number of rising stem particles, including its fire overlays. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
+        EXPLOSION_STEM_DENSITY = builder
+            .comment("Number of rising stem particles, including its fire overlays. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionStemDensity", 1D, 0D, 4D);
         EXPLOSION_CAP_DENSITY = builder.comment("Number of mushroom cap particles. Multiplier: 1 keeps the original look. 0 disables this effect. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionCapDensity", 1D, 0D, 4D);
-        EXPLOSION_PARTICLE_LIFETIME = builder.comment("Lifetime of explosion puffs, fire, smoke, dust, debris and sparks; does not change the staged emission timing or water splash lifetime. Multiplier: 1 keeps the original look. Client visuals only; particle budgets still apply.")
+        EXPLOSION_PARTICLE_LIFETIME = builder.comment(
+            "Lifetime of explosion puffs, fire, smoke, dust, debris and sparks; does not change the staged emission timing or water splash lifetime. Multiplier: 1 keeps the original look. Client visuals only; particle budgets still apply.")
             .defineInRange("explosionParticleLifetime", 1D, 0.1D, 4D);
         builder.pop();
 
@@ -637,6 +656,13 @@ public final class ModClientConfig
             Try to put the unloaded ammo in the upper inventory first instead of the hotbar.
             This is a personal preference and overrides the server's ammoToUpperInventoryOnReload setting.
             """).define("ammoToUpperInventoryOnReload", false);
+        PREFER_OFFHAND_AMMO_ON_RELOAD = builder.comment("""
+            Let a compatible ammo stack held in your offhand decide which ammo type a reload uses,
+            the way a bow prefers the arrows in your offhand. It only reorders the ammo a reload looks
+            through, lasts no longer than you hold that stack, and never changes the gun's own preferred ammo.
+            This is a personal preference. A server that turns its own preferOffhandAmmoOnReload
+            setting off forbids it for everyone and this option then has no effect.
+            """).define("preferOffhandAmmoOnReload", true);
         builder.pop();
 
         builder.push("Gun Rendering Settings");
@@ -823,6 +849,7 @@ public final class ModClientConfig
 
         combineAmmoOnReload = COMBINE_AMMO_ON_RELOAD.get();
         ammoToUpperInventoryOnReload = AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get();
+        preferOffhandAmmoOnReload = PREFER_OFFHAND_AMMO_ON_RELOAD.get();
 
         enableArms = ENABLE_ARMS.get();
         aimPose = AIM_POSE.get();
@@ -1244,7 +1271,8 @@ public final class ModClientConfig
             minecraft.execute(minecraft::reloadResourcePacks);
         }
 
-        if (PlatformEnvironment.isClient() && (old == null || old.combineAmmoOnReload != get().combineAmmoOnReload || old.ammoToUpperInventoryOnReload != get().ammoToUpperInventoryOnReload))
+        if (PlatformEnvironment.isClient() && (old == null || old.combineAmmoOnReload != get().combineAmmoOnReload || old.ammoToUpperInventoryOnReload != get().ammoToUpperInventoryOnReload
+            || old.preferOffhandAmmoOnReload != get().preferOffhandAmmoOnReload))
             ReloadPreferencesSync.sendToServer();
 
         if (PlatformEnvironment.isClient() && (old == null || old.aimPose != get().aimPose))

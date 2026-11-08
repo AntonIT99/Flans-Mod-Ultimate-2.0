@@ -19,11 +19,13 @@ public class PacketReloadPreferences implements IServerPacket
 {
     private boolean combineAmmoOnReload;
     private boolean ammoToUpperInventoryOnReload;
+    private boolean preferOffhandAmmoOnReload;
 
-    public PacketReloadPreferences(boolean combineAmmoOnReload, boolean ammoToUpperInventoryOnReload)
+    public PacketReloadPreferences(boolean combineAmmoOnReload, boolean ammoToUpperInventoryOnReload, boolean preferOffhandAmmoOnReload)
     {
         this.combineAmmoOnReload = combineAmmoOnReload;
         this.ammoToUpperInventoryOnReload = ammoToUpperInventoryOnReload;
+        this.preferOffhandAmmoOnReload = preferOffhandAmmoOnReload;
     }
 
     @Override
@@ -31,6 +33,7 @@ public class PacketReloadPreferences implements IServerPacket
     {
         data.writeBoolean(combineAmmoOnReload);
         data.writeBoolean(ammoToUpperInventoryOnReload);
+        data.writeBoolean(preferOffhandAmmoOnReload);
     }
 
     @Override
@@ -38,6 +41,7 @@ public class PacketReloadPreferences implements IServerPacket
     {
         combineAmmoOnReload = data.readBoolean();
         ammoToUpperInventoryOnReload = data.readBoolean();
+        preferOffhandAmmoOnReload = data.readBoolean();
     }
 
     @Override
@@ -46,5 +50,6 @@ public class PacketReloadPreferences implements IServerPacket
         PlayerData data = PlayerData.getInstance(player);
         data.setCombineAmmoOnReloadPreference(combineAmmoOnReload);
         data.setAmmoToUpperInventoryOnReloadPreference(ammoToUpperInventoryOnReload);
+        data.setPreferOffhandAmmoOnReloadPreference(preferOffhandAmmoOnReload);
     }
 }

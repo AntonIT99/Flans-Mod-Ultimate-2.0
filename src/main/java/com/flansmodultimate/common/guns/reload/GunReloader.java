@@ -74,7 +74,7 @@ public record GunReloader(GunItem item)
         }
 
         // Compute plans
-        String preferredAmmo = item.getPreferredAmmo(gunStack);
+        String preferredAmmo = preferredAmmoFor(player, data, gunStack, hand, allowed);
         List<ReloadPlan> plans = computePlans(gunStack, player.getInventory(), allowed, preferredAmmo, forceReload, level.registryAccess());
 
         if (plans.isEmpty())
@@ -84,6 +84,16 @@ public record GunReloader(GunItem item)
         long applyAt = level.getGameTime() + ticks;
 
         return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, plans, forceReload, instabuild, combineAmmoOnReload, ammoToUpperInventory, reloadSoundUUID, false));
+    }
+
+    private String preferredAmmoFor(ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, List<ShootableType> allowed)
+    {
+        String preferredAmmo = item.getPreferredAmmo(gunStack);
+        // A compatible stack in the offhand picks the ammo type for this reload only, the way a bow prefers the
+        // arrows held there. It never rewrites the gun's stored preference, so letting go of the stack restores it.
+        if (hand == InteractionHand.MAIN_HAND && data.shouldPreferOffhandAmmoOnReload())
+            return offhandPreferredAmmo(allowed, player.getItemInHand(InteractionHand.OFF_HAND), preferredAmmo);
+        return preferredAmmo;
     }
 
     private boolean loadDefaultAmmo(Level level, ItemStack gunStack)
@@ -276,6 +286,28 @@ public record GunReloader(GunItem item)
             return true;
 
         return !ShootableItem.hasRoundsLeft(bulletStack);
+    }
+
+    /**
+     * The ammo type a reload prefers once the offhand has had its say: a compatible stack held there names the
+     * type, so ammo can be chosen by holding it rather than by rearranging the inventory. Anything else in the
+     * offhand, an empty one included, leaves the gun's own preference alone. This only reorders the slots a
+     * reload searches; it never widens what the gun accepts, and it is not written back to the gun.
+     * <p>
+     * {@code storedPreference} is returned unchanged whenever the offhand has nothing to say, so passing null
+     * asks the plain question of whether the offhand decides this reload at all, as the ammo HUD does.
+     */
+    @Nullable
+    public static String offhandPreferredAmmo(List<ShootableType> allowedAmmoTypes, ItemStack offhandStack, @Nullable String storedPreference)
+    {
+        if (offhandStack.isEmpty() || !(offhandStack.getItem() instanceof ShootableItem shootableItem))
+            return storedPreference;
+
+        ShootableType type = shootableItem.getConfigType();
+        if (!allowedAmmoTypes.contains(type) || ShootableItem.getRoundsRemaining(offhandStack) <= 0)
+            return storedPreference;
+
+        return type.getOriginalShortName();
     }
 
     public static int findBestSlotPreferredFirst(Container inventory, List<ShootableType> allowedAmmoTypes, @Nullable String preferredAmmoShortName, boolean[] reservedSlots)

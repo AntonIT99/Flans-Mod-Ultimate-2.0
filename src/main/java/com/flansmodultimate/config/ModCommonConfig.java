@@ -200,6 +200,7 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> CANCEL_RELOAD_ON_WEAPON_SWITCH;
     private static final Supplier<Boolean> COMBINE_AMMO_ON_RELOAD;
     private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
+    private static final Supplier<Boolean> PREFER_OFFHAND_AMMO_ON_RELOAD;
     private static final Supplier<Boolean> REALISTIC_RECOIL;
     private static final Supplier<Boolean> ENABLE_SIGHT_DOWNWARD_MOVEMENT;
     private static final Supplier<Boolean> DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT;
@@ -485,6 +486,8 @@ public final class ModCommonConfig
         CANCEL_RELOAD_ON_WEAPON_SWITCH = builder.comment("Cancel reload when switching to a different item").define("cancelReloadOnWeaponSwitch", true);
         COMBINE_AMMO_ON_RELOAD = builder.comment("Combine unloaded ammo with damaged ammo in the inventory").define("combineAmmoOnReload", true);
         AMMO_TO_UPPER_INVENTORY_ON_RELOAD = builder.comment("Try to put unloaded ammo in the upper inventory first").define("ammoToUpperInventoryOnReload", false);
+        PREFER_OFFHAND_AMMO_ON_RELOAD = builder.comment("Allow a compatible ammo stack held in the offhand to decide which ammo type a reload uses, ahead of the gun's own preferred ammo.",
+            "Turn this off to forbid it for everyone; each player can still opt out on their own client.").define("preferOffhandAmmoOnReload", true);
         REALISTIC_RECOIL = builder.comment("Changes recoil to be more realistic").define("realisticRecoil", false);
         ENABLE_SIGHT_DOWNWARD_MOVEMENT = builder.comment("Enable downward movement of the sight after shot").define("enableSightDownwardMovement", true);
         DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT = builder.comment("Disallow guns from hip-firing while sprinting by default. Gun configs can override this with HipFireWhileSprinting.")
@@ -657,13 +660,12 @@ public final class ModCommonConfig
             "Worn wings lose lift and pull to one side, a shot-up tail answers slowly, hit engines lose power, holed wing tanks leak fuel,",
             "helicopters can autorotate after an engine failure, gear-up landings slide on the belly, and crippled or dead aircraft",
             "dive, spiral or spin down as an airframe instead of tumbling. Off restores the previous all-or-nothing behaviour.").define("enableRealisticAircraftDamage", true);
-        AIR_BRAKE_EFFECTIVENESS = builder.comment("Multiplier on physical air-brake drag in both flight models; 0 disables the physical contribution.")
-            .defineInRange("airBrakeEffectiveness", 1D, 0D, 100D);
+        AIR_BRAKE_EFFECTIVENESS = builder.comment("Multiplier on physical air-brake drag in both flight models; 0 disables the physical contribution.").defineInRange("airBrakeEffectiveness", 1D, 0D,
+            100D);
         AIR_BRAKE_ASSIST_DECELERATION = builder.comment("Minimum additional air-brake deceleration in m/s squared at or above the assist reference speed.",
-            "Uses the stronger of physical braking and assistance. 0 disables assistance. Engine thrust remains active.")
-            .defineInRange("airBrakeAssistDeceleration", 4D, 0D, 100D);
-        AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH = builder.comment("Speed in km/h at which air-brake assistance reaches full strength.",
-            "Below this speed assistance fades with speed squared, independently of the aircraft lift reference speed.")
+            "Uses the stronger of physical braking and assistance. 0 disables assistance. Engine thrust remains active.").defineInRange("airBrakeAssistDeceleration", 4D, 0D, 100D);
+        AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH = builder
+            .comment("Speed in km/h at which air-brake assistance reaches full strength.", "Below this speed assistance fades with speed squared, independently of the aircraft lift reference speed.")
             .defineInRange("airBrakeAssistReferenceSpeedKmh", 150D, 1D, 10000D);
         REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder.comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
             "This changes the speed at which lift equals weight, so it affects takeoff, low-speed lift and stall-like behaviour together.",
@@ -741,15 +743,15 @@ public final class ModCommonConfig
             "These drive an entity query rather than the block-breaking loop, so they are much cheaper than the crater radius and get a far higher ceiling.",
             "Most ordnance is far below this: a 250 kg bomb reaches about 85 blocks, the largest conventional bomb shipped about 167.",
             "At the default only nuclear-scale charges clamp; every conventional charge keeps its full damage reach.").defineInRange("maxBlastRadius", DEFAULT_MAX_BLAST_RADIUS, 1D, 8192D);
-        HEAT_DAMAGE_REFERENCE = builder
-            .comment("Damage a HEAT (shaped-charge) round deals behind armour it penetrates, for a 1 kg TNT charge, on vehicles and aircraft.",
-                "Damage grows with the square root of the charge and does not depend on the round's speed. A jet that barely penetrates delivers 60% of it; unarmoured targets take the full amount.",
-                "The default makes a Panzerfaust 60 take about nine tenths of a Panzer IV hull per penetrating hit. Kinetic or authored damage still applies when it is higher, including on legacy-health vehicles.")
+        HEAT_DAMAGE_REFERENCE = builder.comment("Damage a HEAT (shaped-charge) round deals behind armour it penetrates, for a 1 kg TNT charge, on vehicles and aircraft.",
+            "Damage grows with the square root of the charge and does not depend on the round's speed. A jet that barely penetrates delivers 60% of it; unarmoured targets take the full amount.",
+            "The default makes a Panzerfaust 60 take about nine tenths of a Panzer IV hull per penetrating hit. Kinetic or authored damage still applies when it is higher, including on legacy-health vehicles.")
             .defineInRange("heatDamageReference", DEFAULT_HEAT_DAMAGE_REFERENCE, 0D, 100000D);
         HEAT_CREW_SPALL_DAMAGE = builder.comment("Damage dealt to each occupant of a vehicle part that a HEAT jet penetrates, on vehicles using UseRealisticVehicleHealth.",
             "Scaled down like the vehicle damage when the jet barely penetrates. Set to 0 to disable crew spall.").defineInRange("heatCrewSpallDamage", DEFAULT_HEAT_CREW_SPALL_DAMAGE, 0D, 1000D);
-        EXPLOSION_PARTICLE_RANGE = builder.comment("Longest distance in blocks at which the fireball and smoke of heavy explosions such as bombs are drawn and sent to players.",
-            "Smaller explosions keep a shorter range that grows with their size. Clients scale it further with particleDistanceScale.")
+        EXPLOSION_PARTICLE_RANGE = builder
+            .comment("Longest distance in blocks at which the fireball and smoke of heavy explosions such as bombs are drawn and sent to players.",
+                "Smaller explosions keep a shorter range that grows with their size. Clients scale it further with particleDistanceScale.")
             .defineInRange("explosionParticleRange", DEFAULT_EXPLOSION_PARTICLE_RANGE, 128D, 1024D);
         builder.pop();
 
@@ -786,10 +788,9 @@ public final class ModCommonConfig
             NAME_TAG_RENDER_RANGE.get().floatValue(), NAME_TAG_SNEAK_RENDER_RANGE.get().floatValue(), NOTICE_SPAWN_KILL_TIME.get(),
 
             DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), EXPLOSIONS_BREAK_BLOCKS.get(), PARACHUTES_CAN_BE_HIT.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(),
-            FLAN_EXPLOSIONS_DROP_BLOCKS.get(),
-            BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(), SHOW_DISTANCE_IN_KILL_MESSAGE.get(),
-            DEFAULT_FLAGPOLE_HEIGHT_VALUE.get(), BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(), GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(),
-            AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
+            FLAN_EXPLOSIONS_DROP_BLOCKS.get(), BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(),
+            SHOW_DISTANCE_IN_KILL_MESSAGE.get(), DEFAULT_FLAGPOLE_HEIGHT_VALUE.get(), BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(),
+            GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
 
             HEADSHOT_DAMAGE_MODIFIER.get().floatValue(), CHESTSHOT_DAMAGE_MODIFIER.get().floatValue(), ARMSHOT_DAMAGE_MODIFIER.get().floatValue(), LEGSHOT_MODIFIER.get().floatValue(),
             VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get().floatValue(), DRIVEABLE_COLLISIONS_BREAK_BLOCKS.get(), AUTO_REFILL_VEHICLE_AMMO.get(), GUNS_IN_DESTROYED_PARTS_WORK.get(),
@@ -800,8 +801,8 @@ public final class ModCommonConfig
             GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE.get(), FORCE_ALLOW_ALL_ATTACHMENTS.get(), DISABLE_DUAL_WIELDING.get(), RELOAD_ON_EMPTY_FIRE.get(), GUN_DEV_MODE.get(),
             GUN_DAMAGE_MODIFIER.get().floatValue(), GUN_RECOIL_MODIFIER.get().floatValue(), GUN_DISPERSION_MODIFIER.get().floatValue(), GUN_ACCURACY_SPREAD_MODIFIER.get().floatValue(),
             DEFAULT_ADS_SPREAD_MULTIPLIER.get().floatValue(), DEFAULT_ADS_SPREAD_MULTIPLIER_SHOTGUN.get().floatValue(), CANCEL_RELOAD_ON_WEAPON_SWITCH.get(), COMBINE_AMMO_ON_RELOAD.get(),
-            AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get(), REALISTIC_RECOIL.get(), ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(), DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT.get(), MUZZLE_FLASH_PARTICLES_DEFAULT.get(),
-            PLAYER_AIM_POSE.get(), ENTITY_AIM_POSE.get(), ALLOW_PRONE.get(),
+            AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get(), PREFER_OFFHAND_AMMO_ON_RELOAD.get(), REALISTIC_RECOIL.get(), ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(), DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT.get(),
+            MUZZLE_FLASH_PARTICLES_DEFAULT.get(), PLAYER_AIM_POSE.get(), ENTITY_AIM_POSE.get(), ALLOW_PRONE.get(),
 
             SHOOTABLES_CAN_BREAK_GLASS.get(), NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE.get().floatValue(), NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE.get().floatValue(),
             NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE.get().floatValue(), NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE.get().floatValue(),
@@ -836,8 +837,9 @@ public final class ModCommonConfig
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
-            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(), AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get(),
-            ENABLE_REALISTIC_AIRCRAFT_DAMAGE.get(), VEHICLE_SCREEN_SHAKE.get(), GUN_SCREEN_SHAKE.get(), EXPLOSION_SCREEN_SHAKE.get(), EXPLOSION_SHAKE_INTENSITY.get(), EXPLOSION_SHAKE_DURATION.get(), SUPPRESSION_DURATION.get(), SUPPRESSION_CAMERA_ROLL.get(), SUPPRESSION_VIGNETTE.get());
+            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(),
+            AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get(), ENABLE_REALISTIC_AIRCRAFT_DAMAGE.get(), VEHICLE_SCREEN_SHAKE.get(), GUN_SCREEN_SHAKE.get(), EXPLOSION_SCREEN_SHAKE.get(),
+            EXPLOSION_SHAKE_INTENSITY.get(), EXPLOSION_SHAKE_DURATION.get(), SUPPRESSION_DURATION.get(), SUPPRESSION_CAMERA_ROLL.get(), SUPPRESSION_VIGNETTE.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1280,6 +1282,16 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null || config.reloadOnEmptyFire();
+    }
+
+    /**
+     * Whether a compatible ammo stack in the offhand may decide which ammo type a reload uses.
+     * The server can forbid it for everyone; each player still chooses on their own client.
+     */
+    public static boolean preferOffhandAmmoOnReload()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.preferOffhandAmmoOnReload();
     }
 
     /** Whether every player may reload guns without carrying their ammunition. */

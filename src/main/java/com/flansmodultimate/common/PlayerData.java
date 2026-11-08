@@ -136,6 +136,8 @@ public class PlayerData
     private Boolean combineAmmoOnReloadPreference;
     @Setter
     private Boolean ammoToUpperInventoryOnReloadPreference;
+    @Setter
+    private Boolean preferOffhandAmmoOnReloadPreference;
     @Getter
     private Vector3f[] lastMeleePositions;
 
@@ -529,6 +531,15 @@ public class PlayerData
     public boolean shouldPutAmmoToUpperInventoryOnReload()
     {
         return ammoToUpperInventoryOnReloadPreference != null ? ammoToUpperInventoryOnReloadPreference : ModCommonConfig.get().ammoToUpperInventoryOnReload();
+    }
+
+    /**
+     * Whether a compatible ammo stack in this player's offhand decides which ammo type their reload uses.
+     * The player can opt out, but the server can also forbid it for everyone.
+     */
+    public boolean shouldPreferOffhandAmmoOnReload()
+    {
+        return ModCommonConfig.preferOffhandAmmoOnReload() && (preferOffhandAmmoOnReloadPreference == null || preferOffhandAmmoOnReloadPreference);
     }
 
     public void playerKilled()

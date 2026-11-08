@@ -14,6 +14,7 @@ import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.EnumFireMode;
+import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.*;
@@ -685,6 +686,7 @@ public final class ClientHudOverlays
         LocalPlayer spectatorCheck = Minecraft.getInstance().player;
         if (spectatorCheck != null && spectatorCheck.isSpectator())
             return;
+        renderOffhandAmmoOverride(g, sw, sh);
         if (config.ammoHudLayout.isLegacy())
         {
             renderLegacyPlayerAmmo(g, sw, sh, config.ammoHudLayout);
@@ -796,6 +798,47 @@ public final class ClientHudOverlays
                 xAccum += 16 + font.width(s);
             }
         }
+    }
+
+    /**
+     * Names the ammo that an offhand stack is about to feed the main-hand gun. Holding a compatible stack
+     * quietly decides the next reload, so the choice is written on the HUD rather than left to be discovered:
+     * the player can see which type they are about to load without opening the preferred ammo screen.
+     */
+    private static void renderOffhandAmmoOverride(GuiGraphics g, int sw, int sh)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null || !config.preferOffhandAmmoOnReload || !ModCommonConfig.preferOffhandAmmoOnReload())
+            return;
+
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null)
+            return;
+
+        ItemStack gunStack = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (!isAmmoHudGun(gunStack))
+            return;
+
+        List<ShootableType> allowed = ((GunItem) gunStack.getItem()).getConfigType().getAmmoTypes();
+        if (allowed == null || allowed.isEmpty())
+            return;
+
+        // The stored preference is deliberately not read here: asking a gun for it writes a default back into
+        // the stack, which a render pass must never do. Showing the offhand type whenever it is the one being
+        // loaded says the same thing, and costs only a line the player sees while they hold compatible ammo.
+        ItemStack offhandStack = player.getItemInHand(InteractionHand.OFF_HAND);
+        if (GunReloader.offhandPreferredAmmo(allowed, offhandStack, null) == null)
+            return;
+
+        ShootableType offhandType = ((ShootableItem) offhandStack.getItem()).getConfigType();
+        String name = ModUtils.getDisplayNameString(offhandType);
+        Component text = Component.translatable("hud.flansmodultimate.offhand_ammo", name.isBlank() ? offhandType.getOriginalShortName() : name);
+        Font font = mc.font;
+        int x = sw / 2 - font.width(text) / 2;
+        int y = sh - 43;
+        g.drawString(font, text, x + 1, y + 1, 0x000000, false);
+        g.drawString(font, text, x, y, 0xFFDD55, false);
     }
 
     private static boolean isAmmoHudGun(ItemStack stack)
@@ -1174,7 +1217,8 @@ public final class ClientHudOverlays
         if (driveable.getConfigType().getOverheatLimit() > 0)
         {
             int heatPercent = (int) Math.min(100L, 100L * driveable.getWeaponHeat() / driveable.getConfigType().getOverheatLimit());
-            Component heatText = driveable.isWeaponOverheated() ? Component.translatable("hud.flansmodultimate.driveable.overheated")
+            Component heatText = driveable.isWeaponOverheated()
+                ? Component.translatable("hud.flansmodultimate.driveable.overheated")
                 : Component.translatable("hud.flansmodultimate.driveable.heat", heatPercent);
             g.drawString(font, heatText, leftX, y, driveable.isWeaponOverheated() ? 0xFF5555 : HUD_WHITE, false);
             y += LEGACY_HUD_LINE_HEIGHT;
