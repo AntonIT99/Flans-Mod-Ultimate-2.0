@@ -980,6 +980,8 @@
   "wolffsmodnpcs.editor.clone.chosen_equipped": "Reiter %s: %s (eigene Ausrüstung)",
   "wolffsmodnpcs.editor.clone.plain": "Einfache NPCs (kein Klon)",
   "wolffsmodnpcs.editor.clone.tip": "Der Custom-NPCs-Klon, aus dem die Bots des Teams entstehen: sein Modell, Skin, Werte und KI. Ohne ihn sind Bots einfache NPCs im Skin ihrer Klasse.\nKlicken zum Wählen.",
+  "wolffsmodnpcs.editor.consume_ammo": "Munition verbrauchen",
+  "wolffsmodnpcs.editor.consume_ammo.tip": "Bots verbrauchen Munition und geben mitgeführte Munition weiter, die keine ihrer Waffen nutzen kann. Standardmäßig aus. Die serverweite Munitionsregel hat Vorrang.",
   "wolffsmodnpcs.editor.copy_round": "Einstellungen dieser Runde kopieren",
   "wolffsmodnpcs.editor.copy_round.tip": "Ersetzt die Bot-Einstellungen dieser Runde durch die der oben gewählten Runde",
   "wolffsmodnpcs.editor.copy_source": "Von %s",

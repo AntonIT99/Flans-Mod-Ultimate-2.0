@@ -45,6 +45,7 @@ public final class BotSettings
     private static final String NBT_COMMANDER_DISRUPTION = "commander_disruption";
     private static final String NBT_RETREAT = "retreat_health";
     private static final String NBT_SUPPRESSION = "suppression";
+    private static final String NBT_CONSUME_AMMO = "consume_ammo";
     private static final String NBT_RALLY = "rally_points";
     private static final String NBT_VEHICLE_CREWS = "vehicle_crews";
     private static final String NBT_EMPLACEMENTS = "emplacements";
@@ -211,6 +212,8 @@ public final class BotSettings
     private int retreatHealth = 30;
     /** Whether rounds passing close by make bots aim worse and stop advancing. */
     private boolean suppression = true;
+    /** Whether bots use up ammunition and share carried ammunition they cannot use themselves. */
+    private boolean consumeAmmo;
     /** Whether players leading a squad may place a rally point for themselves and their squad to spawn at. */
     private boolean rallyPoints = true;
     /** Whether vehicle bots spawn with soldiers of their team in their seats. */
@@ -660,6 +663,7 @@ public final class BotSettings
         tag.putInt(NBT_COMMANDER_DISRUPTION, commanderDisruptionSeconds);
         tag.putInt(NBT_RETREAT, retreatHealth);
         tag.putBoolean(NBT_SUPPRESSION, suppression);
+        tag.putBoolean(NBT_CONSUME_AMMO, consumeAmmo);
         tag.putBoolean(NBT_RALLY, rallyPoints);
         tag.putBoolean(NBT_VEHICLE_CREWS, vehicleCrews);
         tag.putBoolean(NBT_EMPLACEMENTS, emplacements);
@@ -704,6 +708,7 @@ public final class BotSettings
         settings.commanderDisruptionSeconds = tag.contains(NBT_COMMANDER_DISRUPTION) ? Math.max(0, tag.getInt(NBT_COMMANDER_DISRUPTION)) : 20;
         settings.retreatHealth = tag.contains(NBT_RETREAT) ? Math.max(0, Math.min(100, tag.getInt(NBT_RETREAT))) : settings.retreatHealth;
         settings.suppression = !tag.contains(NBT_SUPPRESSION) || tag.getBoolean(NBT_SUPPRESSION);
+        settings.consumeAmmo = tag.getBoolean(NBT_CONSUME_AMMO);
         settings.rallyPoints = !tag.contains(NBT_RALLY) || tag.getBoolean(NBT_RALLY);
         settings.vehicleCrews = !tag.contains(NBT_VEHICLE_CREWS) || tag.getBoolean(NBT_VEHICLE_CREWS);
         settings.emplacements = !tag.contains(NBT_EMPLACEMENTS) || tag.getBoolean(NBT_EMPLACEMENTS);

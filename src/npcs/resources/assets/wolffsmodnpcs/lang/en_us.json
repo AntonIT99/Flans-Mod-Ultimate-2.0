@@ -1004,6 +1004,8 @@
   "wolffsmodnpcs.editor.commander_class.tip": "Short name of a class offered by this team. Empty disables this team as a commander candidate. Uses the normal bot respawn and ticket rules.",
   "wolffsmodnpcs.editor.commander_disruption": "Disruption (seconds)",
   "wolffsmodnpcs.editor.commander_disruption.tip": "After the commander dies, AI squads hold position for this long. Player orders still work. Zero disables disruption.",
+  "wolffsmodnpcs.editor.consume_ammo": "Consume ammunition",
+  "wolffsmodnpcs.editor.consume_ammo.tip": "Bots use up ammunition and share carried ammunition that none of their weapons can use. Off by default. The server-wide Ammunition use override takes priority.",
   "wolffsmodnpcs.editor.copy_round": "Copy settings from that round",
   "wolffsmodnpcs.editor.copy_round.tip": "Replaces this round's bot settings with those of the round chosen above",
   "wolffsmodnpcs.editor.copy_source": "From %s",

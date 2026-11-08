@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.teams.BotTag;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -102,7 +103,7 @@ public final class NpcServerRules
     {
         Level level = npc.level();
         NpcServerSettings server = level == null || level.isClientSide ? null : NpcServerSettings.of(npc);
-        return consumesAmmo(server == null ? null : server.ammoPolicy(), own);
+        return consumesAmmo(server == null ? null : server.ammoPolicy(), server == null ? own : TeamsBots.consumesAmmo(npc, own));
     }
 
     /** @return whether the NPC may attack players on Peaceful difficulty, as the server's setting says; never off the server thread */

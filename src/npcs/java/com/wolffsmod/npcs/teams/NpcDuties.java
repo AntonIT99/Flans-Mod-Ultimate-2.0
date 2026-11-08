@@ -3,15 +3,11 @@ package com.wolffsmod.npcs.teams;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.parts.FlansRepairs;
-import com.wolffsmod.npcs.combat.NpcAmmunition;
-import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
-import com.wolffsmod.npcs.sim.NpcCombatants;
-import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
-import com.wolffsmod.npcs.sim.NpcVehicleState;
-import com.wolffsmod.npcs.sim.TacticKind;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.NpcAPI;
@@ -307,12 +303,34 @@ public final class NpcDuties
         {
             case MEDIC -> heal(level, npc, self, fighters, now);
             case ENGINEER -> repair(level, npc, self, fighters, now, friendlyRider);
-            case SUPPORT -> supply(npc, self, fighters, now);
+            case SUPPORT -> {
+                if (!NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
+                    supply(npc, self, fighters, now);
+            }
             case ANTI_TANK -> engageArmour(npc, self, fighters, armoured);
             case RIFLEMAN, ASSAULT, MELEE, SKIRMISHER -> {
                 // Infantry combat movement handles these roles.
             }
         }
+        if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO) && !DESTINATIONS.containsKey(npc.getUUID()))
+            shareAmmunition(npc, self, fighters, now);
+    }
+
+    /** Any finite-ammunition soldier may deliver ammunition it has no weapon for, regardless of its class role. */
+    private static void shareAmmunition(EntityNPCInterface donor, Fighter self, List<Fighter> fighters, long now)
+    {
+        fighters.stream().filter(other -> other.entity() != donor && other.side() == self.side() && !other.vehicle() && !SUPPLIED.containsKey(other.entity().getUUID()))
+            .map(Fighter::entity).filter(ally -> ally.isAlive() && !ally.isSpectator() && ally.distanceTo(donor) <= SUPPORT_RANGE && donor.hasLineOfSight(ally))
+            .filter(ally -> !NpcAmmoSharing.spare(donor, ally).isEmpty()).min(Comparator.comparingDouble(donor::distanceToSqr)).ifPresent(ally ->
+            {
+                if (ally.distanceTo(donor) > SUPPLY_REACH)
+                    DESTINATIONS.put(donor.getUUID(), ally.position());
+                else if (NpcAmmoSharing.transfer(donor, ally))
+                {
+                    SUPPLIED.put(ally.getUUID(), now);
+                    donor.swing(InteractionHand.MAIN_HAND);
+                }
+            });
     }
 
     private static void heal(ServerLevel level, EntityNPCInterface medic, Fighter self, List<Fighter> fighters, long now)
