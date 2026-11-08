@@ -133,13 +133,20 @@ those of the next NPC module release. The CurseForge tasks upload each file whol
 `docs/curseforge-releases.md`); content-pack modules without a changelog of their own upload the
 root one. These are the one exception to the documentation rule above: keep them current.
 
-- In the same change, add a short bullet for anything players, server operators, content-pack
-  authors or addon developers notice: new features, changed behaviour or defaults, renamed or
-  removed commands, settings or parameters, and notable fixes of released behaviour. Skip
-  refactoring, tests, tooling and internal cleanups.
-- Write for users, in English, in the files' existing style: one line per item, under the fitting
-  section, naming parameters, settings and commands in backticks. Add a section only when none fits.
+- Keep release notes selective: include major features, meaningful gameplay or usability changes,
+  notable fixes of released behaviour, and compatibility or migration requirements. A change being
+  visible to users does not by itself warrant an entry. Skip minor content corrections, individual
+  asset or translation changes, small UI tweaks, refactoring, tests, tooling and internal cleanups.
+- In the same change, update the relevant feature summary when the change meets that threshold.
+  Group related improvements and fixes into one concise, general bullet describing their practical
+  benefit; do not enumerate every affected item, parameter, setting, implementation detail or edge case.
+- Write for users, in English, with one short sentence per bullet where possible and a few clear
+  topic sections. Keep essential command names, opt-in controls and breaking changes in backticks;
+  leave configuration syntax and exhaustive details to the appropriate reference documentation.
 - Fold changes to something not yet released into its existing bullet instead of adding a fix line.
+  Avoid repeating highlights in topic sections or appending unrelated details to an ever-growing
+  bullet. Review the surrounding entries for overlap before adding one; prioritize a short, readable
+  overview of the release over a complete record of the work.
 - Keep each heading's version equal to `mod_version` (main mod) or the module's `archiveVersion`.
 - Released notes are archived under `changelogs/<mod id>/<version>.md`, for example
   `changelogs/flansmodultimate/2.1.md` and `changelogs/wolffsmodnpcs/1.0.md`. When a version is
