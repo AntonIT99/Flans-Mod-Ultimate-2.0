@@ -91,9 +91,8 @@ public final class ClientEventHandler
             return;
         }
         double fov = ModClient.cameraFov(event.getFOV(), event.getPartialTick());
-        ModClientConfig config = ModClientConfig.get();
         // The firing punch narrows the world view only
-        if (config != null && config.gunScreenShake)
+        if (ModCommonConfig.get().gunScreenShake())
             fov = Math.max(1D, fov + GunScreenShake.fovOffset((float) event.getPartialTick()));
         event.setFOV(fov);
     }
@@ -164,22 +163,19 @@ public final class ClientEventHandler
     /** Composes cosmetic explosion and near-miss motion without changing player or mounted weapon aim. */
     private static void applyCombatScreenEffects(ViewportEvent.ComputeCameraAngles event)
     {
-        ModClientConfig config = ModClientConfig.get();
-        if (config == null)
-            return;
         long now = Util.getMillis();
-        if (!config.explosionScreenShake)
+        if (!ModCommonConfig.get().explosionScreenShake())
             CombatScreenEffects.resetExplosion();
-        if (!config.nearMissSuppression)
+        if (!ModCommonConfig.get().nearMissSuppression())
             CombatScreenEffects.resetSuppression();
         if (Minecraft.getInstance().player == null || !Minecraft.getInstance().player.isAlive() || Minecraft.getInstance().player.isSpectator())
         {
             CombatScreenEffects.reset();
             return;
         }
-        float explosion = (float) (CombatScreenEffects.explosionLevel(now, config.explosionShakeDuration) * config.explosionShakeIntensity * 0.05D);
+        float explosion = (float) (CombatScreenEffects.explosionLevel(now, ModCommonConfig.get().explosionShakeDuration()) * ModCommonConfig.get().explosionShakeIntensity() * 0.05D);
         float roll = explosion * (float) Math.sin(now * 0.071D);
-        roll += (float) (Mth.clamp(CombatScreenEffects.suppressionRoll(now, config.suppressionDuration) * config.suppressionIntensity, -1D, 1D) * config.suppressionCameraRoll);
+        roll += (float) (Mth.clamp(CombatScreenEffects.suppressionRoll(now, ModCommonConfig.get().suppressionDuration()), -1D, 1D) * ModCommonConfig.get().suppressionCameraRoll());
         event.setPitch(Mth.clamp(event.getPitch() - explosion * 0.4F, -89.9F, 89.9F));
         event.setRoll(event.getRoll() + roll);
     }
@@ -187,8 +183,7 @@ public final class ClientEventHandler
     /** Adds the camera kick of a screen-shaking gun the player just fired. 1.7.10 applied it through view bobbing. */
     private static void applyGunScreenShake(ViewportEvent.ComputeCameraAngles event)
     {
-        ModClientConfig config = ModClientConfig.get();
-        if (config == null || !config.gunScreenShake || !Boolean.TRUE.equals(Minecraft.getInstance().options.bobView().get()))
+        if (!ModCommonConfig.get().gunScreenShake())
             return;
         float pitch = GunScreenShake.pitchOffset((float) event.getPartialTick());
         if (pitch != 0F)
@@ -198,8 +193,7 @@ public final class ClientEventHandler
     /** Shakes the view of the pilot of a damaged aircraft, harder the worse the damage. */
     private static void applyAircraftTremor(ViewportEvent.ComputeCameraAngles event)
     {
-        ModClientConfig config = ModClientConfig.get();
-        if (config == null || !config.vehicleScreenShake)
+        if (!ModCommonConfig.get().vehicleScreenShake())
             return;
         float partialTick = (float) event.getPartialTick();
         float pitch = AircraftCockpit.tremorPitch(partialTick);
@@ -213,8 +207,7 @@ public final class ClientEventHandler
     /** Adds the camera kick of a nearby firing driveable on top of whatever angles the view already has. */
     private static void applyVehicleScreenShake(ViewportEvent.ComputeCameraAngles event)
     {
-        ModClientConfig config = ModClientConfig.get();
-        if (config == null || !config.vehicleScreenShake)
+        if (!ModCommonConfig.get().vehicleScreenShake())
             return;
         long now = Util.getMillis();
         float pitch = VehicleScreenShake.pitchOffset(now);

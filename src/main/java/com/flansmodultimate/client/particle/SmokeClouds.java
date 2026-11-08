@@ -10,10 +10,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /** Per-projectile smoke allowances, independent of the client's shared particle budget. Client thread only. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -61,7 +58,7 @@ public final class SmokeClouds
             double x = position.x + Math.cos(angle) * radius;
             double y = position.y + (0.1D + level.random.nextDouble() * 0.5D * (1D - radius / extent)) * extent;
             double z = position.z + Math.sin(angle) * radius;
-            Particle particle = ParticleHelper.createFromString(visibleParticle, x, y, z, 0D, 0D, 0D, scale, 1F);
+            Particle particle = ParticleHelper.createTacticalSmoke(visibleParticle, x, y, z, 0D, 0D, 0D, scale);
             if (particle != null)
             {
                 particle.setLifetime(MAX_LIFETIME);
@@ -101,7 +98,7 @@ public final class SmokeClouds
         String normalized = FlanParticles.resolve(name).orElse(name);
         return switch (normalized)
         {
-            case FlanParticles.FM_BIG_SMOKE, FlanParticles.FM_SMOKER, FlanParticles.FM_SMOKER_1, FlanParticles.HUGE_EXPLOSION, FlanParticles.FM_FLARE, FlanParticles.FM_FLAME,
+            case FlanParticles.FM_GUN_SMOKE, FlanParticles.FM_BIG_SMOKE, FlanParticles.FM_SMOKER, FlanParticles.FM_SMOKER_1, FlanParticles.HUGE_EXPLOSION, FlanParticles.FM_FLARE, FlanParticles.FM_FLAME,
                 FlanParticles.FM_DEBRIS_1, FlanParticles.FM_TRACER, FlanParticles.FM_TRACER_GREEN, FlanParticles.FM_TRACER_RED -> FlanParticles.FM_SMOKER;
             case FlanParticles.FM_TANK_DEATH, FlanParticles.FM_SHIP_DEATH, FlanParticles.FM_NUKE, FlanParticles.FM_FLASHER -> FlanParticles.FM_SMOKE_SHELL;
             default -> normalized;

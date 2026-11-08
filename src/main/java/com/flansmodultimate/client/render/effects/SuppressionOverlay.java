@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.render.effects;
 
-import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import lombok.AccessLevel;
@@ -21,17 +21,14 @@ public final class SuppressionOverlay
     @SuppressWarnings({"java:S1172", "unused"})
     public static void render(GuiGraphics graphics, float partialTick, int width, int height)
     {
-        ModClientConfig config = ModClientConfig.get();
         var player = Minecraft.getInstance().player;
-        if (config == null || !config.nearMissSuppression || player == null || !player.isAlive() || player.isSpectator())
+        if (!ModCommonConfig.get().nearMissSuppression() || player == null || !player.isAlive() || player.isSpectator())
         {
             CombatScreenEffects.resetSuppression();
             return;
         }
-        if (Minecraft.getInstance().options.hideGui)
-            return;
-        float level = (float) Math.min(1D, CombatScreenEffects.suppressionLevel(Util.getMillis(), config.suppressionDuration) * config.suppressionIntensity);
-        float alpha = (float) (level * config.suppressionVignette);
+        float level = (float) Math.min(1D, CombatScreenEffects.suppressionLevel(Util.getMillis(), ModCommonConfig.get().suppressionDuration()));
+        float alpha = (float) (level * ModCommonConfig.get().suppressionVignette());
         if (alpha <= 0.002F)
             return;
         float strength = (float) Math.sqrt(level);

@@ -1,6 +1,6 @@
 # Flan's Mod Ultimate 2.2
 
-* The legacy 1.7.10 Panzer IV displays its driver-controlled MG42
+* The legacy 1.7.10 Panzer IV displays its driver-controlled MG42 and fires it from the visible muzzle
 
 * Legacy Manus F-22 and T-34 parts use corrected rotation axes; the legacy 1.7.2 Panzer IV preserves its hull and turret orientations, elevates its barrel in the correct direction and displays its driver-controlled MG42
 
@@ -247,6 +247,9 @@
 * Guns read their attachments, fire mode and loaded ammunition without copying their item data each time and look up the ammunition they take once, which makes firing, reloading and battles much cheaper for the server
 
 ## Settings & Commands
+
+* Suppression and gun, vehicle and explosion screen shake are now controlled by the server/common config; client settings, view bobbing and hiding the HUD no longer bypass them
+* Tactical smoke from grenades, shells and vehicle launchers keeps its own bounded particle allowances regardless of client particle distance, density or budgets
 
 * `breakableArmor` now offers named choices instead of a numeric slider; existing values 0, 1 and 2 keep their meaning
 * Added missing settings labels for `driveableMeleeDamageThreshold`, `teamsSpawnVehiclesWithFuel` and `teamsSpawnVehicleAmmo` in all supported languages

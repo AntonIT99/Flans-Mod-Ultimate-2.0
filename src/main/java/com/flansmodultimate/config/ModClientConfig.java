@@ -65,16 +65,6 @@ public final class ModClientConfig
     public final float hitMarkerBlue;
     public final float hitMarkerAlpha;
     public final boolean showFlashesWhenWounded;
-    public final boolean vehicleScreenShake;
-    public final boolean gunScreenShake;
-    public final boolean explosionScreenShake;
-    public final double explosionShakeIntensity;
-    public final double explosionShakeDuration;
-    public final boolean nearMissSuppression;
-    public final double suppressionIntensity;
-    public final double suppressionDuration;
-    public final double suppressionCameraRoll;
-    public final double suppressionVignette;
     public final boolean bulletFlybySounds;
     public final double bulletFlybyVolume;
     /** Particle type ids, such as {@code somemod:plasma}, that thermal sights also show hot */
@@ -228,16 +218,6 @@ public final class ModClientConfig
     private static final Supplier<Double> HIT_MARKER_BLUE;
     private static final Supplier<Double> HIT_MARKER_ALPHA;
     public static final BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
-    public static final BooleanValue VEHICLE_SCREEN_SHAKE;
-    public static final BooleanValue GUN_SCREEN_SHAKE;
-    public static final BooleanValue EXPLOSION_SCREEN_SHAKE;
-    public static final DoubleValue EXPLOSION_SHAKE_INTENSITY;
-    public static final DoubleValue EXPLOSION_SHAKE_DURATION;
-    public static final BooleanValue NEAR_MISS_SUPPRESSION;
-    public static final DoubleValue SUPPRESSION_INTENSITY;
-    public static final DoubleValue SUPPRESSION_DURATION;
-    public static final DoubleValue SUPPRESSION_CAMERA_ROLL;
-    public static final DoubleValue SUPPRESSION_VIGNETTE;
     public static final BooleanValue BULLET_FLYBY_SOUNDS;
     public static final DoubleValue BULLET_FLYBY_VOLUME;
     // Builder#defineList imposes this wildcard type.
@@ -437,17 +417,6 @@ public final class ModClientConfig
         builder.pop();
         builder.push("Screen Shake and Suppression");
         SHOW_FLASHES_WHEN_WOUNDED = builder.comment("Show the red blood overlay flash when the player takes damage").define("showFlashesWhenWounded", true);
-        VEHICLE_SCREEN_SHAKE = builder.comment("Shake the camera when a nearby driveable that opts into FancyScreenShake fires its main or coaxial gun").define("vehicleScreenShake", true);
-        GUN_SCREEN_SHAKE = builder.comment("Punch the field of view in and kick the camera when you fire a gun that opts into HasScreenShake").define("gunScreenShake", true);
-        EXPLOSION_SCREEN_SHAKE = builder.comment("Allow camera shake from ammunition or grenades configured with powerShake and rangeShake.").define("explosionScreenShake", true);
-        EXPLOSION_SHAKE_INTENSITY = builder.comment("Scale explosion camera movement. Zero disables movement.").defineInRange("explosionShakeIntensity", 1D, 0.0, 5.0);
-        EXPLOSION_SHAKE_DURATION = builder.comment("Duration in seconds of an explosion camera impulse.").defineInRange("explosionShakeDuration", 0.5D, 0.05, 5.0);
-        NEAR_MISS_SUPPRESSION = builder.comment("Show server-authored visual near-miss suppression. The server must enable the mechanic.").define("nearMissSuppression", true);
-        SUPPRESSION_INTENSITY = builder.comment("Scale the visual suppression effect. Zero disables it.").defineInRange("suppressionIntensity", 1D, 0.0, 5.0);
-        SUPPRESSION_DURATION = builder.comment("Seconds for a full suppression impulse to recover.").defineInRange("suppressionDuration", 2D, 0.1, 10.0);
-        SUPPRESSION_CAMERA_ROLL = builder.comment("Maximum visual camera roll in degrees from suppression. Zero disables camera movement; aim is unchanged.").defineInRange("suppressionCameraRoll",
-            3.5D, 0.0, 10.0);
-        SUPPRESSION_VIGNETTE = builder.comment("Maximum opacity of the suppression vignette. Zero disables darkening.").defineInRange("suppressionVignette", 0.82D, 0.0, 1.0);
         builder.pop();
         builder.push("Audio");
         BULLET_FLYBY_SOUNDS = builder.comment("Play bullet near-miss sounds, including ammunition FlyBySound overrides.").define("bulletFlybySounds", true);
@@ -777,16 +746,6 @@ public final class ModClientConfig
         hitMarkerBlue = HIT_MARKER_BLUE.get().floatValue();
         hitMarkerAlpha = HIT_MARKER_ALPHA.get().floatValue();
         showFlashesWhenWounded = SHOW_FLASHES_WHEN_WOUNDED.get();
-        vehicleScreenShake = VEHICLE_SCREEN_SHAKE.get();
-        gunScreenShake = GUN_SCREEN_SHAKE.get();
-        explosionScreenShake = EXPLOSION_SCREEN_SHAKE.get();
-        explosionShakeIntensity = EXPLOSION_SHAKE_INTENSITY.get();
-        explosionShakeDuration = EXPLOSION_SHAKE_DURATION.get();
-        nearMissSuppression = NEAR_MISS_SUPPRESSION.get();
-        suppressionIntensity = SUPPRESSION_INTENSITY.get();
-        suppressionDuration = SUPPRESSION_DURATION.get();
-        suppressionCameraRoll = SUPPRESSION_CAMERA_ROLL.get();
-        suppressionVignette = SUPPRESSION_VIGNETTE.get();
         bulletFlybySounds = BULLET_FLYBY_SOUNDS.get();
         bulletFlybyVolume = BULLET_FLYBY_VOLUME.get();
         additionalThermalHotParticles = ADDITIONAL_THERMAL_HOT_PARTICLES.get().stream().map(String::valueOf).map(String::trim).filter(id -> !id.isEmpty()).toList();

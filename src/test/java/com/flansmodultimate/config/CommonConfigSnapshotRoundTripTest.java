@@ -24,7 +24,7 @@ class CommonConfigSnapshotRoundTripTest
         for (int i = 0; i < components.length; i++)
             values[i] = switch (components[i].getName())
             {
-                case "disableCrosshairWhileScoped", "forceUncensoredContent" -> disableScopedCrosshair;
+                case "disableCrosshairWhileScoped", "forceUncensoredContent", "gunScreenShake", "vehicleScreenShake", "explosionScreenShake" -> disableScopedCrosshair;
                 case "disableCrosshairForGuns" -> !disableScopedCrosshair;
                 case "breakableArmor" -> armorMode;
                 default -> sample(components[i]);

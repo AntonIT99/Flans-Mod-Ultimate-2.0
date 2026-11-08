@@ -3,6 +3,7 @@ package com.flansmodultimate.client.particle;
 import com.flansmodultimate.FlansModParticles;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.client.ParticlePlatform;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
@@ -47,6 +48,11 @@ public final class ParticleHelper
     private static final Map<String, Optional<ParticleOptions>> PARTICLE_OPTIONS_CACHE = new ConcurrentHashMap<>();
     private static final List<SustainedEmission> ACTIVE_EMISSIONS = new ArrayList<>();
     private static final List<SmokeShell> SMOKE_SHELLS = new ArrayList<>();
+    /** Fixed separate ceiling: client cosmetic budgets cannot starve tactical concealment. */
+    private static final int MAX_TACTICAL_SMOKE_PER_TICK = 128;
+    private static ClientLevel tacticalSmokeLevel;
+    private static long tacticalSmokeTick = Long.MIN_VALUE;
+    private static int tacticalSmokeCreated;
     private static long particleBudgetTick = Long.MIN_VALUE;
     private static int particlesCreatedThisTick;
     private static ClientLevel emissionLevel;
@@ -92,6 +98,36 @@ public final class ParticleHelper
     {
         if (shouldSpawn(x, y, z))
             Minecraft.getInstance().particleEngine.createParticle(options, x, y, z, vx, vy, vz);
+    }
+
+    /** Child puffs of the bounded vehicle smoke controller use the same protected path as smoke grenades. */
+    static void spawnTacticalSmokeSubParticle(ParticleOptions options, double x, double y, double z)
+    {
+        if (shouldSpawnTacticalSmoke(x, y, z))
+            Minecraft.getInstance().particleEngine.createParticle(options, x, y, z, 0D, 0D, 0D);
+    }
+
+    @SuppressWarnings("java:S2696") // Fixed allowance belongs to the client level and tick.
+    private static boolean shouldSpawnTacticalSmoke(double x, double y, double z)
+    {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null)
+            return false;
+        // The packet's server range determines availability; local graphics cannot shorten its useful range.
+        double range = Math.max(DEFAULT_PARTICLE_RANGE, ModCommonConfig.smokeParticlesRange());
+        if (distanceSquaredToCamera(minecraft, x, y, z) > range * range)
+            return false;
+        long tick = minecraft.level.getGameTime();
+        if (tacticalSmokeLevel != minecraft.level || tacticalSmokeTick != tick)
+        {
+            tacticalSmokeLevel = minecraft.level;
+            tacticalSmokeTick = tick;
+            tacticalSmokeCreated = 0;
+        }
+        if (tacticalSmokeCreated >= MAX_TACTICAL_SMOKE_PER_TICK)
+            return false;
+        tacticalSmokeCreated++;
+        return true;
     }
 
     /** As {@link #spawnSubParticle(ParticleOptions, double, double, double, double, double, double)}, at rest. */
@@ -145,6 +181,20 @@ public final class ParticleHelper
     @SuppressWarnings("java:S107") // Mirrors the existing particle API's position, velocity, scale and lifetime options.
     static Particle createFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale)
     {
+        return createFromString(s, x, y, z, vx, vy, vz, scale, lifetimeScale, false);
+    }
+
+    /** Tactical smoke has its own bounded source allowances and must survive client graphics reductions. */
+    @Nullable
+    static Particle createTacticalSmoke(String type, double x, double y, double z, double vx, double vy, double vz, float scale)
+    {
+        return createFromString(type, x, y, z, vx, vy, vz, scale, 1F, true);
+    }
+
+    @Nullable
+    @SuppressWarnings("java:S107") // Same particle API with a separate path for bounded tactical smoke sources.
+    private static Particle createFromString(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale, boolean tacticalSmoke)
+    {
         String normalized = normalize(s);
         if (normalized == null)
         {
@@ -155,7 +205,7 @@ public final class ParticleHelper
         boolean landmark = normalized.equals(FlanParticles.FM_NU_FLASH) || normalized.equals(FlanParticles.FM_TANK_DEATH) || normalized.equals(FlanParticles.FM_SHIP_DEATH)
             || normalized.equals(FlanParticles.FM_NUKE);
         double range = landmark ? Math.max(320D, landmarkRangeOverride) : landmarkRangeOverride;
-        if (!(range > DEFAULT_PARTICLE_RANGE ? shouldSpawnLandmark(x, y, z, range) : shouldSpawn(x, y, z)))
+        if (!(tacticalSmoke ? shouldSpawnTacticalSmoke(x, y, z) : range > DEFAULT_PARTICLE_RANGE ? shouldSpawnLandmark(x, y, z, range) : shouldSpawn(x, y, z)))
             return null;
 
         Optional<LegacyResourceRequest> legacyRequest = LegacyResourceRequest.parse(normalized, false);
@@ -332,9 +382,9 @@ public final class ParticleHelper
                     spawnFromString(FlanParticles.FM_SMOKE, x, y, z, 0D, 0D, 0D, 1F);
                 return false;
             }
-            spawnFromString(FlanParticles.FM_SMOKE_SHELL, x, y, z, 0D, 0.01D, 0D, 1F);
-            spawnFromString(FlanParticles.FM_SMOKE_BURST, x, y, z, 0D, 0D, 0D, 1F);
-            spawnFromString(FlanParticles.FM_BIG_SMOKE, x, y, z, 0D, 0D, 0D, 1F);
+            createTacticalSmoke(FlanParticles.FM_SMOKE_SHELL, x, y, z, 0D, 0.01D, 0D, 1F);
+            createTacticalSmoke(FlanParticles.FM_SMOKE_BURST, x, y, z, 0D, 0D, 0D, 1F);
+            createTacticalSmoke(FlanParticles.FM_BIG_SMOKE, x, y, z, 0D, 0D, 0D, 1F);
             return true;
         }
     }
