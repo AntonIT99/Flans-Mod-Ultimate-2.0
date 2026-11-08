@@ -3,5 +3,24 @@
   "textures": {
     "layer0": "flansmod:item/apacheah64"
   },
-  "overrides": []
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/apacheah64"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/apacheah64"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/apacheah64"
+    }
+  ]
 }

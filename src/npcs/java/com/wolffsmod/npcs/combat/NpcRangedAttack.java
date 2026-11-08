@@ -1,21 +1,15 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.MountAim;
-import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.EntityTypeProperties;
 import com.flansmodultimate.api.entity.EntityTypeProperties.Weapon;
 import com.flansmodultimate.api.entity.SoundRange;
 import com.flansmodultimate.api.equipment.FlansEquipment;
-import com.flansmodultimate.api.projectiles.FlansProjectiles;
-import com.flansmodultimate.api.projectiles.ProjectileParameters;
-import com.flansmodultimate.api.projectiles.ProjectileShot;
+import com.flansmodultimate.api.projectiles.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
-import com.wolffsmod.npcs.properties.NpcSounds;
-import com.wolffsmod.npcs.properties.NpcTypeProperties;
-import com.wolffsmod.npcs.properties.NpcTypeProperty;
+import com.wolffsmod.npcs.properties.*;
 import com.wolffsmod.npcs.sim.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -241,8 +235,11 @@ public final class NpcRangedAttack
                 return false;
             // Only a preview has no target, and a preview never launches.
             LivingEntity aimed = Objects.requireNonNull(target);
-            Vec3 from = throughCover(origin, NpcVehicleState.aimPoint(aimed));
-            Vec3 direction = aimError.apply(barrels ? state.barrelDirection(npc, fixed) : led(shot, from, aimed));
+            Vec3 from = shot.dropped() ? origin : throughCover(origin, NpcVehicleState.aimPoint(aimed));
+            // Flight and firing can run at different points of a tick. Check each actual bay and round at release time.
+            if (shot.dropped() && !state.bombDrop(npc, from, shot.gravity(), shot.drag(), NpcBlastSafety.reach(selectedAmmo), aimed, options).hits())
+                return false;
+            Vec3 direction = direction(shot, from, aimed, barrels, fixed);
             if (shot.launch(from, direction, options.enabled(Feature.THROW_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
                 return false;
             // A bomb falls away from the bay without a flash.
@@ -251,6 +248,13 @@ public final class NpcRangedAttack
                 NpcMuzzleFlashes.fired(npc, muzzle, direction, hullYaw(), secondary);
             playLaunchEffects(muzzle, origin, shotIndex, selectedAmmo, shot.dropped());
             return true;
+        }
+
+        private Vec3 direction(ProjectileShot shot, Vec3 from, LivingEntity aimed, boolean barrels, boolean fixed)
+        {
+            if (shot.dropped())
+                return state.barrelDirection(npc, false);
+            return aimError.apply(barrels ? state.barrelDirection(npc, fixed) : led(shot, from, aimed));
         }
 
         /** @return the direction a round the NPC fires without a model's barrels leaves in to meet the target, led as its switches ask */

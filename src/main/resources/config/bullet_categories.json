@@ -62,7 +62,8 @@
     "5.45x39mm 7N39 PPBS AP": {
         "properties": {
             "Mass": 4.1,
-            "FallSpeed": 1.0
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 8
         },
         "items": [
             "7n39"
@@ -146,6 +147,7 @@
         "properties": {
             "Mass": 4.0,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 4.5,
             "FlakParticles": 0
         },
         "items": [
@@ -336,6 +338,7 @@
         "properties": {
             "Mass": 9.0,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 5.5,
             "FlakParticles": 0
         },
         "items": [
@@ -444,7 +447,7 @@
             "Mass": 9.7,
             "FallSpeed": 1.0,
             "FlakParticles": 0,
-            "PenetrationAt100m": 7
+            "PenetrationAt100m": 10.5
         },
         "items": [
             "gfs_7mmhvy"
@@ -480,6 +483,7 @@
         "properties": {
             "Mass": 9.5,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 6,
             "FlakParticles": 0
         },
         "items": [
@@ -529,6 +533,7 @@
         "properties": {
             "Mass": 9.6,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 5.7,
             "FlakParticles": 0
         },
         "items": [
@@ -575,6 +580,7 @@
         "properties": {
             "Mass": 9.7,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 6.2,
             "FlakParticles": 0
         },
         "items": [
@@ -714,6 +720,7 @@
         "properties": {
             "Mass": 11.3,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 5.7,
             "FlakParticles": 0
         },
         "items": [
@@ -755,6 +762,7 @@
         "properties": {
             "Mass": 11.8,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 5.7,
             "FlakParticles": 0
         },
         "items": [
@@ -785,6 +793,7 @@
         "properties": {
             "Mass": 12.8,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 7,
             "FlakParticles": 0
         },
         "items": [
@@ -919,6 +928,7 @@
         "properties": {
             "Mass": 12.8,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 5.7,
             "FlakParticles": 0
         },
         "items": [
@@ -988,6 +998,7 @@
         "properties": {
             "Mass": 13.5,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 7.2,
             "FlakParticles": 0
         },
         "items": [
@@ -1596,7 +1607,8 @@
     "14.5x114mm BZT API-T": {
         "properties": {
             "Mass": 59.6,
-            "FallSpeed": 1.0
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 35
         },
         "items": [
             "14mmbzt"
@@ -3380,6 +3392,7 @@
             "MuzzleVelocity": 1050,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 1,
+            "PenetrationAt100m": 15,
             "FragType": "PREFORMED",
             "FragPattern": "FORWARD_CONE",
             "FragCount": 152,
@@ -3464,6 +3477,7 @@
             "MuzzleVelocity": 792,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 39,
+            "PenetrationAt100m": 6,
             "FragType": "HE_SHELL"
         },
         "items": [
@@ -3747,6 +3761,7 @@
             "MuzzleVelocity": 241,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 43,
+            "PenetrationAt100m": 3,
             "FragType": "HE_GRENADE"
         },
         "items": [
@@ -4365,6 +4380,7 @@
             "MuzzleVelocity": 355,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 250,
+            "PenetrationAt100m": 7,
             "FragType": "HE_SHELL"
         },
         "items": [
@@ -5701,6 +5717,7 @@
             "Mass": 3180,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 900,
+            "PenetrationAt100m": 5,
             "FragType": "HE_SHELL"
         },
         "items": [
@@ -9334,7 +9351,8 @@
             "Mass": 43000,
             "MuzzleVelocity": 684,
             "FallSpeed": 1.0,
-            "ExplosiveMassTNTKg": 2000000
+            "ExplosiveMassTNTKg": 2000000,
+            "PenetrationAt100m": 25
         },
         "items": [
             "155mmw48nuclearshell"
@@ -13316,6 +13334,7 @@
         "properties": {
             "Mass": 4.0,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 4.5,
             "FlakParticles": 0
         },
         "items": [
@@ -13392,7 +13411,8 @@
         "properties": {
             "Mass": 9.5,
             "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 0.5
+            "ExplosiveMassTNTg": 0.5,
+            "PenetrationAt100m": 3
         },
         "items": [
             "minigunexplosiveammo"
@@ -13500,6 +13520,7 @@
         "properties": {
             "Mass": 15,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 11,
             "FlakParticles": 0
         },
         "items": [
@@ -14764,6 +14785,7 @@
         "properties": {
             "Mass": 9.5,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 6,
             "FlakParticles": 0
         },
         "items": [
@@ -15190,7 +15212,8 @@
         "properties": {
             "Damage": 38,
             "MuzzleVelocity": 800,
-            "FallSpeed": 0.0
+            "FallSpeed": 0.0,
+            "PenetrationAt100m": 24
         },
         "items": [
             "neuroilasergunammo"
@@ -16831,6 +16854,7 @@
             "Mass": 800000,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 25,
+            "PenetrationAt100m": 150,
             "FragType": "THICK_CASE"
         },
         "items": [

@@ -57,7 +57,12 @@ public final class MarineDraftPhysics
         if (!Double.isFinite(currentVerticalVelocity) || !Double.isFinite(hullBottomY) || !Double.isFinite(waterSurfaceY) || !Double.isFinite(draftM) || draftM <= 0D)
             return Double.isFinite(currentVerticalVelocity) ? currentVerticalVelocity : 0D;
 
-        double ceiling = Double.isFinite(maxBuoyancy) ? Math.max(0D, maxBuoyancy) : 0D;
+        // A declared draft is itself the statement of where this hull floats, so
+        // it keeps the authority to get there even when the legacy Buoyancy key
+        // is zero: that key caps how fast a hull may rise, and a boat that
+        // declares a draft but no buoyancy would otherwise hang at whatever
+        // depth it was placed. A usable value still caps the response.
+        double ceiling = Math.max(VehiclePhysicsConstants.MIN_DRAFT_RISE_BLOCKS_PER_TICK, Double.isFinite(maxBuoyancy) ? Math.max(0D, maxBuoyancy) : 0D);
         // Positive error means the hull is riding deeper than its draft and needs
         // to rise; negative means it is sitting too high and should settle.
         double targetHullBottomY = waterSurfaceY - draftM;

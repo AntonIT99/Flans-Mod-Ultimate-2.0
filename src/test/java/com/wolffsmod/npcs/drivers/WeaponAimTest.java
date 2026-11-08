@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class WeaponAimTest
@@ -97,12 +99,32 @@ class WeaponAimTest
     }
 
     @Test
-    void bombLeadingRetainsOnlyAQuarterOfTheDifficultyPenalty()
+    void terrainCollisionUsesTheIncomingTraceBeforeDragAndGravity()
     {
-        assertEquals(1F, WeaponAim.bombLeadShare(1F));
-        assertEquals(0.925F, WeaponAim.bombLeadShare(0.7F), 1.0E-6F);
-        assertEquals(0.875F, WeaponAim.bombLeadShare(0.5F));
-        assertEquals(0.825F, WeaponAim.bombLeadShare(0.3F), 1.0E-6F);
-        assertEquals(0.75F, WeaponAim.bombLeadShare(0F));
+        WeaponAim.Fall fall = WeaponAim.fall(new Vec3(0D, 10D, 0D), new Vec3(2D, -1D, -4D), 1D, 0.5D, 0D,
+            (from, to) -> Optional.of(from.lerp(to, 0.5D)));
+        assertTrue(fall.landed());
+        assertEquals(0.5D, fall.ticks());
+        assertEquals(new Vec3(1D, 9.5D, -2D), fall.impact());
     }
+
+    @Test
+    void theApproachFliesThroughTheReleasePointInsteadOfTurningBackAtIt()
+    {
+        Vec3 position = new Vec3(101D, 40D, 0D);
+        Vec3 release = new Vec3(100D, 0D, 0D);
+        Vec3 approach = WeaponAim.bombApproach(position, new Vec3(2D, 0D, 0D), release);
+        assertTrue(approach.x > position.x);
+        assertEquals(0D, approach.z);
+        assertEquals(release, WeaponAim.bombApproach(Vec3.ZERO, new Vec3(2D, 0D, 0D), release));
+    }
+
+    @Test
+    void theReleasePointAccountsForTheActualBayOffsetAndForwardTravel()
+    {
+        Vec3 origin = new Vec3(4D, 40D, 2D);
+        Vec3 impact = new Vec3(44D, 0D, 12D);
+        assertEquals(new Vec3(60D, 0D, 90D), WeaponAim.releasePoint(origin, impact, new Vec3(100D, 0D, 100D)));
+    }
+
 }

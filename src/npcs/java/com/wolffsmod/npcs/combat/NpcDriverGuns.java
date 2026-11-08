@@ -1,17 +1,12 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.MountAim;
-import com.flansmodultimate.api.driveables.ReloadCycle;
-import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.EntityTypeProperties;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
-import com.flansmodultimate.api.projectiles.FlansProjectiles;
-import com.flansmodultimate.api.projectiles.ProjectileParameters;
-import com.flansmodultimate.api.projectiles.ProjectileShot;
+import com.flansmodultimate.api.projectiles.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
@@ -230,7 +225,7 @@ public final class NpcDriverGuns
     {
         return options.enabled(Feature.PROJECTILES) && options.enabled(Feature.MODEL_MUZZLES) && npc.isAlive() && !npc.isKilled() && target != null && target.isAlive() && target.level() == npc.level()
             && target.distanceTo(npc) <= npc.stats.ranged.getRange() && !state.getFlight().holdsFire() && !state.getParts().effects().gunDisabled() && !NpcDrivers.holdsFire(npc)
-            && !NpcCrew.holdsFire(npc) && !NpcSkill.holdsFire(npc, target);
+            && !NpcCrew.holdsFire(npc);
     }
 
     private void fire(Context context, Mount mount, List<WeaponMuzzle> points)
@@ -321,6 +316,14 @@ public final class NpcDriverGuns
         Vec3 origin = NpcModels.world(npc, context.model(), muzzle.offset(), state.getHullYaw());
         if (!NpcVehicleCombat.mayFire(npc, target, origin, FlansProjectiles.getArmorPerformance(ammo, round, muzzle.weapon().orElse(null), definition), NpcBlastSafety.reach(ammo) > 0D))
             return false;
+        ProjectileShot shot = FlansProjectiles.prepare(npc, ammo, ItemStack.EMPTY, muzzle.weapon().orElse(null), definition, secondary, new ProjectileParameters(round, true, 0F, 0F, 1F)).orElse(null);
+        if (shot == null)
+            return false;
+        // Bombs leave the bay itself; their curved terrain trace replaces the gun's direct sight and through-cover origin.
+        if (shot.dropped())
+            return dropBomb(context, origin, shot, NpcBlastSafety.reach(ammo));
+        if (NpcSkill.holdsFire(npc, target))
+            return false;
         Vec3 aimPoint = NpcVehicleState.aimPoint(target);
         NpcTuning tuning = NpcTuning.of(npc);
         int transparent = tuning.sight() == NpcTuning.Sight.SEE_AND_FIRE_THROUGH ? tuning.get(NpcTuning.Value.FIRE_LIMIT) : 0;
@@ -328,11 +331,6 @@ public final class NpcDriverGuns
             return false;
         if (tuning.sight() == NpcTuning.Sight.SEE_AND_FIRE_THROUGH)
             origin = NpcSight.launchPoint(npc, origin, aimPoint, tuning.get(NpcTuning.Value.FIRE_LIMIT));
-        ProjectileShot shot = FlansProjectiles.prepare(npc, ammo, ItemStack.EMPTY, muzzle.weapon().orElse(null), definition, secondary, new ProjectileParameters(round, true, 0F, 0F, 1F)).orElse(null);
-        if (shot == null)
-            return false;
-        if (shot.dropped())
-            return dropBomb(context, origin, shot);
         if (options.enabled(Feature.FIRE_WHEN_ALIGNED) && !state.isGunAligned())
             return false;
         // Rounds leave along the barrels, as a player's do: the turret's, or the hull's for a gun fixed to it, which waits for the
@@ -349,13 +347,19 @@ public final class NpcDriverGuns
         return true;
     }
 
-    /** A bomb falls away from the bay without a flash, only on a target worth it, and only once it would come down on it. */
-    private static boolean dropBomb(Context context, Vec3 origin, ProjectileShot shot)
+    /**
+     * A bomb falls away from the bay without a flash, only on a target worth it, and only once it would come down within
+     * reach of it.
+     *
+     * @param reach
+     *            blocks round where it goes off within which the bomb harms, which is how far off the target it may come down
+     */
+    private static boolean dropBomb(Context context, Vec3 origin, ProjectileShot shot, double reach)
     {
         EntityNPCInterface npc = context.npc();
         LivingEntity target = context.target();
         NpcVehicleState state = context.state();
-        if (!NpcBombTargets.worthBombing(target) || !state.bombDrop(npc, origin, shot.gravity(), shot.drag(), target, context.options()).hits())
+        if (!NpcBombTargets.worthBombing(npc, target) || !state.bombDrop(npc, origin, shot.gravity(), shot.drag(), reach, target, context.options()).hits())
             return false;
         return !shot.launch(origin, state.barrelDirection(npc, false), false).isEmpty();
     }

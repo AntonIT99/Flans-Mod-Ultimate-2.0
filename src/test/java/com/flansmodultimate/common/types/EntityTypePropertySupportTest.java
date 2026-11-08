@@ -5,6 +5,7 @@ import com.flansmodultimate.api.entity.EntityTypeProperties.Sound;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
+import com.flansmodultimate.common.driveables.damage.VehicleSquashDamage;
 import com.flansmodultimate.content.ContentPack;
 import org.junit.jupiter.api.Test;
 
@@ -96,8 +97,11 @@ class EntityTypePropertySupportTest
         assertTrue(EntityTypePropertySupport.squashDamage(vehicle, 0.5D).isEmpty());
         vehicle.squashMobs = true;
         assertTrue(EntityTypePropertySupport.squashDamage(vehicle, 0.1D).isEmpty());
-        assertEquals(8D, EntityTypePropertySupport.squashDamage(vehicle, 0.5D).orElseThrow(), 1.0E-9D);
-        assertEquals(40D, EntityTypePropertySupport.squashDamage(vehicle, 10D).orElseThrow(), 1.0E-9D);
+        // A definition with no authored mass is weighed at the configured ground
+        // vehicle fallback of ten tonnes, which the energy curve then reads.
+        assertEquals(VehicleSquashDamage.damage(10_000D, 0.5D), EntityTypePropertySupport.squashDamage(vehicle, 0.5D).orElseThrow(), 1.0E-9D);
+        assertEquals(7.5396825D, EntityTypePropertySupport.squashDamage(vehicle, 0.5D).orElseThrow(), 1.0E-6D);
+        assertEquals(100D, EntityTypePropertySupport.squashDamage(vehicle, 10D).orElseThrow(), 1.0E-9D);
         assertTrue(EntityTypePropertySupport.squashDamage(new TestAA(), 0.5D).isEmpty());
     }
 

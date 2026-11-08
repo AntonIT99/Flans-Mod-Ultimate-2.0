@@ -1,9 +1,7 @@
 package com.flansmod.client.model.manus_legacy;
 
 import com.flansmod.client.model.ModelPlane;
-import com.flansmod.client.tmt.Coord2D;
-import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmod.client.tmt.Shape2D;
+import com.flansmod.client.tmt.*;
 
 public class ModelF22 extends ModelPlane {
    public ModelF22() {
@@ -79,7 +77,7 @@ public class ModelF22 extends ModelPlane {
       this.bodyModel[10].setRotationPoint(1.0F, -17.0F, 24.0F);
       this.bodyModel[11].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(0.0, 0.0, 0, 0), new Coord2D(32.0, 0.0, 32, 0), new Coord2D(27.0, 10.0, 27, 10), new Coord2D(5.0, 10.0, 5, 10)}), 1.0F, 32, 10, 76, 1, 0, new float[]{32.0F, 11.0F, 22.0F, 11.0F});
       this.bodyModel[11].rotateAngleY = (float) (Math.PI / 2);
-      this.bodyModel[11].rotateAngleZ = (float) (Math.PI / 2);
+      this.bodyModel[11].rotateAngleX = (float) (-Math.PI / 2);
       this.bodyModel[11].setRotationPoint(-51.0F, -4.0F, 16.0F);
       this.bodyModel[12].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(0.0, 0.0, 0, 0), new Coord2D(92.0, 0.0, 92, 0), new Coord2D(92.0, 14.0, 92, 14), new Coord2D(10.0, 14.0, 10, 14)}), 1.0F, 92, 14, 205, 1, 0, new float[]{92.0F, 14.0F, 82.0F, 17.0F});
       this.bodyModel[12].rotateAngleY = (float) Math.PI;
@@ -210,7 +208,7 @@ public class ModelF22 extends ModelPlane {
       this.tailModel[5].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(0.0, 0.0, 0, 0), new Coord2D(32.0, 0.0, 32, 0), new Coord2D(30.0, 34.0, 30, 34), new Coord2D(2.0, 34.0, 2, 34)}), 1.0F, 32, 40, 140, 1, 0, new float[]{32.0F, 40.0F, 28.0F, 40.0F});
       this.tailModel[5].setRotationPoint(31.0F, -4.0F, -16.0F);
       this.tailModel[5].rotateAngleY = (float) (Math.PI * 3.0 / 2.0);
-      this.tailModel[5].rotateAngleZ = -1.3177236F;
+      this.tailModel[5].rotateAngleX = -1.3177236F;
       this.tailModel[6].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(0.0, 0.0, 0, 0), new Coord2D(21.0, 5.0, 21, 5), new Coord2D(0.0, 10.0, 0, 10)}), 4.0F, 21, 10, 53, 4, 0, new float[]{22.0F, 22.0F, 10.0F});
       this.tailModel[6].setRotationPoint(64.0F, -22.0F, 2.0F);
       this.tailModel[6].rotateAngleZ = (float) Math.PI;
@@ -227,19 +225,19 @@ public class ModelF22 extends ModelPlane {
       this.tailModel[9].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(0.0, 0.0, 0, 0), new Coord2D(12.0, 0.0, 12, 0), new Coord2D(6.0, 5.0, 6, 5)}), 1.0F, 12, 5, 28, 1, 0, new float[]{12.0F, 8.0F, 8.0F});
       this.tailModel[9].setRotationPoint(65.0F, -22.0F, -14.0F);
       this.tailModel[9].rotateAngleY = (float) (Math.PI * 3.0 / 2.0);
-      this.tailModel[9].rotateAngleZ = (float) (Math.PI * 3.0 / 2.0);
+      this.tailModel[9].rotateAngleX = (float) (Math.PI * 3.0 / 2.0);
       this.tailModel[10].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(0.0, 0.0, 0, 0), new Coord2D(12.0, 0.0, 12, 0), new Coord2D(6.0, 5.0, 6, 5)}), 1.0F, 12, 5, 28, 1, 0, new float[]{12.0F, 8.0F, 8.0F});
       this.tailModel[10].setRotationPoint(65.0F, -22.0F, 2.0F);
       this.tailModel[10].rotateAngleY = (float) (Math.PI * 3.0 / 2.0);
-      this.tailModel[10].rotateAngleZ = (float) (Math.PI * 3.0 / 2.0);
+      this.tailModel[10].rotateAngleX = (float) (Math.PI * 3.0 / 2.0);
       this.tailModel[11].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(0.0, 0.0, 0, 0), new Coord2D(12.0, 0.0, 12, 0), new Coord2D(6.0, 5.0, 6, 5)}), 1.0F, 12, 5, 28, 1, 0, new float[]{12.0F, 8.0F, 8.0F});
       this.tailModel[11].setRotationPoint(65.0F, -11.0F, -14.0F);
       this.tailModel[11].rotateAngleY = (float) (Math.PI * 3.0 / 2.0);
-      this.tailModel[11].rotateAngleZ = (float) (Math.PI * 3.0 / 2.0);
+      this.tailModel[11].rotateAngleX = (float) (Math.PI * 3.0 / 2.0);
       this.tailModel[12].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(0.0, 0.0, 0, 0), new Coord2D(12.0, 0.0, 12, 0), new Coord2D(6.0, 5.0, 6, 5)}), 1.0F, 12, 5, 28, 1, 0, new float[]{12.0F, 8.0F, 8.0F});
       this.tailModel[12].setRotationPoint(65.0F, -11.0F, 2.0F);
       this.tailModel[12].rotateAngleY = (float) (Math.PI * 3.0 / 2.0);
-      this.tailModel[12].rotateAngleZ = (float) (Math.PI * 3.0 / 2.0);
+      this.tailModel[12].rotateAngleX = (float) (Math.PI * 3.0 / 2.0);
       this.tailModel[13].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(0.0, 0.0, 0, 0), new Coord2D(30.0, 0.0, 30, 0), new Coord2D(46.0, 20.0, 46, 20), new Coord2D(6.0, 20.0, 6, 20), new Coord2D(0.0, 14.0, 0, 14)}), 1.0F, 46, 20, 118, 1, 0, new float[]{30.0F, 26.0F, 40.0F, 8.0F, 14.0F});
       this.tailModel[13].rotateAngleY = (float) Math.PI;
       this.tailModel[13].rotateAngleX = (float) (Math.PI / 2);

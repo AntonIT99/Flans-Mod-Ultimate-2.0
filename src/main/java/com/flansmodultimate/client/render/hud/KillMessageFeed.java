@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render.hud;
 
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.*;
@@ -19,9 +20,6 @@ public final class KillMessageFeed
 {
     /** Ticks one message stays on screen. */
     private static final int MESSAGE_LIFETIME = 200;
-    /** Older messages are pushed up and dropped once they leave the feed. */
-    private static final int MAX_LINES = 6;
-
     private static final List<Entry> MESSAGES = new ArrayList<>();
 
     /** One kill feed line. The weapon icon is resolved once, when the message arrives. */
@@ -80,10 +78,9 @@ public final class KillMessageFeed
         for (Entry entry : MESSAGES)
         {
             entry.line++;
-            if (entry.line > MAX_LINES)
-                entry.timer = 0;
         }
         MESSAGES.add(new Entry(data));
+        trim();
     }
 
     public static void tick()
@@ -93,7 +90,14 @@ public final class KillMessageFeed
 
     public static List<Entry> getMessages()
     {
+        trim();
         return Collections.unmodifiableList(MESSAGES);
+    }
+
+    private static void trim()
+    {
+        int maxLines = ModClientConfig.killFeedLines();
+        MESSAGES.removeIf(entry -> entry.line >= maxLines);
     }
 
     public static void clear()

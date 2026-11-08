@@ -7482,14 +7482,17 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (requestedVelocity.lengthSqr() < 0.0025D)
             return;
         double horizontalSpeed = requestedVelocity.horizontalDistance();
-        if (horizontalCollision && configType.isCollisionDamageEnable() && Math.abs(getThrottle()) >= Math.max(0F, configType.getCollisionDamageThrottle()))
-        {
-            float amount = (float) Math.min(100D, horizontalSpeed * Math.max(0F, configType.getCollisionDamageTimes()) * 10D);
-            if (amount > 0F)
-                damagePart(EnumDriveablePart.CORE, amount, level().damageSources().flyIntoWall());
-        }
-
+        // Striking a wall deliberately costs the hull nothing here. The legacy
+        // CollisionDamage keys describe what a driveable does to whoever it runs
+        // into, not what the impact does to itself, and
+        // DriveableCollisionHelper.applyConfiguredImpactDamage already applies
+        // them that way. Reading them a second time as self-damage wrote off the
+        // many pack vehicles that pair a small authored core with a large
+        // CollisionDamageTimes, so a kerb detonated them. What a crash does to
+        // the hull is the authored collision points meeting blocks, which
+        // sweepCollisionPointImpacts resolves against each part's own health.
         boolean squash = shouldSquashEntities();
+        double squashMassKg = squash ? configType.getImpulseMass().massKg() : 0D;
         AABB impactBox = getBoundingBox().inflate(Math.min(1.5D, horizontalSpeed + 0.25D), 0.25D, Math.min(1.5D, horizontalSpeed + 0.25D));
         for (Entity entity : level().getEntities(this, impactBox, candidate -> candidate.isAlive() && !isPartOfThis(candidate)))
         {
@@ -7507,7 +7510,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             if (!legacyKnockback && isHeavyContactBody(entity))
                 continue;
             if (squash && entity instanceof LivingEntity && horizontalSpeed > EntityTypePropertySupport.SQUASH_SPEED)
-                entity.hurt(level().damageSources().flyIntoWall(), (float) EntityTypePropertySupport.squashDamage(horizontalSpeed));
+                entity.hurt(level().damageSources().flyIntoWall(), (float) VehicleSquashDamage.damage(squashMassKg, horizontalSpeed));
             Vec3 push = entity.position().subtract(position());
             if (push.horizontalDistanceSqr() < 1.0E-6D)
                 push = getForwardVector();

@@ -493,7 +493,7 @@ final class NpcPilot
         }
         phase = Phase.BOMB_RUN;
         point = run.release();
-        return new Course(bearing(flight.position(), run.release()), holdHeight(flight, height));
+        return new Course(bearing(flight.position(), WeaponAim.bombApproach(flight.position(), flight.velocity(), run.release())), holdHeight(flight, height));
     }
 
     /**

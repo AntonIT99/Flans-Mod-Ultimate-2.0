@@ -7,6 +7,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcServerRules;
 import com.wolffsmod.npcs.tactics.NpcCombatPolicy;
+import com.wolffsmod.npcs.tactics.NpcTacticState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.api.NpcAPI;
@@ -216,12 +217,24 @@ public final class NpcEquipment
 
     public static Optional<EquippedWeaponProperties> flan(EntityNPCInterface npc)
     {
-        return FlansEquipment.getWeaponProperties(npc.getMainHandItem(), noppes.npcs.api.wrapper.ItemStackWrapper.MCItem(npc.inventory.getProjectile()));
+        return properties(npc, npc.getMainHandItem(), noppes.npcs.api.wrapper.ItemStackWrapper.MCItem(npc.inventory.getProjectile()));
     }
 
     public static Optional<EquippedWeaponProperties> flan(EntityNPCInterface npc, InteractionHand hand)
     {
-        return FlansEquipment.getWeaponProperties(npc.getItemInHand(hand), noppes.npcs.api.wrapper.ItemStackWrapper.MCItem(npc.inventory.getProjectile()));
+        return properties(npc, npc.getItemInHand(hand), noppes.npcs.api.wrapper.ItemStackWrapper.MCItem(npc.inventory.getProjectile()));
+    }
+
+    /**
+     * What the weapon fires, read once a tick per NPC. Every repeated reading within one tick, by a goal, a search or a
+     * readout, is answered from {@link NpcTacticState#weaponProperties} instead of working the statistics out again.
+     *
+     * @param ammunition
+     *            the round to measure the weapon with when it holds none; may be empty
+     */
+    public static Optional<EquippedWeaponProperties> properties(EntityNPCInterface npc, ItemStack weapon, ItemStack ammunition)
+    {
+        return NpcTacticState.of(npc).weaponProperties(npc.level().getGameTime(), weapon, ammunition, () -> FlansEquipment.getWeaponProperties(weapon, ammunition));
     }
 
     /** Whether the off hand holds a second Flan gun that the NPC fires alongside its main-hand weapon. */

@@ -1,5 +1,6 @@
 package com.flansmodultimate.config;
 
+import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
@@ -178,7 +179,7 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DRIVEABLE_WRECK_LIFETIME;
     private static final Supplier<Double> DRIVEABLE_MELEE_DAMAGE_THRESHOLD;
 
-    private static final Supplier<Integer> BREAKABLE_ARMOR;
+    private static final Supplier<EnumBreakableArmor> BREAKABLE_ARMOR;
     private static final Supplier<Integer> DEFAULT_ARMOR_DURABILITY;
     private static final Supplier<Integer> DEFAULT_ARMOR_ENCHANTABILITY;
     private static final Supplier<Boolean> FORCE_DEFENSE_AS_MODERN_ARMOR;
@@ -209,6 +210,14 @@ public final class ModCommonConfig
 
     private static final BooleanValue BULLET_FLYBY_SOUNDS;
     private static final DoubleValue BULLET_FLYBY_RANGE_MULTIPLIER;
+    private static final BooleanValue VEHICLE_SCREEN_SHAKE;
+    private static final BooleanValue GUN_SCREEN_SHAKE;
+    private static final BooleanValue EXPLOSION_SCREEN_SHAKE;
+    private static final DoubleValue EXPLOSION_SHAKE_INTENSITY;
+    private static final DoubleValue EXPLOSION_SHAKE_DURATION;
+    private static final DoubleValue SUPPRESSION_DURATION;
+    private static final DoubleValue SUPPRESSION_CAMERA_ROLL;
+    private static final DoubleValue SUPPRESSION_VIGNETTE;
     private static final BooleanValue NEAR_MISS_SUPPRESSION;
     private static final DoubleValue SUPPRESSION_RANGE_MULTIPLIER;
     private static final DoubleValue SUPPRESSION_INTENSITY;
@@ -438,8 +447,10 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Armor Settings");
-        BREAKABLE_ARMOR = builder.comment("0 = Non-breakable, 1 = All breakable, 2 = Refer to armor config").defineInRange("breakableArmor", 2, 0, 2);
-        DEFAULT_ARMOR_DURABILITY = builder.comment("Default durability if breakableArmor = 1").defineInRange("defaultArmorDurability", 500, 1, Integer.MAX_VALUE);
+        BREAKABLE_ARMOR = builder.comment("UNBREAKABLE = No armor breaks, ALL_BREAKABLE = All armor uses default durability, CONTENT_PACK = Use each armor definition.",
+            "Legacy numeric values 0, 1 and 2 are also accepted.").defineEnum("breakableArmor", EnumBreakableArmor.CONTENT_PACK, EnumGetMethod.ORDINAL_OR_NAME_IGNORECASE,
+                value -> EnumGetMethod.ORDINAL_OR_NAME_IGNORECASE.validate(value, EnumBreakableArmor.class));
+        DEFAULT_ARMOR_DURABILITY = builder.comment("Default durability if breakableArmor = ALL_BREAKABLE").defineInRange("defaultArmorDurability", 500, 1, Integer.MAX_VALUE);
         DEFAULT_ARMOR_ENCHANTABILITY = builder.comment("The quality of enchantments received for the same level of XP 0=UnEnchantable 25=Gold armor").defineInRange("defaultArmorEnchantability", 0, 0,
             Integer.MAX_VALUE);
         FORCE_DEFENSE_AS_MODERN_ARMOR = builder.comment("Force Defence / Defense values to be interpreted as vanilla Minecraft armor points instead of legacy ratio-based armor reduction.",
@@ -494,6 +505,18 @@ public final class ModCommonConfig
         ALLOW_PRONE = builder.comment("Whether players can lie prone with the Go Prone key. Lying still on the ground narrows a gun's spread by its ProneSpreadModifier.").define("allowProne", true);
         builder.pop();
 
+        builder.push("Combat Visual Settings");
+        VEHICLE_SCREEN_SHAKE = builder.comment("Shake the camera when a nearby driveable that opts into FancyScreenShake fires its main or coaxial gun").define("vehicleScreenShake", true);
+        GUN_SCREEN_SHAKE = builder.comment("Punch the field of view in and kick the camera when you fire a gun that opts into HasScreenShake").define("gunScreenShake", true);
+        EXPLOSION_SCREEN_SHAKE = builder.comment("Allow camera shake from ammunition or grenades configured with powerShake and rangeShake.").define("explosionScreenShake", true);
+        EXPLOSION_SHAKE_INTENSITY = builder.comment("Scale explosion camera movement. Zero disables movement.").defineInRange("explosionShakeIntensity", 1D, 0.0, 5.0);
+        EXPLOSION_SHAKE_DURATION = builder.comment("Duration in seconds of an explosion camera impulse.").defineInRange("explosionShakeDuration", 0.5D, 0.05, 5.0);
+        SUPPRESSION_DURATION = builder.comment("Seconds for a full suppression impulse to recover.").defineInRange("suppressionDuration", 2D, 0.1, 10.0);
+        SUPPRESSION_CAMERA_ROLL = builder.comment("Maximum visual camera roll in degrees from suppression. Zero disables camera movement; aim is unchanged.").defineInRange("suppressionCameraRoll",
+            3.5D, 0.0, 10.0);
+        SUPPRESSION_VIGNETTE = builder.comment("Maximum opacity of the suppression vignette. Zero disables darkening.").defineInRange("suppressionVignette", 0.82D, 0.0, 1.0);
+        builder.pop();
+
         builder.push("Shootable Settings");
         BULLET_FLYBY_SOUNDS = builder.comment("Send near-miss sounds for flying bullets and hitscan shots. Clients can mute these independently.").define("bulletFlybySounds", true);
         BULLET_FLYBY_RANGE_MULTIPLIER = builder.comment("Scale ammunition FlyBySoundRange. Effective reach is capped at 32 blocks; zero disables near-miss sounds.")
@@ -539,7 +562,7 @@ public final class ModCommonConfig
             .define("shootableProximityTriggerFriendlyFire", false);
         SHOOTABLE_DEFAULT_RESPAWN_TIME = builder.comment("Max despawn time in ticks (0.05s). 0 means no despawn time.").defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);
         LOCK_ON_RANGE = builder.comment("Range in blocks used by lock-on missiles when searching for targets.").defineInRange("lockOnRange", 128.0, 1.0, 4096.0);
-        RICOCHET_SPARK_COUNT = builder.comment("Base number of star particles spawned by a ricochet, scaled by projectile size.").defineInRange("ricochetSparkCount", 4, 0, 64);
+        RICOCHET_SPARK_COUNT = builder.comment("Base number of star particles spawned by a ricochet, scaled by projectile size.").defineInRange("ricochetSparkCount", 1, 0, 64);
         FLAK_PARTICLES_RANGE = builder.comment("Range in blocks for sending flak particle packets to clients.").defineInRange("flakParticlesRange", 256, 1, 4096);
         ENTITY_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending entity-hit particle packets to clients.").defineInRange("entityHitParticleRange", 64.0, 1.0, 4096.0);
         BLOCK_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending block-hit particle packets to clients.").defineInRange("blockHitParticleRange", 64.0, 1.0, 4096.0);
@@ -814,7 +837,7 @@ public final class ModCommonConfig
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
             FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(), AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get(),
-            ENABLE_REALISTIC_AIRCRAFT_DAMAGE.get());
+            ENABLE_REALISTIC_AIRCRAFT_DAMAGE.get(), VEHICLE_SCREEN_SHAKE.get(), GUN_SCREEN_SHAKE.get(), EXPLOSION_SCREEN_SHAKE.get(), EXPLOSION_SHAKE_INTENSITY.get(), EXPLOSION_SHAKE_DURATION.get(), SUPPRESSION_DURATION.get(), SUPPRESSION_CAMERA_ROLL.get(), SUPPRESSION_VIGNETTE.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -1509,6 +1532,14 @@ public final class ModCommonConfig
         DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS, QuickSection.SERVER),
         BULLET_FLYBY_SOUNDS(() -> ModCommonConfig.BULLET_FLYBY_SOUNDS, QuickSection.SERVER),
         BULLET_FLYBY_RANGE_MULTIPLIER(() -> ModCommonConfig.BULLET_FLYBY_RANGE_MULTIPLIER, QuickSection.SERVER),
+        VEHICLE_SCREEN_SHAKE(() -> ModCommonConfig.VEHICLE_SCREEN_SHAKE, QuickSection.SERVER),
+        GUN_SCREEN_SHAKE(() -> ModCommonConfig.GUN_SCREEN_SHAKE, QuickSection.SERVER),
+        EXPLOSION_SCREEN_SHAKE(() -> ModCommonConfig.EXPLOSION_SCREEN_SHAKE, QuickSection.SERVER),
+        EXPLOSION_SHAKE_INTENSITY(() -> ModCommonConfig.EXPLOSION_SHAKE_INTENSITY, QuickSection.SERVER),
+        EXPLOSION_SHAKE_DURATION(() -> ModCommonConfig.EXPLOSION_SHAKE_DURATION, QuickSection.SERVER),
+        SUPPRESSION_DURATION(() -> ModCommonConfig.SUPPRESSION_DURATION, QuickSection.SERVER),
+        SUPPRESSION_CAMERA_ROLL(() -> ModCommonConfig.SUPPRESSION_CAMERA_ROLL, QuickSection.SERVER),
+        SUPPRESSION_VIGNETTE(() -> ModCommonConfig.SUPPRESSION_VIGNETTE, QuickSection.SERVER),
         NEAR_MISS_SUPPRESSION(() -> ModCommonConfig.NEAR_MISS_SUPPRESSION, QuickSection.SERVER),
         SUPPRESSION_RANGE_MULTIPLIER(() -> ModCommonConfig.SUPPRESSION_RANGE_MULTIPLIER, QuickSection.SERVER),
         SUPPRESSION_INTENSITY(() -> ModCommonConfig.SUPPRESSION_INTENSITY, QuickSection.SERVER),

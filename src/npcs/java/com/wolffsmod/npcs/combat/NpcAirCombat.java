@@ -240,7 +240,7 @@ public final class NpcAirCombat
         if (target == null)
             return configured;
         boolean air = airborne(target);
-        boolean bombing = !air && (role(npc) == AircraftRole.BOMBER || NpcBombTargets.worthBombing(target));
+        boolean bombing = !air && (role(npc) == AircraftRole.BOMBER || NpcBombTargets.worthBombing(npc, target));
         double first = bankScore(primary.guns(), primary.bombs(), air, bombing);
         double second = bankScore(secondary.guns(), secondary.bombs(), air, bombing);
         return first == second ? configured : second > first;

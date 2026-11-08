@@ -277,6 +277,12 @@ whose descriptor is the same in both builds. The main mod has no Custom NPCs
 dependency. Recheck that concrete method descriptor when porting to another Custom
 NPCs build, rather than targeting a vanilla bridge method.
 
+The same mixin adjusts `getRenderOffset(EntityCustomNpc, float)` so standing
+riders stay upright at their mounts. The Forge dependency exposes the production
+SRG alias `m_7860_` as well as the development name; the NeoForge dependency uses
+only the Mojang name. Keep the target's single-method injection and omit the
+Forge-only unresolved-target suppression. The standing-rider behavior is identical.
+
 `FlansModelPreviews.renderWorld` is the reusable client API boundary. It accepts
 Minecraft entity/pose/buffer types and leaves GPU compatibility, detail policy,
 track envelopes and atlas generation in the main mod. The NPC adapter tags only

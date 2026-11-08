@@ -1,15 +1,11 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.FlansModParticles;
-
 import com.flansmodultimate.common.physics.ModPhysics;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.tags.FluidTags;
@@ -67,7 +63,7 @@ public class BigSmokeParticle extends ParticleBase
             double ry = yo + dy * 1 + 7 * level.random.nextDouble();
             double rz = zo + dz * 1 + 5 * level.random.nextDouble();
 
-            ParticleHelper.spawnSubParticle(FlansModParticles.rocketExhaustParticle.get(), rx, ry, rz);
+            ParticleHelper.spawnTacticalSmokeSubParticle(FlansModParticles.rocketExhaustParticle.get(), rx, ry, rz);
 
             disperseTimer = 2;
         }

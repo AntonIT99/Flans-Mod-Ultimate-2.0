@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Optional;
+import java.util.function.BiFunction;
+
 /**
  * Aims a driveable's weapons: the direction to launch a round along to meet a target, and where a dropped bomb comes
  * down. Bombs follow Flan's collision trace, then drag and gravity, then movement each tick. No world access.
@@ -18,15 +21,6 @@ public final class WeaponAim
 {
     /** Most ticks a dropped bomb is followed down. */
     private static final int MAX_FALL_TICKS = 400;
-
-    /** Bomb flight times amplify under-leading, so only a quarter of the gun lead penalty applies. */
-    private static final float BOMB_LEAD_PENALTY = 0.25F;
-
-    /** @return the target lead share for bombs; the caller still honours the separate no-leading switch */
-    static float bombLeadShare(float share)
-    {
-        return 1F - BOMB_LEAD_PENALTY * (1F - share);
-    }
 
     /**
      * @param displacement
@@ -76,11 +70,23 @@ public final class WeaponAim
     /** @return where and after how many ticks a bomb dropped from a point at a velocity comes down to a height */
     public static Fall fall(Vec3 origin, Vec3 velocity, double gravity, double drag, double floor)
     {
+        return fall(origin, velocity, gravity, drag, floor, (from, to) -> Optional.empty());
+    }
+
+    /** Follows the same incoming collision traces as the projectile, stopping at terrain before the target's height. */
+    public static Fall fall(Vec3 origin, Vec3 velocity, double gravity, double drag, double floor, BiFunction<Vec3, Vec3, Optional<Vec3>> trace)
+    {
         Vec3 position = origin;
         Vec3 motion = velocity;
         int tick = 0;
         while (tick < MAX_FALL_TICKS)
         {
+            Optional<Vec3> collision = trace.apply(position, position.add(motion));
+            if (collision.isPresent())
+            {
+                double fraction = motion.lengthSqr() > 1.0E-12D ? position.distanceTo(collision.get()) / motion.length() : 0D;
+                return new Fall(collision.get(), tick + fraction, true);
+            }
             // Bullet traces the incoming velocity before applying forces. Moving first would accumulate an extra
             // tick of horizontal travel and use the wrong fall time, especially with drag or a climbing carrier.
             if (position.y <= floor)
@@ -95,5 +101,19 @@ public final class WeaponAim
             tick++;
         }
         return new Fall(position, tick, false);
+    }
+
+    /** The release point allowing for the distance a bomb carries forward after leaving its bay. */
+    public static Vec3 releasePoint(Vec3 origin, Vec3 impact, Vec3 meeting)
+    {
+        return new Vec3(meeting.x - (impact.x - origin.x), meeting.y, meeting.z - (impact.z - origin.z));
+    }
+
+    /** A nearby release point is flown through, so crossing it does not command a sudden turn back toward the bay's drop point. */
+    public static Vec3 bombApproach(Vec3 position, Vec3 velocity, Vec3 release)
+    {
+        Vec3 horizontal = velocity.multiply(1D, 0D, 1D);
+        double lookahead = Math.max(16D, horizontal.length() * 10D);
+        return release.subtract(position).horizontalDistance() <= lookahead * 2D ? release.add(horizontal.normalize().scale(lookahead)) : release;
     }
 }

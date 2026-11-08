@@ -1,9 +1,14 @@
 package com.wolffsmod.npcs.tactics;
 
+import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -89,5 +94,33 @@ class NpcTacticStateTest
         state.weaponRange(5L, () -> ++measured[0]);
         assertEquals(1, measured[0]);
         assertEquals(2, state.weaponRange(6L, () -> ++measured[0]));
+    }
+
+    @Test
+    void aHeldWeaponIsReadOnceATickForEachWeaponAndRound()
+    {
+        NpcTacticState state = new NpcTacticState();
+        ItemStack rifle = mock(ItemStack.class);
+        ItemStack carbine = mock(ItemStack.class);
+        ItemStack round = mock(ItemStack.class);
+        ItemStack none = mock(ItemStack.class);
+        int[] read = new int[1];
+        Optional<EquippedWeaponProperties> properties = Optional.of(mock(EquippedWeaponProperties.class));
+        Supplier<Optional<EquippedWeaponProperties>> measure = () ->
+        {
+            read[0]++;
+            return properties;
+        };
+        assertSame(properties, state.weaponProperties(5L, rifle, round, measure));
+        assertSame(properties, state.weaponProperties(5L, rifle, round, measure));
+        assertEquals(1, read[0], "the same weapon and round are read once a tick");
+        // Another round of the same weapon, another weapon, and the next tick are each a reading of their own.
+        state.weaponProperties(5L, rifle, none, measure);
+        state.weaponProperties(5L, carbine, round, measure);
+        assertEquals(3, read[0]);
+        state.weaponProperties(5L, rifle, round, measure);
+        assertEquals(3, read[0], "readings of several weapons are kept side by side");
+        state.weaponProperties(6L, rifle, round, measure);
+        assertEquals(4, read[0]);
     }
 }

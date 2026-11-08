@@ -11,9 +11,7 @@ import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.OptionInstance;
-import net.minecraft.client.Options;
+import net.minecraft.client.*;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.resources.language.I18n;
@@ -127,7 +125,7 @@ public final class ConfigOptionFactory
     @Nullable
     private static Option integerWidgetOption(ConfigTarget target, ConfigValue<?> value, ValueSpec spec, int current, boolean allSettings)
     {
-        if (allSettings && hasWideRange(spec))
+        if (value == ModClientConfig.BLOOD_SPLATTER_SECONDS || allSettings && hasWideRange(spec))
             return numericOption(target, value, spec, current, input -> intValueText(value, input), Integer::valueOf);
         return widgetOption(target, value, intOption(target, value, spec, current));
     }

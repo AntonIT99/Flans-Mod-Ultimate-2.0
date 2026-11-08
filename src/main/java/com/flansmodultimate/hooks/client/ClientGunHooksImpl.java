@@ -20,7 +20,8 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.IClientGunHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.gun.*;
+import com.flansmodultimate.network.server.gun.PacketDeployedGunInput;
+import com.flansmodultimate.network.server.gun.PacketGunInput;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +35,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.Map;
 
 public class ClientGunHooksImpl implements IClientGunHooks
 {
@@ -129,8 +131,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
     /** Adds the Labjac Edition firing impact of a gun that opts into {@code HasScreenShake}. */
     private static void addScreenShake(GunType type)
     {
-        ModClientConfig config = ModClientConfig.get();
-        if (!type.isHasScreenShake() || config == null || !config.gunScreenShake)
+        if (!type.isHasScreenShake() || !ModCommonConfig.get().gunScreenShake())
             return;
         float cameraKick = type.isScreenShakeCameraKick() ? type.getCameraRecoil() * type.getScreenShakeIntensity() : 0F;
         GunScreenShake.addShot(type.isScreenShakeUsesSustainedRecoil(), type.getScreenShakeIntensity(), cameraKick);

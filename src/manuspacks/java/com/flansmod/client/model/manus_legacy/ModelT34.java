@@ -1,9 +1,7 @@
 package com.flansmod.client.model.manus_legacy;
 
 import com.flansmod.client.model.ModelVehicle;
-import com.flansmod.client.tmt.Coord2D;
-import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmod.client.tmt.Shape2D;
+import com.flansmod.client.tmt.*;
 
 public class ModelT34 extends ModelVehicle {
    public ModelT34() {
@@ -153,12 +151,12 @@ public class ModelT34 extends ModelVehicle {
       this.bodyModel[35].setRotationPoint(-43.0F, 3.0F, 15.0F);
       this.bodyModel[36].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(7.0, 0.0, 7, 0), new Coord2D(37.0, 0.0, 37, 0), new Coord2D(44.0, 13.0, 44, 13), new Coord2D(0.0, 13.0, 0, 13)}), 1.0F, 44, 13, 102, 1, 0, new float[]{30.0F, 15.0F, 44.0F, 13.0F});
       this.bodyModel[36].rotateAngleY = (float) (Math.PI * 3.0 / 2.0);
-      this.bodyModel[36].rotateAngleZ = 2.2863815F;
+      this.bodyModel[36].rotateAngleX = 2.2863815F;
       this.bodyModel[36].setRotationPoint(-38.0F, -17.0F, -22.0F);
       this.bodyModel[37].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(7.0, 0.0, 7, 0), new Coord2D(37.0, 0.0, 37, 0), new Coord2D(44.0, 13.0, 44, 13), new Coord2D(0.0, 13.0, 0, 13)}), 1.0F, 44, 13, 102, 1, 0, new float[]{30.0F, 15.0F, 44.0F, 13.0F});
       this.bodyModel[37].setRotationPoint(14.0F, -17.0F, 22.0F);
       this.bodyModel[37].rotateAngleY = (float) (Math.PI / 2);
-      this.bodyModel[37].rotateAngleZ = 4.049164F;
+      this.bodyModel[37].rotateAngleX = -4.049164F;
       this.bodyModel[38].addShape3D(0.0F, 0.0F, 0.0F, new Shape2D(new Coord2D[]{new Coord2D(11.0, 0.0, 11, 0), new Coord2D(63.0, 0.0, 63, 0), new Coord2D(73.0, 11.0, 73, 11), new Coord2D(0.0, 11.0, 0, 11)}), 1.0F, 73, 11, 151, 1, 0, new float[]{52.0F, 15.0F, 73.0F, 11.0F});
       this.bodyModel[38].setRotationPoint(25.0F, -17.0F, -15.0F);
       this.bodyModel[38].rotateAngleX = 2.4347343F;

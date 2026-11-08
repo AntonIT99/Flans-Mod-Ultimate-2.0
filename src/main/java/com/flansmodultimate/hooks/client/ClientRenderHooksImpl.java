@@ -24,6 +24,7 @@ import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
 import com.flansmodultimate.util.FileUtils;
@@ -437,16 +438,15 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     @Override
     public void addCombatFeedback(boolean explosion, float intensity, float direction)
     {
-        ModClientConfig config = ModClientConfig.get();
         var player = Minecraft.getInstance().player;
-        if (config == null || player == null)
+        if (player == null)
             return;
-        if (explosion && config.explosionScreenShake)
-            CombatScreenEffects.addExplosion(intensity, Util.getMillis(), config.explosionShakeDuration);
-        else if (!explosion && config.nearMissSuppression && Float.isFinite(direction))
+        if (explosion && ModCommonConfig.get().explosionScreenShake())
+            CombatScreenEffects.addExplosion(intensity, Util.getMillis(), ModCommonConfig.get().explosionShakeDuration());
+        else if (!explosion && ModCommonConfig.get().nearMissSuppression() && Float.isFinite(direction))
         {
             float side = (float) Math.sin(direction - Math.toRadians(player.getYRot()));
-            CombatScreenEffects.addSuppression(intensity, side, Util.getMillis(), config.suppressionDuration);
+            CombatScreenEffects.addSuppression(intensity, side, Util.getMillis(), ModCommonConfig.get().suppressionDuration());
         }
     }
 

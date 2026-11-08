@@ -1,10 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.IDriveableType;
-import com.flansmodultimate.api.driveables.MountAim;
-import com.flansmodultimate.api.driveables.ReloadCycle;
-import com.flansmodultimate.api.driveables.WeaponMuzzle;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
 import com.flansmodultimate.api.equipment.FlansEquipment;
@@ -17,8 +14,7 @@ import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.sim.*;
 import noppes.npcs.entity.EntityNPCInterface;
-import noppes.npcs.entity.data.DataRanged;
-import noppes.npcs.entity.data.DataStats;
+import noppes.npcs.entity.data.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -33,7 +29,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class NpcDriverGunsTest
@@ -73,6 +69,16 @@ class NpcDriverGunsTest
             when(server.isSameThread()).thenReturn(true);
             when(npc.level()).thenReturn(level);
             when(npc.isAlive()).thenReturn(true);
+            try
+            {
+                var ai = EntityNPCInterface.class.getField("ais");
+                ai.setAccessible(true);
+                ai.set(npc, new DataAI(npc));
+            }
+            catch (ReflectiveOperationException exception)
+            {
+                throw new AssertionError(exception);
+            }
             LivingEntity target = mock(LivingEntity.class);
             when(target.level()).thenReturn(level);
             when(target.isAlive()).thenReturn(true);

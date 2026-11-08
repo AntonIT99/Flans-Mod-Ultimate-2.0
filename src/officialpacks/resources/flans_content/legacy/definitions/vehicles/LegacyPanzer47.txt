@@ -47,7 +47,7 @@ Tank true
 
 // Weaponry
 BarrelPosition 80 26 1.5
-AddGun 27 26 -3.5 turret mg42
+AddGun 16 44 0 turret mg42
 ShootDelay 1
 ShellDelay 95
 TurretRotationSpeed 0.02
@@ -84,6 +84,8 @@ WheelPosition 1 -40 -10 22
 WheelPosition 2 40 -10 22
 WheelPosition 3 40 -10 -22
 Driver 0 30 0 -360 360 -10 20
+DriverPart turret
+DriverGun MG42
 RotatedDriverOffset 0 0 0
 Passengers 0
 

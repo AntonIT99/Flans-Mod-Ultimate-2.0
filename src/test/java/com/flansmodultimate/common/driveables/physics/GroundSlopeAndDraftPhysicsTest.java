@@ -109,6 +109,18 @@ class GroundSlopeAndDraftPhysicsTest
     }
 
     @Test
+    void aDeclaredDraftStillSettlesAHullWhoseDefinitionStatesNoBuoyancy()
+    {
+        // Buoyancy caps how fast a hull may rise. A boat that sets it to zero but
+        // declares a draft would otherwise hang at whatever depth it was placed,
+        // because the clamp left the restoring response no room to act at all.
+        double noBuoyancy = MarineDraftPhysics.verticalVelocity(0D, 61D, 64D, 1.5D, 0D);
+        assertTrue(noBuoyancy > 0D, "a declared draft must still reach its waterline, was " + noBuoyancy);
+        assertTrue(noBuoyancy <= VehiclePhysicsConstants.MIN_DRAFT_RISE_BLOCKS_PER_TICK, "must stay within the minimum rise, was " + noBuoyancy);
+        assertTrue(MarineDraftPhysics.verticalVelocity(0D, 61D, 64D, 1.5D, Double.NaN) > 0D);
+    }
+
+    @Test
     void theApproachIsDampedRatherThanInstant()
     {
         double first = MarineDraftPhysics.verticalVelocity(-0.5D, 61D, 64D, 1.5D, 0.25D);

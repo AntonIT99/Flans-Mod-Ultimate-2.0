@@ -21,9 +21,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.Path;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -86,8 +84,7 @@ public final class NpcDriver
     /** Fewest blocks at which the driveable's weapons engage, whatever the NPC's firing range; more for an aircraft's. */
     private static final double MIN_FIRE_RANGE = 16D;
     private static final double MIN_AIR_FIRE_RANGE = 96D;
-    /** Blocks above its target from which a bomb is dropped, and from its target within which it has to come down. */
-    private static final double MIN_BOMB_HEIGHT = 4D;
+    /** Blocks from the target within which a bomb may come down as a fallback. */
     private static final double BOMB_RADIUS = 4D;
     /** Ticks between looks for a driveable ahead to keep a distance to, and degrees off the heading within which one is ahead. */
     private static final int FOLLOW_INTERVAL = 10;
@@ -595,7 +592,7 @@ public final class NpcDriver
             return null;
         boolean secondary = !primaryDrops;
         boolean guns = rangedBank(seat, false) && !primaryDrops || rangedBank(seat, true) && !secondaryDrops;
-        if (guns && !NpcBombTargets.worthBombing(target))
+        if (guns && !NpcBombTargets.worthBombing(npc, target))
             return null;
         Optional<Vec3> origin = seat.getDriverWeaponOrigin(secondary);
         Optional<WeaponBallistics> ballistics = seat.getDriverWeaponBallistics(secondary);
@@ -607,7 +604,7 @@ public final class NpcDriver
         Vec3 lead = bombLead(npc, target);
         Vec3 meeting = target.position().add(lead.x * fall.ticks(), 0D, lead.z * fall.ticks());
         double standoff = NpcBlastSafety.standoff(npc, blastReach(secondary));
-        return new NpcPilot.BombRun(releasePoint(origin.get(), fall.impact(), meeting), bombAltitude(target.getY(), standoff));
+        return new NpcPilot.BombRun(releasePoint(aircraft.position(), fall.impact(), meeting), bombAltitude(target.getY(), standoff));
     }
 
     /**
@@ -621,7 +618,7 @@ public final class NpcDriver
      */
     static Vec3 releasePoint(Vec3 origin, Vec3 impact, Vec3 meeting)
     {
-        return new Vec3(meeting.x - (impact.x - origin.x), meeting.y, meeting.z - (impact.z - origin.z));
+        return WeaponAim.releasePoint(origin, impact, meeting);
     }
 
     /**
@@ -916,15 +913,14 @@ public final class NpcDriver
             seat.aimDriverWeapon(secondary, origin.get().add(launch.get().scale(aimPoint.distanceTo(origin.get()))));
         else
             seat.aimAt(aimPoint);
-        // The weapons are laid on the target while the NPC is still reacting to it; only the triggers wait.
-        boolean release = NpcSkill.holdsFire(npc, target);
+        // Guns wait for the NPC to react; bombs must take their brief release window.
         double range = Math.max(reach, npc.stats.ranged.getRange());
         boolean primaryBears = readyToFire(npc, seat, driveable, false, target, range);
         boolean secondaryBears = readyToFire(npc, seat, driveable, true, target, range);
         // Whether a weapon is on the target at all, rather than whether the trigger is down this tick, is what tells the
         // driving that it is worth standing still for: the triggers are let go of regularly to cycle them.
         bearing = primaryBears || secondaryBears;
-        setTriggers(seat, !release && primaryBears, !release && secondaryBears);
+        setTriggers(seat, !NpcSkill.holdsFire(npc, target, primaryDrops) && primaryBears, !NpcSkill.holdsFire(npc, target, secondaryDrops) && secondaryBears);
     }
 
     private void setTriggers(ISeat seat, boolean primary, boolean secondary)
@@ -1030,7 +1026,7 @@ public final class NpcDriver
         if (dropped ? belowOwnBlast(origin.get().y, target.getY(), NpcBlastSafety.standoff(npc, blastReach(secondary))) : NpcBlastSafety.tooClose(npc, target, blastReach(secondary)))
             return false;
         if (dropped)
-            return bombsAway(origin.get(), driveable.getDeltaMovement(), ballistics.get(), target, bombLead(npc, target));
+            return NpcBombing.solve(driveable, origin.get(), ballistics.get().gravity(), ballistics.get().drag(), Math.max(BOMB_RADIUS, NpcBombTargets.releaseRadius(blastReach(secondary))), target, bombLead(npc, target)).drop();
         if (direction.get().dot(launch(npc, seat, secondary, line)) < FIRE_CONE)
             return false;
         ClipContext sight = new ClipContext(origin.get(), aimPoint, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc);
@@ -1049,23 +1045,8 @@ public final class NpcDriver
         NpcWeaponOptions options = options(npc);
         if (!options.enabled(Feature.LEAD_TARGET))
             return Vec3.ZERO;
-        Vec3 run = options.enabled(Feature.ADVANCED_LEAD) ? motion.velocity() : target.getDeltaMovement();
-        return run.scale(WeaponAim.bombLeadShare(NpcSkill.leadShare(npc)));
-    }
-
-    /**
-     * Whether a bomb dropped now, from above the target, would come down within reach of it, where the target will be by then.
-     *
-     * @param lead
-     *            the target's velocity, in blocks per tick across the ground, it is met by
-     */
-    private static boolean bombsAway(Vec3 origin, Vec3 velocity, WeaponBallistics ballistics, LivingEntity target, Vec3 lead)
-    {
-        if (origin.y < target.getY() + MIN_BOMB_HEIGHT)
-            return false;
-        WeaponAim.Fall fall = WeaponAim.fall(origin, velocity, ballistics.gravity(), ballistics.drag(), target.getY());
-        Vec3 meeting = target.position().add(lead.x * fall.ticks(), 0D, lead.z * fall.ticks());
-        return fall.landed() && horizontal(fall.impact(), meeting) <= BOMB_RADIUS;
+        // A long fall amplifies even a small skill penalty into a large miss. Bombs use full measured lead.
+        return options.enabled(Feature.ADVANCED_LEAD) ? motion.velocity() : target.getDeltaMovement();
     }
 
     /**

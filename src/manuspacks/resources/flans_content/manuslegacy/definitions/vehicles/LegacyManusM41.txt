@@ -46,7 +46,7 @@ RealTurnRateDegPerSec 18
 
 // Weapons
 AddGun 16.41 30.23 6.909 turret WW2_MG_BrowningM1919_1A
-BarrelPosition 44.91 30.23 0
+BarrelPosition 49.2 23.5 0
 ShootParticlesPrimary explode 0.7 0 0
 ShootParticlesPrimary flansmod.fmflame 0.95 0 0
 ShootParticlesPrimary flansmod.fmflame 0.58 0.07 0.05
@@ -57,7 +57,7 @@ ShootParticlesPrimary smoke 0.22 0.04 -0.08
 ShootParticlesPrimary crit 0.48 0 0
 ShellDelay 110
 ShootDelay 5
-GunOrigin 1 43.18 -3.541 8.204
+GunOrigin 1 40.2 -12.1 7.5
 ShootDelayPrimarySeconds 6
 ReadWeaponsFromGunTypes true
 

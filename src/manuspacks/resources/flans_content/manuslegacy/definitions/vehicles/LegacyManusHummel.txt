@@ -41,7 +41,7 @@ RealMaxReverseSpeedKmh 7
 RealTurnRateDegPerSec 20
 
 // Weapons
-BarrelPosition 63.72 28.28 0
+BarrelPosition 57.4 27 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 0.9 0 0
 ShootParticlesPrimary flansmod.fmflame 1.05 0 0

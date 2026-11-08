@@ -49,7 +49,7 @@ public record CommonConfigSnapshot(
     boolean autoRefillVehicleAmmo,
     boolean gunsInDestroyedPartsWork,
 
-    int breakableArmor,
+    EnumBreakableArmor breakableArmor,
     int defaultArmorDurability,
     int defaultArmorEnchantability,
     boolean forceDefenseAsModernArmor,
@@ -176,10 +176,18 @@ public record CommonConfigSnapshot(
     double airBrakeEffectiveness,
     double airBrakeAssistDeceleration,
     double airBrakeAssistReferenceSpeedKmh,
-    boolean enableRealisticAircraftDamage
+    boolean enableRealisticAircraftDamage,
+    boolean vehicleScreenShake,
+    boolean gunScreenShake,
+    boolean explosionScreenShake,
+    double explosionShakeIntensity,
+    double explosionShakeDuration,
+    double suppressionDuration,
+    double suppressionCameraRoll,
+    double suppressionVignette
 )
 {
-    public static final int CURRENT_VERSION = 53;
+    public static final int CURRENT_VERSION = 54;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -225,7 +233,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.autoRefillVehicleAmmo);
         buf.writeBoolean(s.gunsInDestroyedPartsWork);
 
-        buf.writeVarInt(s.breakableArmor);
+        buf.writeEnum(s.breakableArmor);
         buf.writeVarInt(s.defaultArmorDurability);
         buf.writeVarInt(s.defaultArmorEnchantability);
         buf.writeBoolean(s.forceDefenseAsModernArmor);
@@ -363,6 +371,14 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.airBrakeAssistDeceleration);
         buf.writeDouble(s.airBrakeAssistReferenceSpeedKmh);
         buf.writeBoolean(s.enableRealisticAircraftDamage);
+        buf.writeBoolean(s.vehicleScreenShake);
+        buf.writeBoolean(s.gunScreenShake);
+        buf.writeBoolean(s.explosionScreenShake);
+        buf.writeDouble(s.explosionShakeIntensity);
+        buf.writeDouble(s.explosionShakeDuration);
+        buf.writeDouble(s.suppressionDuration);
+        buf.writeDouble(s.suppressionCameraRoll);
+        buf.writeDouble(s.suppressionVignette);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -410,7 +426,7 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
 
-            buf.readVarInt(),
+            buf.readEnum(EnumBreakableArmor.class),
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readBoolean(),
@@ -537,7 +553,15 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
-            buf.readBoolean()
+            buf.readBoolean(),
+            buf.readBoolean(),
+            buf.readBoolean(),
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble()
         );
     }
 
