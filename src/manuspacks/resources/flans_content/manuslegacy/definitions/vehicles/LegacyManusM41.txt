@@ -57,7 +57,7 @@ ShootParticlesPrimary smoke 0.22 0.04 -0.08
 ShootParticlesPrimary crit 0.48 0 0
 ShellDelay 110
 ShootDelay 5
-GunOrigin 1 43.18 -3.541 8.204
+GunOrigin 1 40.2 -12.1 7.5
 ShootDelayPrimarySeconds 6
 ReadWeaponsFromGunTypes true
 

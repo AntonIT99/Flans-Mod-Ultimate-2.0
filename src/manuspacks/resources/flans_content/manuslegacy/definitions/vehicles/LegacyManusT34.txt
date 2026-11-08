@@ -60,7 +60,7 @@ ShootParticlesPrimary largesmoke 0.3 0.05 -0.11
 ShootParticlesPrimary largesmoke 0.28 -0.05 0.12
 ShellDelay 110
 ShootDelay 5
-GunOrigin 1 33.87 -6.499 9.611
+GunOrigin 1 18.9 -10.1 7.5
 ShootDelayPrimarySeconds 6
 ReadWeaponsFromGunTypes true
 
