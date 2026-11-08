@@ -369,7 +369,7 @@ public final class ModClientConfig
         SHOW_TEAMS_CONTROLS = builder.comment("Show compact reminders of the current teams key bindings during an active round.").define("showTeamsControls", true);
         KILL_FEED_LINES = builder.comment("Maximum number of recent kills displayed at once in the HUD kill feed. Older messages are discarded.")
             .defineInRange("killFeedLines", 3, 1, 20);
-        KILL_FEED_SCALE = builder.comment("Scale of the HUD kill feed's text, icons and line spacing. 1.0 is full size.").defineInRange("killFeedScale", 0.75D, 0.5D, 1D);
+        KILL_FEED_SCALE = builder.comment("Scale of the HUD kill feed's text, icons and line spacing. 1.0 is full size.").defineInRange("killFeedScale", 0.65D, 0.1D, 2D);
         HIDE_CROSSHAIR_FOR_GUNS = builder.comment("""
             Personal preference: hide the vanilla crosshair while holding a non-melee Flan gun.
             The server's own disableCrosshairForGuns setting hides it for everyone regardless of this
