@@ -105,6 +105,17 @@ public final class TeamsObjectiveHud
         return true;
     }
 
+    /** Places binding reminders just below the objective row, leaving room for an active navigation cue. */
+    public static int controlsTop()
+    {
+        PacketTeamsState state = TeamsClientState.get();
+        LocalPlayer player = Minecraft.getInstance().player;
+        List<ObjectiveSnapshot> objectives = TeamsClientState.objectives();
+        if (state == null || player == null || state.getObjectiveMode() == ObjectiveMode.NONE || objectives.isEmpty())
+            return 54;
+        return navigationTarget(state, objectives, player) == null ? TOP + 15 + ICON_SIZE + 5 : TOP + 38;
+    }
+
     /** The row of capture point squares and, under it, the compass cue towards the one worth going for. */
     // The banner is laid out around these values; bundling them would only move the list elsewhere.
     @SuppressWarnings("java:S107")

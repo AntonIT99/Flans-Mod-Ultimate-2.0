@@ -91,7 +91,7 @@ public final class ClientHudOverlays
     /** Baseline of the newest kill feed line, kept above the ammo and fire mode HUD rows. */
     private static final int KILL_MESSAGE_BOTTOM = 48;
     private static final String KILL_MESSAGE_GAP = "     ";
-    private static final String KILL_MESSAGE_HEADSHOT_GAP = "         ";
+    private static final String KILL_MESSAGE_HEADSHOT_GAP = "           ";
     private static final int HEADSHOT_SYMBOL_SIZE = 16;
     private static final int HEADSHOT_SYMBOL_SHEET = 64;
     private static final float HIT_MARKER_FADE_TICKS = 20F;
@@ -934,11 +934,11 @@ public final class ClientHudOverlays
         List<Component> hints = KeyInputHandler.teamsControlHints();
         if (hints.isEmpty())
             return;
-        float scale = 0.75F;
+        float scale = 0.6F;
         int width = hints.stream().mapToInt(mc.font::width).max().orElse(0);
         scale = Math.min(scale, (sw - 8F) / Math.max(1, width));
         g.pose().pushPose();
-        g.pose().translate((sw - width * scale) / 2F, 54, 0);
+        g.pose().translate((sw - width * scale) / 2F, TeamsObjectiveHud.controlsTop(), 0);
         g.pose().scale(scale, scale, 1);
         g.fill(-2, -2, width + 2, hints.size() * LEGACY_HUD_LINE_HEIGHT, 0x66000000);
         for (int i = 0; i < hints.size(); i++)
@@ -1120,7 +1120,7 @@ public final class ClientHudOverlays
                 RenderSystem.enableBlend();
                 RenderSystem.defaultBlendFunc();
                 RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-                g.blit(FlansModTextures.TEXTURE_GUI_HEADSHOTSYMBOL, -font.width(KILL_MESSAGE_GAP + victim) + 6, iconY, HEADSHOT_SYMBOL_SIZE, HEADSHOT_SYMBOL_SIZE, 0F, 0F, HEADSHOT_SYMBOL_SHEET,
+                g.blit(FlansModTextures.TEXTURE_GUI_HEADSHOTSYMBOL, -font.width(victim) - HEADSHOT_SYMBOL_SIZE - 3, iconY, HEADSHOT_SYMBOL_SIZE, HEADSHOT_SYMBOL_SIZE, 0F, 0F, HEADSHOT_SYMBOL_SHEET,
                     HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET);
             }
         }
