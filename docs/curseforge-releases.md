@@ -1,5 +1,8 @@
 # CurseForge releases
 
+For GitHub tag names and independent or combined module releases, see
+[GitHub releases and tags](github-releases.md).
+
 Every artifact has an independent upload task. A task is enabled only when its
 configured project URL is nonblank. All destinations start blank;
 regular `build`, `assemble`, and Maven publishing never upload to CurseForge.
