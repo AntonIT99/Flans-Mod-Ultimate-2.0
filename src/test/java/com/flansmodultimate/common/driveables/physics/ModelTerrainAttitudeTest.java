@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.driveables.physics;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.api.driveables.TerrainAttitude;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.types.VehicleType;
@@ -134,6 +134,42 @@ class ModelTerrainAttitudeTest
     }
 
     @Test
+    void theSampleReportsWhichWheelsTheTerrainCarriesAndWhichWayTheHullHangsOver()
+    {
+        Harness harness = new Harness(0D, 0D);
+        WheelSupport carried = harness.support(TerrainAttitude.LEVEL, 0F, 1D);
+        assertEquals(4, carried.grounded());
+        assertEquals(4, carried.total());
+        assertEquals(1D, carried.share());
+        assertFalse(carried.unsupported());
+        assertEquals(Vec3.ZERO, carried.overhang());
+
+        // At yaw 0 the nose points to +Z, so the rear wheels with no ground under them hang towards -Z.
+        harness.rearMissing = true;
+        WheelSupport hanging = harness.support(TerrainAttitude.LEVEL, 0F, 1D);
+        assertEquals(2, hanging.grounded());
+        assertEquals(4, hanging.total());
+        assertEquals(0.5D, hanging.share());
+        assertTrue(hanging.overhang().z < 0D);
+        assertEquals(0D, hanging.overhang().x, 1.0E-6D);
+        assertEquals(0D, hanging.overhang().y);
+        // Half a footprint still balances; less than half does not.
+        assertFalse(hanging.overhanging(0.5D));
+        assertTrue(hanging.overhanging(0.75D));
+    }
+
+    @Test
+    void aWheelSampleOfSomethingWithoutWheelsNeverReportsMissingSupport()
+    {
+        Harness harness = new Harness(0D, 0D);
+        when(harness.type.getWheelPositions()).thenReturn(List.of());
+        assertEquals(WheelSupport.UNKNOWN, harness.support(TerrainAttitude.LEVEL, 0F, 1D));
+        assertFalse(WheelSupport.UNKNOWN.unsupported());
+        assertFalse(WheelSupport.UNKNOWN.overhanging(1D));
+        assertEquals(1D, WheelSupport.UNKNOWN.share());
+    }
+
+    @Test
     void rollPermissionAndDefinitionsWithoutWheelsAreRespected()
     {
         Harness harness = new Harness(0.2D, 0.1D);
@@ -188,7 +224,17 @@ class ModelTerrainAttitudeTest
 
         private TerrainAttitude sample(TerrainAttitude current, float yaw, double scale)
         {
-            return FlansEntityTypes.sampleTerrainAttitude(entity, type, point -> point.zRot((float) Math.toRadians(current.bank())).xRot((float) Math.toRadians(current.pitch())).scale(scale)
+            return sampled(current, yaw, scale).attitude();
+        }
+
+        private WheelSupport support(TerrainAttitude current, float yaw, double scale)
+        {
+            return sampled(current, yaw, scale).support();
+        }
+
+        private TerrainSupport sampled(TerrainAttitude current, float yaw, double scale)
+        {
+            return FlansEntityTypes.sampleTerrainSupport(entity, type, point -> point.zRot((float) Math.toRadians(current.bank())).xRot((float) Math.toRadians(current.pitch())).scale(scale)
                 .yRot((float) Math.toRadians(180F - yaw)).add(0D, current.lift(), 0D), scale, current);
         }
 

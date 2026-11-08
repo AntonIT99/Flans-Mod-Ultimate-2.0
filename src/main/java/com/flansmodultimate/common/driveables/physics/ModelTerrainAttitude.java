@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.driveables.physics;
 
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.TerrainAttitude;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.types.DriveableType;
@@ -26,77 +26,156 @@ import java.util.function.UnaryOperator;
  * the sample therefore yields a lift that draws the model down (or up) until its most loaded wheel touches the terrain,
  * the part a real driveable's suspension does by moving the whole vehicle.
  * </p>
+ *
+ * <p>
+ * The same probes also report how much of the footprint is carried. The tilt looks ahead along the model's movement, so
+ * that a vehicle meets a slope already pitched for it; support must not, or a vehicle driving towards a ledge would be
+ * dropped before it reached one. Where the two differ, the wheel is probed at both places.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelTerrainAttitude
 {
     /** Wheels whose support lies more than this far above them, in blocks at scale 1, beyond the step height, are inside a wall. */
     private static final double MAX_BURIED = 0.5D;
+    /** Movement below which the look-ahead is rounding and the predicted probe is the standing one. */
+    private static final double PREDICTION_EPSILON = 1.0E-8D;
 
-    public static TerrainAttitude sample(Entity entity, IContentType definition, UnaryOperator<Vec3> modelToWorld, double scale, TerrainAttitude current)
+    public static TerrainSupport sample(Entity entity, IContentType definition, UnaryOperator<Vec3> modelToWorld, double scale, TerrainAttitude current)
     {
         if (!(definition instanceof DriveableType type) || type.getWheelPositions().isEmpty())
-            return TerrainAttitude.LEVEL;
+            return TerrainSupport.LEVEL;
         float spring = Mth.clamp(type.getWheelSpringStrength(), 0F, 1F);
-        double modelScale = Math.max(1.0E-4D, type.getModelScale());
-        double step = Mth.clamp(type.getWheelStepHeight(), 0F, 2.5F) * scale;
-        double droop = (0.35D + (1D - spring) * 0.2D) * scale;
-        Axis longitudinal = new Axis();
-        Axis lateral = new Axis();
-        double highestError = Double.NEGATIVE_INFINITY;
-        boolean unloaded = false;
-        Vec3 prediction = horizontalPrediction(entity, scale);
+        Sampling sampling = new Sampling(entity, modelToWorld, type, scale, spring);
         for (DriveablePosition wheel : type.getWheelPositions())
         {
-            if (wheel == null)
-                continue;
+            if (wheel != null)
+                sampling.add(wheel);
+        }
+        double highestError = sampling.highestError;
+        WheelSupport support = sampling.unloaded ? WheelSupport.UNKNOWN : sampling.footprint.support();
+        // Preserve the pose in unloaded terrain or in free fall. A hull beached without wheel support eases level.
+        if (!Double.isFinite(highestError))
+            return new TerrainSupport(sampling.unloaded || !entity.onGround()
+                ? current
+                : new TerrainAttitude(SuspensionPhysics.smoothTerrainAngle(current.pitch(), 0F, spring), SuspensionPhysics.smoothTerrainAngle(current.bank(), 0F, spring),
+                    SuspensionPhysics.smoothLift(current.lift(), -current.lift(), spring, scale)),
+                support);
+        float pitch = sampling.longitudinal.smoothAngle(current.pitch(), spring);
+        float bank = type.isCanRoll() ? sampling.lateral.smoothAngle(current.bank(), spring) : SuspensionPhysics.smoothTerrainAngle(current.bank(), 0F, spring);
+        // The highest-reaching support carries the model; wheels over lower ground hang, as on a real suspension.
+        float lift = SuspensionPhysics.smoothLift(current.lift(), highestError, spring, scale);
+        lift = (float) Mth.clamp(lift, -(sampling.step + sampling.droop + 0.9D * scale), sampling.step + 0.1D * scale);
+        return new TerrainSupport(new TerrainAttitude(pitch, bank, lift), support);
+    }
+
+    /** Probes each wheel and accumulates the tilt, lift and footprint support of the whole model. */
+    private static final class Sampling
+    {
+        private final Entity entity;
+        private final UnaryOperator<Vec3> modelToWorld;
+        private final double scale;
+        private final double modelScale;
+        private final double step;
+        private final double droop;
+        private final double clearance;
+        private final Vec3 prediction;
+        private final boolean predicting;
+        private final Axis longitudinal = new Axis();
+        private final Axis lateral = new Axis();
+        private final Footprint footprint = new Footprint();
+        private double highestError = Double.NEGATIVE_INFINITY;
+        private boolean unloaded;
+
+        private Sampling(Entity entity, UnaryOperator<Vec3> modelToWorld, DriveableType type, double scale, float spring)
+        {
+            this.entity = entity;
+            this.modelToWorld = modelToWorld;
+            this.scale = scale;
+            modelScale = Math.max(1.0E-4D, type.getModelScale());
+            step = Mth.clamp(type.getWheelStepHeight(), 0F, 2.5F) * scale;
+            droop = (0.35D + (1D - spring) * 0.2D) * scale;
+            clearance = type.getWheelGroundClearance() * scale;
+            prediction = horizontalPrediction(entity, scale);
+            predicting = prediction.lengthSqr() > PREDICTION_EPSILON;
+        }
+
+        private void add(DriveablePosition wheel)
+        {
             // Preview points already include ModelScale horizontally. Legacy wheel anchor heights, like those of real driveables, do not.
             Vec3 local = LegacyDriveableCoordinates.toLocal(wheel.getPosition());
             Vec3 point = new Vec3(local.x * modelScale, local.y, local.z * modelScale);
-            Vec3 world = modelToWorld.apply(point).add(prediction);
+            Vec3 standing = modelToWorld.apply(point);
+            Vec3 world = standing.add(prediction);
             if (!entity.level().isLoaded(BlockPos.containing(world)))
                 unloaded = true;
-            OptionalDouble surface = supportHeight(entity, world, step, droop, scale, type.getWheelGroundClearance() * scale);
+            OptionalDouble surface = supportHeight(world);
             if (surface.isPresent())
             {
-                double error = surface.getAsDouble() + type.getWheelGroundClearance() * scale - world.y;
+                double error = surface.getAsDouble() + clearance - world.y;
                 highestError = Math.max(highestError, error);
                 // In the preview frame the nose is -Z and right is +X, for both vehicles and aircraft.
                 longitudinal.add(-point.z * scale, point.y * scale, surface.getAsDouble());
                 lateral.add(point.x * scale, point.y * scale, surface.getAsDouble());
             }
+            // Where the model stands decides what carries it; where it is heading only decides how it is tilted.
+            footprint.add(standing, predicting ? supportHeight(standing).isPresent() : surface.isPresent());
         }
-        // Preserve the pose in unloaded terrain or in free fall. A hull beached without wheel support eases level.
-        if (!Double.isFinite(highestError))
-            return unloaded || !entity.onGround()
-                ? current
-                : new TerrainAttitude(SuspensionPhysics.smoothTerrainAngle(current.pitch(), 0F, spring), SuspensionPhysics.smoothTerrainAngle(current.bank(), 0F, spring),
-                    SuspensionPhysics.smoothLift(current.lift(), -current.lift(), spring, scale));
-        float pitch = longitudinal.smoothAngle(current.pitch(), spring);
-        float bank = type.isCanRoll() ? lateral.smoothAngle(current.bank(), spring) : SuspensionPhysics.smoothTerrainAngle(current.bank(), 0F, spring);
-        // The highest-reaching support carries the model; wheels over lower ground hang, as on a real suspension.
-        float lift = SuspensionPhysics.smoothLift(current.lift(), highestError, spring, scale);
-        lift = (float) Mth.clamp(lift, -(step + droop + 0.9D * scale), step + 0.1D * scale);
-        return new TerrainAttitude(pitch, bank, lift);
+
+        private static Vec3 horizontalPrediction(Entity entity, double scale)
+        {
+            Vec3 motion = entity.getDeltaMovement();
+            Vec3 prediction = new Vec3(motion.x, 0D, motion.z);
+            return prediction.lengthSqr() > 2.25D * scale * scale ? prediction.normalize().scale(1.5D * scale) : prediction;
+        }
+
+        /** @return the height of the terrain carrying a wheel at this world position, or empty where nothing within its suspension travel does */
+        private OptionalDouble supportHeight(Vec3 wheel)
+        {
+            Vec3 start = wheel.add(0D, step + 0.6D * scale, 0D);
+            Vec3 end = wheel.add(0D, -droop - step - 0.9D * scale, 0D);
+            if (!entity.level().isLoaded(BlockPos.containing(start)) || !entity.level().isLoaded(BlockPos.containing(end)))
+                return OptionalDouble.empty();
+            var hit = entity.level().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity));
+            if (hit.getType() != HitResult.Type.BLOCK || hit.getLocation().y + clearance - wheel.y > step + MAX_BURIED * scale)
+                return OptionalDouble.empty();
+            return OptionalDouble.of(hit.getLocation().y);
+        }
     }
 
-    private static Vec3 horizontalPrediction(Entity entity, double scale)
+    /** Collects where the wheels stand and which of them the terrain carries, to say how the model hangs over. */
+    private static final class Footprint
     {
-        Vec3 motion = entity.getDeltaMovement();
-        Vec3 prediction = new Vec3(motion.x, 0D, motion.z);
-        return prediction.lengthSqr() > 2.25D * scale * scale ? prediction.normalize().scale(1.5D * scale) : prediction;
-    }
+        private double carriedX;
+        private double carriedZ;
+        private double hangingX;
+        private double hangingZ;
+        private int carried;
+        private int hanging;
 
-    private static OptionalDouble supportHeight(Entity entity, Vec3 wheel, double step, double droop, double scale, double clearance)
-    {
-        Vec3 start = wheel.add(0D, step + 0.6D * scale, 0D);
-        Vec3 end = wheel.add(0D, -droop - step - 0.9D * scale, 0D);
-        if (!entity.level().isLoaded(BlockPos.containing(start)) || !entity.level().isLoaded(BlockPos.containing(end)))
-            return OptionalDouble.empty();
-        var hit = entity.level().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity));
-        if (hit.getType() != HitResult.Type.BLOCK || hit.getLocation().y + clearance - wheel.y > step + MAX_BURIED * scale)
-            return OptionalDouble.empty();
-        return OptionalDouble.of(hit.getLocation().y);
+        private void add(Vec3 wheel, boolean supported)
+        {
+            if (supported)
+            {
+                carriedX += wheel.x;
+                carriedZ += wheel.z;
+                carried++;
+            }
+            else
+            {
+                hangingX += wheel.x;
+                hangingZ += wheel.z;
+                hanging++;
+            }
+        }
+
+        private WheelSupport support()
+        {
+            int total = carried + hanging;
+            if (carried == 0 || hanging == 0)
+                return new WheelSupport(carried, total, Vec3.ZERO);
+            return new WheelSupport(carried, total, new Vec3(hangingX / hanging - carriedX / carried, 0D, hangingZ / hanging - carriedZ / carried));
+        }
     }
 
     private static final class Axis

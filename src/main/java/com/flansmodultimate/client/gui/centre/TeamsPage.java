@@ -7,9 +7,7 @@ import com.flansmodultimate.common.teams.centre.CommandLines;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
@@ -153,6 +151,24 @@ abstract class TeamsPage implements ICommandCentrePage
     static void label(ICommandCentreView view, GuiGraphics graphics, Component text, int x, int y, int width, int colour)
     {
         CentreStyle.drawText(graphics, view.getFont(), text, x, y, width, colour);
+    }
+
+    /**
+     * Draws a round's line-up with a line for each side, wrapped to a width and stopping short of a bottom; gives the
+     * height it took. Panels of a fixed height show {@link TeamsData#shortLineup} in one line instead.
+     */
+    static int lineup(ICommandCentreView view, GuiGraphics graphics, TeamsData data, TeamsData.Round round, int x, int y, int width, int bottom)
+    {
+        int line = y;
+        for (Component side : data.lineupLines(round))
+        {
+            int height = view.getFont().wordWrapHeight(side, width);
+            if (line + height > bottom)
+                break;
+            paragraph(view, graphics, side, x, line, width, CentreStyle.DIM);
+            line += height;
+        }
+        return line - y;
     }
 
     /** Draws text wrapped to a width, and gives the height it took. */

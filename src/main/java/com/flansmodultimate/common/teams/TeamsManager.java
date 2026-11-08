@@ -244,7 +244,7 @@ public final class TeamsManager
      * map does so whatever this says.
      */
     @Getter @Setter
-    private boolean alliedSpawnSharing;
+    private boolean alliedSpawnSharing = true;
     private int seaLevelOverride = NO_SEA_LEVEL_OVERRIDE;
 
     @Nullable
@@ -2672,7 +2672,7 @@ public final class TeamsManager
         lastRoundDecided = tag.getBoolean(NBT_ROUND_DECIDED);
         pacifism = tag.getBoolean(NBT_PACIFISM);
         movieProp = tag.getBoolean(NBT_MOVIE_PROP);
-        alliedSpawnSharing = tag.getBoolean(NBT_ALLIED_SPAWN_SHARING);
+        alliedSpawnSharing = !tag.contains(NBT_ALLIED_SPAWN_SHARING) || tag.getBoolean(NBT_ALLIED_SPAWN_SHARING);
         seaLevelOverride = tag.contains(NBT_SEA_LEVEL) ? tag.getInt(NBT_SEA_LEVEL) : NO_SEA_LEVEL_OVERRIDE;
         enabled = !tag.contains(NBT_ENABLED) || tag.getBoolean(NBT_ENABLED);
         roundRunning = tag.getBoolean(NBT_ROUND_RUNNING);

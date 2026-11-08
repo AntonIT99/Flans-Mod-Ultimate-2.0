@@ -3,12 +3,8 @@ package com.flansmodultimate.client.gui.centre;
 import com.flansmodultimate.common.teams.centre.TeamsSection;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
+import net.minecraft.nbt.*;
+import net.minecraft.network.chat.*;
 
 import java.util.*;
 import java.util.function.Function;
@@ -204,22 +200,45 @@ public record TeamsData(boolean enabled, int players, int current, int next, int
         return team(id).map(team -> Component.literal(team.name()).withStyle(Style.EMPTY.withColor(team.colour()))).orElseGet(() -> Component.literal(id));
     }
 
-    /** A round's line-up: its sides' teams, allies joined by a plus, sides by "vs". */
-    public MutableComponent lineup(Round round)
+    /** A round's line-up as a line for each side, the later ones opening with "vs"; for panels with room for them. */
+    public List<MutableComponent> lineupLines(Round round)
+    {
+        List<MutableComponent> lines = new ArrayList<>();
+        List<List<String>> sides = round.teamsBySide();
+        for (int side = 0; side < sides.size(); side++)
+        {
+            MutableComponent line = side == 0 ? Component.empty() : Component.literal("vs ").withStyle(Style.EMPTY.withColor(CentreStyle.MUTED & 0xFFFFFF));
+            List<String> allies = sides.get(side);
+            for (int i = 0; i < allies.size(); i++)
+            {
+                if (i > 0)
+                    line.append(" + ");
+                line.append(teamName(allies.get(i)));
+            }
+            lines.add(line);
+        }
+        return lines;
+    }
+
+    /**
+     * A round's line-up in one line, each side as the team it goes by and how many more fight with it, as
+     * {@code German Army +2 vs Soviet Army}. Rows and panels of one line show this, which stays readable however many
+     * teams a round has.
+     */
+    public MutableComponent shortLineup(Round round)
     {
         MutableComponent lineup = Component.empty();
         List<List<String>> sides = round.teamsBySide();
         for (int side = 0; side < sides.size(); side++)
         {
+            List<String> allies = sides.get(side);
+            if (allies.isEmpty())
+                continue;
             if (side > 0)
                 lineup.append(Component.literal(" vs ").withStyle(Style.EMPTY.withColor(CentreStyle.MUTED & 0xFFFFFF)));
-            List<String> allies = sides.get(side);
-            for (int i = 0; i < allies.size(); i++)
-            {
-                if (i > 0)
-                    lineup.append(" + ");
-                lineup.append(teamName(allies.get(i)));
-            }
+            lineup.append(teamName(allies.get(0)));
+            if (allies.size() > 1)
+                lineup.append(Component.literal(" +" + (allies.size() - 1)).withStyle(Style.EMPTY.withColor(CentreStyle.MUTED & 0xFFFFFF)));
         }
         return lineup;
     }
