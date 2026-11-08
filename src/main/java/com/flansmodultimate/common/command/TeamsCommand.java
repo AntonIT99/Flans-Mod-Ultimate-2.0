@@ -222,6 +222,11 @@ public final class TeamsCommand
                 .then(Commands.literal("limits")
                     .then(Commands.argument(INDEX, IntegerArgumentType.integer(0))
                         .then(Commands.argument(MINUTES, IntegerArgumentType.integer(1, 1440)).then(Commands.argument(SCORE, IntegerArgumentType.integer(1)).executes(TeamsCommand::setRoundLimits)))))
+                .then(Commands.literal("edit")
+                    .then(Commands.argument(INDEX, IntegerArgumentType.integer(0))
+                        .then(Commands.argument("map", StringArgumentType.word()).suggests((context, builder) -> suggestMaps(builder))
+                            .then(Commands.argument(GAMETYPE, StringArgumentType.word())
+                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(GameType.values().stream().map(GameType::getId), builder)).then(lineupSideArgument(1))))))
                 .then(Commands.literal("attackers")
                     .then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).then(Commands.literal("none").executes(context -> setAttackers(context, -1))).then(
                         Commands.argument(SIDE, IntegerArgumentType.integer(1, TeamsRound.MAX_SIDES)).executes(context -> setAttackers(context, IntegerArgumentType.getInteger(context, SIDE) - 1))))))
@@ -319,12 +324,30 @@ public final class TeamsCommand
      */
     private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> sideArgument(int index)
     {
-        com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> side = Commands.argument(SIDE + index, StringArgumentType.string()).suggests((context,
-            builder) -> SharedSuggestionProvider.suggest(Team.values().stream().filter(team -> team != Team.SPECTATORS).map(Team::getShortName).map(StringArgumentType::escapeIfRequired), builder));
+        com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> side = sideNameArgument(index);
         side.then(Commands.argument(MINUTES, IntegerArgumentType.integer(1, 1440)).then(Commands.argument(SCORE, IntegerArgumentType.integer(1)).executes(TeamsCommand::addRound)));
         if (index < TeamsRound.MAX_SIDES)
             side.then(Commands.literal("vs").then(sideArgument(index + 1)));
         return side;
+    }
+
+    /**
+     * The teams of a round being edited, written as they are when one is added but without its length and score
+     * limit: {@code us+uk vs germany+italy}.
+     */
+    private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> lineupSideArgument(int index)
+    {
+        com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> side = sideNameArgument(index).executes(TeamsCommand::editRound);
+        if (index < TeamsRound.MAX_SIDES)
+            side.then(Commands.literal("vs").then(lineupSideArgument(index + 1)));
+        return side;
+    }
+
+    /** One side of a round, suggesting the teams that may play one. */
+    private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> sideNameArgument(int index)
+    {
+        return Commands.argument(SIDE + index, StringArgumentType.string()).suggests((context,
+            builder) -> SharedSuggestionProvider.suggest(Team.values().stream().filter(team -> team != Team.SPECTATORS).map(Team::getShortName).map(StringArgumentType::escapeIfRequired), builder));
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> roundRemove(String name)
@@ -873,11 +896,7 @@ public final class TeamsCommand
     {
         try
         {
-            List<String> sideArguments = new ArrayList<>();
-            for (com.mojang.brigadier.context.ParsedCommandNode<CommandSourceStack> node : context.getNodes())
-                if (node.getNode() instanceof com.mojang.brigadier.tree.ArgumentCommandNode<?, ?> && node.getNode().getName().startsWith(SIDE))
-                    sideArguments.add(StringArgumentType.getString(context, node.getNode().getName()));
-            TeamsRound.Lineup lineup = TeamsRound.parseLineup(sideArguments);
+            TeamsRound.Lineup lineup = readLineup(context);
             TeamsRound round = manager().addRound(StringArgumentType.getString(context, "map"), StringArgumentType.getString(context, GAMETYPE), lineup.teamIds(), lineup.sides(),
                 IntegerArgumentType.getInteger(context, MINUTES), IntegerArgumentType.getInteger(context, SCORE));
             return success(context, "Round added: " + round.getGameTypeId() + " @ " + round.getMapId() + " [" + round.describeTeams() + "]");
@@ -886,6 +905,37 @@ public final class TeamsCommand
         {
             return failure(context, e.getMessage());
         }
+    }
+
+    /**
+     * Changes a round of the rotation in place: its map, its game type and its teams, keeping the round itself and the
+     * rules set on it. Its length and score limit are changed with {@code round limits}.
+     *
+     * <p>
+     * The bases of a map belong to a team by its place in the round, so a lineup that inserts or reorders teams hands
+     * them to other teams; the operator is told so.
+     * </p>
+     */
+    private static int editRound(CommandContext<CommandSourceStack> context)
+    {
+        int index = IntegerArgumentType.getInteger(context, INDEX);
+        TeamsRound.Lineup lineup = readLineup(context);
+        String refusal = manager().setRound(index, StringArgumentType.getString(context, "map"), StringArgumentType.getString(context, GAMETYPE), lineup.teamIds(), lineup.sides());
+        if (refusal != null)
+            return failure(context, refusal);
+        TeamsRound round = manager().getRounds().get(index);
+        return success(context, "Round " + index + " is now " + round.getGameTypeId() + " @ " + round.getMapId() + " [" + round.describeTeams()
+            + "]. Check its bases: they belong to a team by its place in the round.");
+    }
+
+    /** The sides of a round as the command was written, in the order their arguments were given. */
+    private static TeamsRound.Lineup readLineup(CommandContext<CommandSourceStack> context)
+    {
+        List<String> sideArguments = new ArrayList<>();
+        for (com.mojang.brigadier.context.ParsedCommandNode<CommandSourceStack> node : context.getNodes())
+            if (node.getNode() instanceof com.mojang.brigadier.tree.ArgumentCommandNode<?, ?> && node.getNode().getName().startsWith(SIDE))
+                sideArguments.add(StringArgumentType.getString(context, node.getNode().getName()));
+        return TeamsRound.parseLineup(sideArguments);
     }
 
     /** Sets the side that attacks in a round of the rotation, numbered from 1 in the order the round lists its sides. */
