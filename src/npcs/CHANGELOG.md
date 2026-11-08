@@ -6,7 +6,7 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 
 * Custom NPCs use Flan's weapons, grenades, shields and armour, with inventory ammunition, reloads and matching sounds and effects
 * Soldier loadouts inherit Flan's classes, skins and themed names; player-model NPCs support limb hitboxes and per-piece armour
-* Soldiers use cover, suppression, crouching, crawling and coordinated advances, return fire on distant attackers and search buildings for lost enemies
+* Soldiers use cover, suppression, crouching, crawling and coordinated advances, return fire on distant attackers, search buildings for lost enemies and withhold small-arms fire against impenetrable vehicle armour
 * Medics, engineers, ammunition bearers and anti-tank specialists support their squads; soldiers use grenades, mines, remote charges and supply bags according to their role
 * Configurable skill levels govern reaction time, accuracy, aiming and damage to players; optional blood effects and retained corpses accompany combat
 * Soldiers can drive and ride real Flan vehicles, deploy carried guns and man AA emplacements; allied players take priority when requesting occupied seats
