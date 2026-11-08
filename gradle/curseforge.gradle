@@ -45,7 +45,7 @@ abstract class CurseForgeRelease extends DefaultTask {
                 changelog: changelog,
                 changelogType: 'markdown',
                 displayName: displayName.get(),
-                gameVersionNames: [minecraftVersion.get(), modLoader.get(), 'Client', 'Server'],
+                gameVersionNames: [minecraftVersion.get(), modLoader.get(), 'Client', 'Server', 'Java 21', 'Java 25'],
                 releaseType: releaseType.get()
         ]
         List<Map<String, Object>> relations = new ArrayList<>()
