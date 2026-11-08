@@ -2,26 +2,13 @@ package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.content.IContentType;
-import com.flansmodultimate.api.driveables.AircraftDamage;
-import com.flansmodultimate.api.driveables.AircraftMode;
-import com.flansmodultimate.api.driveables.CrashMode;
-import com.flansmodultimate.api.driveables.CrashMotion;
-import com.flansmodultimate.api.driveables.DriveableAttitude;
-import com.flansmodultimate.api.driveables.DriveableKind;
-import com.flansmodultimate.api.driveables.FlansAircraftCrashes;
-import com.flansmodultimate.api.driveables.FlightPerformance;
-import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
-import com.wolffsmod.npcs.combat.NpcAirCombat;
-import com.wolffsmod.npcs.combat.NpcBlastSafety;
-import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.drivers.WeaponAim;
 import com.wolffsmod.npcs.model.FlanModelEntity;
-import com.wolffsmod.npcs.sim.NpcTuning.Flight;
-import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
-import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import com.wolffsmod.npcs.sim.NpcTuning.*;
 import com.wolffsmod.npcs.tactics.NpcTactics;
 import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -554,7 +541,8 @@ public final class NpcFlight
         // Guns are led at where the target will be; a bomber flies over where its bomb meets the target.
         NpcVehicleState state = NpcVehicleState.of(npc);
         // Only a bomber steers for the drop point; a plane making a gun run flies at the target, bombs beside its guns or not.
-        Vec3 toTarget = attackPoint(npc, target, state, motion).subtract(npc.position());
+        Vec3 attackPoint = target == null ? npc.position() : state.isBombRun() ? state.bombPoint().orElse(target.position()) : target.position();
+        Vec3 toTarget = (state.isBombRun() ? WeaponAim.bombApproach(npc.position(), motion, attackPoint) : attackPoint).subtract(npc.position());
         Vec3 aim = target != null && !state.isBombRun() ? state.aimDirection().orElse(toTarget) : toTarget;
         // The horizontal speed of a diving or climbing plane is only part of its airspeed.
         int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
@@ -603,14 +591,6 @@ public final class NpcFlight
             pitch += Mth.clamp((float) -Math.toDegrees(Math.atan2(climb, speed)) - pitch, -pitchRate, pitchRate);
         Vec3 forward = Vec3.directionFromRotation(0F, yaw);
         npc.setDeltaMovement(forward.x * horizontal, climb, forward.z * horizontal);
-    }
-
-    private static Vec3 attackPoint(EntityNPCInterface npc, @Nullable LivingEntity target, NpcVehicleState state, Vec3 motion)
-    {
-        Vec3 point = target == null ? npc.position() : target.position();
-        if (state.isBombRun())
-            return WeaponAim.bombApproach(npc.position(), motion, target == null ? point : state.bombPoint().orElse(point));
-        return point;
     }
 
     private static Vec3 flightAim(EntityNPCInterface npc, @Nullable LivingEntity target, NpcVehicleState state, double speed, Vec3 fallback)

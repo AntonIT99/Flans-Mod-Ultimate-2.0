@@ -1132,9 +1132,9 @@ public final class NpcVehicleState
     {
         FlanModelEntity model = NpcModels.flan(npc);
         Vec3 origin = model != null && current.muzzle() != null ? NpcModels.world(npc, model, current.muzzle(), hullYaw) : npc.position();
-        NpcBombing.Solution bomb = bombSolution(npc, origin, shotGravity, shotDrag, shotBlast, target, options);
-        bombPoint = bomb.release();
-        return bomb.drop();
+        NpcBombing.Solution solution = bombSolution(npc, origin, shotGravity, shotDrag, shotBlast, target, options);
+        bombPoint = solution.release();
+        return solution.drop();
     }
 
     /**
@@ -1147,8 +1147,8 @@ public final class NpcVehicleState
      */
     public BombDrop bombDrop(EntityNPCInterface npc, Vec3 origin, double gravity, double drag, double reach, LivingEntity target, NpcWeaponOptions options)
     {
-        NpcBombing.Solution bomb = bombSolution(npc, origin, gravity, drag, reach, target, options);
-        return new BombDrop(bomb.meeting(), bomb.drop());
+        NpcBombing.Solution solution = bombSolution(npc, origin, gravity, drag, reach, target, options);
+        return new BombDrop(solution.meeting(), solution.drop());
     }
 
     private NpcBombing.Solution bombSolution(EntityNPCInterface npc, Vec3 origin, double gravity, double drag, double reach, LivingEntity target, NpcWeaponOptions options)
@@ -1156,7 +1156,7 @@ public final class NpcVehicleState
         Vec3 velocity = Vec3.ZERO;
         if (options.enabled(Feature.LEAD_TARGET))
             velocity = options.enabled(Feature.ADVANCED_LEAD) ? motionOf(target).map(TargetMotion::velocity).orElse(target.getDeltaMovement()) : target.getDeltaMovement();
-        return NpcBombing.solve(npc, origin, gravity, drag, Math.max(BOMB_RADIUS, NpcBombTargets.releaseRadius(reach)), target, velocity);
+        return NpcBombing.solve(npc, origin, gravity, drag, reach, BOMB_RADIUS, target, velocity);
     }
 
     /** The point of a target a shot is aimed at: the middle of a large body, the chest of a smaller one. */

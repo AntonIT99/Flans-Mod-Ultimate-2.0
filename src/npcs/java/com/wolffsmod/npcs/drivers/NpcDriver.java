@@ -21,9 +21,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.Path;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -1028,7 +1026,7 @@ public final class NpcDriver
         if (dropped ? belowOwnBlast(origin.get().y, target.getY(), NpcBlastSafety.standoff(npc, blastReach(secondary))) : NpcBlastSafety.tooClose(npc, target, blastReach(secondary)))
             return false;
         if (dropped)
-            return NpcBombing.solve(driveable, origin.get(), ballistics.get().gravity(), ballistics.get().drag(), Math.max(BOMB_RADIUS, NpcBombTargets.releaseRadius(blastReach(secondary))), target, bombLead(npc, target)).drop();
+            return NpcBombing.solve(driveable, origin.get(), ballistics.get().gravity(), ballistics.get().drag(), blastReach(secondary), BOMB_RADIUS, target, bombLead(npc, target)).drop();
         if (direction.get().dot(launch(npc, seat, secondary, line)) < FIRE_CONE)
             return false;
         ClipContext sight = new ClipContext(origin.get(), aimPoint, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc);
@@ -1047,8 +1045,9 @@ public final class NpcDriver
         NpcWeaponOptions options = options(npc);
         if (!options.enabled(Feature.LEAD_TARGET))
             return Vec3.ZERO;
+        Vec3 run = options.enabled(Feature.ADVANCED_LEAD) ? motion.velocity() : target.getDeltaMovement();
         // A long fall amplifies even a small skill penalty into a large miss. Bombs use full measured lead.
-        return options.enabled(Feature.ADVANCED_LEAD) ? motion.velocity() : target.getDeltaMovement();
+        return run;
     }
 
     /**
