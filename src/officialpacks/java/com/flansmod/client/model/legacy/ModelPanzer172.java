@@ -355,7 +355,7 @@ public class ModelPanzer172 extends ModelVehicle
 		barrelModel[1].setRotationPoint(-4.5F, -5.5F, -6F);
 
 		flipAll();
-		translateAll(3, 16, 12);
+		translateAll(3, 12, 12);
 		bakeYaw(bodyModel);
 		bakeYaw(turretModel);
 		bakeYaw(barrelModel);
