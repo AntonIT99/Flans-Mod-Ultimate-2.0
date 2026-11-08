@@ -121,6 +121,9 @@ public final class NpcVehicleState
     /** Blocks a ground vehicle's model is drawn above, negative below, the NPC's feet so that its wheels rest on the terrain. */
     @Getter
     private float attitudeLift;
+    /** How much of the model's wheel footprint the last sample found terrain under, which decides whether the ground carries it. */
+    @Getter
+    private WheelSupport wheelSupport = WheelSupport.UNKNOWN;
     /**
      * Where a bomb would have to leave the aircraft to meet the target, while the NPC bombs one. Set for the bombs
      * beside the guns as well, so that a plane on a gun run still knows where they would fall.
@@ -552,6 +555,8 @@ public final class NpcVehicleState
         gunAligned = aligned;
         planBombing(npc, current, engaged ? target : null, options);
         aimSeats(npc, current, options, engaged ? target : null);
+        // A hull the terrain under its wheels no longer carries goes over the edge, whatever its mob box is standing on.
+        NpcWheelSupport.topple(npc, wheelSupport, hullYaw);
         sync(npc, held);
     }
 
@@ -718,6 +723,7 @@ public final class NpcVehicleState
         if (current.kind() != FlanModelKind.VEHICLE || isShip())
         {
             attitudeLift = 0F;
+            wheelSupport = WheelSupport.UNKNOWN;
             return;
         }
         if (npc.isPassenger() || npc.isInWater())
@@ -725,14 +731,17 @@ public final class NpcVehicleState
             attitudePitch = 0F;
             attitudeBank = 0F;
             attitudeLift = 0F;
+            wheelSupport = WheelSupport.UNKNOWN;
             return;
         }
         // The wheel probes decide support, including while the mob crosses a block edge with onGround briefly false.
         FlanModelEntity model = NpcModels.flan(npc);
         if (model == null)
             return;
-        TerrainAttitude next = FlansEntityTypes.sampleTerrainAttitude(npc, current.model(), point -> NpcModels.world(npc, model, point, hullYaw), NpcModels.scale(npc),
+        TerrainSupport sampled = FlansEntityTypes.sampleTerrainSupport(npc, current.model(), point -> NpcModels.world(npc, model, point, hullYaw), NpcModels.scale(npc),
             new TerrainAttitude(attitudePitch, attitudeBank, attitudeLift));
+        wheelSupport = sampled.support();
+        TerrainAttitude next = sampled.attitude();
         attitudePitch = next.pitch();
         attitudeBank = next.bank();
         attitudeLift = solid && parts.body().isPresent() ? Mth.approach(attitudeLift, 0F, 0.1F) : next.lift();

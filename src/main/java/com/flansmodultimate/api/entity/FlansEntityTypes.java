@@ -110,8 +110,34 @@ public final class FlansEntityTypes
      */
     public static TerrainAttitude sampleTerrainAttitude(Entity entity, IContentType type, UnaryOperator<Vec3> modelToWorld, double scale, TerrainAttitude current)
     {
+        return sampleTerrainSupport(entity, type, modelToWorld, scale, current).attitude();
+    }
+
+    /**
+     * Samples the same wheels as {@link #sampleTerrainAttitude}, in one pass, and also reports how much of the model's
+     * wheel footprint the terrain carries, so that an entity wearing a driveable model can be held up by the ground a
+     * player-driven one would be and drop off the ground it would not. Call once per server tick on the level thread;
+     * this reads the world without moving the entity.
+     *
+     * @param entity
+     *            entity wearing the model, used for collision context
+     * @param type
+     *            selected content definition
+     * @param modelToWorld
+     *            transforms static preview points (blocks, Y up, forward -Z, right +X) to world positions,
+     *            including the current attitude, its lift, model resting height and any body offset
+     * @param scale
+     *            additional uniform entity scale, excluding the definition's ModelScale; must be positive and finite
+     * @param current
+     *            current nose-down pitch and right-down bank, in degrees, and lift in blocks
+     * @return the smoothed ground attitude and the support behind it; level and
+     *         {@link com.flansmodultimate.api.driveables.WheelSupport#UNKNOWN} for an unsupported definition, a
+     *         definition without wheels, an unusable scale or terrain that is not loaded
+     */
+    public static TerrainSupport sampleTerrainSupport(Entity entity, IContentType type, UnaryOperator<Vec3> modelToWorld, double scale, TerrainAttitude current)
+    {
         if (!Double.isFinite(scale) || scale <= 0D)
-            return TerrainAttitude.LEVEL;
+            return TerrainSupport.LEVEL;
         return com.flansmodultimate.common.driveables.physics.ModelTerrainAttitude.sample(entity, type, modelToWorld, scale, current);
     }
 
