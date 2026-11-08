@@ -43,7 +43,7 @@ HitSound bomb
 HasLight True
 FlakParticles 0
 SmokeTrail False
-ExplodeParticles 4
+NumExplodeParticles 4
 ExplodeParticleType explode
 FlareParticleCount 2
 DebrisParticleCount 1

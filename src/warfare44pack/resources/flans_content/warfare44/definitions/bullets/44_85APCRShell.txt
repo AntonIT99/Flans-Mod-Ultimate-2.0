@@ -44,7 +44,7 @@ HasSubmunitions false
 SmokeTrail True
 TrailParticleType flansmod.fmtracer
 FlakParticles 0
-ExplodeParticles 9
+NumExplodeParticles 9
 FlareParticleCount 5
 DebrisParticleCount 4
 

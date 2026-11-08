@@ -43,7 +43,7 @@ FireRadius 0.0
 
 // Effects
 TrailParticles false
-ExplodeParticles 0
+NumExplodeParticles 0
 ExplodeParticleType snowshovel
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2

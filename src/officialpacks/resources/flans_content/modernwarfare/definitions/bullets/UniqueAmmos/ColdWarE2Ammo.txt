@@ -30,7 +30,7 @@ Fuse 40
 Fire 0
 
 // Sounds and particles
-ExplodeParticles 20
+NumExplodeParticles 20
 ExplodeParticleType magicCrit
 FlakParticles 0
 FlakParticleType magicCrit

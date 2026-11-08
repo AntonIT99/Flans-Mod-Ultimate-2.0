@@ -47,4 +47,4 @@ SmokeTime 0
 
 // Sounds and particles
 TrailParticles false
-ExplodeParticles 0
+NumExplodeParticles 0

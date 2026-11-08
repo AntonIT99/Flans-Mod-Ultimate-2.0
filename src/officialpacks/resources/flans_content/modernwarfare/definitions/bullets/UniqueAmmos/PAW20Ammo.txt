@@ -48,7 +48,7 @@ SmokeTime 0
 SmokeTrail True
 TrailParticles 1
 TrailParticleType flame
-ExplodeParticles 6
+NumExplodeParticles 6
 FlareParticleCount 3
 DebrisParticleCount 2
 ExplodeParticleType flame
