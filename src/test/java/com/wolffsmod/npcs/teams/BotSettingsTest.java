@@ -10,16 +10,26 @@ import org.junit.jupiter.api.Test;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BotSettingsTest
 {
+    @Test
+    void ammunitionConsumptionDefaultsOffAndSurvivesSavingAndCopying()
+    {
+        assertFalse(new BotSettings().isConsumeAmmo());
+        assertFalse(BotSettings.load(new CompoundTag()).isConsumeAmmo());
+        BotSettings settings = new BotSettings();
+        settings.setConsumeAmmo(true);
+        BotSettings copy = BotSettings.load(settings.save());
+        assertTrue(copy.isConsumeAmmo());
+        copy.setConsumeAmmo(false);
+        assertFalse(BotSettings.load(copy.save()).isConsumeAmmo());
+        assertTrue(settings.isConsumeAmmo());
+    }
+
     @Test
     void multipleCrewClassesSurviveSavesAndScopeInheritance()
     {
