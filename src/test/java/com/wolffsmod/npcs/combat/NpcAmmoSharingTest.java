@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.combat;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import noppes.npcs.api.NpcAPI;
 import noppes.npcs.api.item.IItemStack;
@@ -34,7 +35,7 @@ class NpcAmmoSharingTest
         EntityNPCInterface ally = npc(level);
         ItemStack gun = new ItemStack(Items.BOW);
         ItemStack ammo = new ItemStack(Items.IRON_NUGGET, 2);
-        ammo.getOrCreateTag().putInt("remaining", 7);
+        ItemStackData.update(ammo, tag -> tag.putInt("remaining", 7));
         donor.inventory.drops.put(0, wrapped(ammo));
         donor.inventory.dropchance.put(0, 0F);
         ally.inventory.drops.put(0, wrapped(gun));
@@ -51,7 +52,7 @@ class NpcAmmoSharingTest
             ItemStack received = ally.inventory.drops.get(1).getMCItemStack();
             assertEquals(1, ammo.getCount());
             assertEquals(1, received.getCount());
-            assertEquals(7, received.getTag().getInt("remaining"));
+            assertEquals(7, ItemStackData.copy(received).getInt("remaining"));
             assertNotSame(ammo, received);
             assertTrue(NpcAmmoSharing.transfer(donor, ally));
             assertFalse(donor.inventory.drops.containsKey(0));

@@ -134,6 +134,7 @@ At the Paintjob Table or Gun Modification Table, left-click a paintjob to pay it
 
 ## Development Notes
 
+- See [Platform-independent development practices](docs/platform-independent-practices.md) for shared helpers, item data ownership and cross-version tests.
 - Java sources are compiled with UTF-8 encoding.
 - The project uses Sponge Mixin and generates a refmap for `flansmodultimate`.
 - Keep loader-specific APIs, metadata, event registration, networking, and Java toolchain appropriate to the checked-out branch. The 26.1.2 and 26.2 branches use NeoForge's modern rendering/extraction APIs and Mojang's deobfuscated names; 26.2 additionally uses the feature-rendering pipeline introduced in that release.
