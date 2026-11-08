@@ -71,7 +71,7 @@ public abstract class NpcRenderContextMixin
     }
 
     /** Custom NPCs lowers every rider into a seat; one standing at a mount that keeps riders upright stays on its feet. */
-    @SuppressWarnings("UnresolvedMixinReference") // m_7860_ is the production SRG name; the dev jar only has getRenderOffset.
+    @SuppressWarnings({"UnresolvedMixinReference", "target"}) // m_7860_ is the production SRG name; the dev jar only has getRenderOffset.
     @Inject(method = {"getRenderOffset(Lnoppes/npcs/entity/EntityCustomNpc;F)Lnet/minecraft/world/phys/Vec3;",
         "m_7860_(Lnoppes/npcs/entity/EntityCustomNpc;F)Lnet/minecraft/world/phys/Vec3;"}, at = @At("RETURN"), cancellable = true, require = 1)
     private void wolffsmodnpcsStandingRider(EntityCustomNpc npc, float partialTick, CallbackInfoReturnable<Vec3> callback)
