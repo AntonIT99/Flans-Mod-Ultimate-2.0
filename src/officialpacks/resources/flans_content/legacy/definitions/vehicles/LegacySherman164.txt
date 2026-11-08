@@ -11,9 +11,6 @@ Texture LegacySherman164
 RotateWheels true
 AddDye 10 green
 
-// Paintjobs
-AdvPaintJob Olive legacysherman164 legacysherman164_olive green 8
-
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat
 AddRecipeParts core 1 mediumTankBody
@@ -49,7 +46,7 @@ FourWheelDrive true
 Tank true
 
 // Weaponry
-AddGun 17 34 5 turret browning
+AddGun 22 44 0 turret browning
 BarrelPosition 73 34 0
 ShootDelay 2
 ShellDelay 110
@@ -87,7 +84,8 @@ WheelPosition 2 30 -10 20
 WheelPosition 3 30 -10 -20
 Driver 0 34 0 -360 360 -10 25
 RotatedDriverOffset 0 0 0
-Passengers 0
+Passengers 1
+Passenger 1 0 34 0 turret -360 360 -15 60 browning Browning
 DriverAimSpeed 1.0f 0.8f 0f
 DriverYawBeforePitch false
 

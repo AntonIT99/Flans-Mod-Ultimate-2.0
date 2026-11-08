@@ -12,8 +12,7 @@ RotateWheels true
 AddDye 10 gray
 
 // Paintjobs
-AdvPaintJob PanzerIV legacypanzer164 legacypanzer164_panzeriv gray 8
-AdvPaintJob PanzerIII legacypanzer164 legacypanzer164_panzeriii gray 8
+AdvPaintJob PanzerIVG legacypanzer164 legacypanzer164_panzerivg gray 8
 
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat
@@ -51,7 +50,7 @@ Tank true
 
 // Weaponry
 BarrelPosition 73 30 0
-AddGun 17 30 -5 turret mg42
+AddGun 20 40 0 turret mg42
 ShootDelay 1
 ShellDelay 95
 TurretRotationSpeed 0.02
@@ -89,7 +88,8 @@ WheelPosition 2 30 -10 20
 WheelPosition 3 30 -10 -20
 Driver 0 30 0 -360 360 -10 20
 RotatedDriverOffset 0 0 0
-Passengers 0
+Passengers 1
+Passenger 1 0 30 0 turret -360 360 -15 60 mg42 MG42
 
 // Sounds and particles
 StartSound tankidle2
