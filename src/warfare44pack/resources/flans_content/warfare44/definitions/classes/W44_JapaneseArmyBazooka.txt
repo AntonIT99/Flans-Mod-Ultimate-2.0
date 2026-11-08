@@ -1,0 +1,17 @@
+// Identity
+Name Anti-Tank (Captured Bazooka)
+ShortName W44_JapaneseArmyBazooka
+Description Anti-tank specialist armed with a captured American Bazooka and limited ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 10
+
+// Items
+AddItem 44_Type99Rifle
+AddItem 44_Type3899Ammo 4
+AddItem 44_Bazooka
+AddItem 44_BazookaAmmo 2
+AddItem 44_SmokeM8Smoke
+AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

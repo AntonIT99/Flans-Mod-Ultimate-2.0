@@ -34,6 +34,8 @@ AddClass W44_SovietArmyMarksmanSVT40
 // Anti-tank
 AddClass W44_SovietArmyAntiTank
 AddClass W44_SovietArmyAntiTankRifle
+AddClass W44_SovietArmyPanzerfaust
+AddClass W44_SovietArmyPanzerfaustAmmoBearer
 
 // Engineers and military police
 AddClass W44_SovietArmyEngineer

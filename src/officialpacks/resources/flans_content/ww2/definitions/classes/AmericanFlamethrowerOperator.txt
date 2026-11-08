@@ -1,0 +1,10 @@
+// Identity
+Name Flamethrower Operator
+ShortName OfficialWW2_AmericanFlamethrowerOperator
+
+// Items
+AddItem flamethrowerww2
+AddItem colt
+AddItem ww2Knife
+AddItem flamethrowerww2Ammo 2
+AddItem coltAmmo 3

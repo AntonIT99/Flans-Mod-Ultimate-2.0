@@ -1,0 +1,16 @@
+// Identity
+Name Captured Panzerfaust Ammunition Bearer
+ShortName W44_SovietArmyPanzerfaustAmmoBearer
+Description Rifleman carrying spare captured Panzerfaust launchers and ammunition.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 10
+
+// Items
+AddItem 44_MosinNagant
+AddItem 44_MosinNagantAmmo 4
+AddItem 44_PanzerFaust 2
+AddItem 44_PanzerFaustAmmo 3
+AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

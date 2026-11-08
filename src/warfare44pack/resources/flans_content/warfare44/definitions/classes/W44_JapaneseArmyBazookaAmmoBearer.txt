@@ -1,0 +1,15 @@
+// Identity
+Name Captured Bazooka Ammunition Bearer
+ShortName W44_JapaneseArmyBazookaAmmoBearer
+Description Rifleman carrying spare ammunition for captured Bazookas.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 10
+
+// Items
+AddItem 44_Type99Rifle
+AddItem 44_Type3899Ammo 4
+AddItem 44_BazookaAmmo 3
+AddItem 44_Bandage
+AddItem 44_German1915TrenchKnife

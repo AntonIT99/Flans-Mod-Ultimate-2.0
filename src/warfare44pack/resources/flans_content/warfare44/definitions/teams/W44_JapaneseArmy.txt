@@ -32,6 +32,8 @@ AddClass W44_JapaneseArmyScout
 // Anti-tank
 AddClass W44_JapaneseArmyAntiTank
 AddClass W44_JapaneseArmyAntiTankRifle
+AddClass W44_JapaneseArmyBazooka
+AddClass W44_JapaneseArmyBazookaAmmoBearer
 
 // Engineers and military police
 AddClass W44_JapaneseArmyEngineer
