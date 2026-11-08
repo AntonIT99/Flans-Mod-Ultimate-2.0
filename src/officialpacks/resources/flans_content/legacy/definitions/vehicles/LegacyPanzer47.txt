@@ -84,6 +84,8 @@ WheelPosition 1 -40 -10 22
 WheelPosition 2 40 -10 22
 WheelPosition 3 40 -10 -22
 Driver 0 30 0 -360 360 -10 20
+DriverPart turret
+DriverGun MG42
 RotatedDriverOffset 0 0 0
 Passengers 0
 

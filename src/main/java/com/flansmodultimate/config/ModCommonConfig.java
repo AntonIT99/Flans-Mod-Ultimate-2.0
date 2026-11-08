@@ -1,5 +1,6 @@
 package com.flansmodultimate.config;
 
+import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
@@ -178,7 +179,7 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DRIVEABLE_WRECK_LIFETIME;
     private static final Supplier<Double> DRIVEABLE_MELEE_DAMAGE_THRESHOLD;
 
-    private static final Supplier<Integer> BREAKABLE_ARMOR;
+    private static final Supplier<EnumBreakableArmor> BREAKABLE_ARMOR;
     private static final Supplier<Integer> DEFAULT_ARMOR_DURABILITY;
     private static final Supplier<Integer> DEFAULT_ARMOR_ENCHANTABILITY;
     private static final Supplier<Boolean> FORCE_DEFENSE_AS_MODERN_ARMOR;
@@ -438,8 +439,10 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Armor Settings");
-        BREAKABLE_ARMOR = builder.comment("0 = Non-breakable, 1 = All breakable, 2 = Refer to armor config").defineInRange("breakableArmor", 2, 0, 2);
-        DEFAULT_ARMOR_DURABILITY = builder.comment("Default durability if breakableArmor = 1").defineInRange("defaultArmorDurability", 500, 1, Integer.MAX_VALUE);
+        BREAKABLE_ARMOR = builder.comment("UNBREAKABLE = No armor breaks, ALL_BREAKABLE = All armor uses default durability, CONTENT_PACK = Use each armor definition.",
+            "Legacy numeric values 0, 1 and 2 are also accepted.").defineEnum("breakableArmor", EnumBreakableArmor.CONTENT_PACK, EnumGetMethod.ORDINAL_OR_NAME_IGNORECASE,
+                value -> EnumGetMethod.ORDINAL_OR_NAME_IGNORECASE.validate(value, EnumBreakableArmor.class));
+        DEFAULT_ARMOR_DURABILITY = builder.comment("Default durability if breakableArmor = ALL_BREAKABLE").defineInRange("defaultArmorDurability", 500, 1, Integer.MAX_VALUE);
         DEFAULT_ARMOR_ENCHANTABILITY = builder.comment("The quality of enchantments received for the same level of XP 0=UnEnchantable 25=Gold armor").defineInRange("defaultArmorEnchantability", 0, 0,
             Integer.MAX_VALUE);
         FORCE_DEFENSE_AS_MODERN_ARMOR = builder.comment("Force Defence / Defense values to be interpreted as vanilla Minecraft armor points instead of legacy ratio-based armor reduction.",
@@ -539,7 +542,7 @@ public final class ModCommonConfig
             .define("shootableProximityTriggerFriendlyFire", false);
         SHOOTABLE_DEFAULT_RESPAWN_TIME = builder.comment("Max despawn time in ticks (0.05s). 0 means no despawn time.").defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);
         LOCK_ON_RANGE = builder.comment("Range in blocks used by lock-on missiles when searching for targets.").defineInRange("lockOnRange", 128.0, 1.0, 4096.0);
-        RICOCHET_SPARK_COUNT = builder.comment("Base number of star particles spawned by a ricochet, scaled by projectile size.").defineInRange("ricochetSparkCount", 4, 0, 64);
+        RICOCHET_SPARK_COUNT = builder.comment("Base number of star particles spawned by a ricochet, scaled by projectile size.").defineInRange("ricochetSparkCount", 1, 0, 64);
         FLAK_PARTICLES_RANGE = builder.comment("Range in blocks for sending flak particle packets to clients.").defineInRange("flakParticlesRange", 256, 1, 4096);
         ENTITY_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending entity-hit particle packets to clients.").defineInRange("entityHitParticleRange", 64.0, 1.0, 4096.0);
         BLOCK_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending block-hit particle packets to clients.").defineInRange("blockHitParticleRange", 64.0, 1.0, 4096.0);

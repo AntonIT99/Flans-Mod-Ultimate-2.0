@@ -2,7 +2,7 @@ package com.flansmodultimate.config;
 
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -16,8 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CommonConfigSnapshotRoundTripTest
 {
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void crosshairAndSuppressionOptionsSurviveSynchronizationWithTheRestOfTheServerConfig(boolean disableScopedCrosshair) throws ReflectiveOperationException
+    @CsvSource({"false, UNBREAKABLE", "true, ALL_BREAKABLE", "false, CONTENT_PACK"})
+    void crosshairAndSuppressionOptionsSurviveSynchronizationWithTheRestOfTheServerConfig(boolean disableScopedCrosshair, EnumBreakableArmor armorMode) throws ReflectiveOperationException
     {
         RecordComponent[] components = CommonConfigSnapshot.class.getRecordComponents();
         Object[] values = new Object[components.length];
@@ -26,6 +26,7 @@ class CommonConfigSnapshotRoundTripTest
             {
                 case "disableCrosshairWhileScoped", "forceUncensoredContent" -> disableScopedCrosshair;
                 case "disableCrosshairForGuns" -> !disableScopedCrosshair;
+                case "breakableArmor" -> armorMode;
                 default -> sample(components[i]);
             };
         Class<?>[] signature = Arrays.stream(components).map(RecordComponent::getType).toArray(Class<?>[]::new);
@@ -36,6 +37,7 @@ class CommonConfigSnapshotRoundTripTest
             CommonConfigSnapshot.write(buffer, original);
             CommonConfigSnapshot decoded = CommonConfigSnapshot.read(buffer);
             assertEquals(original, decoded);
+            assertEquals(armorMode, decoded.breakableArmor());
             assertEquals(disableScopedCrosshair, decoded.forceUncensoredContent());
             assertEquals(disableScopedCrosshair, decoded.disableCrosshairWhileScoped());
             assertEquals(!disableScopedCrosshair, decoded.disableCrosshairForGuns());

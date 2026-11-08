@@ -1,5 +1,9 @@
 # Flan's Mod Ultimate 2.2
 
+* The legacy 1.7.10 Panzer IV displays its driver-controlled MG42
+
+* Legacy Manus F-22 and T-34 parts use corrected rotation axes; the legacy 1.7.2 Panzer IV preserves its hull and turret orientations, elevates its barrel in the correct direction and displays its driver-controlled MG42
+
 * Classic Packs translations in German, Spanish, Russian and Simplified Chinese cover all current items, blocks and classes, including legacy variants, with consistent clothing and ammunition names
 
 * Wolff's Star Wars Pack blasters hit harder, sniper rifles use dedicated high-power bolts, the DC-15S and DC-17 use 50-shot power packs, and the Z-6 has a separate 200-shot supply; class loadouts carry the matching ammunition
@@ -16,7 +20,7 @@
 
 ## Highlights
 
-* Client `Explosion Visual Settings` offers independent particle size and density multipliers for explosion layers, plus particle lifetime and water splash scaling; defaults preserve the existing visuals
+* Client `Explosion Visual Settings` offers independent particle size and density multipliers for explosion layers, plus particle lifetime and water splash scaling; defaults preserve the existing visuals; all controls have translated labels in every supported language
 
 * HEAT charges apply full jet damage to unarmoured vehicles and aircraft regardless of `UseRealisticVehicleHealth` (legacy-health vehicles use the higher of their authored damage and the jet damage; armoured faces still require penetration); ammunition and launcher vehicle/plane damage stats show the HEAT jet range
 
@@ -159,7 +163,7 @@
 * Driveables with real-world engine data take their power only from that data, no longer multiplied by the installed engine's `EngineSpeed`, so the same vehicle category performs alike in every pack; induced drag now matches the playability-scaled lift, so aircraft such as the Ju 87 Stuka no longer stall out around 45 km/h on the runway or in slow flight
 
 * Armour hits on driveables and NPC vehicle models show outward sparks and metallic impacts when blocked, and tighter flashes, metal fragments and smoke when large shells penetrate, with effects scaled to projectile mass
-* Ricochet star particles default to half as many; configure their base count with `ricochetSparkCount` (0 disables them)
+* Ricochet star particles default to a base count of 1, scaled by projectile size; configure their base count with `ricochetSparkCount` (0 disables them)
 
 * Ships are now separated from ground vehicles, with improved ship physics; leaving a ship puts the player on top of its hull
 * Creative players can pick up unoccupied floating ships and airborne driveables by hitting them
@@ -243,6 +247,9 @@
 * Guns read their attachments, fire mode and loaded ammunition without copying their item data each time and look up the ammunition they take once, which makes firing, reloading and battles much cheaper for the server
 
 ## Settings & Commands
+
+* `breakableArmor` now offers named choices instead of a numeric slider; existing values 0, 1 and 2 keep their meaning
+* Added missing settings labels for `driveableMeleeDamageThreshold`, `teamsSpawnVehiclesWithFuel` and `teamsSpawnVehicleAmmo` in all supported languages
 
 * The `canBreakGuns` team rule now covers only deployed guns; the new `canBreakAAGuns` rule (`/teams canBreakAAGuns`) controls AA guns separately and starts from the old value in existing saves
 * `maxFlansParticlesPerTick` now defaults to 128 and has a maximum of 4096; it limits new particles per tick, not the total still alive

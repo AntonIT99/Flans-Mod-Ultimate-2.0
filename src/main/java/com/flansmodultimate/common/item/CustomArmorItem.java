@@ -5,6 +5,7 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.EnumBreakableArmor;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.item.ItemAttributes;
@@ -74,15 +75,18 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     @Override
     public boolean isDamageable(ItemStack stack)
     {
-        // 0 = Non-breakable, 1 = All breakable, 2 = Refer to armor config
-        int breakType = ModCommonConfig.get().breakableArmor();
-        return (breakType == 2 && configType.hasDurability()) || breakType == 1;
+        return switch (ModCommonConfig.get().breakableArmor())
+        {
+            case UNBREAKABLE -> false;
+            case ALL_BREAKABLE -> true;
+            case CONTENT_PACK -> configType.hasDurability();
+        };
     }
 
     @Override
     public int getMaxDamage(ItemStack stack)
     {
-        if (ModCommonConfig.get().breakableArmor() == 1)
+        if (ModCommonConfig.get().breakableArmor() == EnumBreakableArmor.ALL_BREAKABLE)
         {
             return ModCommonConfig.get().defaultArmorDurability();
         }

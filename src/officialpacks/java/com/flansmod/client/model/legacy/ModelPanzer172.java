@@ -1,10 +1,10 @@
 package com.flansmod.client.model.legacy;
 
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-
 import com.flansmod.client.model.ModelVehicle;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import org.joml.*;
+
+import java.lang.Math;
 
 /**
  * Unreleased Panzer IV prototype from Flan's Mod 4.2.3 development for Minecraft 1.7.2 (May 2014), reverted the same day. The original rotated the whole model by 90 degrees at
@@ -347,11 +347,11 @@ public class ModelPanzer172 extends ModelVehicle
 		barrelModel = new ModelRendererTurbo[2];
 
 		barrelModel[0] = new ModelRendererTurbo(this, 0, 0, textureX, textureY);
-		barrelModel[0].addBox(-2.5F, -2.5F, -4F, 5, 5, 8, 0F);
+		addBarrelBox(barrelModel[0], -2.5F, -2.5F, -4F, 5, 5, 8);
 		barrelModel[0].setRotationPoint(-4.5F, -5.5F, -6F);
 
 		barrelModel[1] = new ModelRendererTurbo(this, 126, 130, textureX, textureY);
-		barrelModel[1].addBox(-1F, -1F, -36F, 2, 2, 32, 0F);
+		addBarrelBox(barrelModel[1], -1F, -1F, -36F, 2, 2, 32);
 		barrelModel[1].setRotationPoint(-4.5F, -5.5F, -6F);
 
 		//Gun model stolen from the browning
@@ -384,26 +384,47 @@ public class ModelPanzer172 extends ModelVehicle
 
 		flipAll();
 		translateAll(3, 16, 12);
-		oldRotateOrder = true;
 		bakeYaw(bodyModel);
 		bakeYaw(turretModel);
 		bakeYaw(barrelModel);
+		// Barrel animation replaces every angle, so its yaw is already in the vertices.
+		for (ModelRendererTurbo part : barrelModel)
+		{
+			part.rotateAngleX = 0F;
+			part.rotateAngleY = 0F;
+			part.rotateAngleZ = 0F;
+		}
 	}
 
-	/** Applies the original render-time 90 degree yaw to each part's rotation point and orientation (old rotate order). */
+	/** Bakes -90 degrees of yaw before flipAll, retaining the original box UV layout. */
+	private static void addBarrelBox(ModelRendererTurbo part, float x, float y, float z, int width, int height, int depth)
+	{
+		float x1 = x + width;
+		float y1 = y + height;
+		float z1 = z + depth;
+		part.addRectShape(new float[]{-z, y, x}, new float[]{-z, y, x1}, new float[]{-z, y1, x1}, new float[]{-z, y1, x},
+			new float[]{-z1, y, x}, new float[]{-z1, y, x1}, new float[]{-z1, y1, x1}, new float[]{-z1, y1, x}, width, height, depth);
+	}
+
+	/** Applies the original render-time 90 degree yaw using the current YZX part convention. */
 	private static void bakeYaw(ModelRendererTurbo[] parts)
 	{
 		Quaternionf yaw = new Quaternionf().rotationY((float) (Math.PI / 2D));
 		Vector3f point = new Vector3f();
-		Vector3f euler = new Vector3f();
+		Matrix3f rotation = new Matrix3f();
 		for (ModelRendererTurbo part : parts)
 		{
 			yaw.transform(point.set(part.rotationPointX, part.rotationPointY, part.rotationPointZ));
 			part.setRotationPoint(point.x, point.y, point.z);
-			new Quaternionf(yaw).rotateZ(-part.rotateAngleZ).rotateY(-part.rotateAngleY).rotateX(part.rotateAngleX).getEulerAnglesZYX(euler);
-			part.rotateAngleX = euler.x;
-			part.rotateAngleY = -euler.y;
-			part.rotateAngleZ = -euler.z;
+			// Preserve the prototype's YZX order. flipAll mirrors vertices, not angles, so conjugate
+			// the authored rotation by that X-axis half-turn before composing the yaw.
+			rotation.rotation(new Quaternionf(yaw).rotateY(-part.rotateAngleY).rotateZ(-part.rotateAngleZ).rotateX(part.rotateAngleX));
+			// Keep the renderer's current convention so animated barrels and registered guns
+			// retain the normal aim signs. At a 90 degree Z rotation, choose X = 0.
+			double horizontal = Math.hypot(rotation.m00(), rotation.m02());
+			part.rotateAngleX = horizontal > 1E-6 ? (float) Math.atan2(-rotation.m21(), rotation.m11()) : 0F;
+			part.rotateAngleY = (float) (horizontal > 1E-6 ? Math.atan2(-rotation.m02(), rotation.m00()) : Math.atan2(rotation.m20(), rotation.m22()));
+			part.rotateAngleZ = (float) Math.atan2(rotation.m01(), horizontal);
 		}
 	}
 }

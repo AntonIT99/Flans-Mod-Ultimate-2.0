@@ -49,7 +49,7 @@ public record CommonConfigSnapshot(
     boolean autoRefillVehicleAmmo,
     boolean gunsInDestroyedPartsWork,
 
-    int breakableArmor,
+    EnumBreakableArmor breakableArmor,
     int defaultArmorDurability,
     int defaultArmorEnchantability,
     boolean forceDefenseAsModernArmor,
@@ -225,7 +225,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.autoRefillVehicleAmmo);
         buf.writeBoolean(s.gunsInDestroyedPartsWork);
 
-        buf.writeVarInt(s.breakableArmor);
+        buf.writeEnum(s.breakableArmor);
         buf.writeVarInt(s.defaultArmorDurability);
         buf.writeVarInt(s.defaultArmorEnchantability);
         buf.writeBoolean(s.forceDefenseAsModernArmor);
@@ -410,7 +410,7 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
 
-            buf.readVarInt(),
+            buf.readEnum(EnumBreakableArmor.class),
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readBoolean(),
