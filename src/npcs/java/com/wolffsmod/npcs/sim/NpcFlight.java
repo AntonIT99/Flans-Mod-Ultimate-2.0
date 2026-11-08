@@ -17,6 +17,7 @@ import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.drivers.WeaponAim;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.sim.NpcTuning.Flight;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
@@ -553,7 +554,7 @@ public final class NpcFlight
         // Guns are led at where the target will be; a bomber flies over where its bomb meets the target.
         NpcVehicleState state = NpcVehicleState.of(npc);
         // Only a bomber steers for the drop point; a plane making a gun run flies at the target, bombs beside its guns or not.
-        Vec3 toTarget = target == null ? Vec3.ZERO : (state.isBombRun() ? state.bombPoint().orElse(target.position()) : target.position()).subtract(npc.position());
+        Vec3 toTarget = attackPoint(npc, target, state, motion).subtract(npc.position());
         Vec3 aim = target != null && !state.isBombRun() ? state.aimDirection().orElse(toTarget) : toTarget;
         // The horizontal speed of a diving or climbing plane is only part of its airspeed.
         int turnRate = tuning.get(Value.FLIGHT_TURN_RATE);
@@ -602,6 +603,14 @@ public final class NpcFlight
             pitch += Mth.clamp((float) -Math.toDegrees(Math.atan2(climb, speed)) - pitch, -pitchRate, pitchRate);
         Vec3 forward = Vec3.directionFromRotation(0F, yaw);
         npc.setDeltaMovement(forward.x * horizontal, climb, forward.z * horizontal);
+    }
+
+    private static Vec3 attackPoint(EntityNPCInterface npc, @Nullable LivingEntity target, NpcVehicleState state, Vec3 motion)
+    {
+        Vec3 point = target == null ? npc.position() : target.position();
+        if (state.isBombRun())
+            return WeaponAim.bombApproach(npc.position(), motion, target == null ? point : state.bombPoint().orElse(point));
+        return point;
     }
 
     private static Vec3 flightAim(EntityNPCInterface npc, @Nullable LivingEntity target, NpcVehicleState state, double speed, Vec3 fallback)
@@ -759,7 +768,8 @@ public final class NpcFlight
             return yaw;
         // A target inside the circle the plane would turn on toward it cannot be reached by turning, only circled: it flies
         // straight on until the target lies outside that circle, and turns in for its run from there.
-        gainingRoom = insideTurn(npc.position(), yaw, target.position(), tightestCircle);
+        Vec3 approach = bombRun ? NpcVehicleState.of(npc).bombPoint().orElse(target.position()) : target.position();
+        gainingRoom = insideTurn(npc.position(), yaw, approach, tightestCircle);
         return gainingRoom ? yaw : MountMotion.yaw(aim);
     }
 
@@ -775,7 +785,7 @@ public final class NpcFlight
     private boolean bombEscape(EntityNPCInterface npc, LivingEntity target, double horizontal, double radius)
     {
         Vec3 forward = Vec3.directionFromRotation(0F, yaw);
-        Vec3 toTarget = target.position().subtract(npc.position());
+        Vec3 toTarget = NpcVehicleState.of(npc).bombPoint().orElse(target.position()).subtract(npc.position());
         boolean passed = toTarget.x * forward.x + toTarget.z * forward.z < -PASS_DISTANCE;
         extending = (extending || passed) && horizontal < Math.max(MIN_EXTEND, radius);
         passing = false;

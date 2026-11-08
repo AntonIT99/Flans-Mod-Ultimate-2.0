@@ -1,17 +1,58 @@
 package com.wolffsmod.npcs.combat;
 
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.diag.NpcServerSettings;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.teams.BotSettings;
+import noppes.npcs.entity.EntityNPCInterface;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class NpcSkillTest
 {
+    @BeforeAll
+    static void bootstrap() throws ReflectiveOperationException
+    {
+        EntityTestBootstrap.initialize();
+    }
+
+    @Test
+    void everyDifficultyPreservesBombReleaseWindowsWhileGunsKeepTheirReactionDelay()
+    {
+        EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        LivingEntity target = mock(LivingEntity.class);
+        Level world = mock(Level.class);
+        when(npc.level()).thenReturn(world);
+        when(npc.getPersistentData()).thenReturn(new CompoundTag());
+        when(target.getUUID()).thenReturn(UUID.randomUUID());
+        try
+        {
+            for (NpcSkill.Level difficulty : NpcSkill.Level.values())
+            {
+                NpcSkill skill = difficulty.getSkill();
+                NpcSkill.write(npc, skill);
+                assertFalse(NpcSkill.holdsFire(npc, target, true), difficulty.name());
+                assertEquals(skill.reactionTicks() > 0, NpcSkill.holdsFire(npc, target, false), difficulty.name());
+            }
+        }
+        finally
+        {
+            NpcSkill.clear(npc);
+        }
+    }
+
     @Test
     void noAimErrorLeavesTheDirectionAsItIs()
     {

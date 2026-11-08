@@ -20,9 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import java.util.*;
 
 /**
  * Human limits on how an NPC fights: how long it takes to open fire on a target it has just seen, how far its first rounds
@@ -229,6 +227,12 @@ public record NpcSkill(int reactionTicks, int settleTicks, float startError, flo
     {
         NpcSkill skill = of(npc);
         return target != null && skill.reactionTicks() > 0 && npc.level().getGameTime() - engage(npc, target).since < skill.reactionTicks();
+    }
+
+    /** A bomb's short release window takes precedence over difficulty's reaction delay; guns retain their normal delay. */
+    public static boolean holdsFire(EntityNPCInterface npc, @Nullable LivingEntity target, boolean dropped)
+    {
+        return !dropped && holdsFire(npc, target);
     }
 
     /** @return the extra error of the NPC's next trigger pull at the target, which shrinks as its aim settles */

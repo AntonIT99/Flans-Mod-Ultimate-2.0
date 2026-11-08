@@ -1,17 +1,12 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
-import com.flansmodultimate.api.equipment.FlansEquipment;
-import com.flansmodultimate.api.equipment.WeaponKind;
+import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
-import com.wolffsmod.npcs.tactics.NpcInfantryRole;
-import com.wolffsmod.npcs.tactics.NpcTacticState;
+import com.wolffsmod.npcs.tactics.*;
 import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import noppes.npcs.entity.EntityNPCInterface;
-import noppes.npcs.entity.data.DataAI;
-import noppes.npcs.entity.data.DataRanged;
-import noppes.npcs.entity.data.DataStats;
+import noppes.npcs.entity.data.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,6 +32,29 @@ import static org.mockito.Mockito.*;
 
 class NpcLauncherReloadTest
 {
+    @ParameterizedTest
+    @CsvSource({"true,true,true", "true,false,false", "false,true,false"})
+    void onlyAnAntiArmorWeaponAgainstAVehicleRemainsActiveAtMeleeDistance(boolean vehicle, boolean antiArmor, boolean engaged) throws ReflectiveOperationException
+    {
+        LivingEntity target = mock(LivingEntity.class);
+        EntityNPCInterface npc = engagedNpc(target);
+        ItemStack launcher = new ItemStack(Items.BLAZE_ROD);
+        when(npc.stats.ranged.getMeleeRange()).thenReturn(3);
+        when(npc.isInRange(target, 3D)).thenReturn(true);
+        try (var equipment = mockStatic(NpcEquipment.class);
+            var threats = mockStatic(NpcVehicleThreats.class);
+            var weapons = mockStatic(NpcWeaponChoice.class);
+            var roles = mockStatic(NpcInfantryRole.class))
+        {
+            roles.when(() -> NpcInfantryRole.of(npc)).thenReturn(ClassRole.ANTI_TANK);
+            equipment.when(() -> NpcEquipment.ranged(npc)).thenReturn(true);
+            equipment.when(() -> NpcEquipment.rangedWeapon(npc)).thenReturn(launcher);
+            threats.when(() -> NpcVehicleThreats.groundVehicle(target)).thenReturn(vehicle);
+            weapons.when(() -> NpcWeaponChoice.antiArmor(npc, launcher)).thenReturn(antiArmor);
+            assertEquals(engaged, NpcEquipmentRangedGoal.engages(npc));
+        }
+    }
+
     @BeforeAll
     static void bootstrap() throws ReflectiveOperationException
     {

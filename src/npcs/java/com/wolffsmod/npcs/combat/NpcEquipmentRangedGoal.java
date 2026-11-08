@@ -1,16 +1,12 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
-import com.flansmodultimate.api.equipment.FlansEquipment;
-import com.flansmodultimate.api.equipment.WeaponKind;
+import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.diag.NpcWatch;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
-import com.wolffsmod.npcs.tactics.NpcInfantryRole;
-import com.wolffsmod.npcs.tactics.NpcTacticState;
-import com.wolffsmod.npcs.tactics.NpcWeaponRange;
+import com.wolffsmod.npcs.tactics.*;
 import com.wolffsmod.npcs.teams.BotSettings.ClassRole;
 import lombok.Getter;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -96,7 +92,8 @@ public final class NpcEquipmentRangedGoal extends Goal
     {
         LivingEntity target = npc.getTarget();
         return !com.wolffsmod.npcs.sim.NpcRepairs.active(npc) && !NpcCrew.holdsFire(npc) && !npc.isKilled() && npc.ais.onAttack == 0 && NpcEquipment.ranged(npc) && target != null && target.isAlive()
-            && target.level() == npc.level() && !rushes(npc) && !NpcMeleeRoleGoal.committed(npc, target) && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())));
+            && target.level() == npc.level() && !rushes(npc) && !NpcMeleeRoleGoal.committed(npc, target)
+            && (!npc.isInRange(target, Math.max(0, npc.stats.ranged.getMeleeRange())) || NpcVehicleThreats.groundVehicle(target) && NpcWeaponChoice.antiArmor(npc, NpcEquipment.rangedWeapon(npc)));
     }
 
     /** A throwable gun with a melee attack closes in while it waits for its next throw. */

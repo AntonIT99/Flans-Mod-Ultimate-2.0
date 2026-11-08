@@ -8,7 +8,6 @@ import com.flansmodultimate.api.projectiles.ProjectileShot;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.drivers.NpcHullAngling;
-import com.wolffsmod.npcs.drivers.WeaponAim;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.network.NpcNetwork;
@@ -56,8 +55,7 @@ public final class NpcVehicleState
     private static final float AIRFRAME_TOLERANCE = 3F;
     /** Squared blocks a muzzle has to move by as the turret turns to count as one of the turret's. */
     private static final double TURNING_MUZZLE = 1.0E-6D;
-    /** Fewest blocks above its target a bomb is let go from, and blocks from the target within which it may come down. */
-    private static final double MIN_BOMB_HEIGHT = 4D;
+    /** Blocks from the target within which a bomb may come down as a fallback. */
     private static final double BOMB_RADIUS = 5D;
     private static final float[] NO_SEATS = new float[0];
     /** Degrees an aircraft gunner turns its gun before its torso follows, as a player's does in a cockpit. */
@@ -124,7 +122,7 @@ public final class NpcVehicleState
     @Getter
     private float attitudeLift;
     /**
-     * Where a bomb let go now would have to come down to meet the target, while the NPC bombs one. Set for the bombs
+     * Where a bomb would have to leave the aircraft to meet the target, while the NPC bombs one. Set for the bombs
      * beside the guns as well, so that a plane on a gun run still knows where they would fall.
      */
     @Nullable
@@ -1120,7 +1118,7 @@ public final class NpcVehicleState
         return Optional.of(new GunReach(pivot, Math.sqrt(Mth.square(muzzles.x - pivot.x) + Mth.square(muzzles.z - pivot.z)), current.turreted()));
     }
 
-    /** @return where a bomb let go now would have to come down to meet the target; empty while the NPC bombs nothing */
+    /** @return where a bomb has to leave the aircraft to meet the target; empty while the NPC bombs nothing */
     public Optional<Vec3> bombPoint()
     {
         return Optional.ofNullable(bombPoint);
@@ -1134,9 +1132,9 @@ public final class NpcVehicleState
     {
         FlanModelEntity model = NpcModels.flan(npc);
         Vec3 origin = model != null && current.muzzle() != null ? NpcModels.world(npc, model, current.muzzle(), hullYaw) : npc.position();
-        BombDrop drop = bombDrop(npc, origin, shotGravity, shotDrag, shotBlast, target, options);
-        bombPoint = drop.meeting();
-        return drop.hits();
+        NpcBombing.Solution bomb = bombSolution(npc, origin, shotGravity, shotDrag, shotBlast, target, options);
+        bombPoint = bomb.release();
+        return bomb.drop();
     }
 
     /**
@@ -1149,19 +1147,16 @@ public final class NpcVehicleState
      */
     public BombDrop bombDrop(EntityNPCInterface npc, Vec3 origin, double gravity, double drag, double reach, LivingEntity target, NpcWeaponOptions options)
     {
-        WeaponAim.Fall fall = WeaponAim.fall(origin, npc.getDeltaMovement(), gravity, drag, target.getY());
-        Vec3 meeting = target.position();
+        NpcBombing.Solution bomb = bombSolution(npc, origin, gravity, drag, reach, target, options);
+        return new BombDrop(bomb.meeting(), bomb.drop());
+    }
+
+    private NpcBombing.Solution bombSolution(EntityNPCInterface npc, Vec3 origin, double gravity, double drag, double reach, LivingEntity target, NpcWeaponOptions options)
+    {
+        Vec3 velocity = Vec3.ZERO;
         if (options.enabled(Feature.LEAD_TARGET))
-        {
-            Vec3 velocity = options.enabled(Feature.ADVANCED_LEAD) ? motionOf(target).map(TargetMotion::velocity).orElse(target.getDeltaMovement()) : target.getDeltaMovement();
-            meeting = meeting.add(velocity.x * fall.ticks(), 0D, velocity.z * fall.ticks());
-        }
-        if (origin.y < target.getY() + MIN_BOMB_HEIGHT)
-            return new BombDrop(meeting, false);
-        double x = fall.impact().x - meeting.x;
-        double z = fall.impact().z - meeting.z;
-        double radius = Math.max(BOMB_RADIUS, NpcBombTargets.releaseRadius(reach));
-        return new BombDrop(meeting, fall.landed() && x * x + z * z <= radius * radius);
+            velocity = options.enabled(Feature.ADVANCED_LEAD) ? motionOf(target).map(TargetMotion::velocity).orElse(target.getDeltaMovement()) : target.getDeltaMovement();
+        return NpcBombing.solve(npc, origin, gravity, drag, Math.max(BOMB_RADIUS, NpcBombTargets.releaseRadius(reach)), target, velocity);
     }
 
     /** The point of a target a shot is aimed at: the middle of a large body, the chest of a smaller one. */

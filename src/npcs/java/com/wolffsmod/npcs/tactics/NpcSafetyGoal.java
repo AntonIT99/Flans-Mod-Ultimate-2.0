@@ -15,10 +15,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /** Shared infantry safety and adaptive positions, independent of Teams membership and the current firing target. */
 public final class NpcSafetyGoal extends Goal
@@ -464,11 +466,48 @@ public final class NpcSafetyGoal extends Goal
     {
         if (target == null || !NpcEquipment.enabled(npc, Feature.BLAST_STANDOFF) || !NpcEquipment.ranged(npc))
             return false;
-        double minimum = NpcBlastSafety.standoff(npc, NpcBlastSafety.reach(NpcWeaponChoice.ammunition(npc, npc.getMainHandItem())));
-        Vec3 away = npc.position().subtract(target.position()).multiply(1D, 0D, 1D).normalize();
-        if (minimum > npc.distanceTo(target))
-            state.setAdvanceIntent(null);
-        return minimum > npc.distanceTo(target) && moveAside(Action.RETREAT, away, minimum - npc.distanceTo(target) + 3D);
+        double minimum = NpcBlastSafety.standoff(npc, NpcBlastSafety.equippedWeaponReach(npc));
+        if (minimum <= npc.distanceTo(target))
+            return false;
+        state.setAdvanceIntent(null);
+        Vec3 destination = state.getDestination();
+        if (state.getAction() == Action.RETREAT && state.active(npc.level().getGameTime()) && destination != null
+            && destination.distanceTo(target.position()) > npc.distanceTo(target) + 0.5D && npc.position().distanceToSqr(destination) > 0.5D && !npc.getNavigation().isDone())
+            return true;
+        Vec3 point = blastRetreat(npc.position(), target.position(), minimum, candidate -> {
+            BlockPos stand = BlockPos.containing(candidate);
+            if (unreachable.getOrDefault(stand, 0L) > npc.level().getGameTime() || !NpcCombatMovement.permits(npc, candidate) || !NpcCover.standable(npc.level(), stand))
+                return false;
+            Path path = npc.getNavigation().createPath(stand, 0);
+            return path != null && path.canReach();
+        });
+        if (point != null)
+            order(Action.RETREAT, point, 60L);
+        else
+            order(Action.RETREAT, npc.position(), 10L);
+        // Do not replace a failed safety retreat with an advance toward the same target.
+        return true;
+    }
+
+    /** Prefers a safe firing position, then a shorter reachable step that increases separation. */
+    @Nullable
+    static Vec3 blastRetreat(Vec3 position, Vec3 target, double minimum, Predicate<Vec3> reachable)
+    {
+        double current = position.distanceTo(target);
+        Vec3 away = position.subtract(target).multiply(1D, 0D, 1D).normalize();
+        if (away.lengthSqr() < 1.0E-6D)
+            away = new Vec3(1D, 0D, 0D);
+        double distance = Math.max(2D, minimum - current + 3D);
+        for (boolean safe : new boolean[]{true, false})
+            for (double share : new double[]{1D, 0.5D, 0.25D})
+                for (float angle : new float[]{0F, 45F, -45F, 90F, -90F})
+                {
+                    Vec3 point = Vec3.atBottomCenterOf(BlockPos.containing(position.add(away.yRot((float) Math.toRadians(angle)).scale(distance * share))));
+                    double separation = point.distanceTo(target);
+                    if (separation > current + 0.5D && safe == (separation >= minimum + 1D) && reachable.test(point))
+                        return point;
+                }
+        return null;
     }
 
     @Nullable

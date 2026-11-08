@@ -17,7 +17,7 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 * Vehicle crews operate independent seat guns, dismount to fight and bail out with parachutes; players can board and change seats, or walk on moving hulls
 * Vehicles select ammunition for their target, seek better firing angles, avoid their own blast and break contact when out of ammunition; crew and mounted weapons respect operator skill
 * Ground vehicles follow hull-width paths around obstacles, align with terrain and lose mobility when critical parts are destroyed
-* Aircraft support fighter, bomber and ground-attack roles, interception, strafing and predicted bomb releases; crippled aircraft crash with matching effects and crew evacuation
+* Aircraft support fighter, bomber and ground-attack roles, interception, strafing and terrain-aware bomb releases that favour closer hits while retaining practical drop opportunities; crippled aircraft crash with matching effects and crew evacuation
 * Ships support coastal bombardment, formations and torpedo runs, with naval steering and flooding; submarines choose cruising, combat and evasion depths
 * Mechas use both arm tools, melee weapons, rocket packs and supported utility addons
 
