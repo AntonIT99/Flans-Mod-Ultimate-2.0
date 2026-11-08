@@ -151,7 +151,7 @@ tasks.matching { it.name.startsWith('publishCurseForge') && it.name != 'publishC
                 "changelog": "Pack-specific release notes\n", "changelogType": "markdown",
                 "displayName": f"[{minecraft}] Classic Packs-1.7",
                 "gameVersionNames": [minecraft, loader, "Client", "Server"], "releaseType": "beta",
-                "relations": {"projects": [{"slug": "test-main", "projectID": "101", "type": "requiredDependency"},
+                "relations": {"projects": [{"slug": "test-main", "projectID": 101, "type": "requiredDependency"},
                                            {"slug": "custom-npcs", "type": "requiredDependency"}]}}, uploaded
             run("publishCurseForge", *mod, *pack, authenticated=True)
             assert [request["path"] for request in requests[-2:]] == ["/api/projects/101/upload-file", "/api/projects/202/upload-file"]
