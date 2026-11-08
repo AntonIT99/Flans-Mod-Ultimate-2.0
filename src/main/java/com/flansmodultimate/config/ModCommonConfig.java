@@ -384,7 +384,7 @@ public final class ModCommonConfig
         ENABLE_KILL_MESSAGES = builder.comment("Announce kills made with Flan's weapons in the kill feed and in a Flan's Mod death message.",
             "When disabled, the kill feed stays empty and deaths use the plain vanilla-style death messages.").define("enableKillMessages", true);
         SHOW_BOT_KILLS_IN_KILL_FEED = builder.comment("Include kills where neither the killer nor the victim is a player in the battle kill feed.",
-            "When false, only kills involving a player as killer or victim appear. Requires enableKillMessages.").define("showBotKillsInKillFeed", true);
+            "When false, only kills involving a player as killer or victim appear. Requires enableKillMessages.").define("showBotKillsInKillFeed", false);
         SHOW_DISTANCE_IN_KILL_MESSAGE = builder.comment("Include the distance between the killer and the victim in Flan's Mod death messages.").define("showDistanceInKillMessage", true);
         builder.pop();
 
@@ -1310,7 +1310,7 @@ public final class ModCommonConfig
     public static boolean showBotKillsInKillFeed()
     {
         CommonConfigSnapshot config = get();
-        return config == null || config.showBotKillsInKillFeed();
+        return config != null && config.showBotKillsInKillFeed();
     }
 
     public static boolean showDistanceInKillMessage()

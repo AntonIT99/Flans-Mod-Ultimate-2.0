@@ -496,6 +496,8 @@
   "options.flansmodultimate.impostorPreset": "Impostori",
   "options.flansmodultimate.impostorPreset.tooltip": "Livelli fissi di impostori per veicoli e aerei lontani. I livelli più forti cambiano prima se la qualità lo consente. Disattivato esclude gli impostori; Personalizzato mantiene i valori attuali. Il LOD del modello resta indipendente.",
   "options.flansmodultimate.impostorPreset.values": "Soglia proiettata: %s px\nDistanza minima: %s blocchi\nDistanza preferita: %s blocchi\nMoltiplicatore qualità: ×%s\nCattura base: %s px, %s viste",
+  "options.flansmodultimate.killFeedLines": "Righe del registro uccisioni",
+  "options.flansmodultimate.killFeedScale": "Scala del registro uccisioni",
   "options.flansmodultimate.lodPreset": "LOD dei modelli",
   "options.flansmodultimate.lodPreset.tooltip": "Livelli fissi di LOD per modelli e cingoli. I livelli più forti nascondono prima i piccoli dettagli lontani. Disattivato conserva tutti i dettagli; Personalizzato mantiene i valori attuali. Gli impostori restano indipendenti.",
   "options.flansmodultimate.lodPreset.values": "Soglia parti vicine: %s px\nSoglia lontana: %s px (dettaglio ×%s)\nSemplificazione cingoli: %s px\nRaggruppamento cingoli: %s px",

@@ -496,6 +496,8 @@
   "options.flansmodultimate.impostorPreset": "Имитаторы",
   "options.flansmodultimate.impostorPreset.tooltip": "Фиксированные уровни имитаторов для дальней техники и самолётов. Более сильные уровни включаются раньше с учётом качества изображения. Выкл. отключает имитаторы; Свой вариант сохраняет текущие значения. LOD моделей независим.",
   "options.flansmodultimate.impostorPreset.values": "Порог размера: %s пикс.\nМин. расстояние: %s блоков\nПредпочт. расстояние: %s блоков\nМножитель качества: ×%s\nБазовый снимок: %s пикс., %s ракурсов",
+  "options.flansmodultimate.killFeedLines": "Число строк ленты убийств",
+  "options.flansmodultimate.killFeedScale": "Масштаб ленты убийств",
   "options.flansmodultimate.lodPreset": "LOD моделей",
   "options.flansmodultimate.lodPreset.tooltip": "Фиксированные уровни LOD моделей и гусениц. Более сильные уровни раньше скрывают мелкие дальние детали. Выкл. сохраняет все детали; Свой вариант сохраняет текущие значения. Имитаторы независимы.",
   "options.flansmodultimate.lodPreset.values": "Порог деталей вблизи: %s пикс.\nПорог вдали: %s пикс. (детали ×%s)\nУпрощение гусениц: %s пикс.\nГруппировка гусениц: %s пикс.",

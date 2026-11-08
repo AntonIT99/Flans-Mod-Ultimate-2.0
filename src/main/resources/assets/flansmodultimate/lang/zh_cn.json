@@ -496,6 +496,8 @@
   "options.flansmodultimate.impostorPreset": "替身图",
   "options.flansmodultimate.impostorPreset.tooltip": "远处载具和飞机替身图的固定档位。性能档位越高，切换越早，但仍受图像质量限制。关闭会禁用替身图；自定义会保留当前数值。模型 LOD 独立设置。",
   "options.flansmodultimate.impostorPreset.values": "屏幕尺寸阈值：%s 像素\n最小距离：%s 格\n优先距离：%s 格\n质量倍数：×%s\n基础截图：%s 像素、%s 个视角",
+  "options.flansmodultimate.killFeedLines": "击杀消息行数",
+  "options.flansmodultimate.killFeedScale": "击杀消息缩放",
   "options.flansmodultimate.lodPreset": "模型 LOD",
   "options.flansmodultimate.lodPreset.tooltip": "模型与履带 LOD 的固定档位。性能档位越高，越早省略远处的小部件。关闭保留完整细节；自定义保留当前数值。替身图独立设置。",
   "options.flansmodultimate.lodPreset.values": "近处部件阈值：%s 像素\n远处部件阈值：%s 像素（细节 ×%s）\n履带简化：%s 像素\n履带合并：%s 像素",

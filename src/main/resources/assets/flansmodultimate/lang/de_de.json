@@ -947,6 +947,8 @@
   "options.flansmodultimate.impostorPreset": "Impostors",
   "options.flansmodultimate.impostorPreset.tooltip": "Feste Impostor-Stufen für entfernte Fahrzeuge und Flugzeuge. Stärkere Stufen wechseln früher, soweit die Bildqualität reicht. Aus deaktiviert Impostors; Benutzerdefiniert behält die aktuellen Werte. Modell-LOD bleibt unabhängig.",
   "options.flansmodultimate.impostorPreset.values": "Bildschwelle: %s px\nMindestabstand: %s Blöcke\nBevorzugter Abstand: %s Blöcke\nQualitätsfaktor: ×%s\nBasisaufnahme: %s px, %s Blickwinkel",
+  "options.flansmodultimate.killFeedLines": "Zeilen im Kampfprotokoll",
+  "options.flansmodultimate.killFeedScale": "Größe des Kampfprotokolls",
   "options.flansmodultimate.kineticPenetrationReference": "Referenz kinetischer Durchschlag",
   "options.flansmodultimate.legshotModifier": "Faktor Beintreffer",
   "options.flansmodultimate.loadAllModelsInCache": "Alle Modelle in den Cache laden",

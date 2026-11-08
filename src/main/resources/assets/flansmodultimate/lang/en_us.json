@@ -947,6 +947,8 @@
   "options.flansmodultimate.impostorPreset": "Impostors",
   "options.flansmodultimate.impostorPreset.tooltip": "Snap between impostor presets for distant vehicles and planes. Stronger presets switch sooner, subject to image quality. Off disables impostors; Custom keeps the current values. Model LOD stays separate.",
   "options.flansmodultimate.impostorPreset.values": "Projected threshold: %s px\nMinimum distance: %s blocks\nPreferred distance: %s blocks\nQuality multiplier: ×%s\nBase capture: %s px, %s yaw views",
+  "options.flansmodultimate.killFeedLines": "Kill Feed Lines",
+  "options.flansmodultimate.killFeedScale": "Kill Feed Scale",
   "options.flansmodultimate.kineticPenetrationReference": "Kinetic Penetration Reference",
   "options.flansmodultimate.legshotModifier": "Legshot Modifier",
   "options.flansmodultimate.loadAllModelsInCache": "Load All Models In Cache",

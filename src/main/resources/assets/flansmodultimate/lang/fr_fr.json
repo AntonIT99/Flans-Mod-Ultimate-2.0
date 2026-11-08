@@ -496,6 +496,8 @@
   "options.flansmodultimate.impostorPreset": "Imposteurs",
   "options.flansmodultimate.impostorPreset.tooltip": "Paliers fixes d'imposteurs pour les véhicules et avions éloignés. Les paliers plus forts basculent plus tôt si la qualité le permet. Désactivé coupe les imposteurs ; Personnalisé garde les valeurs actuelles. Le LOD du modèle reste indépendant.",
   "options.flansmodultimate.impostorPreset.values": "Seuil projeté : %s px\nDistance minimale : %s blocs\nDistance préférée : %s blocs\nFacteur de qualité : ×%s\nCapture de base : %s px, %s vues",
+  "options.flansmodultimate.killFeedLines": "Lignes du journal des éliminations",
+  "options.flansmodultimate.killFeedScale": "Échelle du journal des éliminations",
   "options.flansmodultimate.lodPreset": "LOD des modèles",
   "options.flansmodultimate.lodPreset.tooltip": "Paliers fixes de LOD pour modèles et chenilles. Les paliers plus forts masquent plus tôt les petits détails éloignés. Désactivé garde tous les détails ; Personnalisé garde les valeurs actuelles. Les imposteurs restent indépendants.",
   "options.flansmodultimate.lodPreset.values": "Seuil proche des pièces : %s px\nSeuil éloigné : %s px (détail ×%s)\nSimplification des chenilles : %s px\nRegroupement des chenilles : %s px",

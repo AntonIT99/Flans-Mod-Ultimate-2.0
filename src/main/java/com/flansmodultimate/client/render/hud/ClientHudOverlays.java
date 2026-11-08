@@ -181,7 +181,7 @@ public final class ClientHudOverlays
         renderGrenadeThrowCharge(g, partialTick, sw, sh);
         renderDigitalAmmo(g, sh);
         renderTeamInfo(g, sw);
-        renderTeamsControls(g, sw, sh);
+        renderTeamsControls(g, sw);
         renderKillMessages(g, sw, sh);
         renderHealingTarget(g, sw, sh);
         renderVehicleDebug(g, sw, sh);
@@ -923,8 +923,8 @@ public final class ClientHudOverlays
         RenderSystem.disableBlend();
     }
 
-    /** Small binding reminders on the left, below the vehicle readouts and above chat. */
-    private static void renderTeamsControls(GuiGraphics g, int sw, int sh)
+    /** Small binding reminders centred below the Teams banner and capture point indicators. */
+    private static void renderTeamsControls(GuiGraphics g, int sw)
     {
         Minecraft mc = Minecraft.getInstance();
         PacketTeamsState state = TeamsClientState.get();
@@ -938,7 +938,7 @@ public final class ClientHudOverlays
         int width = hints.stream().mapToInt(mc.font::width).max().orElse(0);
         scale = Math.min(scale, (sw - 8F) / Math.max(1, width));
         g.pose().pushPose();
-        g.pose().translate(4, sh / 2F, 0);
+        g.pose().translate((sw - width * scale) / 2F, 54, 0);
         g.pose().scale(scale, scale, 1);
         g.fill(-2, -2, width + 2, hints.size() * LEGACY_HUD_LINE_HEIGHT, 0x66000000);
         for (int i = 0; i < hints.size(); i++)
@@ -1094,6 +1094,10 @@ public final class ClientHudOverlays
             return;
 
         Font font = mc.font;
+        float scale = ModClientConfig.killFeedScale();
+        g.pose().pushPose();
+        g.pose().translate(sw - 6, sh - KILL_MESSAGE_BOTTOM, 0);
+        g.pose().scale(scale, scale, 1F);
         for (KillMessageFeed.Entry message : KillMessageFeed.getMessages())
         {
             String killer = message.getKiller().getString();
@@ -1102,24 +1106,25 @@ public final class ClientHudOverlays
                 victimLabel = victimLabel.copy().append(" [").append(message.getWeapon().getHoverName()).append("]");
             String victim = victimLabel.getString();
             String gap = message.isHeadshot() ? KILL_MESSAGE_HEADSHOT_GAP : KILL_MESSAGE_GAP;
-            int textY = sh - KILL_MESSAGE_BOTTOM - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
-            int iconY = sh - KILL_MESSAGE_BOTTOM - 4 - message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
+            int textY = -message.getLine() * KILL_MESSAGE_LINE_HEIGHT;
+            int iconY = textY - 4;
 
             Component line = Component.empty().append(message.getKiller()).append(Component.literal(gap)).append(victimLabel);
-            g.drawString(font, line, sw - font.width(killer + gap + victim) - 6, textY, HUD_WHITE, true);
+            g.drawString(font, line, -font.width(killer + gap + victim), textY, HUD_WHITE, true);
 
             if (!message.getWeapon().isEmpty())
-                g.renderItem(message.getWeapon(), sw - font.width(gap + victim), iconY);
+                g.renderItem(message.getWeapon(), -font.width(gap + victim) + 6, iconY);
 
             if (message.isHeadshot())
             {
                 RenderSystem.enableBlend();
                 RenderSystem.defaultBlendFunc();
                 RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-                g.blit(FlansModTextures.TEXTURE_GUI_HEADSHOTSYMBOL, sw - font.width(KILL_MESSAGE_GAP + victim), iconY, HEADSHOT_SYMBOL_SIZE, HEADSHOT_SYMBOL_SIZE, 0F, 0F, HEADSHOT_SYMBOL_SHEET,
+                g.blit(FlansModTextures.TEXTURE_GUI_HEADSHOTSYMBOL, -font.width(KILL_MESSAGE_GAP + victim) + 6, iconY, HEADSHOT_SYMBOL_SIZE, HEADSHOT_SYMBOL_SIZE, 0F, 0F, HEADSHOT_SYMBOL_SHEET,
                     HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET);
             }
         }
+        g.pose().popPose();
     }
 
     public static void renderVehicleDebug(GuiGraphics g, int sw, int sh)

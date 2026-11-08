@@ -192,6 +192,8 @@ public final class ModClientConfig
     public static final BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
     public static final BooleanValue SHOW_AMMO_HUD;
     public static final BooleanValue SHOW_TEAMS_CONTROLS;
+    public static final IntValue KILL_FEED_LINES;
+    public static final DoubleValue KILL_FEED_SCALE;
     public static final EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
     public static final EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
     public static final EnumValue<EnumSpeedUnit> DRIVEABLE_VERTICAL_SPEED_UNIT;
@@ -365,6 +367,9 @@ public final class ModClientConfig
             readouts, team information and the kill feed. The vanilla HUD is not affected.
             """).define("showFlansHud", true);
         SHOW_TEAMS_CONTROLS = builder.comment("Show compact reminders of the current teams key bindings during an active round.").define("showTeamsControls", true);
+        KILL_FEED_LINES = builder.comment("Maximum number of recent kills displayed at once in the HUD kill feed. Older messages are discarded.")
+            .defineInRange("killFeedLines", 3, 1, 20);
+        KILL_FEED_SCALE = builder.comment("Scale of the HUD kill feed's text, icons and line spacing. 1.0 is full size.").defineInRange("killFeedScale", 0.75D, 0.5D, 1D);
         HIDE_CROSSHAIR_FOR_GUNS = builder.comment("""
             Personal preference: hide the vanilla crosshair while holding a non-melee Flan gun.
             The server's own disableCrosshairForGuns setting hides it for everyone regardless of this
@@ -871,6 +876,16 @@ public final class ModClientConfig
     public static int vehicleHudOffset(IntValue value)
     {
         return configSpec.isLoaded() ? value.get() : value.getDefault();
+    }
+
+    public static int killFeedLines()
+    {
+        return configSpec.isLoaded() ? KILL_FEED_LINES.get() : KILL_FEED_LINES.getDefault();
+    }
+
+    public static float killFeedScale()
+    {
+        return (configSpec.isLoaded() ? KILL_FEED_SCALE.get() : KILL_FEED_SCALE.getDefault()).floatValue();
     }
 
     public static boolean isUncensoredContentForced()
