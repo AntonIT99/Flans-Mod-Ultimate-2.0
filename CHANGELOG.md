@@ -12,7 +12,7 @@
 
 ## Vehicles, Aircraft & Ships
 
-* Progressive aircraft damage affects lift, control, engines, fuel and rotors, with pilot warnings, autorotation, belly landings and distinct crash behaviour
+* Progressive aircraft damage affects lift, control, engines, fuel and rotors, with pilot warnings, autorotation, belly landings and explosions on crash impact
 * Driveables leave persistent burning wrecks, with detached parts, terrain-aware settling and ship sinking; wreck lifetime is configurable through `driveableWreckLifetime`
 * Reworked vehicle armour and shell penetration, including damage through destroyed parts, composite armour, HESH and corrected HEAT damage against unarmoured targets
 * Improved ship physics and waterline placement, vehicle suspension, air brakes and aircraft engine performance

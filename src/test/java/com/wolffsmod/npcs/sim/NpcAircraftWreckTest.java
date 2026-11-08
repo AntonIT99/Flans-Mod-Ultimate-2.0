@@ -1,8 +1,7 @@
 package com.wolffsmod.npcs.sim;
 
 import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.driveables.DriveableKind;
-import com.flansmodultimate.api.driveables.IDriveableType;
+import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -86,6 +86,53 @@ class NpcAircraftWreckTest
             suspended.tick(npc);
             suspended.tick(npc);
             assertEquals(0D, motion.get().length(), 1.0E-9D);
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"PLANE,ground", "PLANE,wall", "PLANE,water", "HELICOPTER,ground"})
+    void shotDownAircraftExplodeOnlyOnceAtImpact(Flight flight, String contact) throws ReflectiveOperationException
+    {
+        EntityNPCFlying npc = npc(flight);
+        when(npc.isKilled()).thenReturn(true);
+        ServerLevel level = mock(ServerLevel.class);
+        when(npc.level()).thenReturn(level);
+        when(npc.getDeltaMovement()).thenReturn(new Vec3(1D, -1D, 0D));
+        when(npc.position()).thenReturn(new Vec3(0D, 80D, 0D));
+        try (var physics = mockStatic(FlansModApi.class); var effects = mockStatic(FlansAircraftCrashes.class, CALLS_REAL_METHODS))
+        {
+            physics.when(() -> FlansModApi.getGravityFactor(level)).thenReturn(1D);
+            effects.when(() -> FlansAircraftCrashes.crash(eq(level), any(Vec3.class), anyFloat(), anyBoolean())).thenAnswer(call -> null);
+            NpcFlight controller = new NpcFlight();
+            controller.tick(npc);
+            verify(level, never()).explode(any(), anyDouble(), anyDouble(), anyDouble(), anyFloat(), anyBoolean(), any(Level.ExplosionInteraction.class));
+            when(npc.onGround()).thenReturn(contact.equals("ground"));
+            when(npc.isInWater()).thenReturn(contact.equals("water"));
+            npc.horizontalCollision = contact.equals("wall");
+            controller.tick(npc);
+            controller.tick(npc);
+            verify(level, times(1)).explode(eq(npc), anyDouble(), anyDouble(), anyDouble(), eq(1.2F), eq(false), eq(Level.ExplosionInteraction.NONE));
+        }
+    }
+
+    @Test
+    void airborneTimeoutDoesNotExplode() throws ReflectiveOperationException
+    {
+        EntityNPCFlying npc = npc(Flight.PLANE);
+        when(npc.isKilled()).thenReturn(true);
+        ServerLevel level = mock(ServerLevel.class);
+        when(npc.level()).thenReturn(level);
+        when(npc.getDeltaMovement()).thenReturn(Vec3.ZERO);
+        try (var physics = mockStatic(FlansModApi.class))
+        {
+            NpcFlight controller = new NpcFlight();
+            controller.tick(npc);
+            var ticks = NpcFlight.class.getDeclaredField("crashTicks");
+            ticks.setAccessible(true);
+            ticks.setInt(controller, NpcFlight.MAX_CRASH_TICKS);
+            controller.tick(npc);
+            assertFalse(controller.isCrashing());
+            verify(level, never()).explode(any(), anyDouble(), anyDouble(), anyDouble(), anyFloat(), anyBoolean(), any(Level.ExplosionInteraction.class));
         }
     }
 
