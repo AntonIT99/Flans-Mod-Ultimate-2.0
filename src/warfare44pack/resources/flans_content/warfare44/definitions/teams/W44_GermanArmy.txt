@@ -68,6 +68,9 @@ AddClass W44_GermanArmySquadLeaderPPK
 AddClass W44_GermanArmyOfficer
 AddClass W44_GermanArmySquadLeaderLeibermuster
 
+// Airborne
+AddClass W44_GermanArmyParatrooper
+
 // Vehicle and air crews
 AddClass W44_GermanArmyTankCrew
 AddClass W44_GermanArmyPilot

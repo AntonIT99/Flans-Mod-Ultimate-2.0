@@ -1,0 +1,16 @@
+// Identity
+Name Paratrooper (FN SCAR)
+ShortName sasParatrooper
+Description Airborne infantry with a parachute, an assault rifle, a sidearm and fragmentation grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem fnscar
+AddItem fnscarAmmo 3
+AddItem sigP226
+AddItem sigP226Ammo 2
+AddItem m67 2
+AddItem mwParachute
+AddItem mwKnife

@@ -1,0 +1,12 @@
+// Identity
+Name Paratrooper (FG 42)
+ShortName OfficialWW2_GermanParatrooper
+
+// Items
+AddItem fg42
+AddItem luger
+AddItem stielhandgranate 2
+AddItem ww2Knife
+AddItem ww2Parachute
+AddItem Fg42Ammo 4
+AddItem lugerAmmo 2

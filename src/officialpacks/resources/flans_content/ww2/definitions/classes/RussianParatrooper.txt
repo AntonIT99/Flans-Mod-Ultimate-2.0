@@ -1,0 +1,12 @@
+// Identity
+Name Paratrooper (PPSh-41)
+ShortName OfficialWW2_RussianParatrooper
+
+// Items
+AddItem ppsh
+AddItem tt33
+AddItem rgd33 2
+AddItem ww2Knife
+AddItem ww2Parachute
+AddItem ppshAmmo 2
+AddItem tt33Ammo 2

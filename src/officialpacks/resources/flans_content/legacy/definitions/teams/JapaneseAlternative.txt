@@ -21,3 +21,4 @@ AddClass OfficialWW2_JapaneseEngineerType38
 AddClass OfficialWW2_JapaneseRifleman
 AddClass OfficialWW2_JapaneseRiflemanPilot
 AddClass OfficialWW2_JapaneseMedic
+AddClass OfficialWW2_JapaneseParatrooper

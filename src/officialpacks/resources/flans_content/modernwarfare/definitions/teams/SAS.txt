@@ -24,3 +24,4 @@ AddClass sasAssaultMP5Suppressed
 AddClass sasShotgun
 AddClass sasDemolitions
 AddClass sasAssaultMP5Balaclava
+AddClass sasParatrooper

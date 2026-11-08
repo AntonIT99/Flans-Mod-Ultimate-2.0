@@ -49,6 +49,9 @@ AddClass W44_SovietArmySquadLeader
 AddClass W44_SovietArmySquadLeaderSVT40
 AddClass W44_SovietArmySquadLeaderMosin
 
+// Airborne
+AddClass W44_SovietArmyParatrooper
+
 // Vehicle and air crews
 AddClass W44_SovietArmyTankCrew
 AddClass W44_SovietArmyPilot

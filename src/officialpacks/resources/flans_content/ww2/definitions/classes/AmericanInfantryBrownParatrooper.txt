@@ -1,0 +1,18 @@
+// Identity
+Name Paratrooper (M1A1 Thompson, Brown)
+ShortName OfficialWW2_AmericanInfantryBrownParatrooper
+
+// Armour
+Hat AmericanAssaultHelmet
+Chest AmericanAssaultChestBrown
+Legs AmericanUniformPants
+Shoes AmericanUniformBoots
+
+// Items
+AddItem thompson
+AddItem colt
+AddItem mk2Frag 2
+AddItem ww2Knife
+AddItem ww2Parachute
+AddItem thompsonAmmo 4
+AddItem coltAmmo 2

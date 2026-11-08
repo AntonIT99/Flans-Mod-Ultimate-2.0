@@ -23,3 +23,4 @@ AddClass OfficialWW2_BritishEngineer
 AddClass OfficialWW2_BritishRifleman
 AddClass OfficialWW2_BritishRiflemanPilot
 AddClass OfficialWW2_BritishMedic
+AddClass OfficialWW2_BritishParatrooper
