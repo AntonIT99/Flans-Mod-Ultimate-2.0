@@ -84,8 +84,7 @@ WheelPosition 2 30 -10 20
 WheelPosition 3 30 -10 -20
 Driver 0 34 0 -360 360 -10 25
 RotatedDriverOffset 0 0 0
-Passengers 1
-Passenger 1 0 34 0 turret -360 360 -15 60 browning Browning
+Passengers 0
 DriverAimSpeed 1.0f 0.8f 0f
 DriverYawBeforePitch false
 

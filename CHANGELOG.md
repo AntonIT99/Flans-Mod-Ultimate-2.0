@@ -1,8 +1,12 @@
 # Flan's Mod Ultimate 2.2
 
+* Legacy 1.6.4 Sherman and Panzer IV use only the driver-controlled machine gun; their duplicate passenger gunner seats are removed
+
+* Legacy Manus Sherman, Hummel, Panzer IV G/H and T-34 cannons, and the legacy 1.7.2 Panzer IV cannon, fire from their modelled muzzle positions
+
 * The legacy 1.7.10 Panzer IV displays its driver-controlled MG42 and fires it from the visible muzzle
 
-* Legacy Manus F-22 and T-34 parts use corrected rotation axes; the legacy 1.7.2 Panzer IV preserves its hull and turret orientations, elevates its barrel in the correct direction and displays its driver-controlled MG42
+* Legacy Manus F-22 and T-34 parts use corrected rotation axes; the legacy 1.7.2 Panzer IV preserves its hull and turret orientations, elevates its barrel in the correct direction and uses a fictional coaxial MG42 firing point without the unsupported gun mesh
 
 * Classic Packs translations in German, Spanish, Russian and Simplified Chinese cover all current items, blocks and classes, including legacy variants, with consistent clothing and ammunition names
 
@@ -248,6 +252,7 @@
 
 ## Settings & Commands
 
+* Blood Splatter Time now uses a numeric input in quick options
 * Suppression and gun, vehicle and explosion screen shake are now controlled by the server/common config; client settings, view bobbing and hiding the HUD no longer bypass them
 * Tactical smoke from grenades, shells and vehicle launchers keeps its own bounded particle allowances regardless of client particle distance, density or budgets
 

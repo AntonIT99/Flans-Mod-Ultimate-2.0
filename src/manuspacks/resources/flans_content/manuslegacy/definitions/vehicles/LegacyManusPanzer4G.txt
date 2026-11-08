@@ -44,7 +44,7 @@ RealTurnRateDegPerSec 12
 
 // Weapons
 AddGun 21.27 24.31 6.078 turret WW2_MG_MG42ZB_1A
-BarrelPosition 61.54 24.31 0
+BarrelPosition 62.7 25 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 0.75 0 0
 ShootParticlesPrimary flansmod.fmflame 0.28 0 0.82

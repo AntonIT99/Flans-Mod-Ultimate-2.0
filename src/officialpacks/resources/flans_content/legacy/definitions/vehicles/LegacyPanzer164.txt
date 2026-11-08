@@ -88,8 +88,7 @@ WheelPosition 2 30 -10 20
 WheelPosition 3 30 -10 -20
 Driver 0 30 0 -360 360 -10 20
 RotatedDriverOffset 0 0 0
-Passengers 1
-Passenger 1 0 30 0 turret -360 360 -15 60 mg42 MG42
+Passengers 0
 
 // Sounds and particles
 StartSound tankidle2

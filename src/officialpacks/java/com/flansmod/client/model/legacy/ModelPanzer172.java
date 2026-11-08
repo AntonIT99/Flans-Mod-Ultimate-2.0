@@ -354,34 +354,6 @@ public class ModelPanzer172 extends ModelVehicle
 		addBarrelBox(barrelModel[1], -1F, -1F, -36F, 2, 2, 32);
 		barrelModel[1].setRotationPoint(-4.5F, -5.5F, -6F);
 
-		//Gun model stolen from the browning
-		ModelRendererTurbo[][] mg42Model = new ModelRendererTurbo[3][];
-
-		//Yaw only part
-		mg42Model[0] = new ModelRendererTurbo[0];
-
-		//The main gun part
-		mg42Model[1] = new ModelRendererTurbo[4];
-		mg42Model[1][0] = new ModelRendererTurbo(this, 0, 28, textureX, textureY);
-		mg42Model[1][1] = new ModelRendererTurbo(this, 0, 23, textureX, textureY);
-		mg42Model[1][2] = new ModelRendererTurbo(this, 8, 26, textureX, textureY);
-		mg42Model[1][3] = new ModelRendererTurbo(this, 18, 19, textureX, textureY);
-
-		mg42Model[1][0].addBox(0F, 3F, -1F, 16, 2, 2);
-		mg42Model[1][1].addBox(4F, 5F, -1F, 2, 3, 2);
-		mg42Model[1][2].addBox(16F, 3.5F, -0.5F, 4, 1, 1);
-		mg42Model[1][3].addBox(8F, 3F, -6F, 2, 4, 5);
-
-		//Set the origin
-		for(ModelRendererTurbo gunPart : mg42Model[1])
-			gunPart.setRotationPoint(0F, -24F, 4F);
-
-		//No recoil part
-				mg42Model[2] = new ModelRendererTurbo[0];
-
-		registerGunModel("MG42", mg42Model);
-
-
 		flipAll();
 		translateAll(3, 16, 12);
 		bakeYaw(bodyModel);
