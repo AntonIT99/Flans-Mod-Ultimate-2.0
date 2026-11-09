@@ -767,6 +767,7 @@
   "options.flansmodultimate.tooltip.default_value": "기본값: %s",
   "options.flansmodultimate.useNewPenetrationSystem": "새 관통 시스템 사용",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "월드 로드 시 콘텐츠 참조 검증",
+  "options.flansmodultimate.uncensoredContentByDefault": "무검열 콘텐츠 기본 활성화",
   "options.flansmodultimate.value.aimpose.dynamic": "동적",
   "options.flansmodultimate.value.aimpose.enforced": "고정",
   "options.flansmodultimate.value.aimtype.hold": "누르고 있기",

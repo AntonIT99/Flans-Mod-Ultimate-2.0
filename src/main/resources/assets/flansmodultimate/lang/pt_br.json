@@ -767,6 +767,7 @@
   "options.flansmodultimate.tooltip.default_value": "Valor padrão: %s",
   "options.flansmodultimate.useNewPenetrationSystem": "Usar novo sistema de penetração",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "Validar conteúdo ao carregar o mundo",
+  "options.flansmodultimate.uncensoredContentByDefault": "Conteúdo sem censura por padrão",
   "options.flansmodultimate.value.aimpose.dynamic": "Dinâmica",
   "options.flansmodultimate.value.aimpose.enforced": "Forçada",
   "options.flansmodultimate.value.aimtype.hold": "Segurar",

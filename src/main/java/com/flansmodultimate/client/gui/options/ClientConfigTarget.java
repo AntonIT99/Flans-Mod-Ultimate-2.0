@@ -16,8 +16,8 @@ public class ClientConfigTarget implements ConfigTarget
     @Override
     public Object get(ConfigValue<?> value)
     {
-        if (value == ModClientConfig.ENABLE_UNCENSORED_CONTENT && ModClientConfig.isUncensoredContentForced())
-            return true;
+        if (value == ModClientConfig.ENABLE_UNCENSORED_CONTENT && (ModClientConfig.isUncensoredContentForced() || ModClientConfig.isUncensoredContentServerDefault()))
+            return ModClientConfig.isUncensoredContentEnabled();
         return value.get();
     }
 
@@ -25,6 +25,11 @@ public class ClientConfigTarget implements ConfigTarget
     @SuppressWarnings("unchecked")
     public void set(ConfigValue<?> value, Object newValue)
     {
+        if (value == ModClientConfig.ENABLE_UNCENSORED_CONTENT)
+        {
+            ModClientConfig.chooseUncensoredContent((Boolean) newValue);
+            return;
+        }
         ModClientConfig.setAndSave((ConfigValue<Object>) value, newValue);
     }
 

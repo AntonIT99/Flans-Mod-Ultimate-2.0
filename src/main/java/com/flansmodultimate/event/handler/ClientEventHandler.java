@@ -582,7 +582,7 @@ public final class ClientEventHandler
         TeamFlagTextures.clear();
         KillMessageFeed.clear();
         CommonConfigMirror.clear();
-        ModClientConfig.setServerForcesUncensoredContent(false);
+        ModClientConfig.applyServerUncensoredContent(false, false);
     }
 
     @SubscribeEvent

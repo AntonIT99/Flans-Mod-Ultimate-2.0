@@ -767,6 +767,7 @@
   "options.flansmodultimate.tooltip.default_value": "Valore predefinito: %s",
   "options.flansmodultimate.useNewPenetrationSystem": "Usa nuovo sistema di penetrazione",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "Convalida contenuti al caricamento del mondo",
+  "options.flansmodultimate.uncensoredContentByDefault": "Contenuti non censurati per impostazione predefinita",
   "options.flansmodultimate.value.aimpose.dynamic": "Dinamica",
   "options.flansmodultimate.value.aimpose.enforced": "Forzata",
   "options.flansmodultimate.value.aimtype.hold": "Tieni premuto",

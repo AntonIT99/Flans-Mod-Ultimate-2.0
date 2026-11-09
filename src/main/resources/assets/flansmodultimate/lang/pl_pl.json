@@ -1088,6 +1088,7 @@
   "options.flansmodultimate.tooltip.default_value": "Domyślna wartość: %s",
   "options.flansmodultimate.useNewPenetrationSystem": "Używaj nowego systemu przebijania",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "Sprawdzaj zawartość przy wczytywaniu świata",
+  "options.flansmodultimate.uncensoredContentByDefault": "Zawartość bez cenzury domyślnie",
   "options.flansmodultimate.value.aimpose.dynamic": "Dynamiczna",
   "options.flansmodultimate.value.aimpose.enforced": "Wymuszona",
   "options.flansmodultimate.value.aimtype.hold": "Przytrzymanie",

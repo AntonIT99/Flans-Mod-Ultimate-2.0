@@ -767,6 +767,7 @@
   "options.flansmodultimate.tooltip.default_value": "デフォルト値: %s",
   "options.flansmodultimate.useNewPenetrationSystem": "新しい貫通システムを使用",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "ワールド読込時にコンテンツ参照を検証",
+  "options.flansmodultimate.uncensoredContentByDefault": "無修正コンテンツをデフォルトで有効化",
   "options.flansmodultimate.value.aimpose.dynamic": "動的",
   "options.flansmodultimate.value.aimpose.enforced": "常時",
   "options.flansmodultimate.value.aimtype.hold": "長押し",

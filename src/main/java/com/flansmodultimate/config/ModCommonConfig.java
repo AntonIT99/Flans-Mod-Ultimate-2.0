@@ -41,6 +41,7 @@ public final class ModCommonConfig
     public static final BooleanValue TEAMS_SPAWN_VEHICLES_WITH_FUEL;
     public static final IntValue TEAMS_SPAWN_VEHICLE_AMMO;
     public static final BooleanValue FORCE_UNCENSORED_CONTENT;
+    public static final BooleanValue UNCENSORED_CONTENT_BY_DEFAULT;
     public static final double DEFAULT_GRAVITY_FACTOR = 1D;
     public static final double DEFAULT_DRAG_FACTOR = 1D;
     /** Vanilla player health; the maximum health setting leaves players untouched at this value. */
@@ -359,6 +360,7 @@ public final class ModCommonConfig
     {
         builder.push("General Settings");
         FORCE_UNCENSORED_CONTENT = builder.comment("Require uncensored names and textures for connected clients without changing their saved preference.").define("forceUncensoredContent", false);
+        UNCENSORED_CONTENT_BY_DEFAULT = builder.comment("Turn uncensored names and textures on for connected clients while letting each player turn them off for the session.", "Ignored when forceUncensoredContent is enabled.").define("uncensoredContentByDefault", false);
         ADD_ALL_PAINTJOBS_TO_CREATIVE = builder.comment("Whether all paintjobs should appear in creative").define("addAllPaintjobsToCreative", true);
         ADD_GUNPOWDER_RECIPE = builder.comment("Add a shapeless recipe for gunpowder using three charcoal and one glowstone dust.", "Changes take effect after restarting or reloading server data.")
             .define("addGunpowderRecipe", true);
@@ -860,7 +862,7 @@ public final class ModCommonConfig
 
             List.copyOf(FLUID_FUELS_RAW.get()), VEHICLE_THROTTLE_DECAY_MULTIPLIER.get(), NEAR_MISS_SUPPRESSION.get(), SUPPRESSION_RANGE_MULTIPLIER.get(), SUPPRESSION_INTENSITY.get(),
             SUPPRESSION_AFFECTS_RIDERS.get(), BULLET_FLYBY_SOUNDS.get(), BULLET_FLYBY_RANGE_MULTIPLIER.get(), DRIVEABLE_WRECK_LIFETIME.get(), DRIVEABLE_MELEE_DAMAGE_THRESHOLD.get(),
-            FORCE_UNCENSORED_CONTENT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(),
+            FORCE_UNCENSORED_CONTENT.get(), UNCENSORED_CONTENT_BY_DEFAULT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(),
             AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get(), ENABLE_REALISTIC_AIRCRAFT_DAMAGE.get(), VEHICLE_SCREEN_SHAKE.get(), GUN_SCREEN_SHAKE.get(), EXPLOSION_SCREEN_SHAKE.get(),
             EXPLOSION_SHAKE_INTENSITY.get(), EXPLOSION_SHAKE_DURATION.get(), SUPPRESSION_DURATION.get(), SUPPRESSION_CAMERA_ROLL.get(), SUPPRESSION_VIGNETTE.get(), LANDING_FLAP_DRAG_EFFECTIVENESS.get(), LANDING_FLAP_ASSIST_DECELERATION.get(), LANDING_FLAP_GEAR_DRAG_MULTIPLIER.get(), ENABLE_AFTERBURNERS.get(), AFTERBURNER_JET_DRY_THRUST_RATIO.get(), AFTERBURNER_PISTON_DRY_POWER_RATIO.get(), AFTERBURNER_THROTTLE_DETENT.get(),
             AFTERBURNER_SPOOL_SECONDS.get(), AFTERBURNER_FUEL_MULTIPLIER.get());
@@ -1615,6 +1617,7 @@ public final class ModCommonConfig
     {
         // spotless:off
         FORCE_UNCENSORED_CONTENT(() -> ModCommonConfig.FORCE_UNCENSORED_CONTENT, QuickSection.SERVER),
+        UNCENSORED_CONTENT_BY_DEFAULT(() -> ModCommonConfig.UNCENSORED_CONTENT_BY_DEFAULT, QuickSection.SERVER),
         DISABLE_CROSSHAIR_FOR_GUNS(() -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS, QuickSection.SERVER),
         DISABLE_CROSSHAIR_WHILE_SCOPED(() -> ModCommonConfig.DISABLE_CROSSHAIR_WHILE_SCOPED, QuickSection.SERVER),
         ALLOW_GUN_CROSSHAIR_OVERRIDE(() -> ModCommonConfig.ALLOW_GUN_CROSSHAIR_OVERRIDE, QuickSection.SERVER),

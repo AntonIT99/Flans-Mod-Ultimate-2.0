@@ -1088,6 +1088,7 @@
   "options.flansmodultimate.tooltip.default_value": "Default value: %s",
   "options.flansmodultimate.useNewPenetrationSystem": "Use New Penetration System",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "Validate Content On World Load",
+  "options.flansmodultimate.uncensoredContentByDefault": "Uncensored Content by Default",
   "options.flansmodultimate.value.aimpose.dynamic": "Dynamic",
   "options.flansmodultimate.value.aimpose.enforced": "Enforced",
   "options.flansmodultimate.value.aimtype.hold": "Hold",

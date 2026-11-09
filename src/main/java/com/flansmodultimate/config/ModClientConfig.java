@@ -38,6 +38,9 @@ public final class ModClientConfig
 
     private static final AtomicReference<Boolean> startupUncensoredContentEnabled = new AtomicReference<>();
     private static final AtomicBoolean serverForcesUncensoredContent = new AtomicBoolean();
+    private static final AtomicBoolean serverEnablesUncensoredContentByDefault = new AtomicBoolean();
+    /** The player's choice for this connection while the server turns uncensored content on by default; null until made. */
+    private static final AtomicReference<Boolean> sessionUncensoredContentChoice = new AtomicReference<>();
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean showDetailedItemDescriptions;
@@ -920,23 +923,57 @@ public final class ModClientConfig
         return serverForcesUncensoredContent.get();
     }
 
-    /** Applies a server requirement for this connection without changing the saved client preference. Client thread. */
-    public static void setServerForcesUncensoredContent(boolean forced)
+    /** Whether the connected server turns uncensored content on unless the player turns it off for the session. */
+    public static boolean isUncensoredContentServerDefault()
+    {
+        return serverEnablesUncensoredContentByDefault.get() && !serverForcesUncensoredContent.get();
+    }
+
+    /**
+     * Applies the server's uncensored-content mode for this connection without changing the saved client preference.
+     * A session choice made under a server default is dropped whenever the mode changes. Client thread.
+     */
+    public static void applyServerUncensoredContent(boolean forced, boolean byDefault)
     {
         boolean previous = isUncensoredContentEnabled();
         serverForcesUncensoredContent.set(forced);
         if (previous != isUncensoredContentEnabled())
             Minecraft.getInstance().reloadResourcePacks();
     }
+        if (serverForcesUncensoredContent.get() != forced || serverEnablesUncensoredContentByDefault.get() != byDefault)
+            sessionUncensoredContentChoice.set(null);
 
+        serverEnablesUncensoredContentByDefault.set(byDefault);
     public static boolean isUncensoredContentEnabled()
     {
         if (serverForcesUncensoredContent.get())
             return true;
+    /** Records the player's choice from the options screen: kept for the session under a server default, and saved. Client thread. */
+    public static void chooseUncensoredContent(boolean enabled)
+    {
+        if (isUncensoredContentServerDefault())
+        {
+            boolean previous = isUncensoredContentEnabled();
+            sessionUncensoredContentChoice.set(enabled);
+            boolean savedChanges = ENABLE_UNCENSORED_CONTENT.get() != enabled;
+            setAndSave(ENABLE_UNCENSORED_CONTENT, enabled);
+            // A saved change reloads resources on bake; otherwise only the session choice moved
+            if (!savedChanges && previous != isUncensoredContentEnabled())
+                Minecraft.getInstance().reloadResourcePacks();
+            return;
+        }
+        setAndSave(ENABLE_UNCENSORED_CONTENT, enabled);
+    }
+
         ModClientConfig config = get();
         if (config != null)
             return config.enableUncensoredContent;
 
+        if (serverEnablesUncensoredContentByDefault.get())
+        {
+            Boolean choice = sessionUncensoredContentChoice.get();
+            return choice == null || choice;
+        }
         if (configSpec.isLoaded())
             return ENABLE_UNCENSORED_CONTENT.get();
 

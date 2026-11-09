@@ -767,6 +767,7 @@
   "options.flansmodultimate.tooltip.default_value": "Значение по умолчанию: %s",
   "options.flansmodultimate.useNewPenetrationSystem": "Использовать новую систему пробития",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "Проверять ссылки контента при загрузке мира",
+  "options.flansmodultimate.uncensoredContentByDefault": "Контент без цензуры по умолчанию",
   "options.flansmodultimate.value.aimpose.dynamic": "Динамическая",
   "options.flansmodultimate.value.aimpose.enforced": "Постоянная",
   "options.flansmodultimate.value.aimtype.hold": "Удержание",

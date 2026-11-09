@@ -767,6 +767,7 @@
   "options.flansmodultimate.tooltip.default_value": "默认值：%s",
   "options.flansmodultimate.useNewPenetrationSystem": "使用新版穿透系统",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "加载世界时验证内容引用",
+  "options.flansmodultimate.uncensoredContentByDefault": "默认启用未审查内容",
   "options.flansmodultimate.value.aimpose.dynamic": "动态",
   "options.flansmodultimate.value.aimpose.enforced": "强制",
   "options.flansmodultimate.value.aimtype.hold": "按住",

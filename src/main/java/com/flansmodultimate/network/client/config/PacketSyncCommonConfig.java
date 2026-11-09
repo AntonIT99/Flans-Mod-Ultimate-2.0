@@ -40,7 +40,7 @@ public class PacketSyncCommonConfig implements IClientPacket
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         ModCommonConfig.applyServerSnapshot(commonSnapshot);
-        ModClientConfig.setServerForcesUncensoredContent(commonSnapshot.forceUncensoredContent());
+        ModClientConfig.applyServerUncensoredContent(commonSnapshot.forceUncensoredContent(), commonSnapshot.uncensoredContentByDefault());
         ModApocalypseConfig.applyServerSnapshot(apocalypseSnapshot);
         // An open options screen shows server settings, which have just changed under it
         FlansOptionsScreen.onServerConfigSynced();
