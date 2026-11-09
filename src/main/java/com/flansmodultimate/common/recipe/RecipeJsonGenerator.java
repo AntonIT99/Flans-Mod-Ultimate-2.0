@@ -33,11 +33,19 @@ public final class RecipeJsonGenerator
     public static Set<String> getRecipeFileNames(InfoType config)
     {
         Set<String> fileNames = new HashSet<>();
-        if (config.hasCraftingRecipe())
+        if (producesCraftingRecipe(config))
             fileNames.add(getCraftingFileName(config));
         if (config.hasSmeltingRecipe())
             fileNames.add(getSmeltingFileName(config));
         return fileNames;
+    }
+
+    /** A malformed shaped recipe has no output, so it must never count as missing or stale generation. */
+    private static boolean producesCraftingRecipe(InfoType config)
+    {
+        if (!config.hasCraftingRecipe())
+            return false;
+        return config.isShapeless() || getTrimmedPattern(config).flatMap(pattern -> removeUndefinedRecipeKeys(pattern, parseShapedRecipeKeys(config), new HashSet<>())).isPresent();
     }
 
     /** Both generated layouts must exist, and modern crafting results must fit the output stack. */
@@ -67,7 +75,7 @@ public final class RecipeJsonGenerator
 
     private static boolean hasInvalidModernResult(InfoType config, Path dataFolder)
     {
-        if (!config.hasCraftingRecipe())
+        if (!producesCraftingRecipe(config))
             return false;
         Path modernRecipe = RecipeDataCompatibility.Format.MODERN.resolve(dataFolder).resolve(getCraftingFileName(config));
         try
@@ -105,8 +113,8 @@ public final class RecipeJsonGenerator
 
         if (config.hasCraftingRecipe())
         {
-            JsonObject recipe = config.isShapeless() ? createShapelessRecipe(config) : createShapedRecipe(config);
-            writeBothVersions(config, dataFolder, getCraftingFileName(config), recipe);
+            Optional<JsonObject> recipe = config.isShapeless() ? Optional.of(createShapelessRecipe(config)) : createShapedRecipe(config);
+            recipe.ifPresent(json -> writeBothVersions(config, dataFolder, getCraftingFileName(config), json));
         }
 
         if (config.hasSmeltingRecipe())
@@ -136,21 +144,30 @@ public final class RecipeJsonGenerator
         }
     }
 
-    private static JsonObject createShapedRecipe(InfoType config)
+    private static Optional<JsonObject> createShapedRecipe(InfoType config)
     {
         Optional<List<String>> pattern = getTrimmedPattern(config);
         if (pattern.isEmpty())
         {
             FlansLog.log.warn("Invalid recipe grid in {}", config);
-            return new JsonObject();
+            return Optional.empty();
+        }
+
+        List<String> tokens = config.getRecipeTokens();
+        if (tokens.size() % 2 != 0)
+        {
+            String trailingToken = tokens.get(tokens.size() - 1);
+            FlansLog.log.warn("Ignoring trailing recipe token '{}' in {}", trailingToken, config);
         }
 
         Map<Character, String> recipeKeys = parseShapedRecipeKeys(config);
-        pattern = removeUndefinedRecipeKeys(pattern.get(), recipeKeys, config);
+        Set<Character> undefinedKeys = new LinkedHashSet<>();
+        pattern = removeUndefinedRecipeKeys(pattern.get(), recipeKeys, undefinedKeys);
+        undefinedKeys.forEach(key -> FlansLog.log.warn("Failed to find '{}' in recipe for {}", key, config));
         if (pattern.isEmpty())
         {
             FlansLog.log.warn("Invalid recipe grid in {}", config);
-            return new JsonObject();
+            return Optional.empty();
         }
 
         Set<Character> usedKeys = getUsedRecipeKeys(pattern.get());
@@ -172,13 +189,12 @@ public final class RecipeJsonGenerator
         root.add("key", keyJson);
         root.add(KEY_RESULT, createResult(config));
 
-        return root;
+        return Optional.of(root);
     }
 
-    private static Optional<List<String>> removeUndefinedRecipeKeys(List<String> pattern, Map<Character, String> recipeKeys, InfoType config)
+    private static Optional<List<String>> removeUndefinedRecipeKeys(List<String> pattern, Map<Character, String> recipeKeys, Set<Character> undefinedKeys)
     {
         List<String> sanitizedPattern = new ArrayList<>(pattern.size());
-        Set<Character> warnedKeys = new HashSet<>();
 
         for (String row : pattern)
         {
@@ -188,8 +204,7 @@ public final class RecipeJsonGenerator
                 char c = row.charAt(i);
                 if (c != ' ' && StringUtils.isBlank(recipeKeys.get(c)))
                 {
-                    if (warnedKeys.add(c))
-                        FlansLog.log.warn("Failed to find '{}' in recipe for {}", c, config);
+                    undefinedKeys.add(c);
                     builder.append(' ');
                 }
                 else
@@ -255,12 +270,6 @@ public final class RecipeJsonGenerator
     private static Map<Character, String> parseShapedRecipeKeys(InfoType config)
     {
         List<String> tokens = config.getRecipeTokens();
-        if (tokens.size() % 2 != 0)
-        {
-            String token = tokens.get(tokens.size() - 1);
-            FlansLog.log.warn("Ignoring trailing recipe token '{}' in {}", token, config);
-        }
-
         Map<Character, String> keys = new HashMap<>();
         for (int i = 0; i + 1 < tokens.size(); i += 2)
         {

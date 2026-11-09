@@ -107,6 +107,52 @@ class ContentPackGeneratorsTest
     }
 
     @Test
+    void parallelTextureCopiesResolveCollisionsLikeSequentialCopies() throws Exception
+    {
+        Path source = root.resolve("legacy");
+        for (int i = 0; i < 24; i++)
+            png(source.resolve("Icon " + i + ".png"), 0xff000000 | i);
+        png(source.resolve("Icon_0.png"), 0xffff0000);
+        Path sequential = root.resolve("sequential");
+        Path parallel = root.resolve("parallel");
+
+        GeneratedTextureFiles.copy(source, sequential);
+        try (ContentLoadingWorkers workers = ContentLoadingWorkers.create(4))
+        {
+            GeneratedTextureFiles.copy(source, parallel, Map.of(), false, workers);
+        }
+
+        try (var files = Files.list(sequential))
+        {
+            for (Path file : files.filter(path -> path.toString().endsWith(".png")).toList())
+                assertArrayEquals(Files.readAllBytes(file), Files.readAllBytes(parallel.resolve(file.getFileName())));
+        }
+        assertTrue(Files.isRegularFile(parallel.resolve("icon_0-1.png")));
+        assertFalse(GeneratedTextureFiles.needsUpdate(source, parallel, Map.of(), false));
+    }
+
+    @Test
+    void generationInputsLeaveUnusedFilesInTheArchive()
+    {
+        var data = ContentPackAssets.generationInputs(false, true, false);
+        assertTrue(data.test("id_alias.json"));
+        assertTrue(data.test("data/flansmod/recipes/a.json"));
+        assertFalse(data.test("assets/flansmod/textures/items/a.png"));
+        assertFalse(data.test("guns/a.txt"));
+
+        var assets = ContentPackAssets.generationInputs(true, false, false);
+        assertTrue(assets.test("assets/flansmod/textures/items/a.png"));
+        assertFalse(assets.test("data/flansmod/recipes/a.json"));
+        assertFalse(assets.test("com/flansmod/client/model/a.class"));
+        assertFalse(assets.test("assets/othermod/textures/a.png"));
+
+        var sounds = ContentPackAssets.generationInputs(false, true, true);
+        assertTrue(sounds.test("assets/flansmod/sound/a.ogg"));
+        assertTrue(sounds.test("assets/flansmod/sounds.json"));
+        assertFalse(sounds.test("assets/flansmod/skins/a.png"));
+    }
+
+    @Test
     void armorTextureAliasesKeepBothLayerSuffixes() throws Exception
     {
         Path source = root.resolve("armor");
@@ -223,7 +269,7 @@ class ContentPackGeneratorsTest
             assertTrue(com.flansmodultimate.util.FileUtils.extractArchive(jar, provider.getExtractedPath()));
             ContentPackAssets.createMcMeta(provider);
             ContentPackAssets.createRecipeJsonFiles(provider, List.of(type));
-            ContentPackAssets.generate(provider, List.of(type), List.of(type), List.of(type), aliases);
+            ContentPackAssets.generate(provider, List.of(type), List.of(type), List.of(type), aliases, ContentLoadingWorkers.sequential());
             assertTrue(ContentPackAssets.outputsPresent(provider, List.of(type), List.of(type), aliases));
             assertTrue(ContentPackAssets.dataOutputsPresent(provider, List.of(type)));
             AliasFileManager.writeToAliasMappingFile(ContentPackPaths.ID_ALIAS_FILE, provider, Map.of("crate", "crate"));
@@ -260,6 +306,87 @@ class ContentPackGeneratorsTest
         {
             ContentFileCache.configure(null);
         }
+    }
+
+    @Test
+    void concurrentPackReprocessingProducesTheSameArchivesAsSequential()
+    {
+        ContentFileCache.configure(root.resolve("cache"));
+        try (ContentLoadingWorkers workers = ContentLoadingWorkers.create(4))
+        {
+            List<Integer> packs = java.util.stream.IntStream.range(0, 8).boxed().toList();
+            List<Map<String, String>> sequential = ContentPackJobs.runAll(packs, pack -> reprocessPack("sequential", pack, workers), 1, finished -> {});
+            List<Map<String, String>> concurrent = ContentPackJobs.runAll(packs, pack -> reprocessPack("concurrent", pack, workers), 4, finished -> {});
+
+            assertEquals(sequential, concurrent);
+            for (Map<String, String> pack : concurrent)
+            {
+                assertTrue(pack.containsKey("pack.mcmeta"));
+                assertTrue(pack.containsKey("assets/flansmod/models/item/crate.json"));
+                assertTrue(pack.containsKey("assets/flansmod/textures/item/crate.png"));
+                assertTrue(pack.containsKey("guns/unrelated.txt"));
+            }
+            assertNotEquals(concurrent.get(0).get("assets/flansmod/textures/item/crate.png"), concurrent.get(1).get("assets/flansmod/textures/item/crate.png"));
+        }
+        finally
+        {
+            ContentFileCache.configure(null);
+        }
+    }
+
+    /** Takes a pack through the stages of a client's reprocessing and returns the archive's files. */
+    private Map<String, String> reprocessPack(String run, int pack, ContentLoadingWorkers workers)
+    {
+        try
+        {
+            Path source = root.resolve(run).resolve("source" + pack);
+            png(source.resolve("assets/flansmod/textures/items/crate.png"), 0xff000000 | pack);
+            write(source.resolve("guns/unrelated.txt"), "pack " + pack);
+            Path archive = root.resolve(run).resolve("flan/pack" + pack + ".zip");
+            Files.createDirectories(archive.getParent());
+            try (var zip = new java.util.zip.ZipOutputStream(Files.newOutputStream(archive)); var files = Files.walk(source))
+            {
+                for (Path file : files.filter(Files::isRegularFile).sorted().toList())
+                {
+                    zip.putNextEntry(new java.util.zip.ZipEntry(source.relativize(file).toString().replace('\\', '/')));
+                    zip.write(Files.readAllBytes(file));
+                    zip.closeEntry();
+                }
+            }
+
+            ContentPack provider = new ContentPack("pack" + pack + ".zip", archive);
+            TestBlock type = new TestBlock(provider, "crate", "crate");
+            var aliases = new ContentPackAssets.TextureReferences(Map.of(), Map.of(), Map.of());
+            IncrementalContentArchive incremental = IncrementalContentArchive.open(archive);
+            assertNotNull(incremental);
+            assertTrue(incremental.extract(provider.getExtractedPath(), ContentPackAssets.generationInputs(true, true, false), workers));
+            ContentPackAssets.createMcMeta(provider);
+            ContentPackAssets.createRecipeJsonFiles(provider, List.of(type));
+            ContentPackAssets.generate(provider, List.of(type), List.of(type), List.of(type), aliases, workers);
+            assertTrue(ContentPackAssets.outputsPresent(provider, List.of(type), List.of(type), aliases));
+            assertTrue(com.flansmodultimate.util.FileUtils.repackArchive(provider, target -> incremental.write(target, provider.getExtractedPath(), workers)));
+            assertFalse(Files.exists(provider.getExtractedPath()));
+            return archiveContents(archive);
+        }
+        catch (Exception e)
+        {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static Map<String, String> archiveContents(Path archive) throws Exception
+    {
+        Map<String, String> contents = new java.util.TreeMap<>();
+        try (var zip = new java.util.zip.ZipFile(archive.toFile()))
+        {
+            for (var entry : java.util.Collections.list(zip.entries()))
+            {
+                // The manifest records file times, which differ between any two runs.
+                if (!entry.isDirectory() && !entry.getName().endsWith(".flansmod_generated_textures.json"))
+                    contents.put(entry.getName(), java.util.Base64.getEncoder().encodeToString(zip.getInputStream(entry).readAllBytes()));
+            }
+        }
+        return contents;
     }
 
     private static void write(Path file, String text) throws Exception

@@ -13,6 +13,7 @@
 ## Performance
 
 * Models of nearby vehicles and carried items now load in the background, reducing the stutter when something is first seen
+* ZIP and JAR content packs reprocess several times faster and with far less memory, and an invalid recipe no longer makes a pack reprocess on every start
 
 ## Content Packs & Compatibility
 
