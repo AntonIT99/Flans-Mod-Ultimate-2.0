@@ -120,6 +120,9 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         MinecraftServer server = npc.getServer();
         if (server == null)
             return Optional.empty();
+        Optional<BotCommander.Order> transport = SquadTransports.order(npc);
+        if (transport.isPresent())
+            return transport;
         Optional<BotCommander.Order> duty = BotDuties.destination(npc).map(spot -> new BotCommander.Order(spot, DUTY_ARRIVAL, BotRole.INFANTRY, SquadTask.Kind.HOLD));
         if (duty.isPresent() || BotBattles.isEmpty() || !BotTag.isBot(npc))
             return duty;
@@ -373,6 +376,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     static void upkeep(MinecraftServer server, ServerLevel level, BotBattle battle, long now, RandomGenerator random)
     {
         track(level, battle, now);
+        SquadTransports.tick(level, battle, now);
         BotPopulation.upkeep(server, battle, now, random);
         BotTransports.unload(level, battle, now, random);
         BotDuties.tick(server, level, battle);
@@ -433,7 +437,10 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
             slot.setLastPosition(npc.position());
             boolean dead = !npc.isAlive() || npc.isKilled();
             if (!dead)
+            {
+                SquadTransports.capture(npc);
                 keepTrained(npc, current.getSettings());
+            }
             if (dead && slot.getDiedAt() == 0)
                 fallenUnreported(current, slot, now);
             if (dead && now - slot.getDiedAt() > BODY_TICKS && !slot.isVehicle() && NpcCorpses.lifeSeconds(npc).isPresent())

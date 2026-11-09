@@ -103,7 +103,7 @@ final class BotPopulation
     private static void splitLooseSquads(BotBattle battle, String team)
     {
         int size = battle.getSettings().squadSize(team);
-        List<BotSquad> loose = battle.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY).toList();
+        List<BotSquad> loose = battle.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTransport() == null && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY).toList();
         for (BotSquad squad : loose)
         {
             Iterator<Integer> members = squad.getSlots().iterator();
@@ -126,7 +126,7 @@ final class BotPopulation
     {
         int size = battle.getSettings().squadSize(team);
         return battle.getSquads().values().stream()
-            .filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY && liveMembers(battle, squad) < size).findFirst()
+            .filter(squad -> !squad.isDisbanded() && squad.getTransport() == null && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY && liveMembers(battle, squad) < size).findFirst()
             .orElseGet(() -> battle.newSquad(team, BotRole.INFANTRY, BotSlot.Source.INFANTRY, -1, ""));
     }
 
@@ -137,7 +137,7 @@ final class BotPopulation
     private static void mergeLooseSquads(BotBattle battle, String team)
     {
         int size = battle.getSettings().squadSize(team);
-        List<BotSquad> loose = battle.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY)
+        List<BotSquad> loose = battle.getSquads().values().stream().filter(squad -> !squad.isDisbanded() && squad.getTransport() == null && squad.getTeam().equals(team) && squad.getSource() == BotSlot.Source.INFANTRY)
             .sorted(Comparator.comparingInt(BotSquad::getId)).toList();
         for (int from = loose.size() - 1; from > 0; from--)
         {

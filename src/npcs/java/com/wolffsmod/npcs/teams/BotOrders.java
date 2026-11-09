@@ -63,16 +63,32 @@ public final class BotOrders
             boolean chosen = squadId == NEARBY_SQUADS ? hears(level, battle, squad, player) : squad.getId() == squadId && (commander || hears(level, battle, squad, player));
             if (!chosen || squad.isDisbanded() || battle.sideOf(squad.getTeam()) != side || squad.getRole() == BotRole.AA)
                 continue;
-            if (kind == PlayerOrder.Kind.RELEASE)
-                squad.setOrder(null);
-            else
-            {
-                squad.setOrder(order);
-                squad.setTask(order.task(player.position()));
-            }
+            assign(squad, order, kind, player.position());
             ordered++;
         }
         return ordered;
+    }
+
+    private static void assign(BotSquad squad, PlayerOrder order, PlayerOrder.Kind kind, Vec3 from)
+    {
+        if (kind == PlayerOrder.Kind.RELEASE)
+            squad.setOrder(null);
+        else
+        {
+            squad.setOrder(order);
+            squad.setTask(order.task(from));
+        }
+        if (squad.getTransport() != null)
+            squad.getTransport().unload();
+    }
+
+    static boolean mayOrder(ServerPlayer player, BotBattle battle, BotSquad squad)
+    {
+        if (!(player.level() instanceof ServerLevel level) || !player.isAlive() || player.isSpectator() || !battle.getGround().dimension().equals(level.dimension()))
+            return false;
+        int side = battle.sideOfPlayer(player).orElse(-1);
+        return side >= 0 && !squad.isDisbanded() && battle.sideOf(squad.getTeam()) == side
+            && (player.getUUID().equals(battle.getCommanders().get(side)) || player.getUUID().equals(squad.getLeader()) || hears(level, battle, squad, player));
     }
 
     /** Where an order sends a squad: the capture point chosen, or the block the player looks at, or the player's position. */
@@ -225,7 +241,7 @@ public final class BotOrders
         Optional<BotSquad> led = BotLeaders.ledBy(battle, player.getUUID());
         BotOrdersStatePacket.Leading leading = new BotOrdersStatePacket.Leading(led.map(BotSquad::getId).orElse(-1), led.map(squad -> squad.getRally() != null).orElse(false),
             battle.getSpawnChoices().getOrDefault(player.getUUID(), BotLeaders.SpawnChoice.BASE).ordinal(), battle.getSettings().isRallyPoints());
-        return new BotOrdersStatePacket(true, side, commander, commanderName, squads, objectives, leading, false);
+        return new BotOrdersStatePacket(true, side, commander, commanderName, squads, objectives, leading, false, SquadTransports.choices(player, battle));
     }
 
     /** A squad as the order screen lists it, with what it is doing and how far its leader is. */
@@ -238,7 +254,11 @@ public final class BotOrders
             task = squad.getTask() == null ? "idle" : lower(squad.getTask().kind());
         boolean mine = squad.getOrder() != null && squad.getOrder().player().equals(player.getUUID());
         Entity leader = members.get(0);
-        return new BotOrdersStatePacket.Squad(squad.getId(), squadName(squad), members.size(), task, mine, (int) leader.distanceTo(player), leader.getX(), leader.getZ());
+        SquadTransport transport = squad.getTransport();
+        Entity vehicle = transport == null ? null : ((ServerLevel) player.level()).getEntity(transport.getVehicle());
+        int aboard = vehicle == null ? 0 : (int) members.stream().filter(member -> SquadTransportSeats.aboard(member, vehicle)).count();
+        return new BotOrdersStatePacket.Squad(squad.getId(), squadName(squad), members.size(), task, mine, (int) leader.distanceTo(player), leader.getX(), leader.getZ(),
+            transport == null ? "" : lower(transport.getPhase()), aboard, transport == null ? 0 : transport.getSoldiers().size());
     }
 
     private static String squadName(BotSquad squad)

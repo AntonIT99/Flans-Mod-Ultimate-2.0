@@ -152,6 +152,8 @@ final class BotBattleCodec
         }
         tag.putInt(NBT_PATROL, squad.getPatrolIndex());
         tag.putString(NBT_CARGO, squad.getCargo());
+        if (squad.getTransport() != null)
+            tag.put("transport", squad.getTransport().save());
         tag.putBoolean(NBT_DISBANDED, squad.isDisbanded());
         if (squad.getLeader() != null)
             tag.putUUID(NBT_LEADER, squad.getLeader());
@@ -222,6 +224,8 @@ final class BotBattleCodec
         for (Tag element : tag.getList(NBT_SQUADS, Tag.TAG_COMPOUND))
         {
             BotSquad squad = readSquad((CompoundTag) element);
+            if (squad.getTransport() != null)
+                squad.getTransport().setLastSeen(Math.max(squad.getTransport().getLastSeen(), now + RESTORE_GRACE));
             current.getSquads().put(squad.getId(), squad);
         }
     }
@@ -260,6 +264,7 @@ final class BotBattleCodec
         }
         squad.setPatrolIndex(tag.getInt(NBT_PATROL));
         squad.setCargo(tag.getString(NBT_CARGO));
+        SquadTransport.load(tag.getCompound("transport")).ifPresent(squad::setTransport);
         squad.setDisbanded(tag.getBoolean(NBT_DISBANDED));
         squad.setLeader(tag.hasUUID(NBT_LEADER) ? tag.getUUID(NBT_LEADER) : null);
         if (tag.contains(NBT_RALLY, Tag.TAG_LIST))

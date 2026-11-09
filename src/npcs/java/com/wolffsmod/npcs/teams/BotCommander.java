@@ -203,7 +203,7 @@ final class BotCommander
         List<Doctrine.SquadView> views = new ArrayList<>();
         for (BotSquad squad : battle.getSquads().values())
         {
-            boolean planned = !squad.isDisbanded() && squad.getOrder() == null && battle.sideOf(squad.getTeam()) == side;
+            boolean planned = !squad.isDisbanded() && squad.getTransport() == null && squad.getOrder() == null && battle.sideOf(squad.getTeam()) == side;
             List<Entity> members = planned ? livingMembers(level, battle, squad) : List.of();
             if (members.isEmpty())
                 continue;
@@ -250,6 +250,9 @@ final class BotCommander
     private static Optional<Order> squadOrder(MinecraftServer server, BotBattle battle, BotSlot slot, EntityNPCInterface npc)
     {
         BotSquad squad = slot == null ? null : battle.getSquads().get(slot.getSquad());
+        Optional<Order> transportOrder = SquadTransports.order(npc);
+        if (transportOrder.isPresent())
+            return transportOrder;
         SquadTask task = squad == null ? null : squad.getTask();
         if (task == null)
             return Optional.empty();

@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.sim.NpcTuning.Claim;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.teams.BotDriveables;
+import com.wolffsmod.npcs.teams.SquadTransports;
 import com.wolffsmod.npcs.teams.BotTag;
 import com.wolffsmod.npcs.teams.FactionRelations;
 import lombok.AccessLevel;
@@ -124,6 +125,31 @@ public final class NpcDrivers
         return mayBoard(npc) && seat instanceof ISeat candidate && DriveableCrew.crewable(npc, candidate, npc.level().getGameTime()) && board(npc, seat);
     }
 
+    /** Whether a squad may use this physical vehicle under its configured ownership and lock policy. */
+    public static boolean transportPermitted(EntityNPCInterface npc, Entity vehicle)
+    {
+        return enabled(npc) && permitted(npc, vehicle) && BotDriveables.allowedPassenger(npc);
+    }
+
+    /** Renews a passenger-seat lease for a squad pickup, shared with ordinary automatic boarding. */
+    public static boolean reserveTransportSeat(EntityNPCInterface npc, Entity entity)
+    {
+        return !npc.level().isClientSide && npc.isAlive() && !npc.isKilled() && !npc.isPassenger() && entity instanceof ISeat seat && !seat.isDriverSeat()
+            && seat.getGunType().isEmpty() && seat.getRiddenByEntity() == null && seat.getDriveable() != null && transportPermitted(npc, seat.getDriveable()) && reserve(npc, entity);
+    }
+
+    /** Releases a pickup lease without affecting the soldier's identity or inventory. */
+    public static void releaseTransportSeat(EntityNPCInterface npc)
+    {
+        releaseReservation(npc);
+    }
+
+    /** Boards a reserved passenger seat once the squad controller has brought the soldier to the hull. */
+    public static boolean boardTransport(EntityNPCInterface npc, Entity entity)
+    {
+        return reserveTransportSeat(npc, entity) && board(npc, entity);
+    }
+
     /** Gets a soldier out and prevents immediate automatic reboarding. Server thread. */
     public static void disembark(EntityNPCInterface npc)
     {
@@ -133,7 +159,8 @@ public final class NpcDrivers
     /** Whether the NPC may board a driveable now: its switch is on, it is alive and on foot, and it is a soldier rather than a vehicle or crew. */
     static boolean mayBoard(EntityNPCInterface npc)
     {
-        return !npc.level().isClientSide && npc.isAlive() && !npc.isKilled() && !npc.isPassenger() && enabled(npc) && NpcModels.flan(npc) == null && NpcCrew.seat(npc) < 0;
+        return !npc.level().isClientSide && npc.isAlive() && !npc.isKilled() && !npc.isPassenger() && enabled(npc) && NpcModels.flan(npc) == null && NpcCrew.seat(npc) < 0
+            && !SquadTransports.manages(npc);
     }
 
     /** @return the driver seat of a driveable NPCs drive that the NPC sits in */

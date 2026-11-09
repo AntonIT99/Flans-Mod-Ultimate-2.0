@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.network;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * What a player's squad order screen shows: the squads they may order, the objectives of the round, who holds their
@@ -17,8 +18,17 @@ import java.util.List;
  * @param open
  *            whether the screen opens for it; a reply to a refresh only updates a screen that is still open
  */
-public record BotOrdersStatePacket(boolean playing, int side, boolean commander, String commanderName, List<Squad> squads, List<Objective> objectives, Leading leading, boolean open)
+public record BotOrdersStatePacket(boolean playing, int side, boolean commander, String commanderName, List<Squad> squads, List<Objective> objectives, Leading leading, boolean open, List<Transport> transports)
 {
+    public BotOrdersStatePacket(boolean playing, int side, boolean commander, String commanderName, List<Squad> squads, List<Objective> objectives, Leading leading, boolean open)
+    {
+        this(playing, side, commander, commanderName, squads, objectives, leading, open, List.of());
+    }
+
+    /** A nearby loaded ground vehicle and its currently unreserved passenger capacity. */
+    public record Transport(UUID id, String name, int seats)
+    {}
+
     private static final int MAX_TEXT = 128;
 
     /**
@@ -31,8 +41,13 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
      * @param x
      *            where its leader is, across the ground
      */
-    public record Squad(int id, String name, int strength, String task, boolean mine, int distance, double x, double z)
-    {}
+    public record Squad(int id, String name, int strength, String task, boolean mine, int distance, double x, double z, String transportPhase, int aboard, int passengers)
+    {
+        public Squad(int id, String name, int strength, String task, boolean mine, int distance, double x, double z)
+        {
+            this(id, name, strength, task, mine, distance, x, z, "", 0, 0);
+        }
+    }
 
     /**
      * A capture point of the round.
@@ -66,6 +81,7 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
     {
         squads = List.copyOf(squads);
         objectives = List.copyOf(objectives);
+        transports = List.copyOf(transports);
     }
 
     public static BotOrdersStatePacket notPlaying()
@@ -76,7 +92,7 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
     /** The same state, opening the screen or only updating an open one. */
     public BotOrdersStatePacket opening(boolean opens)
     {
-        return new BotOrdersStatePacket(playing, side, commander, commanderName, squads, objectives, leading, opens);
+        return new BotOrdersStatePacket(playing, side, commander, commanderName, squads, objectives, leading, opens, transports);
     }
 
     public void write(FriendlyByteBuf buffer)
@@ -95,6 +111,9 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
             out.writeVarInt(squad.distance());
             out.writeDouble(squad.x());
             out.writeDouble(squad.z());
+            out.writeUtf(squad.transportPhase(), MAX_TEXT);
+            out.writeVarInt(squad.aboard());
+            out.writeVarInt(squad.passengers());
         });
         buffer.writeCollection(objectives, (out, objective) ->
         {
@@ -109,6 +128,12 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
         buffer.writeVarInt(leading.spawnChoice());
         buffer.writeBoolean(leading.rallyPoints());
         buffer.writeBoolean(open);
+        buffer.writeCollection(transports, (out, transport) ->
+        {
+            out.writeUUID(transport.id());
+            out.writeUtf(transport.name(), MAX_TEXT);
+            out.writeVarInt(transport.seats());
+        });
     }
 
     public static BotOrdersStatePacket read(FriendlyByteBuf buffer)
@@ -118,10 +143,11 @@ public record BotOrdersStatePacket(boolean playing, int side, boolean commander,
         boolean commander = buffer.readBoolean();
         String commanderName = buffer.readUtf(MAX_TEXT);
         List<Squad> squads = buffer
-            .readList(in -> new Squad(in.readVarInt(), in.readUtf(MAX_TEXT), in.readVarInt(), in.readUtf(MAX_TEXT), in.readBoolean(), in.readVarInt(), in.readDouble(), in.readDouble()));
+            .readList(in -> new Squad(in.readVarInt(), in.readUtf(MAX_TEXT), in.readVarInt(), in.readUtf(MAX_TEXT), in.readBoolean(), in.readVarInt(), in.readDouble(), in.readDouble(), in.readUtf(MAX_TEXT), in.readVarInt(), in.readVarInt()));
         List<Objective> objectives = buffer.readList(in -> new Objective(in.readChar(), in.readUtf(MAX_TEXT), in.readVarInt(), in.readDouble(), in.readDouble()));
         Leading leading = new Leading(buffer.readVarInt(), buffer.readBoolean(), buffer.readVarInt(), buffer.readBoolean());
         boolean open = buffer.readBoolean();
-        return new BotOrdersStatePacket(playing, side, commander, commanderName, squads, objectives, leading, open);
+        List<Transport> transports = buffer.readList(in -> new Transport(in.readUUID(), in.readUtf(MAX_TEXT), in.readVarInt()));
+        return new BotOrdersStatePacket(playing, side, commander, commanderName, squads, objectives, leading, open, transports);
     }
 }

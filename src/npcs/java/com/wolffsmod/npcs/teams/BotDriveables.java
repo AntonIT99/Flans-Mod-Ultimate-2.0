@@ -35,6 +35,12 @@ public final class BotDriveables
         return BotBattles.of(npc).map(battle -> allowed(battle.getSettings(), seat.isDriverSeat(), seat.getGunType().isPresent())).orElse(false);
     }
 
+    /** Whether the battle permits this soldier to ride physical passenger seats. */
+    public static boolean allowedPassenger(EntityNPCInterface npc)
+    {
+        return !BotTag.isBot(npc) || BotBattles.of(npc).map(battle -> battle.getSettings().isRideRealVehicles()).orElse(false);
+    }
+
     static boolean allowed(BotSettings settings, boolean driver, boolean gun)
     {
         if (driver)
@@ -104,6 +110,8 @@ public final class BotDriveables
     /** Whether a passenger can travel with its own squad driver or the player its squad follows. */
     public static boolean transport(EntityNPCInterface npc, Entity driveable)
     {
+        if (SquadTransports.carries(npc, driveable))
+            return true;
         return squad(npc).map(squad -> compatible(npc, driveable, squad) && (travelling(npc, squad.getTask()) || followingDriver(npc, driveable, squad)) && sameSquadOrLeader(npc, driveable, squad))
             .orElse(false);
     }

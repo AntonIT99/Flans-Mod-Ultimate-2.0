@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.crew;
 
 import com.wolffsmod.npcs.sim.*;
+import com.wolffsmod.npcs.teams.SquadTransports;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -95,7 +96,7 @@ public final class CrewDisembark
     private static List<EntityNPCInterface> leaving(EntityNPCInterface vehicle)
     {
         NpcCrewSettings settings = NpcCrewSettings.of(vehicle);
-        return NpcCrew.crew(vehicle).stream().filter(member -> member.isAlive() && !member.isKilled())
+        return NpcCrew.crew(vehicle).stream().filter(member -> member.isAlive() && !member.isKilled() && !SquadTransports.carries(member, vehicle))
             .filter(member -> NpcCrew.seatOf(vehicle, member).map(mount -> settings.disembarks(mount.seat(), CrewPost.of(mount))).orElse(false)).toList();
     }
 

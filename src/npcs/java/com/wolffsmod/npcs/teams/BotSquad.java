@@ -36,6 +36,9 @@ public final class BotSquad
     private int patrolIndex;
     /** The squad template a transport still carries to the front; empty when it carries nobody or has unloaded. */
     private String cargo = "";
+    /** Reusable transport of the existing soldiers; independent of the initial cargo template. */
+    @Nullable
+    private SquadTransport transport;
     /** What a player last told the squad to do, which comes before its commander's task until it runs out. */
     @Nullable
     private PlayerOrder order;
