@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.platform.client;
 
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,7 @@ public final class NpcClientPlatform
     /** Draws the dimmed background behind a screen. */
     public static void renderBackground(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        screen.renderBackground(graphics, mouseX, mouseY, partialTick);
+        ClientPlatform.renderBackground(screen, graphics, mouseX, mouseY, partialTick);
     }
 
     /**

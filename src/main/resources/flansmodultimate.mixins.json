@@ -37,6 +37,7 @@
     "ParticleEngineThermalMixin",
     "PlayerRendererMixin",
     "PostChainAccessor",
+    "ScreenMixin",
     "SessionSearchTreesMixin",
     "VehicleOpticsLightMixin",
     "WorldOpenFlowsApocalypseMixin"

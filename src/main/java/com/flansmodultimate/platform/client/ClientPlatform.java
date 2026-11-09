@@ -31,6 +31,9 @@ import java.util.List;
 /** Version boundary for client frame timing and screen helpers. Client-only. */
 public final class ClientPlatform
 {
+    /** Render thread only. */
+    private static Screen backgroundDrawnFor;
+
     private ClientPlatform()
     {}
 
@@ -46,11 +49,24 @@ public final class ClientPlatform
         return Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
     }
 
-    // Part of the cross-version platform signature; other loader versions use the parameter.
-    @SuppressWarnings("java:S1172")
+    /**
+     * Draws a screen's background before its custom content. The call {@code Screen.render} then makes
+     * is skipped, because it would blur everything the screen drew in between.
+     */
     public static void renderBackground(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
+        backgroundDrawnFor = null;
         screen.renderBackground(graphics, mouseX, mouseY, partialTick);
+        backgroundDrawnFor = screen;
+    }
+
+    /** Whether this background call repeats one {@link #renderBackground} already made for the screen this frame. */
+    public static boolean consumeBackgroundDrawn(Screen screen)
+    {
+        boolean drawn = backgroundDrawnFor == screen;
+        if (drawn)
+            backgroundDrawnFor = null;
+        return drawn;
     }
 
     /**

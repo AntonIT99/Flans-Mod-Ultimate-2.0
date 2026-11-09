@@ -69,8 +69,8 @@ Use the mapped development companion for this checkout's UI tests. It runs only
 in MCP client runs (`runClientMcp`, or every client with `-PwithMinecraftMcp`); its
 source set, metadata and resources never enter published jars. The companion binds
 loopback port MCP port + 100: 9976 (9974 for `runClient2`) on 1.20.1 and 9975 (9973)
-on 1.21.1. The NeoForge 1.21.1 companion is a port of the Forge one and has not yet
-been verified in a live client, so treat its first run as the preflight. The bridge verifies its protocol, Minecraft version, loader and PID against
+on 1.21.1. The NeoForge 1.21.1 companion is a port of the Forge one; only its `ui_state`
+and `ui_capture` have been exercised in a live client, so treat a first full run as the preflight. The bridge verifies its protocol, Minecraft version, loader and PID against
 the upstream mod before each request. An older running client must be restarted.
 Restart the agent's MCP connection to discover newly added tools; the smoke script
 starts a fresh bridge and works without restarting the agent session.

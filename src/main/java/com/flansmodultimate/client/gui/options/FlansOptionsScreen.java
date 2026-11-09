@@ -5,7 +5,6 @@ import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
-import com.flansmodultimate.platform.client.ClientPlatform;
 import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -370,14 +369,14 @@ public class FlansOptionsScreen extends Screen
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         settingsTooltip.beginFrame();
-        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
+        // Screen.render applies the background blur, so everything else must be drawn after it.
+        super.render(graphics, mouseX, mouseY, partialTick);
         list.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, TITLE_TOP, 0xFFFFFF);
 
         if (mode == Mode.COMMON || mode == Mode.SERVER || mode == Mode.SERVER_SOUNDS)
             graphics.drawCenteredString(font, footerNote(), width / 2, height - RESTORE_BUTTON_BOTTOM_MARGIN - 12, NOTE_COLOUR);
 
-        super.render(graphics, mouseX, mouseY, partialTick);
         settingsTooltip.render(graphics, font, mouseX, mouseY);
     }
 
