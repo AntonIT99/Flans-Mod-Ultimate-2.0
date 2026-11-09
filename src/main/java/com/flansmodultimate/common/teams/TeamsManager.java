@@ -1128,7 +1128,41 @@ public final class TeamsManager
         }
     }
 
+    /** Ends Teams play: players leave their team and class, which also gives them their own skin back. */
     public void stopRound()
+    {
+        stopRound(true);
+    }
+
+    /** Replays from the next round with everyone keeping their team and class, unless no round can start. */
+    public boolean restartRound()
+    {
+        stopRound(false);
+        if (startNextRound())
+            return true;
+        releasePlayersFromTeams();
+        return false;
+    }
+
+    private void releasePlayersFromTeams()
+    {
+        if (server == null)
+            return;
+        for (ServerPlayer player : server.getPlayerList().getPlayers())
+        {
+            PlayerData data = PlayerData.getInstance(player);
+            data.setTeam(null);
+            data.setNewTeam(null);
+            // The pending class too: respawning applies it even with no round running.
+            data.setPlayerClass(null);
+            data.setNewPlayerClass(null);
+            getStats(player).setSelection("", "");
+        }
+        syncPlayerClassSkins(false);
+        markDirty();
+    }
+
+    private void stopRound(boolean releasePlayers)
     {
         vehicleDeployment.clear();
         announceRoundEnded(null);
@@ -1153,6 +1187,8 @@ public final class TeamsManager
         resetScores();
         addonScoreEntries.clear();
         saveRuntime();
+        if (releasePlayers)
+            releasePlayersFromTeams();
         syncAll(PacketTeamsState.OpenScreen.CLOSE);
     }
 
@@ -1828,7 +1864,8 @@ public final class TeamsManager
     public void playerLoggedIn(ServerPlayer player)
     {
         PlayerStats stats = getStats(player);
-        Team team = Team.getTeam(stats.getSelectedTeam());
+        // A selection saved by someone offline when Teams play stopped must not bring its class and skin back.
+        Team team = roundRunning || intermissionPhase != IntermissionPhase.NONE ? Team.getTeam(stats.getSelectedTeam()) : null;
         PlayerClass playerClass = PlayerClass.getPlayerClass(stats.getSelectedClass());
         PlayerData data = PlayerData.getInstance(player);
         data.setTeam(team == null ? Team.SPECTATORS : team);

@@ -95,8 +95,7 @@ public final class TeamsCommand
         }));
         root.then(Commands.literal("restart").requires(source -> source.hasPermission(2)).executes(context ->
         {
-            manager().stopRound();
-            return manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND);
+            return manager().restartRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND);
         }));
         root = addRuleCommands(root)
             .then(Commands.literal("start").requires(source -> source.hasPermission(2))
