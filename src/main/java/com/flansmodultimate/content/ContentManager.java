@@ -332,7 +332,9 @@ public class ContentManager
         if (reprocessing)
         {
             String reasons = reprocessingReasons(processingCache, idAliasNeedsUpdate, preLoadAssets);
-            bar.label("Reprocessing " + provider.getName() + ": " + reasons);
+            bar.label("Reprocessing " + provider.getName());
+            // The bar label has little room after a long archive name; the message line spans the window.
+            PlatformLoadingProgress.message("Reprocessing: " + reasons);
             if (unpackArchive)
             {
                 FlansLog.log.info("Reprocessing {}...", provider.getName());
