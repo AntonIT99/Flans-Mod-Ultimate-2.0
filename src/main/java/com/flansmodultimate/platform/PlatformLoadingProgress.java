@@ -21,7 +21,8 @@ public final class PlatformLoadingProgress
 
     public static Bar bar(String name, int steps)
     {
-        return new Bar(StartupNotificationManager.addProgressBar(name, Math.max(1, steps)));
+        // NeoForge appends with addProgressBar and only draws the first two bars, so ours must go in front.
+        return new Bar(StartupNotificationManager.prependProgressBar(name, Math.max(1, steps)));
     }
 
     private static String shorten(String text)
