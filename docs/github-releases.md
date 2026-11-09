@@ -25,7 +25,32 @@ If only the NPC submod changes after a combined release, create an NPC tag;
 do not move or reuse the published main-mod tag. Create separate tags and
 releases for each Minecraft version, using its matching branch and commit.
 
-## Create and push tags
+## Release from GitHub Actions
+
+Run the **Release** workflow from the Actions tab on `master` or `1.21.1`, after
+the version and changelog are final. It releases each module whose current
+version has no tag and no matching jar on an earlier GitHub release:
+
+- the main mod, the NPC mod, or both, each getting its tag;
+- every content pack with a changed version, attached to the same release, with
+  no tag of its own unless only packs changed, when the first pack names the release;
+- the same modules to CurseForge, after the GitHub release.
+
+`dry_run` is ticked by default: it builds and previews without publishing, and
+keeps the jars as a workflow artifact. Untick it to publish.
+
+The workflow needs these repository secrets, and must exist on the branch being run:
+
+- `CURSEFORGE_API_TOKEN`: see [CurseForge releases](curseforge-releases.md).
+- `PACK_REPOS_TOKEN`: a fine-grained token with read-only Contents access to the
+  five `Wolff-*` pack repositories, each of which needs the same branch name.
+
+If a CurseForge upload fails, the tag already exists, so a rerun will skip that
+module. Check the project's file list, then run its `publishCurseForge<Name>` task
+from the tag as described in the CurseForge guide. Content packs without a
+changelog of their own upload the root `CHANGELOG.md`.
+
+## Create and push tags manually
 
 Create an annotated tag with `git tag -a`. Replace `<commit-hash>` with the
 release commit; omit it to tag the current `HEAD`. The `-m` option supplies

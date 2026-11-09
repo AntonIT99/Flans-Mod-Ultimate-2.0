@@ -1,0 +1,157 @@
+name: Release
+
+# Releases every module of the selected branch whose current version is unreleased: the main mod,
+# the NPC mod and the content packs. Manual only, and a dry run unless unticked.
+# See docs/github-releases.md for the setup, the detection rules and failure recovery.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and preview only; create no tag, release or CurseForge file
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release from ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DRY_RUN: ${{ inputs.dry_run }}
+      RELEASE_NOTES_FILE: ${{ github.workspace }}/.release-notes.md
+    steps:
+      - name: Check branch and secrets
+        id: setup
+        env:
+          BRANCH: ${{ github.ref_name }}
+          PACK_REPOS_TOKEN: ${{ secrets.PACK_REPOS_TOKEN }}
+          CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
+        run: |
+          case "$BRANCH" in
+            master) echo "jdk=17" >> "$GITHUB_OUTPUT" ;;
+            1.21.1) echo "jdk=21" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Releases are only set up for master and 1.21.1."; exit 1 ;;
+          esac
+          if [ -z "$PACK_REPOS_TOKEN" ]; then
+            echo "::error::Add the PACK_REPOS_TOKEN repository secret."; exit 1
+          fi
+          if [ "$DRY_RUN" != "true" ] && [ -z "$CURSEFORGE_API_TOKEN" ]; then
+            echo "::error::Add the CURSEFORGE_API_TOKEN repository secret."; exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Checkout Wolff Flag Pack
+        uses: actions/checkout@v5
+        with:
+          repository: AntonIT99/Wolff-Flag-Pack
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.PACK_REPOS_TOKEN }}
+          path: src/wolffflagpack
+
+      - name: Checkout Wolff Germany WW2 Pack
+        uses: actions/checkout@v5
+        with:
+          repository: AntonIT99/Wolff-Germany-WW2-Pack
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.PACK_REPOS_TOKEN }}
+          path: src/wolffgermanypack
+
+      - name: Checkout Wolff Modern Technology Pack
+        uses: actions/checkout@v5
+        with:
+          repository: AntonIT99/Wolff-Modern-Technology-Pack
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.PACK_REPOS_TOKEN }}
+          path: src/wolffmoderntechpack
+
+      - name: Checkout Wolff Rome Pack
+        uses: actions/checkout@v5
+        with:
+          repository: AntonIT99/Wolff-Rome-Pack
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.PACK_REPOS_TOKEN }}
+          path: src/wolffromepack
+
+      - name: Checkout Wolff Star Wars Pack
+        uses: actions/checkout@v5
+        with:
+          repository: AntonIT99/Wolff-Star-Wars-Pack
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.PACK_REPOS_TOKEN }}
+          path: src/wolffstarwarspack
+
+      - name: Detect unreleased versions
+        id: detect
+        run: bash scripts/detect-release.sh
+
+      - name: Setup JDK ${{ steps.setup.outputs.jdk }}
+        if: steps.detect.outputs.release == 'true'
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ steps.setup.outputs.jdk }}
+          distribution: temurin
+
+      - name: Setup Gradle
+        if: steps.detect.outputs.release == 'true'
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Test, build and preview
+        if: steps.detect.outputs.release == 'true'
+        env:
+          TASKS: ${{ steps.detect.outputs.tasks }}
+        run: |
+          chmod +x gradlew
+          # shellcheck disable=SC2086 # the task list is deliberately split
+          ./gradlew test $TASKS -PcurseforgeDryRun=true --stacktrace --console=plain
+
+      - name: Keep the jars
+        if: steps.detect.outputs.release == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-jars
+          path: build/libs/*.jar
+          if-no-files-found: error
+
+      - name: Create tags and GitHub release
+        if: steps.detect.outputs.release == 'true' && inputs.dry_run == false
+        env:
+          TITLE: ${{ steps.detect.outputs.title }}
+          LATEST: ${{ steps.detect.outputs.latest }}
+          TAGS: ${{ steps.detect.outputs.tags }}
+          JARS: ${{ steps.detect.outputs.jars }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          for tag in $TAGS; do
+            git tag -a "$tag" -m "$tag"
+          done
+          # shellcheck disable=SC2086 # the tag and jar lists are deliberately split
+          git push --atomic origin $TAGS
+          # shellcheck disable=SC2086
+          gh release create "$TITLE" $JARS --verify-tag --title "$TITLE" --notes-file "$RELEASE_NOTES_FILE" --latest="$LATEST"
+
+      - name: Upload to CurseForge
+        if: steps.detect.outputs.release == 'true' && inputs.dry_run == false
+        env:
+          TASKS: ${{ steps.detect.outputs.tasks }}
+          CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
+        # Never retried automatically: a failed request may still have been accepted.
+        run: |
+          # shellcheck disable=SC2086 # the task list is deliberately split
+          ./gradlew $TASKS --stacktrace --console=plain
