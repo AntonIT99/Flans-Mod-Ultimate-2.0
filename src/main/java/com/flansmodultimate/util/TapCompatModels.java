@@ -9,11 +9,8 @@ import lombok.NoArgsConstructor;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.nio.file.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,7 +25,7 @@ public final class TapCompatModels
     private static final List<String> PACK_DESCRIPTIONS = List.of("tyrants and plebeians", "tyrants & plebeians");
     /** Models the pack ships under another package than its definitions name. */
     private static final Map<String, String> MOVED_CLASSES = Map.of(LEGACY_PACKAGE + "NewAge.ModelZF41Scope", LEGACY_PACKAGE + "W44.ModelZF41Scope");
-    private static final Map<Path, Boolean> DETECTED_PACKS = new ConcurrentHashMap<>();
+    private static final Map<String, Boolean> DETECTED_PACKS = new ConcurrentHashMap<>();
 
     /** @return the compatibility class standing in for a legacy model class, or null when the name is outside the legacy package */
     public static String compatClassName(String modelClassName)
@@ -52,11 +49,20 @@ public final class TapCompatModels
     {
         if (contentPack.isPreprocessed())
             return false;
-        Path root = contentPack.isArchive() ? contentPack.getExtractedPath() : contentPack.getPath();
-        return DETECTED_PACKS.computeIfAbsent(root.toAbsolutePath().normalize(), TapCompatModels::readIsTapPack);
+        return DETECTED_PACKS.computeIfAbsent(contentPack.getModelSourceId(), id -> {
+            FileSystem fs = FileUtils.createFileSystem(contentPack);
+            try
+            {
+                return readIsTapPack(contentPack.getContentRoot(fs));
+            }
+            finally
+            {
+                FileUtils.closeFileSystem(fs, contentPack);
+            }
+        });
     }
 
-    private static boolean readIsTapPack(Path root)
+    static boolean readIsTapPack(Path root)
     {
         Path mcMeta = root.resolve("pack.mcmeta");
         if (!Files.isRegularFile(mcMeta))

@@ -143,6 +143,11 @@ public final class ClassLoaderUtils
         }
     }
 
+    public static String declaredClassName(byte[] classData)
+    {
+        return new ClassReader(classData).getClassName().replace('/', '.');
+    }
+
     public static boolean isModClass(String className)
     {
         return findModClass(className) != null;
