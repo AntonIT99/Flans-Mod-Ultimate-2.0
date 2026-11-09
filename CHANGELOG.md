@@ -18,3 +18,4 @@
 ## Content Packs & Compatibility
 
 * Content packs tolerate more typing mistakes in their values; repaired issues go to the debug log unless `showAllParsingIssuesInErrorLog` is enabled
+* Model and texture names holding stray characters, such as a colon pasted from a display name, now find their files instead of preventing the game from loading
