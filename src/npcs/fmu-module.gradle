@@ -30,6 +30,8 @@ minecraft.runs.named('gameTestServer') {
 
 // Keep the Custom NPCs hook in this optional artifact, including its own refmap.
 mixin.add(npcsSourceSet, 'wolffsmodnpcs.refmap.json')
+// The refmap is written outside the task's cached outputs, so a cache hit would ship a jar without it.
+tasks.named(npcsSourceSet.compileJavaTaskName) { outputs.cacheIf('the mixin refmap is not a cached output') { false } }
 tasks.named('npcsJar') {
     manifest.attributes('MixinConfigs': 'wolffsmodnpcs.mixins.json')
     // The shared module helper disables MixinGradle's jar mutation (which adds the main config).

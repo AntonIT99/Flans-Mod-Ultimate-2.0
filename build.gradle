@@ -395,6 +395,9 @@ mixin {
     debug.export = true
 }
 
+// The refmap is written outside the task's cached outputs, so a cache hit would ship a jar without it.
+tasks.named('compileJava') { outputs.cacheIf('the mixin refmap is not a cached output') { false } }
+
 tasks.named('test', Test) {
     useJUnitPlatform()
 }
