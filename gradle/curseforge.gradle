@@ -58,7 +58,7 @@ abstract class CurseForgeRelease extends DefaultTask {
                 throw new GradleException('The content pack and main mod must use separate CurseForge projects.')
             Map<String, Object> dependency = [slug: mainProjectSlug.get(), type: 'requiredDependency']
             if (!mainProjectId.get().isEmpty())
-                dependency.projectID = mainProjectId.get()
+                dependency.projectID = new BigInteger(mainProjectId.get())
             relations.add(dependency)
         }
         requiredDependencies.get().each { slug ->
