@@ -150,6 +150,7 @@ public final class ModCommonConfig
 
     private static final BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
     private static final BooleanValue DISABLE_CROSSHAIR_WHILE_SCOPED;
+    private static final BooleanValue ALLOW_GUN_CROSSHAIR_OVERRIDE;
     private static final BooleanValue PARACHUTES_CAN_BE_HIT;
     private static final BooleanValue EXPLOSIONS_BREAK_BLOCKS;
     private static final Supplier<Boolean> FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS;
@@ -379,6 +380,7 @@ public final class ModCommonConfig
             Private singleplayer worlds always use the client preference. Open-to-LAN worlds
             follow this server setting for both the host and joining players.
             """).define("disableCrosshairWhileScoped", true);
+        ALLOW_GUN_CROSSHAIR_OVERRIDE = builder.comment("Let a gun definition with ShowCrosshair false hide the crosshair. When false, only the crosshair settings decide.").define("allowGunCrosshairOverride", false);
         PARACHUTES_CAN_BE_HIT = builder.comment("Whether direct hits can collapse open parachutes, for both players and NPCs. Explosions never collapse them.").define("parachutesCanBeHit", false);
         EXPLOSIONS_BREAK_BLOCKS = builder.comment("Whether explosions can break blocks").define("explosionBreakBlocks", true);
         FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS = builder.comment("Force shootables using the new explosion system to break blocks, ignoring their ExplosionBreaksBlocks property.",
@@ -808,7 +810,7 @@ public final class ModCommonConfig
             ADD_ALL_PAINTJOBS_TO_CREATIVE.get(), VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD.get(), DEFAULT_VEHICLE_ENGINE.get(), DEFAULT_PLANE_ENGINE.get(), DEFAULT_MECHA_ENGINE.get(),
             NAME_TAG_RENDER_RANGE.get().floatValue(), NAME_TAG_SNEAK_RENDER_RANGE.get().floatValue(), NOTICE_SPAWN_KILL_TIME.get(),
 
-            DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), EXPLOSIONS_BREAK_BLOCKS.get(), PARACHUTES_CAN_BE_HIT.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(),
+            DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), ALLOW_GUN_CROSSHAIR_OVERRIDE.get(), EXPLOSIONS_BREAK_BLOCKS.get(), PARACHUTES_CAN_BE_HIT.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(),
             FLAN_EXPLOSIONS_DROP_BLOCKS.get(), BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(),
             SHOW_DISTANCE_IN_KILL_MESSAGE.get(), DEFAULT_FLAGPOLE_HEIGHT_VALUE.get(), BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(),
             GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
@@ -1615,6 +1617,7 @@ public final class ModCommonConfig
         FORCE_UNCENSORED_CONTENT(() -> ModCommonConfig.FORCE_UNCENSORED_CONTENT, QuickSection.SERVER),
         DISABLE_CROSSHAIR_FOR_GUNS(() -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS, QuickSection.SERVER),
         DISABLE_CROSSHAIR_WHILE_SCOPED(() -> ModCommonConfig.DISABLE_CROSSHAIR_WHILE_SCOPED, QuickSection.SERVER),
+        ALLOW_GUN_CROSSHAIR_OVERRIDE(() -> ModCommonConfig.ALLOW_GUN_CROSSHAIR_OVERRIDE, QuickSection.SERVER),
         EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS, QuickSection.SERVER),
         FLAN_EXPLOSIONS_DROP_BLOCKS(() -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS, QuickSection.SERVER),
         DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS, QuickSection.SERVER),

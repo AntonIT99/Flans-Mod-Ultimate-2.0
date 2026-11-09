@@ -20,6 +20,7 @@ public record CommonConfigSnapshot(
 
     boolean disableCrosshairForGuns,
     boolean disableCrosshairWhileScoped,
+    boolean allowGunCrosshairOverride,
     boolean explosionsBreakBlocks,
     boolean parachutesCanBeHit,
     boolean forceNewExplosionsBreakBlocks,
@@ -197,7 +198,7 @@ public record CommonConfigSnapshot(
     double afterburnerFuelMultiplier
 )
 {
-    public static final int CURRENT_VERSION = 56;
+    public static final int CURRENT_VERSION = 57;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -214,6 +215,7 @@ public record CommonConfigSnapshot(
 
         buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.disableCrosshairWhileScoped);
+        buf.writeBoolean(s.allowGunCrosshairOverride);
         buf.writeBoolean(s.explosionsBreakBlocks);
         buf.writeBoolean(s.parachutesCanBeHit);
         buf.writeBoolean(s.forceNewExplosionsBreakBlocks);
@@ -415,6 +417,7 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readVarInt(),
 
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),

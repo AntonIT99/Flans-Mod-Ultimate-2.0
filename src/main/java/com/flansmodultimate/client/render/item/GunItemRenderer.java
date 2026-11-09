@@ -356,6 +356,9 @@ public final class GunItemRenderer
             poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
         }
 
+        // Tyrants and Plebeians model aiming corrections, zero for every other pack
+        poseStack.translate(model.getZoomModifier() * adsSwitch, model.getZoomOffsetY() * adsSwitch, model.getZoomOffsetZ() * adsSwitch);
+
         // Keep sights authored for another placement centred sideways while aiming
         poseStack.translate(0F, 0F, frame.aimZCorrectionFrom(AimOffsetDebugCommand.authoredFrame(model)) * adsSwitch);
 

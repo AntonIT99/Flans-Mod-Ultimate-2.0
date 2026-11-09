@@ -380,7 +380,7 @@ public final class ModClientConfig
             Keep the vanilla crosshair visible while aiming down a gun's sights or scope without a zoom overlay.
             In multiplayer, the server's disableCrosshairWhileScoped setting must be false to allow this.
             Private singleplayer worlds use this preference directly.
-            Server, gun definition, vehicle optics and hideCrosshairForGuns restrictions still apply.
+            Server, allowed gun definition, vehicle optics and hideCrosshairForGuns restrictions still apply.
             """).define("showCrosshairWhileScoped", false);
         SHOW_ARMOR_DAMAGE_ABSORPTION_BAR = builder.comment("Show the armor-style HUD bar for legacy armor damage absorption").define("showArmorDamageAbsorptionBar", true);
         DRIVEABLE_SPEED_UNIT = builder.comment("Unit used for vehicle and plane speed on the HUD").defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);

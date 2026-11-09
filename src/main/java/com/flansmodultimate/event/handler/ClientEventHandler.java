@@ -326,7 +326,7 @@ public final class ClientEventHandler
         boolean serverHidesScopedCrosshair = multiplayer && ModCommonConfig.get().disableCrosshairWhileScoped();
         // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
-        boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
+        boolean gunConfigHidesCrosshair = ModCommonConfig.get().allowGunCrosshairOverride() && ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
         return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
             || (ModClient.getCurrentScope() != null && (ModClient.getCurrentScope().hasZoomOverlay() || serverHidesScopedCrosshair || !ModClientConfig.get().showCrosshairWhileScoped))
             || gunConfigHidesCrosshair || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
