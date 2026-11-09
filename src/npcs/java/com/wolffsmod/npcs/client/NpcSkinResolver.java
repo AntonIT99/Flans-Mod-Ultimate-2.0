@@ -7,6 +7,7 @@ import com.wolffsmod.npcs.soldier.FlanSoldierSelection;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.CustomEntities;
+import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
 import noppes.npcs.entity.EntityCustomNpc;
 
 import net.minecraft.client.Minecraft;
@@ -36,6 +37,12 @@ public final class NpcSkinResolver
             applyClassSkin(npc);
         else
             replaceMissingSkin(npc);
+    }
+
+    /** @return whether this client's model editor is open on the NPC */
+    public static boolean editing(EntityCustomNpc npc)
+    {
+        return Minecraft.getInstance().screen instanceof GuiCreationScreenInterface screen && screen.npc == npc;
     }
 
     private static void applyModelTexture(EntityCustomNpc npc)

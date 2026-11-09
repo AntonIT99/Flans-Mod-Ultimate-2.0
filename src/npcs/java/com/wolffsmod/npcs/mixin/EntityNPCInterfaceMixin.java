@@ -1174,7 +1174,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @ModifyVariable(method = "readSpawnData(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("HEAD"), argsOnly = true)
     private CompoundTag wolffsmodnpcsMigrateSpawnRenderer(CompoundTag tag)
     {
-        return FlanModelRendering.migrateNpc(tag, "ModelData");
+        return NpcSkins.keepEditedLooks((EntityNPCInterface) (Object) this, FlanModelRendering.migrateNpc(tag, "ModelData"));
     }
 
     @Inject(method = "readSpawnData(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("TAIL"))

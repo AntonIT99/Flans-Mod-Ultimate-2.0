@@ -30,6 +30,7 @@ public final class NpcsClientEvents
         {
             FlansEquipmentRender.addArmorPoseStep(NpcArmorParts::apply);
             NpcSkins.setClientResolver(NpcSkinResolver::apply);
+            NpcSkins.setClientEditing(NpcSkinResolver::editing);
             CommandCentrePages.register();
             NameTagRanges.setResolver((entity, configured) -> entity instanceof EntityNPCInterface ? ClientServerSettings.get(Setting.NAME_TAG_RANGE) : configured);
         });

@@ -5,8 +5,11 @@ import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 
+import net.minecraft.nbt.CompoundTag;
+
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Skins that only clients can resolve. A content pack's texture locations, and the size of a skin image, are known to
@@ -31,6 +34,40 @@ public final class NpcSkins
     {
         // Replaced on clients; a dedicated server resolves nothing.
     };
+
+    private static Predicate<EntityCustomNpc> clientEditing = npc -> false;
+
+    /** Lets the client report which NPC its model editor has open; called once during client setup. */
+    public static void setClientEditing(Predicate<EntityCustomNpc> editing)
+    {
+        clientEditing = Objects.requireNonNull(editing);
+    }
+
+    /**
+     * Custom NPCs' model editor changes the client's copy of the NPC directly, so an NPC update from the server would put
+     * the last saved model and skin back under the builder. While the editor is open the client keeps its own, plus any
+     * skin marks the server added.
+     *
+     * @return the NPC data to read
+     */
+    public static CompoundTag keepEditedLooks(EntityNPCInterface npc, CompoundTag tag)
+    {
+        if (!npc.level().isClientSide || !(npc instanceof EntityCustomNpc custom) || !clientEditing.test(custom))
+            return tag;
+        CompoundTag edited = custom.modelData.save();
+        CompoundTag serverExtra = tag.getCompound("ModelData").getCompound("ExtraData");
+        CompoundTag extra = edited.getCompound("ExtraData");
+        for (String key : new String[] {CLASS_SKIN_KEY, MODEL_SKIN_KEY})
+        {
+            if (serverExtra.contains(key))
+                extra.putString(key, serverExtra.getString(key));
+        }
+        edited.put("ExtraData", extra);
+        CompoundTag kept = tag.copy();
+        kept.put("ModelData", edited);
+        kept.putString("Texture", custom.display.getSkinTexture());
+        return kept;
+    }
 
     /** Lets the client put marked skins on its NPCs; called once during client setup. */
     public static void setClientResolver(Consumer<EntityCustomNpc> resolver)
