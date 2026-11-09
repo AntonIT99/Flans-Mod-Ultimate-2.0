@@ -45,7 +45,7 @@ HitSound bomb
 FlakParticles 5
 FlakParticleType hugeexplosion
 SmokeTrail True
-ExplodeParticles 6
+NumExplodeParticles 6
 ExplodeParticleType explode
 FlareParticleCount 3
 DebrisParticleCount 2

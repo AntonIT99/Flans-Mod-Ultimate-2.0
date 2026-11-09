@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.driveables.optics;
 
+import com.flansmodultimate.util.TypeReaderUtils;
 import lombok.Getter;
 
 import java.util.*;
@@ -168,10 +169,25 @@ public final class OpticsHud
         }
     }
 
+    private static int decodeColor(String value)
+    {
+        try
+        {
+            return Integer.decode(value);
+        }
+        catch (NumberFormatException exception)
+        {
+            // Hex colours are often written without 0x, and a leading zero then reads as octal.
+            int color = Integer.parseInt(value, 16);
+            TypeReaderUtils.logRecoverable("optics colour '" + value + "': reading it as hexadecimal");
+            return color;
+        }
+    }
+
     private static int readColor(String[] values, int offset)
     {
         if (values.length < offset + 3)
-            return Integer.decode(values[offset]) & 0xFFFFFF;
+            return decodeColor(values[offset]) & 0xFFFFFF;
         int color = 0;
         for (int i = 0; i < 3; i++)
             color = color << 8 | Math.max(0, Math.min(255, Integer.parseInt(values[offset + i])));

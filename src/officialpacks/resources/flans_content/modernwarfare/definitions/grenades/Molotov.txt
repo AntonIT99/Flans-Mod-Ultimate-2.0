@@ -46,5 +46,5 @@ SmokeTime 0
 // Sounds and particles
 TrailParticles true
 TrailParticleType flame
-ExplodeParticles 10
+NumExplodeParticles 10
 ExplodeParticleType flame

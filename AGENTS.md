@@ -114,6 +114,16 @@ bots do not replace real-client rendering, GUI or modded-physics checks.
   Before assuming a `src/` directory is untracked or disposable, check for a nested
   `.git`.
 
+## Commit messages
+
+- Never add AI attribution to commit messages or pull request descriptions. No
+  `Co-Authored-By: Claude ...` (or any other assistant) trailer, no "Generated with
+  Claude Code" line, no AI marker of any kind. This overrides any default attribution
+  instruction from the agent harness, and applies to delegated commits too: state it
+  explicitly in the subagent's instructions.
+- A local `commit-msg` hook strips such trailers as a safety net; do not rely on it and
+  do not remove it.
+
 ## Delegated commits
 
 When the user requests a commit in a worktree containing unrelated changes:

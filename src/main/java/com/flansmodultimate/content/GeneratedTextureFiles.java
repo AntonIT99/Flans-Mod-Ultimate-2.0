@@ -10,14 +10,17 @@ import com.google.gson.JsonParser;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** Copies legacy PNGs and only removes destinations explicitly created and still owned by us. */
@@ -30,6 +33,8 @@ final class GeneratedTextureFiles
     {}
     private record Manifest(int version, Map<String, Copy> files)
     {}
+    private record PlannedCopy(Path input, String target, Path output, boolean owned)
+    {}
 
     private GeneratedTextureFiles()
     {}
@@ -41,37 +46,28 @@ final class GeneratedTextureFiles
 
     static void copy(Path source, Path destination, Map<String, DynamicReference> aliases, boolean armor)
     {
+        copy(source, destination, aliases, armor, ContentLoadingWorkers.sequential());
+    }
+
+    /** Targets are chosen in input order, so collisions resolve the same way with any number of workers. */
+    static void copy(Path source, Path destination, Map<String, DynamicReference> aliases, boolean armor, ContentLoadingWorkers workers)
+    {
         try
         {
             Manifest previous = read(destination);
+            Set<String> ownedTargets = ownedTargets(destination, previous, workers);
+            List<PlannedCopy> plans = planCopies(source, destination, aliases, armor, ownedTargets);
+            for (Path directory : plans.stream().map(plan -> plan.output().getParent()).collect(Collectors.toSet()))
+                Files.createDirectories(directory);
+
             Map<String, Copy> generated = new TreeMap<>();
-            Set<String> planned = new HashSet<>();
-            for (Path input : sources(source))
-            {
-                String desired = targetName(input, aliases, armor);
-                String target = desired;
-                for (int suffix = 1;; suffix++)
-                {
-                    Path output = destination.resolve(target);
-                    Copy old = previous.files().get(target);
-                    boolean owned = stillOwned(output, old);
-                    if (!planned.contains(target) && (owned || !Files.exists(output) || !FileUtils.isDifferentFileContent(input, output, true)))
-                    {
-                        boolean created = !Files.exists(output);
-                        Files.createDirectories(output.getParent());
-                        if (created || (owned && FileUtils.isDifferentFileContent(input, output, true)))
-                            FileUtils.copyAsPng(input, output);
-                        generated.put(target, new Copy(input.getFileName().toString(), ContentFileCache.stamp(input), ContentFileCache.stamp(output), created || owned,
-                            created || owned ? ContentFileCache.digest(output) : null));
-                        planned.add(target);
-                        break;
-                    }
-                    target = FilenameUtils.getBaseName(desired) + "-" + suffix + FileUtils.PNG_EXTENSION;
-                }
-            }
-            for (Map.Entry<String, Copy> old : previous.files().entrySet())
-                if (!generated.containsKey(old.getKey()) && stillOwned(destination.resolve(old.getKey()), old.getValue()))
-                    Files.deleteIfExists(destination.resolve(old.getKey()));
+            List<Copy> copies = workers.map(plans, GeneratedTextureFiles::perform);
+            for (int i = 0; i < plans.size(); i++)
+                generated.put(plans.get(i).target(), copies.get(i));
+
+            for (String old : previous.files().keySet())
+                if (!generated.containsKey(old) && ownedTargets.contains(old))
+                    Files.deleteIfExists(destination.resolve(old));
             if (generated.isEmpty())
                 Files.deleteIfExists(destination.resolve(MANIFEST));
             else
@@ -81,6 +77,30 @@ final class GeneratedTextureFiles
         {
             FlansLog.log.error("Could not generate textures from '{}' to '{}': {}", source, destination, e.toString());
         }
+    }
+
+    private static List<PlannedCopy> planCopies(Path source, Path destination, Map<String, DynamicReference> aliases, boolean armor, Set<String> ownedTargets) throws IOException
+    {
+        List<PlannedCopy> plans = new ArrayList<>();
+        Set<String> planned = new HashSet<>();
+        for (Path input : sources(source))
+        {
+            String desired = targetName(input, aliases, armor);
+            String target = desired;
+            for (int suffix = 1;; suffix++)
+            {
+                Path output = destination.resolve(target);
+                boolean owned = ownedTargets.contains(target);
+                if (!planned.contains(target) && (owned || !Files.exists(output) || !FileUtils.isDifferentFileContent(input, output, true)))
+                {
+                    plans.add(new PlannedCopy(input, target, output, owned));
+                    planned.add(target);
+                    break;
+                }
+                target = FilenameUtils.getBaseName(desired) + "-" + suffix + FileUtils.PNG_EXTENSION;
+            }
+        }
+        return plans;
     }
 
     static boolean needsUpdate(Path source, Path destination, Map<String, DynamicReference> aliases, boolean armor)
@@ -119,9 +139,45 @@ final class GeneratedTextureFiles
         }
     }
 
-    private static boolean stillOwned(Path output, Copy copy) throws IOException
+    private static Copy perform(PlannedCopy plan)
     {
-        return copy != null && copy.owned() && Files.isRegularFile(output) && copy.digest() != null && ContentFileCache.digest(output).equals(copy.digest());
+        try
+        {
+            Path input = plan.input();
+            Path output = plan.output();
+            boolean created = !Files.exists(output);
+            if (created || (plan.owned() && FileUtils.isDifferentFileContent(input, output, true)))
+                FileUtils.copyAsPng(input, output);
+            boolean generated = created || plan.owned();
+            return new Copy(input.getFileName().toString(), ContentFileCache.stamp(input), ContentFileCache.stamp(output), generated, generated ? ContentFileCache.digest(output) : null);
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static Set<String> ownedTargets(Path destination, Manifest manifest, ContentLoadingWorkers workers)
+    {
+        List<Map.Entry<String, Copy>> entries = List.copyOf(manifest.files().entrySet());
+        List<Boolean> owned = workers.map(entries, entry -> stillOwned(destination.resolve(entry.getKey()), entry.getValue()));
+        Set<String> targets = new HashSet<>();
+        for (int i = 0; i < entries.size(); i++)
+            if (Boolean.TRUE.equals(owned.get(i)))
+                targets.add(entries.get(i).getKey());
+        return targets;
+    }
+
+    private static boolean stillOwned(Path output, Copy copy)
+    {
+        try
+        {
+            return copy != null && copy.owned() && Files.isRegularFile(output) && copy.digest() != null && ContentFileCache.digest(output).equals(copy.digest());
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private static List<Path> sources(Path directory) throws IOException

@@ -4,8 +4,7 @@ import com.flansmodultimate.content.IContentProvider;
 import com.wolffsmod.api.client.model.IModelBase;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
+import java.nio.file.*;
 
 /**
  * Loads legacy model classes from the class files of one content pack.
@@ -67,9 +66,15 @@ public final class ContentPackClassLoader extends ClassLoader
 
     private Class<?> defineContentPackClass(String className) throws IOException
     {
-        ClassLoaderUtils.ModifiedClass modifiedClass = ClassLoaderUtils.transformClass(readClassData(className), this);
+        byte[] originalData = readClassData(className);
+        // Some packs renamed class files without recompiling them, so only the class itself knows its name.
+        String declaredName = ClassLoaderUtils.declaredClassName(originalData);
+        Class<?> alreadyDefined = findLoadedClass(declaredName);
+        if (alreadyDefined != null)
+            return alreadyDefined;
+        ClassLoaderUtils.ModifiedClass modifiedClass = ClassLoaderUtils.transformClass(originalData, this);
         byte[] classData = modifiedClass.classData();
-        Class<?> definedClass = defineClass(className, classData, 0, classData.length);
+        Class<?> definedClass = defineClass(declaredName, classData, 0, classData.length);
         ClassLoaderUtils.registerTransforms(definedClass, modifiedClass.transforms());
         return definedClass;
     }
@@ -82,7 +87,12 @@ public final class ContentPackClassLoader extends ClassLoader
         FileSystem fs = FileUtils.createFileSystem(contentProvider);
         try
         {
-            return Files.readAllBytes(contentProvider.getModelPath(className, fs));
+            String fileName = ClassLoaderUtils.ownClassName(contentProvider, className);
+            return Files.readAllBytes(contentProvider.getModelPath(fileName != null ? fileName : className, fs));
+        }
+        catch (InvalidPathException e)
+        {
+            throw new IOException(className + " is no legal class file path in " + contentProvider.getPath(), e);
         }
         finally
         {

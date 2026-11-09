@@ -23,7 +23,7 @@ First release. Requires Flan's Mod Ultimate 2.2.x (including 2.2) and Custom NPC
 
 ## Teams Bots, Factions & Battles
 
-* NPC armies fight Teams rounds with squads, transports, class roles and player orders through the Squad orders key (O)
+* NPC armies fight Teams rounds with squads, transports, class roles and player orders through the Squad orders key (O), including boarding and safely disembarking existing squads for repeated transport
 * AI commanders distribute forces across objectives and coordinate assaults, covering fire, scouting and withdrawals; optional commander bots disrupt the enemy's strategy when killed
 * Command centre pages manage infantry, vehicle allocations, crews and squads, with searchable previews, class limits, respawn controls and reusable JSON presets
 * Vehicle deployments respect spawner restrictions and cooldowns, wait for clear space and support waves or sequential spawning

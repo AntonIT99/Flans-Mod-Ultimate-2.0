@@ -64,7 +64,12 @@ public class ToolType extends InfoType
         toolLife = readValue("ToolUes", toolLife, file);
         toolLife = readValue("ToolUses", toolLife, file);
         destroyOnEmpty = readValue("DestroyOnEmpty", destroyOnEmpty, file);
-        foodness = readValue("Food", foodness, file);
+        // Some packs mark food with "Food true" and give the amount through Foodness.
+        String configuredFood = readValue("Food", null, file);
+        if (configuredFood != null && recoverBoolean(configuredFood) != null)
+            logRecoverable("Food expects an amount but found '" + configuredFood + "'; ignoring it", file);
+        else
+            foodness = readValue("Food", foodness, file);
         foodness = readValue("Foodness", foodness, file);
         rechargeRecipeSourceFile = file;
         rechargeRecipeRefs.addAll(RecipeParser.parseAmountThenItemReferences(readValues("RechargeRecipe", file), 1, contentPack, file, "RechargeRecipe"));

@@ -20,6 +20,7 @@ public record CommonConfigSnapshot(
 
     boolean disableCrosshairForGuns,
     boolean disableCrosshairWhileScoped,
+    boolean allowGunCrosshairOverride,
     boolean explosionsBreakBlocks,
     boolean parachutesCanBeHit,
     boolean forceNewExplosionsBreakBlocks,
@@ -70,6 +71,7 @@ public record CommonConfigSnapshot(
     boolean cancelReloadOnWeaponSwitch,
     boolean combineAmmoOnReload,
     boolean ammoToUpperInventoryOnReload,
+    boolean preferOffhandAmmoOnReload,
     boolean realisticRecoil,
     boolean enableSightDownwardMovement,
     boolean disableSprintHipFireByDefault,
@@ -184,10 +186,19 @@ public record CommonConfigSnapshot(
     double explosionShakeDuration,
     double suppressionDuration,
     double suppressionCameraRoll,
-    double suppressionVignette
+    double suppressionVignette,
+    double landingFlapDragEffectiveness,
+    double landingFlapAssistDeceleration,
+    double landingFlapGearDragMultiplier,
+    boolean enableAfterburners,
+    double afterburnerJetDryThrustRatio,
+    double afterburnerPistonDryPowerRatio,
+    double afterburnerThrottleDetent,
+    double afterburnerSpoolSeconds,
+    double afterburnerFuelMultiplier
 )
 {
-    public static final int CURRENT_VERSION = 54;
+    public static final int CURRENT_VERSION = 57;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -204,6 +215,7 @@ public record CommonConfigSnapshot(
 
         buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.disableCrosshairWhileScoped);
+        buf.writeBoolean(s.allowGunCrosshairOverride);
         buf.writeBoolean(s.explosionsBreakBlocks);
         buf.writeBoolean(s.parachutesCanBeHit);
         buf.writeBoolean(s.forceNewExplosionsBreakBlocks);
@@ -254,6 +266,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.cancelReloadOnWeaponSwitch);
         buf.writeBoolean(s.combineAmmoOnReload);
         buf.writeBoolean(s.ammoToUpperInventoryOnReload);
+        buf.writeBoolean(s.preferOffhandAmmoOnReload);
         buf.writeBoolean(s.realisticRecoil);
         buf.writeBoolean(s.enableSightDownwardMovement);
         buf.writeBoolean(s.disableSprintHipFireByDefault);
@@ -379,6 +392,15 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.suppressionDuration);
         buf.writeDouble(s.suppressionCameraRoll);
         buf.writeDouble(s.suppressionVignette);
+        buf.writeDouble(s.landingFlapDragEffectiveness);
+        buf.writeDouble(s.landingFlapAssistDeceleration);
+        buf.writeDouble(s.landingFlapGearDragMultiplier);
+        buf.writeBoolean(s.enableAfterburners);
+        buf.writeDouble(s.afterburnerJetDryThrustRatio);
+        buf.writeDouble(s.afterburnerPistonDryPowerRatio);
+        buf.writeDouble(s.afterburnerThrottleDetent);
+        buf.writeDouble(s.afterburnerSpoolSeconds);
+        buf.writeDouble(s.afterburnerFuelMultiplier);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -395,6 +417,7 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readVarInt(),
 
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
@@ -444,6 +467,7 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
@@ -556,6 +580,15 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
             buf.readBoolean(),
             buf.readDouble(),
             buf.readDouble(),

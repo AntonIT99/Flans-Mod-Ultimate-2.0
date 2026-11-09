@@ -40,5 +40,5 @@ ExplosionBreaksBlocks false
 
 // Sounds and particles
 TrailParticles false
-ExplodeParticles 4
+NumExplodeParticles 4
 FlakParticles 0

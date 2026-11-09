@@ -29,6 +29,7 @@ class EnumDriveablePartTest
         expected.put("right", EnumDriveablePart.RIGHT);
         expected.put("beltl", EnumDriveablePart.BELT_LEFT);
         expected.put("beltr", EnumDriveablePart.BELT_RIGHT);
+        expected.put("ERA1", EnumDriveablePart.ERA_1);
         expected.put("ERA2", EnumDriveablePart.ERA_2);
         expected.put("ERA3", EnumDriveablePart.ERA_3);
         expected.put("infantry", EnumDriveablePart.INFANTRY);
@@ -51,5 +52,12 @@ class EnumDriveablePartTest
 
         expected.forEach((name, part) -> assertEquals(part, EnumDriveablePart.getPart(name), name));
         assertEquals(expected.size(), expected.values().stream().distinct().count());
+    }
+
+    @Test
+    void resolvesLegacyTurretWeakSpotAliases()
+    {
+        assertEquals(EnumDriveablePart.TURRET_WEAK, EnumDriveablePart.getPart("turretWeak"));
+        assertEquals(EnumDriveablePart.TURRET_WEAK_2, EnumDriveablePart.getPart("turretWeak2"));
     }
 }

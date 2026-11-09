@@ -3,11 +3,14 @@ package com.wolffsmod.npcs.network;
 import com.wolffsmod.npcs.teams.BotLeaders;
 import com.wolffsmod.npcs.teams.BotOrders;
 import com.wolffsmod.npcs.teams.PlayerOrder;
+import com.wolffsmod.npcs.teams.SquadTransports;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.UUID;
 
 /**
  * A player's order to squads of bots, or a request for their order screen. The server checks that the player may give
@@ -24,8 +27,13 @@ import net.minecraft.world.phys.Vec3;
  * @param at
  *            a place picked on the commander map, across the ground, or null
  */
-public record BotOrderPacket(Action action, int squadId, PlayerOrder.Kind order, int objective, @Nullable Vec3 at)
+public record BotOrderPacket(Action action, int squadId, PlayerOrder.Kind order, int objective, @Nullable Vec3 at, @Nullable UUID transport)
 {
+    public BotOrderPacket(Action action, int squadId, PlayerOrder.Kind order, int objective, @Nullable Vec3 at)
+    {
+        this(action, squadId, order, objective, at, null);
+    }
+
     /** What a player asks of the server. */
     public enum Action
     {
@@ -44,7 +52,11 @@ public record BotOrderPacket(Action action, int squadId, PlayerOrder.Kind order,
         /** Placing the rally point of the squad the player leads. */
         RALLY,
         /** Choosing where to come back after dying, as the objective field gives it. */
-        SPAWN_CHOICE
+        SPAWN_CHOICE,
+        /** Picking up an existing squad with the selected vehicle. */
+        BOARD_TRANSPORT,
+        /** Cancelling pickup and safely unloading those already aboard. */
+        DISEMBARK_TRANSPORT
     }
 
     public static BotOrderPacket refresh()
@@ -70,6 +82,9 @@ public record BotOrderPacket(Action action, int squadId, PlayerOrder.Kind order,
             buffer.writeDouble(at.x);
             buffer.writeDouble(at.z);
         }
+        buffer.writeBoolean(transport != null);
+        if (transport != null)
+            buffer.writeUUID(transport);
     }
 
     public static BotOrderPacket read(FriendlyByteBuf buffer)
@@ -79,7 +94,7 @@ public record BotOrderPacket(Action action, int squadId, PlayerOrder.Kind order,
         PlayerOrder.Kind order = buffer.readEnum(PlayerOrder.Kind.class);
         int objective = buffer.readVarInt();
         Vec3 at = buffer.readBoolean() ? new Vec3(buffer.readDouble(), 0D, buffer.readDouble()) : null;
-        return new BotOrderPacket(action, squadId, order, objective, at);
+        return new BotOrderPacket(action, squadId, order, objective, at, buffer.readBoolean() ? buffer.readUUID() : null);
     }
 
     public void handle(ServerPlayer player)
@@ -87,6 +102,7 @@ public record BotOrderPacket(Action action, int squadId, PlayerOrder.Kind order,
         switch (action)
         {
             case ORDER -> BotOrders.give(player, squadId, order, objective, at != null && Double.isFinite(at.x) && Double.isFinite(at.z) ? at : null);
+            case BOARD_TRANSPORT, DISEMBARK_TRANSPORT -> player.sendSystemMessage(SquadTransports.request(player, squadId, transport, action == Action.DISEMBARK_TRANSPORT));
             case TAKE_COMMAND -> BotOrders.command(player, true);
             case LEAVE_COMMAND -> BotOrders.command(player, false);
             case LEAD -> player.sendSystemMessage(BotLeaders.lead(player, squadId));

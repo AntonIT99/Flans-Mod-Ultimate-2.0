@@ -28,6 +28,8 @@ import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.flansmodultimate.content.ContentPackPaths.*;
 
@@ -77,6 +79,23 @@ public class ContentManager
     private static final Map<String, String> registeredItems = new HashMap<>();
     private static final ConcurrentMap<EnumType, Constructor<? extends InfoType>> typeConstructors = new ConcurrentHashMap<>();
     private static final Map<ResourceLocation, Set<TextureOrigin>> modelTextureOrigins = new HashMap<>();
+    private static final Object JAVA_MODEL_COMPILE_LOCK = new Object();
+    private static final Object FULL_REPACK_LOCK = new Object();
+
+    private record PackProcessing(IContentProvider provider, ContentProcessingCache cache, boolean assets, boolean data, boolean unpackArchive, String reasons)
+    {
+        boolean reprocessing()
+        {
+            return unpackArchive || assets || data;
+        }
+    }
+
+    private record GeneratedOutputs(boolean assetsComplete, boolean dataComplete)
+    {
+    }
+
+    private record ProcessingResult(PackProcessing processing, boolean archiveExtracted, boolean assetsComplete, boolean dataComplete, boolean repackSucceeded)
+    {}
 
     private record TextureOrigin(String contentPackName, String typeFolderName, String fileName)
     {
@@ -205,17 +224,20 @@ public class ContentManager
             if (PlatformEnvironment.isClient())
                 legacyTextures.prepare(contentPacks, workers);
 
-            int reprocessed = 0;
+            List<PackProcessing> pendingProcessing = new ArrayList<>();
             try (PlatformLoadingProgress.Bar bar = PlatformLoadingProgress.bar("Flan's Mod: content packs", contentPacks.size()))
             {
                 for (IContentProvider provider : contentPacks)
                 {
                     bar.label("Loading " + provider.getName());
-                    if (loadContentPack(provider, reader, bar))
-                        reprocessed++;
+                    PackProcessing processing = loadContentPack(provider, reader, bar, workers);
+                    if (processing != null)
+                        pendingProcessing.add(processing);
                     bar.increment();
                 }
             }
+            int reprocessed = pendingProcessing.size();
+            reprocessContentPacks(pendingProcessing, workers);
 
             long postLoadStart = System.nanoTime();
             PlatformLoadingProgress.message("Flan's Mod: measuring sound lengths");
@@ -247,8 +269,9 @@ public class ContentManager
         FileUtils.deleteDirectoryIfEmpty(tempRoot);
     }
 
-    /** Returns whether the pack was reprocessed. */
-    private static boolean loadContentPack(IContentProvider provider, ContentPackReader reader, PlatformLoadingProgress.Bar bar)
+    /** Registers the pack's types and returns the regeneration it still needs, if any. */
+    @Nullable
+    private static PackProcessing loadContentPack(IContentProvider provider, ContentPackReader reader, PlatformLoadingProgress.Bar bar, ContentLoadingWorkers workers)
     {
         long startTime = System.currentTimeMillis();
 
@@ -258,7 +281,7 @@ public class ContentManager
         legacyTextures.initialize(provider);
 
         if (!provider.isArchive())
-            compileJavaModelsIfNeeded(provider, bar);
+            compileJavaModelsIfNeeded(provider, bar::label);
 
         boolean preprocessed = provider.isPreprocessed();
         boolean preLoadAssets = false;
@@ -321,74 +344,157 @@ public class ContentManager
         {
             long endTime = System.currentTimeMillis();
             FlansLog.log.info("Loaded preprocessed content pack {} in {} ms.", provider.getName(), endTime - startTime);
-            return false;
+            return null;
         }
 
-        boolean archiveExtracted = false;
-        boolean assetsComplete = false;
-        boolean dataComplete = false;
         boolean reprocessing = unpackArchive || preLoadAssets || preLoadData;
+        String reasons = reprocessing ? reprocessingReasons(processingCache, idAliasNeedsUpdate, preLoadAssets) : "";
+        PackProcessing processing = new PackProcessing(provider, processingCache, preLoadAssets, preLoadData, unpackArchive, reasons);
 
-        if (reprocessing)
+        if (!reprocessing)
         {
-            String reasons = reprocessingReasons(processingCache, idAliasNeedsUpdate, preLoadAssets);
-            bar.label("Reprocessing " + provider.getName());
-            // The bar label has little room after a long archive name; the message line spans the window.
-            PlatformLoadingProgress.message("Reprocessing: " + reasons);
-            if (unpackArchive)
-            {
-                FlansLog.log.info("Reprocessing {}...", provider.getName());
-                FlansLog.log.info("{}: Reprocessing reasons: {}", provider.getName(), reasons);
-            }
+            finishProcessing(runProcessing(processing, workers, ignored -> {}));
+            FlansLog.log.info("Loaded content pack {} in {} ms.", provider.getName(), System.currentTimeMillis() - startTime);
+            return null;
         }
 
         if (unpackArchive)
         {
-            FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
-            archiveExtracted = FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
+            FlansLog.log.info("Reprocessing {}...", provider.getName());
+            FlansLog.log.info("{}: Reprocessing reasons: {}", provider.getName(), reasons);
         }
+        FlansLog.log.info("Loaded content pack {} in {} ms; reprocessing follows once every pack is registered.", provider.getName(), System.currentTimeMillis() - startTime);
+        return processing;
+    }
+
+    /**
+     * Regenerates the packs that need it, now that every type is registered. Nothing registers while
+     * this runs, so jobs only read the shared type and alias tables and write to their own pack.
+     */
+    private static void reprocessContentPacks(List<PackProcessing> packs, ContentLoadingWorkers workers)
+    {
+        if (packs.isEmpty())
+            return;
+
+        int concurrency = ContentPackJobs.concurrency(workers.threads());
+        boolean sequential = concurrency <= 1 || packs.size() < 2;
+        try (PlatformLoadingProgress.Bar bar = PlatformLoadingProgress.bar("Flan's Mod: reprocessing content packs", packs.size()))
+        {
+            if (!sequential)
+                bar.label(String.format(Locale.ROOT, "Reprocessing %d packs, up to %d at a time", packs.size(), concurrency));
+
+            // The loading screen belongs to this thread: only a job running on it may report its stage.
+            Function<PackProcessing, ProcessingResult> job = sequential ? processing ->
+            {
+                bar.label("Reprocessing " + processing.provider().getName());
+                // The bar label has little room after a long archive name; the message line spans the window.
+                PlatformLoadingProgress.message("Reprocessing: " + processing.reasons());
+                return runProcessing(processing, workers, bar::label);
+            } : processing -> runProcessing(processing, workers, ignored -> {});
+
+            // Cache files and texture indexes are written here, in pack order, after the jobs have ended.
+            ContentPackJobs.runAll(packs, job, concurrency, finished -> bar.increment()).forEach(ContentManager::finishProcessing);
+        }
+    }
+
+    private static ProcessingResult runProcessing(PackProcessing processing, ContentLoadingWorkers workers, Consumer<String> status)
+    {
+        IContentProvider provider = processing.provider();
+        boolean preLoadAssets = processing.assets();
+        boolean preLoadData = processing.data();
+        boolean archiveExtracted = false;
+        boolean assetsComplete = false;
+        boolean dataComplete = false;
+        long start = System.nanoTime();
+
+        IncrementalContentArchive incrementalArchive = null;
+        if (processing.unpackArchive())
+        {
+            FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
+            incrementalArchive = IncrementalContentArchive.open(provider.getPath());
+            archiveExtracted = incrementalArchive != null
+                ? incrementalArchive.extract(provider.getExtractedPath(), ContentPackAssets.generationInputs(preLoadAssets, preLoadData, preLoadData && !PlatformEnvironment.isClient()), workers)
+                : FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
+        }
+        long extracted = System.nanoTime();
 
         if (archiveExtracted || !provider.isArchive())
         {
-            if (archiveExtracted)
-                compileJavaModelsIfNeeded(provider, bar);
-
-            ContentPackAssets.createMcMeta(provider);
-
-            if (preLoadData)
-                ContentPackAssets.createRecipeJsonFiles(provider, listItems(provider));
-
-            if (preLoadAssets)
-                ContentPackAssets.generate(provider, configs.get(provider), listItems(provider), listBlocks(provider), textureReferences(provider));
-            else if (preLoadData && !PlatformEnvironment.isClient())
-                ContentPackSounds.generate(provider);
-
-            assetsComplete = preLoadAssets && ContentPackAssets.outputsPresent(provider, listItems(provider), listBlocks(provider), textureReferences(provider));
-            dataComplete = preLoadData && ContentPackAssets.dataOutputsPresent(provider, listItems(provider));
-
-            AliasFileManager.writeToAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
+            GeneratedOutputs outputs = generateOutputs(processing, archiveExtracted, workers, status);
+            assetsComplete = outputs.assetsComplete();
+            dataComplete = outputs.dataComplete();
         }
+        long generated = System.nanoTime();
 
-        // Generation wrote to the folder: snapshots taken before it no longer describe the pack.
-        if ((preLoadAssets || preLoadData) && !provider.isArchive())
-            ContentFileCache.forget(provider.getPath());
+        boolean repackSucceeded = !archiveExtracted || repackArchive(provider, incrementalArchive, workers);
 
-        boolean repackSucceeded = true;
+        if (processing.reprocessing() && FlansLog.log.isDebugEnabled())
+        {
+            FlansLog.log.debug("{}: Reprocessed in {} ms (extract: {} ms, generate: {} ms, repack: {} ms)", provider.getName(), formatMilliseconds(System.nanoTime() - start),
+                formatMilliseconds(extracted - start), formatMilliseconds(generated - extracted), formatMilliseconds(System.nanoTime() - generated));
+        }
+        return new ProcessingResult(processing, archiveExtracted, assetsComplete, dataComplete, repackSucceeded);
+    }
+
+    private static GeneratedOutputs generateOutputs(PackProcessing processing, boolean archiveExtracted, ContentLoadingWorkers workers, Consumer<String> status)
+    {
+        IContentProvider provider = processing.provider();
+        boolean preLoadAssets = processing.assets();
+        boolean preLoadData = processing.data();
+
         if (archiveExtracted)
         {
-            repackSucceeded = FileUtils.repackArchive(provider);
+            synchronized (JAVA_MODEL_COMPILE_LOCK)
+            {
+                compileJavaModelsIfNeeded(provider, status);
+            }
         }
 
-        if (repackSucceeded && (!provider.isArchive() || !unpackArchive || archiveExtracted))
+        ContentPackAssets.createMcMeta(provider);
+
+        if (preLoadData)
+            ContentPackAssets.createRecipeJsonFiles(provider, listItems(provider));
+
+        if (preLoadAssets)
+            ContentPackAssets.generate(provider, configs.get(provider), listItems(provider), listBlocks(provider), textureReferences(provider), workers);
+        else if (preLoadData && !PlatformEnvironment.isClient())
+            ContentPackSounds.generate(provider);
+
+        boolean assetsComplete = preLoadAssets && ContentPackAssets.outputsPresent(provider, listItems(provider), listBlocks(provider), textureReferences(provider));
+        boolean dataComplete = preLoadData && ContentPackAssets.dataOutputsPresent(provider, listItems(provider));
+
+        AliasFileManager.writeToAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
+        return new GeneratedOutputs(assetsComplete, dataComplete);
+    }
+
+    private static void finishProcessing(ProcessingResult result)
+    {
+        PackProcessing processing = result.processing();
+        IContentProvider provider = processing.provider();
+
+        // Generation wrote to the folder: snapshots taken before it no longer describe the pack.
+        if ((processing.assets() || processing.data()) && !provider.isArchive())
+            ContentFileCache.forget(provider.getPath());
+
+        if (result.repackSucceeded() && (!provider.isArchive() || !processing.unpackArchive() || result.archiveExtracted()))
         {
-            processingCache.remember(assetsComplete, dataComplete, preLoadAssets, preLoadData);
-            if (PlatformEnvironment.isClient() && (preLoadAssets || preLoadData))
+            processing.cache().remember(result.assetsComplete(), result.dataComplete(), processing.assets(), processing.data());
+            if (PlatformEnvironment.isClient() && (processing.assets() || processing.data()))
                 legacyTextures.rememberAfterProcessing(provider);
         }
+    }
 
-        long endTime = System.currentTimeMillis();
-        FlansLog.log.info("Loaded content pack {} in {} ms.", provider.getName(), endTime - startTime);
-        return reprocessing;
+    private static boolean repackArchive(IContentProvider provider, @Nullable IncrementalContentArchive incrementalArchive, ContentLoadingWorkers workers)
+    {
+        if (incrementalArchive == null)
+        {
+            // This route holds the whole compressed archive in memory until it is written.
+            synchronized (FULL_REPACK_LOCK)
+            {
+                return FileUtils.repackArchive(provider);
+            }
+        }
+        return FileUtils.repackArchive(provider, target -> incrementalArchive.write(target, provider.getExtractedPath(), workers));
     }
 
     private static void loadTypes(IContentProvider provider, ContentPackReader reader)
@@ -765,7 +871,7 @@ public class ContentManager
         return provider.isArchive() && (preLoadAssets || preLoadData || idAliasNeedsUpdate);
     }
 
-    private static void compileJavaModelsIfNeeded(IContentProvider provider, PlatformLoadingProgress.Bar bar)
+    private static void compileJavaModelsIfNeeded(IContentProvider provider, Consumer<String> status)
     {
         if (!PlatformEnvironment.isClient())
             return;
@@ -783,7 +889,7 @@ public class ContentManager
                 return;
             }
 
-            bar.label("Compiling Java models for " + provider.getName());
+            status.accept("Compiling Java models for " + provider.getName());
             JavaModelCompiler.compileJavaModels(provider);
             // Compiled classes are written into the pack.
             ContentFileCache.forget(provider.isArchive() ? provider.getExtractedPath() : provider.getPath());

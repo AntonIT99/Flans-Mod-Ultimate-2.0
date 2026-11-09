@@ -62,13 +62,13 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      */
     public record RenderState(float partialTick, float yaw, float pitch, float roll, float throttle, float turretYaw, float turretPitch, float wheelAngle, float steeringAngle, float animationTime,
         float gearProgress, float doorProgress, float modeProgress, float leftTrackProgress, float rightTrackProgress, float legSwing, float legYaw, AnimatedTransform wingTransform,
-        AnimatedTransform wingWheelTransform, AnimatedTransform bodyWheelTransform, AnimatedTransform tailWheelTransform, AnimatedTransform doorTransform, AnimatedTransform door2Transform,
-        LegAnimation legAnimation, int inputMask, int mode, boolean flareActive,
+        AnimatedTransform wingWheelTransform, AnimatedTransform bodyWheelTransform, AnimatedTransform tailWheelTransform, AnimatedTransform doorTransform, AnimatedTransform door2Transform, AnimatedTransform wheelCoverTransform, AnimatedTransform wingFlapTransform,
+        LegAnimation legAnimation, int inputMask, int mode, boolean flareActive, float oilHeat, float waterHeat,
         /* Live per-link track angles, or null for static poses such as inventory renders. */
         @Nullable TrackLinkAnimation trackLinks)
     {
         public static final RenderState ITEM = new RenderState(0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 1F, 0F, 0F, 0F, 0F, 0F, 0F, AnimatedTransform.ZERO, AnimatedTransform.ZERO,
-            AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO, LegAnimation.ZERO, 0, 0, false, null);
+            AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO, AnimatedTransform.ZERO, LegAnimation.ZERO, 0, 0, false, 0F, 0F, null);
     }
 
     /**
@@ -100,6 +100,16 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
                 current[axis] = approachConfigured(current[axis], value(targetPosition, axis), value(positionRate, axis), elapsed);
                 current[axis + 3] = approachConfigured(current[axis + 3], value(targetRotation, axis), value(rotationRate, axis), elapsed);
             }
+        }
+
+        public boolean isAt(Vector3f position, Vector3f rotation)
+        {
+            for (int axis = 0; axis < 3; axis++)
+            {
+                if (current[axis] != value(position, axis) || current[axis + 3] != value(rotation, axis))
+                    return false;
+            }
+            return true;
         }
 
         public float position(int axis, float partialTick)

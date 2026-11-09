@@ -212,6 +212,8 @@ neoForge {
 sourceSets {
     // flan/ was the old copy target of run/flan; packsManagerJar now bundles run/flan directly.
     packsmanager.resources.exclude 'flan/**'
+    // Models Tyrants and Plebeians expects from the mod; shipped in the main jar until that pack has its own mod.
+    tapcompat {}
 }
 
 // Development-only files never ship in any jar.
@@ -242,6 +244,7 @@ def configureModSourceSet = { SourceSet sourceSet, String modId ->
 }
 
 configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
+configureModSourceSet(sourceSets.tapcompat, mod_id)
 
 /*
  * Registers an optional module described by src/<module>/fmu-module.gradle.
@@ -253,6 +256,7 @@ configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
  */
 ext.fmuModuleJars = []
 ext.fmuModulePublishing = [:]
+ext.fmuModuleChangelogs = []
 ext.registerFmuModule = { Map module ->
     def missing = ['sourceSet', 'modId', 'jarTask', 'displayName', 'archiveVersion'].findAll { !module[it]?.toString()?.trim() }
     if (missing)
@@ -267,6 +271,8 @@ ext.registerFmuModule = { Map module ->
     File directory = file("src/${module.directory ?: name}")
     if (!directory.isDirectory())
         throw new GradleException("FMU module directory does not exist: ${directory}")
+    if (new File(directory, 'CHANGELOG.md').isFile())
+        fmuModuleChangelogs << [name: name.capitalize(), modId: modId, version: moduleVersion, file: "src/${module.directory ?: name}/CHANGELOG.md".toString()]
     if (name in sourceSets.names)
         throw new GradleException("FMU module source set '${name}' is already registered")
 
@@ -455,6 +461,7 @@ neoForge.ideSyncTask generateModMetadata
 tasks.named('jar', Jar) {
     // The API package is MIT licensed and ships inside this jar, so its notice must too.
     from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
+    from(sourceSets.tapcompat.output)
     manifest {
         attributes([
                 'Specification-Title'     : mod_id,
@@ -610,6 +617,7 @@ tasks.withType(PublishToMavenRepository).configureEach { PublishToMavenRepositor
 // Each checkout publishes only its own Minecraft version and loader.
 ext.curseforgeModLoader = 'NeoForge'
 apply from: 'gradle/curseforge.gradle'
+apply from: 'gradle/changelog.gradle'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

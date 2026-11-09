@@ -121,6 +121,7 @@ public final class KeyInputHandler
     private static final KeyMapping controlModeKey = key("plane.control_mode", InputConstants.KEY_C, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping gearKey = key("plane.gear", InputConstants.KEY_G, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping airBrakeKey = key("plane.air_brake", InputConstants.KEY_V, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping afterburnerKey = key("plane.afterburner", InputConstants.KEY_O, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping modeKey = key("plane.mode", InputConstants.KEY_J, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping driveablePlayerInventoryKey = key("driveable.player_inventory", InputConstants.KEY_Z, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
 
@@ -135,7 +136,7 @@ public final class KeyInputHandler
         changeSeatKey, doorKey, engineKey, flareKey, repairKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
     /** Binds that claim their key while the player is at the controls of an aircraft. */
     private static final List<KeyMapping> AIRCRAFT_BINDS = List.of(pitchDownKey, pitchUpKey, yawLeftKey, yawRightKey, rollLeftKey, rollRightKey, throttleUpKey, throttleDownKey, controlModeKey,
-        gearKey, airBrakeKey, modeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, engineKey, flareKey, repairKey,
+        gearKey, airBrakeKey, afterburnerKey, modeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, engineKey, flareKey, repairKey,
         driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
     /** Binds that claim their key while the player is at the controls of anything else. */
     private static final List<KeyMapping> GROUND_BINDS = List.of(driveForwardKey, driveBackwardKey, steerLeftKey, steerRightKey, brakeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey,
@@ -149,7 +150,7 @@ public final class KeyInputHandler
      * but not consumeClick, so a press made outside the context stays queued and
      * would fire the moment the player mounts. These are drained instead.
      */
-    private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, changeSeatKey, doorKey, engineKey, flareKey, repairKey, controlModeKey, gearKey, airBrakeKey, modeKey,
+    private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, changeSeatKey, doorKey, engineKey, flareKey, repairKey, controlModeKey, gearKey, airBrakeKey, afterburnerKey, modeKey,
         driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
 
     private static final int[] LEGACY_KEYS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 34};
@@ -254,6 +255,7 @@ public final class KeyInputHandler
         register.accept(controlModeKey);
         register.accept(gearKey);
         register.accept(airBrakeKey);
+        register.accept(afterburnerKey);
         register.accept(modeKey);
         register.accept(driveablePlayerInventoryKey);
     }
@@ -557,6 +559,8 @@ public final class KeyInputHandler
                 edgeMask |= DriveableInput.TOGGLE_GEAR;
             if (airBrakeKey.consumeClick())
                 edgeMask |= DriveableInput.TOGGLE_AIR_BRAKE;
+            if (afterburnerKey.consumeClick())
+                edgeMask |= DriveableInput.TOGGLE_AFTERBURNER;
             if (doorKey.consumeClick())
                 edgeMask |= DriveableInput.TOGGLE_DOOR;
             if (engineKey.consumeClick() && (driveable instanceof Vehicle || driveable instanceof Plane))

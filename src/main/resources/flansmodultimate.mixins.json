@@ -11,6 +11,7 @@
     "FoodDataMixin",
     "LevelDriveableHullsMixin",
     "LivingEntityWaterWalkingMixin",
+    "PathPackResourcesMixin",
     "PlayerDriveableEdgeMixin",
     "ProjectileUtilAAGunHullMixin",
     "ServerGamePacketListenerDriveableMixin",

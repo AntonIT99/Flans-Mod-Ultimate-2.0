@@ -10,6 +10,7 @@ import com.flansmodultimate.client.gui.TeamsDeployScreen;
 import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
 import com.flansmodultimate.client.input.*;
+import com.flansmodultimate.client.model.ModelPreloader;
 import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.client.particle.WeaponShotEffects;
 import com.flansmodultimate.client.render.CustomRenderType;
@@ -250,6 +251,7 @@ public final class ClientEventHandler
         DriveableDamageEffects.tickClient();
         AircraftCockpit.tick();
         DistantHorizonsClient.tick();
+        ModelPreloader.tick();
     }
 
     /** Runs once per rendered frame, before the frame, with the main render target bound. */
@@ -335,7 +337,7 @@ public final class ClientEventHandler
         boolean serverHidesScopedCrosshair = multiplayer && ModCommonConfig.get().disableCrosshairWhileScoped();
         // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
-        boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
+        boolean gunConfigHidesCrosshair = ModCommonConfig.get().allowGunCrosshairOverride() && ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
         return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
             || (ModClient.getCurrentScope() != null && (ModClient.getCurrentScope().hasZoomOverlay() || serverHidesScopedCrosshair || !ModClientConfig.get().showCrosshairWhileScoped))
             || gunConfigHidesCrosshair || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);

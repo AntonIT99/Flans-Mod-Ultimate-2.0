@@ -47,7 +47,7 @@ public enum EnumDriveablePart
                                     "Armor (Extra 5)"), GENERIC_6(new EnumDriveablePart[]{}, "generic6", "Armor (Extra 6)"), GENERIC_7(new EnumDriveablePart[]{}, "generic7",
                                         "Armor (Extra 7)"), GENERIC_8(new EnumDriveablePart[]{}, "generic8", "Armor (Extra 8)"), GENERIC_9(new EnumDriveablePart[]{}, "generic9",
                                             "Armor (Extra 9)"), BIAS(new EnumDriveablePart[]{}, "russianBias", "Stalinium"), ERA_2(new EnumDriveablePart[]{}, "ERA2",
-                                                "More ERA"), ERA_3(new EnumDriveablePart[]{}, "ERA3", "Even More ERA"), INFANTRY(new EnumDriveablePart[]{}, "infantry",
+                                                "More ERA"), ERA_3(new EnumDriveablePart[]{}, "ERA3", "Even More ERA"), ERA_1(new EnumDriveablePart[]{}, "ERA1", "Extra ERA"), INFANTRY(new EnumDriveablePart[]{}, "infantry",
                                                     "Meat Shield"), RIGHT_SKIRT(new EnumDriveablePart[]{}, "rightSkirt", "Skirt (Right)"), LEFT_SKIRT(new EnumDriveablePart[]{},
                                                         "leftSkirt", "Skirt (Left)"), SHIELD(new EnumDriveablePart[]{}, "shield", "Energy Shield"),
 
@@ -196,7 +196,7 @@ public enum EnumDriveablePart
     CORE(new EnumDriveablePart[]{BAY, LEFT_WING, RIGHT_WING, NOSE, TURRET, CORE_WHEEL, LEFT_ARM, RIGHT_ARM, HEAD, HIPS, BLADES, SKIDS, BACK_WHEEL, FRONT_WHEEL, BACK_LEFT_WHEEL,
         FRONT_LEFT_WHEEL, BACK_RIGHT_WHEEL, FRONT_RIGHT_WHEEL, LEFT_TRACK, RIGHT_TRACK, TRAILER, HARVESTER, AIRFRAME, FRONTAL_ARMOR, LEFTSIDE_ARMOR, RIGHTSIDE_ARMOR,
         ADDITIONAL_ARMOR, ERA, APS, ADS, COMPOSITE, COMPOSITE_2, SPACED, COMPOSITE_LEFT, COMPOSITE_RIGHT, GENERIC_0, GENERIC_1, GENERIC_2, GENERIC_3, GENERIC_4, GENERIC_5,
-        GENERIC_6, GENERIC_7, GENERIC_8, GENERIC_9, BIAS, ERA_2, ERA_3, INFANTRY, RIGHT_SKIRT, LEFT_SKIRT, SHIELD, TURRET_ARMOR, MORE_TURRET_ARMOR, TURRET_SIDE, TURRET_SKIRT,
+        GENERIC_6, GENERIC_7, GENERIC_8, GENERIC_9, BIAS, ERA_1, ERA_2, ERA_3, INFANTRY, RIGHT_SKIRT, LEFT_SKIRT, SHIELD, TURRET_ARMOR, MORE_TURRET_ARMOR, TURRET_SIDE, TURRET_SKIRT,
         TURRET_WEAK, TURRET_WEAK_2, WEAK_SPOT, WEAK_SPOT_2, WEAK_SPOT_3,
 
         BOW, STERN, CONNING_TOWER, CONNING_TOWER_AFT, BRIDGE, RADAR_1, RADAR_2, RADAR_3, RADAR_4, DIRECTOR_1, DIRECTOR_2, DIRECTOR_3, DIRECTOR_4, DIRECTOR_5, DIRECTOR_6,
@@ -231,6 +231,8 @@ public enum EnumDriveablePart
         parts.put("engine1", ENGINE);
         parts.put("engine7", ENGINE_ROOM_7);
         parts.put("engine8", ENGINE_ROOM_8);
+        parts.put("turretweak", TURRET_WEAK);
+        parts.put("turretweak2", TURRET_WEAK_2);
         BY_NAME = Collections.unmodifiableMap(parts);
     }
 

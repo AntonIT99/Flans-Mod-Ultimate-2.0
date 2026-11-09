@@ -36,7 +36,7 @@ Fire 0
 
 // Sounds and particles
 SmokeTrail True
-ExplodeParticles 6
+NumExplodeParticles 6
 ExplodeParticleType explode
 FlareParticleCount 3
 DebrisParticleCount 2

@@ -36,8 +36,21 @@ public final class ModelClassResolver
 
     public static ModelClassLocation find(IContentProvider preferredContentPack, String modelClassName, boolean searchOtherContentPacks)
     {
-        if (ClassLoaderUtils.hasClassFile(preferredContentPack, modelClassName))
-            return new ModelClassLocation(preferredContentPack, modelClassName, true);
+        String ownClassName = ClassLoaderUtils.ownClassName(preferredContentPack, modelClassName);
+        if (ownClassName != null)
+            return new ModelClassLocation(preferredContentPack, ownClassName, true);
+
+        String movedClassName = TapCompatModels.movedClassName(modelClassName);
+        if (movedClassName != null && TapCompatModels.isTapPack(preferredContentPack))
+        {
+            String movedOwnClassName = ClassLoaderUtils.ownClassName(preferredContentPack, movedClassName);
+            if (movedOwnClassName != null)
+                return new ModelClassLocation(preferredContentPack, movedOwnClassName, true);
+        }
+
+        String tapCompatClassName = TapCompatModels.compatClassName(modelClassName);
+        if (tapCompatClassName != null && TapCompatModels.isTapPack(preferredContentPack) && ClassLoaderUtils.isModClass(tapCompatClassName))
+            return new ModelClassLocation(preferredContentPack, tapCompatClassName, false);
 
         if (!searchOtherContentPacks)
             return new ModelClassLocation(preferredContentPack, modelClassName, false);

@@ -118,6 +118,20 @@ public class PlaneType extends DriveableType
     protected Vector3f tailWheelRot2 = new Vector3f();
     protected Vector3f tailWheelRate = new Vector3f();
     protected Vector3f tailWheelRotRate = new Vector3f();
+    protected Vector3f wheelCoverPos1 = new Vector3f();
+    protected Vector3f wheelCoverPos2 = new Vector3f();
+    protected Vector3f wheelCoverRot1 = new Vector3f();
+    protected Vector3f wheelCoverRot2 = new Vector3f();
+    protected Vector3f wheelCoverRate = new Vector3f();
+    protected Vector3f wheelCoverRotRate = new Vector3f();
+    protected Vector3f wingFlapPos1 = new Vector3f();
+    protected Vector3f wingFlapPos2 = new Vector3f();
+    protected Vector3f wingFlapRot1 = new Vector3f();
+    protected Vector3f wingFlapRot2 = new Vector3f();
+    protected Vector3f wingFlapRate = new Vector3f();
+    protected Vector3f wingFlapRotRate = new Vector3f();
+    /** Retracts the wing wheels before closing their covers, and opens the covers before lowering the wheels */
+    protected boolean gearCoverPriority;
     protected Vector3f doorPos1 = new Vector3f();
     protected Vector3f doorPos2 = new Vector3f();
     protected Vector3f doorRot1 = new Vector3f();
@@ -151,6 +165,20 @@ public class PlaneType extends DriveableType
      * {@code RealAirBrakeAreaM2}, or from wing area when that is not researched.
      */
     protected boolean hasAirBrake = true;
+    private static final float KILOWATTS_PER_HORSEPOWER = 0.7457F;
+    private static final float KILOWATTS_PER_PS = 0.7355F;
+
+    protected boolean hasAfterBurner;
+    protected String afterBurnName = "Afterburner";
+    /** Fuel burned while lit, relative to the same throttle without it */
+    protected float afterBurnFuelPenalty = 1.5F;
+    protected boolean afterburnWing;
+    protected boolean afterburnWingFlipped;
+    /** Rating without the afterburner or war emergency power; zero when not authored */
+    protected float realDryThrustKn;
+    protected float realDryPowerKw;
+    /** Legacy cruise speed as a share of top speed; zero when not authored */
+    protected float afterburnCruiseRatio;
     protected float airBrakeStrengthMultiplier = 1F;
     protected boolean hasWing;
     protected boolean foldWingForLand;
@@ -204,6 +232,21 @@ public class PlaneType extends DriveableType
         hasDoor = readValue("HasDoor", hasDoor, file);
         hasAirBrake = readValue("HasAirBrake", mode != EnumPlaneMode.HELI, file);
         hasAirBrake = readValue("AirBrake", hasAirBrake, file);
+        hasAfterBurner = readValue("HasAfterBurner", hasAfterBurner, file);
+        afterBurnName = readValue("AfterBurnName", afterBurnName, file);
+        afterBurnFuelPenalty = Math.max(0F, readValue("AfterBurnFuelPenalty", afterBurnFuelPenalty, file));
+        afterburnWing = readValue("AfterburnWing", afterburnWing, file);
+        afterburnWingFlipped = readValue("AfterburnWingFlipped", afterburnWingFlipped, file);
+        realDryThrustKn = readValue("RealDryThrustKn", realDryThrustKn, file);
+        realDryPowerKw = readValue("RealDryPowerKw", 0F, file);
+        if (realDryPowerKw <= 0F)
+            realDryPowerKw = readValue("RealDryPowerHp", 0F, file) * KILOWATTS_PER_HORSEPOWER;
+        if (realDryPowerKw <= 0F)
+            realDryPowerKw = readValue("RealDryPowerPS", 0F, file) * KILOWATTS_PER_PS;
+        Float cruiseSpeed = readFloat("cruiseSpeed", file);
+        Float topSpeed = readFloat("maxSpeed", file);
+        if (cruiseSpeed != null && topSpeed != null && cruiseSpeed > 0F && topSpeed > 0F)
+            afterburnCruiseRatio = Math.min(1F, cruiseSpeed / topSpeed);
         airBrakeStrengthMultiplier = readValue("AirBrakeStrengthMultiplier", airBrakeStrengthMultiplier, file);
         if (!Float.isFinite(airBrakeStrengthMultiplier) || airBrakeStrengthMultiplier < 0F)
             airBrakeStrengthMultiplier = 1F;
@@ -242,6 +285,19 @@ public class PlaneType extends DriveableType
         tailWheelRot2 = readVector("TailWheelRotation2", tailWheelRot2, file);
         tailWheelRate = readVector("TailWheelRate", tailWheelRate, file);
         tailWheelRotRate = readVector("TailWheelRotRate", tailWheelRotRate, file);
+        wheelCoverPos1 = readVector("WheelCoverPosition1", wheelCoverPos1, file);
+        wheelCoverPos2 = readVector("WheelCoverPosition2", wheelCoverPos2, file);
+        wheelCoverRot1 = readVector("WheelCoverRotation1", wheelCoverRot1, file);
+        wheelCoverRot2 = readVector("WheelCoverRotation2", wheelCoverRot2, file);
+        wheelCoverRate = readVector("WheelCoverRate", wheelCoverRate, file);
+        wheelCoverRotRate = readVector("WheelCoverRotRate", wheelCoverRotRate, file);
+        wingFlapPos1 = readVector("WingFlapPosition1", wingFlapPos1, file);
+        wingFlapPos2 = readVector("WingFlapPosition2", wingFlapPos2, file);
+        wingFlapRot1 = readVector("WingFlapRotation1", wingFlapRot1, file);
+        wingFlapRot2 = readVector("WingFlapRotation2", wingFlapRot2, file);
+        wingFlapRate = readVector("WingFlapRate", wingFlapRate, file);
+        wingFlapRotRate = readVector("WingFlapRotRate", wingFlapRotRate, file);
+        gearCoverPriority = readValue("GearCoverPriority", gearCoverPriority, file);
         doorPos1 = readVector("DoorPosition1", doorPos1, file);
         doorPos2 = readVector("DoorPosition2", doorPos2, file);
         doorRot1 = readVector("DoorRotation1", doorRot1, file);
@@ -266,10 +322,34 @@ public class PlaneType extends DriveableType
         return new LegacyPhysicsHints(false, false, maxNegativeThrottle, floatOnWater, newFlightControl, false);
     }
 
+    /** Restores the space some definitions lack between the z coordinate and the part name. */
+    private static String[] repairPropellerLine(String key, String[] values, TypeFile file)
+    {
+        if (values == null || values.length != 5)
+            return values;
+        String[] zAndPart = splitNumberThenName(values[3]);
+        if (zAndPart == null || EnumDriveablePart.getPart(zAndPart[1]) == null)
+            return values;
+        logRecoverable(key + ": missing space in '" + values[3] + "'", file);
+        return new String[]{values[0], values[1], values[2], zAndPart[0], zAndPart[1], values[4]};
+    }
+
+    /** Whether the plane defines a landing flap movement that its pilot can toggle */
+    public boolean hasLandingFlaps()
+    {
+        return !isZero(wingFlapRate) || !isZero(wingFlapRotRate);
+    }
+
+    private static boolean isZero(Vector3f vector)
+    {
+        return vector.x == 0F && vector.y == 0F && vector.z == 0F;
+    }
+
     private void readPropellers(String key, List<Propeller> destination, TypeFile file)
     {
-        for (String[] values : readValuesInLines(key, file).orElse(List.of()))
+        for (String[] line : readValuesInLines(key, file).orElse(List.of()))
         {
+            String[] values = repairPropellerLine(key, line, file);
             if (values == null || values.length < 6)
             {
                 logError(key + " expects id x y z part item", file);

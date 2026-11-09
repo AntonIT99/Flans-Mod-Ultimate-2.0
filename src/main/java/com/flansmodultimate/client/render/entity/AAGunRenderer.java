@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render.entity;
 
 import com.flansmod.client.model.ModelAAGun;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.model.ModelPreloader;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.types.AAGunType;
@@ -27,7 +28,7 @@ public class AAGunRenderer extends FlanEntityRenderer<AAGun>
     public void render(@NotNull AAGun aaGun, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
         AAGunType type = aaGun.getConfigType();
-        if (type == null)
+        if (type == null || ModelPreloader.isLoadPending(type))
             return;
 
         if (!(ModelCache.getOrLoadTypeModel(type) instanceof ModelAAGun model))

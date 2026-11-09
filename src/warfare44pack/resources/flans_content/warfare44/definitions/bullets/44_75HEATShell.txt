@@ -45,7 +45,7 @@ Fuse 500
 SmokeTrail True
 TrailParticleType flansmod.fmflame
 FlakParticles 0
-ExplodeParticles 10
+NumExplodeParticles 10
 FlareParticleCount 8
 DebrisParticleCount 4
 

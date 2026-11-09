@@ -284,16 +284,27 @@ public abstract class InfoType implements IContentType
                 recipeTokens.addAll(Arrays.asList(split).subList(1, split.length));
                 shapeless = false;
 
+                int consumedRows = 0;
+                boolean gridEnded = false;
                 for (int row = 0; row < 3; row++)
                 {
-                    String recipeRow = getRecipeRow((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY);
+                    String recipeRow = gridEnded ? StringUtils.EMPTY : getRecipeRow((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY);
+                    if (isDefinitionLine(recipeRow))
+                    {
+                        TypeReaderUtils.logRecoverable("Recipe of " + originalShortName + " has fewer than three rows; '" + recipeRow + "' is not part of its grid", file);
+                        gridEnded = true;
+                        recipeRow = StringUtils.EMPTY;
+                    }
+                    else if (!gridEnded)
+                        consumedRows++;
+
                     if (hasRecipeContentAfterGrid(recipeRow))
                         TypeReaderUtils.logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
 
                     recipePattern.add(padRecipeRow(recipeRow));
                 }
                 addToRecipeGrid(recipePattern);
-                i += 3;
+                i += consumedRows;
             }
             else
             {
@@ -353,6 +364,12 @@ public abstract class InfoType implements IContentType
         if (row.regionMatches(true, 0, KEY_RECIPE, 0, KEY_RECIPE.length()) && row.length() > KEY_RECIPE.length() && Character.isWhitespace(row.charAt(KEY_RECIPE.length())))
             return row.substring(KEY_RECIPE.length() + 1);
         return row;
+    }
+
+    /** A grid row holds at most three symbols, so a longer first word starts an ordinary definition line. */
+    private static boolean isDefinitionLine(String recipeRow)
+    {
+        return WHITESPACE.split(recipeRow.trim())[0].length() > 3;
     }
 
     private static boolean hasRecipeContentAfterGrid(String recipeRow)
@@ -459,7 +476,14 @@ public abstract class InfoType implements IContentType
         }
         catch (NumberFormatException exception)
         {
-            TypeReaderUtils.logError("Incorrect format for '" + key + "': expected an integer but found '" + configuredLength + "'", file);
+            String message = "Incorrect format for '" + key + "': expected an integer but found '" + configuredLength + "'";
+            Integer recovered = TypeReaderUtils.recoverInteger(configuredLength);
+            if (recovered != null)
+            {
+                TypeReaderUtils.logRecoverable(message + "; using '" + recovered + "'", file);
+                return recovered;
+            }
+            TypeReaderUtils.logError(message, file);
             return defaultValue;
         }
     }
@@ -576,6 +600,44 @@ public abstract class InfoType implements IContentType
     }
 
     /**
+     * Whether a {@code Model} entry can name a class at all. Definitions are written by hand, and a name
+     * carrying characters no Java name holds, such as a colon or a path separator, names no class file in
+     * any pack; resolving it anyway would build a path that platforms like Windows reject outright.
+     * <p>
+     * Leading digits stay allowed: the resolved class names prefix the entry with {@code Model}.
+     */
+    static boolean isValidModelName(String modelName)
+    {
+        if (modelName.isEmpty() || modelName.startsWith(".") || modelName.endsWith(".") || modelName.contains(".."))
+            return false;
+
+        for (int i = 0; i < modelName.length(); i++)
+        {
+            char character = modelName.charAt(i);
+            if (character != '.' && !Character.isJavaIdentifierPart(character))
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Drops the characters a {@code Model} entry cannot hold, so a name a pack author pasted its display
+     * name into, such as {@code 155mm_3rdYear:Type} for {@code Model155mm_3rdYearType}, still finds its
+     * class. Only characters no class and no file name can carry are removed, never legal ones.
+     */
+    private static String repairModelName(String modelName)
+    {
+        StringBuilder repaired = new StringBuilder(modelName.length());
+        for (int i = 0; i < modelName.length(); i++)
+        {
+            char character = modelName.charAt(i);
+            if (character == '.' || Character.isJavaIdentifierPart(character))
+                repaired.append(character);
+        }
+        return repaired.toString();
+    }
+
+    /**
      * Resolves the model class name a {@code Model} entry refers to inside its own content pack. Content
      * packs are free to ship equally named model classes, every pack loads its own class files.
      */
@@ -584,7 +646,19 @@ public abstract class InfoType implements IContentType
         String modelClassName = StringUtils.EMPTY;
         if (StringUtils.isNotBlank(modelName) && !modelName.equalsIgnoreCase("null") && !modelName.equalsIgnoreCase("none"))
         {
-            String[] modelNameSplit = modelName.split("\\.");
+            String resolvedModelName = modelName;
+            if (!isValidModelName(resolvedModelName))
+            {
+                resolvedModelName = repairModelName(modelName);
+                if (!isValidModelName(resolvedModelName))
+                {
+                    FlansLog.log.error("'{}' of content pack {} cannot name a model class; no model is loaded for it.", modelName, contentPack.getName());
+                    return StringUtils.EMPTY;
+                }
+                FlansLog.log.warn("Model '{}' of content pack {} carries characters no class name holds; reading it as '{}'.", modelName, contentPack.getName(), resolvedModelName);
+            }
+
+            String[] modelNameSplit = resolvedModelName.split("\\.");
             Optional<FileSystem> fs = Optional.ofNullable(FileUtils.createFileSystem(contentPack));
 
             if (modelNameSplit.length > 1)
@@ -594,7 +668,7 @@ public abstract class InfoType implements IContentType
                 modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + MODEL_CLASS_PREFIX + modelSimpleName;
 
                 // Try 1.12.2 package format
-                if (!Files.exists(contentPack.getModelPath(modelClassName, fs.orElse(null))))
+                if (!contentPack.hasModelPath(modelClassName, fs.orElse(null)))
                 {
                     if (modelNameSplit[0].equals("jamespostmodernweapons"))
                         modelNameSplit[0] = "modernweapons";
@@ -623,13 +697,13 @@ public abstract class InfoType implements IContentType
                     }
 
                     // Fallback to default
-                    if (!Files.exists(contentPack.getModelPath(modelClassName, fs.orElse(null))))
+                    if (!contentPack.hasModelPath(modelClassName, fs.orElse(null)))
                         modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + MODEL_CLASS_PREFIX + modelSimpleName;
                 }
             }
             else
             {
-                modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model.Model" + modelName;
+                modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model.Model" + resolvedModelName;
             }
 
             FileUtils.closeFileSystem(fs.orElse(null), contentPack);

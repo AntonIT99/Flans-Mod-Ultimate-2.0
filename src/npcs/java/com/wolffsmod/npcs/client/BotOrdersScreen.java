@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -32,7 +33,7 @@ public final class BotOrdersScreen extends Screen
     private static final int GAP = 4;
     private static final int REFRESH_TICKS = 40;
     /** Rows of the order column above the objectives: orders, then leading a squad. */
-    private static final int LEADING_ROWS = 3;
+    private static final int LEADING_ROWS = 5;
     private static final BotLeaders.SpawnChoice[] SPAWN_CHOICES = BotLeaders.SpawnChoice.values();
     /** Pixels around a squad or an objective on the map within which a click picks it. */
     private static final int PICK_RADIUS = 6;
@@ -52,6 +53,8 @@ public final class BotOrdersScreen extends Screen
     private int page;
     private boolean map;
     private int ticks;
+    @Nullable
+    private UUID selectedTransport;
     /** The corner and the scale of the world area the map shows, fitted again to every new state. */
     private double minX;
     private double minZ;
@@ -124,7 +127,9 @@ public final class BotOrdersScreen extends Screen
         {
             BotOrdersStatePacket.Squad squad = squads.get(page * ROWS + i);
             String mine = squad.mine() ? "* " : "";
-            addRow(left, i + 1, squad.id(), Component.literal(mine + squad.name() + " x" + squad.strength() + " - " + squad.task() + " (" + squad.distance() + "m)"));
+            Component activity = squad.transportPhase().isEmpty() ? Component.literal(squad.task())
+                : Component.translatable("wolffsmodnpcs.orders.transport.progress." + squad.transportPhase(), squad.aboard(), squad.passengers());
+            addRow(left, i + 1, squad.id(), Component.literal(mine + squad.name() + " x" + squad.strength() + " - ").append(activity).append(" (" + squad.distance() + "m)"));
         }
         int below = TOP + (ROWS + 1) * ROW_HEIGHT;
         addRenderableWidget(Button.builder(Component.literal("<"), button -> turn(-1)).bounds(left, below, 20, 20).build()).active = page > 0;
@@ -138,7 +143,7 @@ public final class BotOrdersScreen extends Screen
         {
             selected = squadId;
             rebuildWidgets();
-        }).bounds(left, TOP + row * ROW_HEIGHT, LIST_WIDTH, 20).build());
+        }).bounds(left, TOP + row * ROW_HEIGHT, LIST_WIDTH, 20).tooltip(Tooltip.create(label)).build());
     }
 
     /** The orders: follow, hold and release, then attacking or defending each capture point of the round. */
@@ -148,6 +153,7 @@ public final class BotOrdersScreen extends Screen
         addOrder(right, 1, 0, PlayerOrder.Kind.HOLD, BotOrders.HERE, Component.translatable("wolffsmodnpcs.orders.hold"));
         addOrder(right, 0, 1, PlayerOrder.Kind.RELEASE, BotOrders.HERE, Component.translatable("wolffsmodnpcs.orders.release"));
         addLeading(right);
+        addTransport(right);
         List<BotOrdersStatePacket.Objective> objectives = state.objectives();
         for (int i = 0; i < objectives.size(); i++)
         {
@@ -155,6 +161,32 @@ public final class BotOrdersScreen extends Screen
             addOrder(right, 0, i + LEADING_ROWS, PlayerOrder.Kind.ATTACK, i, Component.translatable("wolffsmodnpcs.orders.attack", String.valueOf(objective.symbol())));
             addOrder(right, 1, i + LEADING_ROWS, PlayerOrder.Kind.DEFEND, i, Component.translatable("wolffsmodnpcs.orders.defend", String.valueOf(objective.symbol())));
         }
+    }
+
+    private void addTransport(int right)
+    {
+        List<BotOrdersStatePacket.Transport> choices = state.transports();
+        if (choices.stream().noneMatch(choice -> choice.id().equals(selectedTransport)))
+            selectedTransport = choices.isEmpty() ? null : choices.get(0).id();
+        BotOrdersStatePacket.Transport transport = choices.stream().filter(choice -> choice.id().equals(selectedTransport)).findFirst().orElse(null);
+        Component choice = transport == null ? Component.translatable("wolffsmodnpcs.orders.transport.no_vehicles")
+            : Component.translatable("wolffsmodnpcs.orders.transport.choice", transport.name(), transport.seats());
+        addRenderableWidget(Button.builder(choice, button ->
+        {
+            int index = 0;
+            while (index < choices.size() && !choices.get(index).id().equals(selectedTransport))
+                index++;
+            selectedTransport = choices.get((index + 1) % choices.size()).id();
+            rebuildWidgets();
+        }).bounds(right, TOP + 3 * ROW_HEIGHT, BUTTON_WIDTH * 2 + GAP, 20).build()).active = !choices.isEmpty();
+        BotOrdersStatePacket.Squad squad = state.squads().stream().filter(candidate -> candidate.id() == selected).findFirst().orElse(null);
+        boolean assigned = squad != null && !squad.transportPhase().isEmpty();
+        addRenderableWidget(Button.builder(Component.translatable("wolffsmodnpcs.orders.transport.board"), button -> send(
+            new BotOrderPacket(BotOrderPacket.Action.BOARD_TRANSPORT, selected, PlayerOrder.Kind.RELEASE, BotOrders.HERE, null, selectedTransport)))
+            .bounds(right, TOP + 4 * ROW_HEIGHT, BUTTON_WIDTH, 20).build()).active = squad != null && !assigned && transport != null;
+        addRenderableWidget(Button.builder(Component.translatable("wolffsmodnpcs.orders.transport.disembark"), button -> send(
+            new BotOrderPacket(BotOrderPacket.Action.DISEMBARK_TRANSPORT, selected, PlayerOrder.Kind.RELEASE, BotOrders.HERE, null)))
+            .bounds(right + BUTTON_WIDTH + GAP, TOP + 4 * ROW_HEIGHT, BUTTON_WIDTH, 20).build()).active = assigned;
     }
 
     /**

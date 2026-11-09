@@ -1,5 +1,6 @@
 package com.flansmodultimate.content;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.recipe.RecipeDataCompatibility;
 import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
 import com.flansmodultimate.common.types.InfoType;
@@ -11,6 +12,7 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static com.flansmodultimate.content.ContentPackPaths.*;
 
@@ -59,18 +61,31 @@ final class ContentPackAssets
         return !RecipeJsonGenerator.needsRegeneration(items, data) && !RecipeDataCompatibility.hasMissingCounterparts(data.getParent());
     }
 
-    static void generate(IContentProvider provider, List<InfoType> types, List<InfoType> items, List<InfoType> blocks, TextureReferences aliases)
+    /**
+     * Selects the lower-case archive entries the requested generation reads or may replace. Root files
+     * hold the alias maps and pack metadata.
+     */
+    static Predicate<String> generationInputs(boolean assets, boolean data, boolean sounds)
+    {
+        String assetsPrefix = "assets/" + FlansMod.FLANSMOD_ID + "/";
+        List<String> soundPrefixes = List.of(assetsPrefix + FOLDER_SOUND + "/", assetsPrefix + FOLDER_SOUNDS + "/");
+        Set<String> soundFiles = Set.of(assetsPrefix + "sounds.json", assetsPrefix + SoundLengthIndex.FILE_NAME);
+        return name -> name.indexOf('/') < 0 || (assets && name.startsWith(assetsPrefix)) || (data && name.startsWith("data/"))
+            || (sounds && (soundFiles.contains(name) || soundPrefixes.stream().anyMatch(name::startsWith)));
+    }
+
+    static void generate(IContentProvider provider, List<InfoType> types, List<InfoType> items, List<InfoType> blocks, TextureReferences aliases, ContentLoadingWorkers workers)
     {
         AliasFileManager.writeToAliasMappingFile(ARMOR_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(aliases.armor()));
         AliasFileManager.writeToAliasMappingFile(GUI_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(aliases.gui()));
         AliasFileManager.writeToAliasMappingFile(SKINS_TEXTURES_ALIAS_FILE, provider, DynamicReference.getAliasMapping(aliases.skins()));
         ContentPackModels.generate(provider, items, blocks);
         ContentPackLocalization.generate(provider, types);
-        copyItemIcons(provider);
-        copyBlockTextures(provider);
-        copyTextures(provider, FOLDER_TEXTURES_ARMOR, aliases.armor());
-        copyTextures(provider, FOLDER_TEXTURES_GUI, aliases.gui());
-        copyTextures(provider, FOLDER_TEXTURES_SKINS, aliases.skins());
+        copyItemIcons(provider, workers);
+        copyBlockTextures(provider, workers);
+        copyTextures(provider, FOLDER_TEXTURES_ARMOR, aliases.armor(), workers);
+        copyTextures(provider, FOLDER_TEXTURES_GUI, aliases.gui(), workers);
+        copyTextures(provider, FOLDER_TEXTURES_SKINS, aliases.skins(), workers);
         ContentPackSounds.generate(provider);
         writeGeneratedAssetsVersion(provider);
     }
@@ -90,25 +105,25 @@ final class ContentPackAssets
         }
     }
 
-    private static void copyItemIcons(IContentProvider provider)
+    private static void copyItemIcons(IContentProvider provider, ContentLoadingWorkers workers)
     {
         Path sourcePath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEMS);
         Path destPath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEM);
-        GeneratedTextureFiles.copy(sourcePath, destPath);
+        GeneratedTextureFiles.copy(sourcePath, destPath, Map.of(), false, workers);
     }
 
-    private static void copyBlockTextures(IContentProvider provider)
+    private static void copyBlockTextures(IContentProvider provider, ContentLoadingWorkers workers)
     {
         Path sourcePath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCKS);
         Path destPath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCK);
-        GeneratedTextureFiles.copy(sourcePath, destPath);
+        GeneratedTextureFiles.copy(sourcePath, destPath, Map.of(), false, workers);
     }
 
-    private static void copyTextures(IContentProvider provider, String folderName, Map<String, DynamicReference> aliasMapping)
+    private static void copyTextures(IContentProvider provider, String folderName, Map<String, DynamicReference> aliasMapping, ContentLoadingWorkers workers)
     {
         Path sourcePath = provider.getAssetsPath().resolve(folderName);
         Path destPath = provider.getAssetsPath().resolve(FOLDER_TEXTURES).resolve(folderName);
-        GeneratedTextureFiles.copy(sourcePath, destPath, aliasMapping, folderName.equals(FOLDER_TEXTURES_ARMOR));
+        GeneratedTextureFiles.copy(sourcePath, destPath, aliasMapping, folderName.equals(FOLDER_TEXTURES_ARMOR), workers);
     }
 
     static void createMcMeta(IContentProvider provider)

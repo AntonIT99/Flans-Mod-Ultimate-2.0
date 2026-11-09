@@ -27,6 +27,12 @@ public final class VehicleOpticsReader
 
     public static VehicleOptics read(TypeFile file, List<SeatInfo> seats, Consumer<String> warning)
     {
+        return read(file, seats, warning, warning);
+    }
+
+    /** @param recoverable receives issues that have no effect on the driveable */
+    public static VehicleOptics read(TypeFile file, List<SeatInfo> seats, Consumer<String> warning, Consumer<String> recoverable)
+    {
         VehicleOptics driver = new VehicleOptics();
         driver.driverDefinition = true;
         String passengerOverlay = "";
@@ -98,6 +104,11 @@ public final class VehicleOpticsReader
                     }
                 }
             }
+            catch (UnknownSeatException ex)
+            {
+                // Optics of a seat the driveable does not have can never be used.
+                recoverable.accept("Invalid optics definition: " + line + " (" + ex.getMessage() + ")");
+            }
             catch (IllegalArgumentException | IndexOutOfBoundsException ex)
             {
                 warning.accept("Invalid optics definition: " + line + " (" + ex.getMessage() + ")");
@@ -135,7 +146,7 @@ public final class VehicleOpticsReader
     {
         int id = Integer.parseInt(value);
         if (id < 0 || id >= seats.size() || seats.get(id) == null)
-            throw new IllegalArgumentException("Unknown seat " + id);
+            throw new UnknownSeatException(id);
         return seats.get(id).getOptics();
     }
 
@@ -161,5 +172,13 @@ public final class VehicleOpticsReader
         if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z))
             throw new IllegalArgumentException("Non-finite optics camera position");
         return new Vector3f(x / 16F, y / 16F, z / 16F);
+    }
+
+    private static final class UnknownSeatException extends IllegalArgumentException
+    {
+        private UnknownSeatException(int id)
+        {
+            super("Unknown seat " + id);
+        }
     }
 }

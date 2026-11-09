@@ -4,6 +4,7 @@ import com.flansmod.client.model.*;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
+import com.flansmodultimate.common.driveables.physics.EngineGaugeHeat;
 import com.flansmodultimate.common.driveables.visual.*;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.GunItem;
@@ -45,6 +46,9 @@ public final class DriveableAnimationHistory
     private final ModelDriveable.AnimatedTransform tailWheelTransform = new ModelDriveable.AnimatedTransform();
     private final ModelDriveable.AnimatedTransform doorTransform = new ModelDriveable.AnimatedTransform();
     private final ModelDriveable.AnimatedTransform door2Transform = new ModelDriveable.AnimatedTransform();
+    private final EngineGaugeHeat gaugeHeat = new EngineGaugeHeat();
+    private final ModelDriveable.AnimatedTransform wheelCoverTransform = new ModelDriveable.AnimatedTransform();
+    private final ModelDriveable.AnimatedTransform wingFlapTransform = new ModelDriveable.AnimatedTransform();
     private final ModelDriveable.LegAnimation legAnimation = new ModelDriveable.LegAnimation();
     private final TrackLinkAnimation trackLinks = new TrackLinkAnimation();
     final GunAnimations leftGunAnimations = new GunAnimations();
@@ -134,6 +138,8 @@ public final class DriveableAnimationHistory
         previousRightTrack = rightTrack;
         previousLegSwing = legSwing;
 
+        gaugeHeat.advance(driveable.getThrottle(), driveable instanceof Driveable engine && engine.isEngineActive(), type instanceof PlaneType boosted && boosted.isHasAfterBurner(),
+            driveable instanceof PlaneVisual plane && plane.isAfterburnerBurning(), elapsed);
         float amount = TRANSITION_PER_TICK * elapsed;
         throttle = approach(throttle, driveable.getThrottle(), amount);
         steering = approach(steering, targetSteering(driveable.getInputMask()), amount * 90F);
@@ -209,6 +215,9 @@ public final class DriveableAnimationHistory
             wingWheelTransform.snap(gearDeployed ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(), gearDeployed ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2());
             bodyWheelTransform.snap(gearDeployed ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(), gearDeployed ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2());
             tailWheelTransform.snap(gearDeployed ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(), gearDeployed ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2());
+            wheelCoverTransform.snap(gearDeployed ? planeType.getWheelCoverPos1() : planeType.getWheelCoverPos2(), gearDeployed ? planeType.getWheelCoverRot1() : planeType.getWheelCoverRot2());
+            boolean flapsDown = driveable instanceof PlaneVisual plane && plane.isLandingFlapsDeployed();
+            wingFlapTransform.snap(flapsDown ? planeType.getWingFlapPos2() : planeType.getWingFlapPos1(), flapsDown ? planeType.getWingFlapRot2() : planeType.getWingFlapRot1());
             doorTransform.snap(doorOpen ? planeType.getDoorPos2() : planeType.getDoorPos1(), doorOpen ? planeType.getDoorRot2() : planeType.getDoorRot1());
         }
         else if (type instanceof VehicleType vehicleType)
@@ -217,6 +226,19 @@ public final class DriveableAnimationHistory
             doorTransform.snap(doorOpen ? vehicleType.getDoorPos2() : vehicleType.getDoorPos1(), doorOpen ? vehicleType.getDoorRot2() : vehicleType.getDoorRot1());
             door2Transform.snap(doorOpen ? vehicleType.getDoor2Pos2() : vehicleType.getDoor2Pos1(), doorOpen ? vehicleType.getDoor2Rot2() : vehicleType.getDoor2Rot1());
         }
+    }
+
+    /** With GearCoverPriority the covers open before the wing wheels come down, and close after they are up. */
+    private void advanceWheelCovers(PlaneType type, boolean gearDeployed, int elapsed)
+    {
+        boolean wheelsMove = !type.isGearCoverPriority() || !gearDeployed || wheelCoverTransform.isAt(type.getWheelCoverPos1(), type.getWheelCoverRot1());
+        boolean coversMove = !type.isGearCoverPriority() || gearDeployed || wingWheelTransform.isAt(type.getWingWheelPos2(), type.getWingWheelRot2());
+        if (wheelsMove)
+            wingWheelTransform.advance(gearDeployed ? type.getWingWheelPos1() : type.getWingWheelPos2(), gearDeployed ? type.getWingWheelRot1() : type.getWingWheelRot2(), type.getWingWheelRate(),
+                type.getWingWheelRotRate(), elapsed);
+        if (coversMove)
+            wheelCoverTransform.advance(gearDeployed ? type.getWheelCoverPos1() : type.getWheelCoverPos2(), gearDeployed ? type.getWheelCoverRot1() : type.getWheelCoverRot2(), type.getWheelCoverRate(),
+                type.getWheelCoverRotRate(), elapsed);
     }
 
     private void advanceTransforms(DriveableVisual driveable, DriveableType type, int elapsed)
@@ -228,8 +250,10 @@ public final class DriveableAnimationHistory
             boolean doorOpen = driveable.isDoorOpen();
             wingTransform.advance(folded ? planeType.getWingPos2() : planeType.getWingPos1(), folded ? planeType.getWingRot2() : planeType.getWingRot1(), planeType.getWingRate(),
                 planeType.getWingRotRate(), elapsed);
-            wingWheelTransform.advance(gearDeployed ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(), gearDeployed ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2(),
-                planeType.getWingWheelRate(), planeType.getWingWheelRotRate(), elapsed);
+            advanceWheelCovers(planeType, gearDeployed, elapsed);
+            boolean flapsDown = driveable instanceof PlaneVisual plane && plane.isLandingFlapsDeployed();
+            wingFlapTransform.advance(flapsDown ? planeType.getWingFlapPos2() : planeType.getWingFlapPos1(), flapsDown ? planeType.getWingFlapRot2() : planeType.getWingFlapRot1(), planeType.getWingFlapRate(),
+                planeType.getWingFlapRotRate(), elapsed);
             bodyWheelTransform.advance(gearDeployed ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(), gearDeployed ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2(),
                 planeType.getBodyWheelRate(), planeType.getBodyWheelRotRate(), elapsed);
             tailWheelTransform.advance(gearDeployed ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(), gearDeployed ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2(),
@@ -298,8 +322,8 @@ public final class DriveableAnimationHistory
         float legYaw = source instanceof MechaVisual mecha ? Mth.rotLerp(partialTick, mecha.getPrevLegYaw(), mecha.getLegYaw()) : yaw;
         return new ModelDriveable.RenderState(partialTick, yaw, pitch, roll, Mth.lerp(partialTick, previousThrottle, throttle), turretYaw, turretPitch, wheelAngle, steeringAngle,
             source.getVisualTick() + partialTick, Mth.lerp(partialTick, previousGear, gear), Mth.lerp(partialTick, previousDoor, door), Mth.lerp(partialTick, previousMode, mode), leftTrackProgress,
-            rightTrackProgress, swing, legYaw, wingTransform, wingWheelTransform, bodyWheelTransform, tailWheelTransform, doorTransform, door2Transform, legAnimation, source.getInputMask(),
-            source.getDriveableMode(), source.isVarFlare(), trackLinks);
+            rightTrackProgress, swing, legYaw, wingTransform, wingWheelTransform, bodyWheelTransform, tailWheelTransform, doorTransform, door2Transform, wheelCoverTransform, wingFlapTransform, legAnimation, source.getInputMask(),
+            source.getDriveableMode(), source.isVarFlare(), gaugeHeat.getOil(), gaugeHeat.getWater(), trackLinks);
     }
 
     private static float approach(float value, float target, float amount)

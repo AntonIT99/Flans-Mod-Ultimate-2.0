@@ -505,8 +505,13 @@ public abstract class ShootableType extends InfoType
         trailParticles = readValue("TrailParticles", trailParticles, file);
         trailParticles = readValue("SmokeTrail", trailParticles, file);
         trailParticleType = readValue("TrailParticleType", trailParticleType, file);
+        // Legacy mods read ExplodeParticles as a particle type, but many packs give it a count. The explicit keys below take precedence.
+        String ambiguousExplodeParticles = readValue("ExplodeParticles", null, file);
+        if (isPlainNumber(ambiguousExplodeParticles))
+            explodeParticles = (int) Double.parseDouble(ambiguousExplodeParticles);
+        else if (ambiguousExplodeParticles != null)
+            explodeParticleType = ambiguousExplodeParticles;
         explodeParticles = readValue("NumExplodeParticles", explodeParticles, file);
-        explodeParticles = readValue("ExplodeParticles", explodeParticles, file);
         explodeParticleType = readValue("ExplodeParticleType", explodeParticleType, file);
         smokeTime = readValue("SmokeTime", smokeTime, file);
         smokeParticleType = readValue("SmokeParticles", smokeParticleType, file);

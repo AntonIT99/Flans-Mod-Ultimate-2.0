@@ -4,6 +4,7 @@ import com.flansmodultimate.api.driveables.ISeat;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.wolffsmod.npcs.combat.NpcVehicleCombat;
 import com.wolffsmod.npcs.teams.BotDriveables;
+import com.wolffsmod.npcs.teams.SquadTransports;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -91,6 +92,8 @@ final class DriveableCrew
         Entity operator = NpcDrivers.driverOf(driveable);
         if (operator != null && !NpcDrivers.ally(npc, operator))
             return false;
+        if (SquadTransports.carries(npc, driveable))
+            return true;
         boolean follower = npc.getOwner() != null;
         if (follower && !ownerRides(npc, driveable))
             return false;

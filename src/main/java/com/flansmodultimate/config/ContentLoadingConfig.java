@@ -22,7 +22,10 @@ public final class ContentLoadingConfig
     private static final String KEY_OVERRIDE_SOUND_LENGTHS = "overrideConfiguredSoundLengths";
     private static final String KEY_OVERRIDE_SHOOT_POINTS = "overrideConfiguredShootPoints";
     private static final String KEY_CONTENT_LOADING_THREADS = "contentLoadingThreads";
+    private static final String KEY_SHOW_ALL_PARSING_ISSUES = "showAllParsingIssuesInErrorLog";
 
+    @Getter
+    private static boolean showAllParsingIssuesInErrorLog = false;
     @Getter
     private static String contentPacksRelativePath = "flan";
     @Getter
@@ -66,6 +69,7 @@ public final class ContentLoadingConfig
             overrideConfiguredShootPoints = readBoolean(config, KEY_OVERRIDE_SHOOT_POINTS, overrideConfiguredShootPoints);
             soundPackPriority = SoundPriorityConfig.reconcile(config.get(SoundPriorityConfig.KEY), List.of());
             contentLoadingThreads = Math.max(0, readInt(config, KEY_CONTENT_LOADING_THREADS, contentLoadingThreads));
+            showAllParsingIssuesInErrorLog = readBoolean(config, KEY_SHOW_ALL_PARSING_ISSUES, showAllParsingIssuesInErrorLog);
 
             save(config);
 
@@ -146,6 +150,13 @@ public final class ContentLoadingConfig
             Threads that read and index the content packs while the game starts. 0 chooses from the number of processors.
             The packs are still registered one after the other, in the same order, so this never changes what is loaded.
             Set it to 1 to do everything on the loading thread.""");
+
+        config.set(KEY_SHOW_ALL_PARSING_ISSUES, showAllParsingIssuesInErrorLog);
+        config.setComment(KEY_SHOW_ALL_PARSING_ISSUES, """
+            Content packs often contain small mistakes that the mod can repair or safely ignore, such as extra text after a value.
+            By default these non-critical issues are only written to the debug log.
+            Set this option to true to show them in the log as errors too, which is useful when authoring or fixing a content pack.
+            Issues that lose a setting or break an item are always logged as errors.""");
 
         config.set(SoundPriorityConfig.KEY, soundPackPriority);
         config.setComment(SoundPriorityConfig.KEY, SoundPriorityConfig.COMMENT);

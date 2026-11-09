@@ -1,12 +1,10 @@
 package com.flansmodultimate.util;
 
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.flansmodultimate.platform.item.ItemStackData;
-import net.neoforged.fml.loading.LoadingModList;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.SharedConstants;
-import net.minecraft.server.Bootstrap;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -19,13 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class InventoryHelperTest
 {
     @BeforeAll
-    static void bootstrapRegistries()
+    static void bootstrapRegistries() throws ReflectiveOperationException
     {
-        // NeoForge loads optional feature flags from its discovery list during vanilla bootstrap.
-        if (LoadingModList.get() == null)
-            LoadingModList.of(List.of(), List.of(), List.of(), List.of(), Map.of());
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
+        EntityTestBootstrap.initialize();
     }
 
     @Test

@@ -44,7 +44,7 @@ HitSound bomb
 // Effects
 FlakParticles 0
 SmokeTrail True
-ExplodeParticles 15
+NumExplodeParticles 15
 TrailParticleType flansmod.fmflame
 HasLight True
 FlareParticleCount 15

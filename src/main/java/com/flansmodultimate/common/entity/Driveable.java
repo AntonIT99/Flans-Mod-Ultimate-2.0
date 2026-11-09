@@ -144,6 +144,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** Aircraft air brakes are extended. Toggled by the pilot, never automatic. */
     protected static final int FLAG_AIR_BRAKE = 1 << 8;
     protected static final int FLAG_REPAIR = 1 << 9;
+    protected static final int FLAG_LANDING_FLAPS = 1 << 10;
+    protected static final int FLAG_AFTERBURNER = 1 << 11;
 
     protected static final EntityDataAccessor<Integer> DATA_WEAPON_HEAT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Boolean> DATA_WEAPON_OVERHEATED = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.BOOLEAN);
@@ -1062,6 +1064,32 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public boolean isAirBrakeDeployed()
     {
         return getFlag(FLAG_AIR_BRAKE);
+    }
+
+    public boolean isAfterburnerArmed()
+    {
+        return getFlag(FLAG_AFTERBURNER);
+    }
+
+    public void setAfterburnerArmed(boolean value)
+    {
+        setFlag(FLAG_AFTERBURNER, value);
+    }
+
+    /** Whether an afterburner is actually lit. Only aircraft carry one. */
+    public boolean isAfterburnerBurning()
+    {
+        return false;
+    }
+
+    public boolean isLandingFlapsDeployed()
+    {
+        return getFlag(FLAG_LANDING_FLAPS);
+    }
+
+    public void setLandingFlapsDeployed(boolean value)
+    {
+        setFlag(FLAG_LANDING_FLAPS, value);
     }
 
     public void setGearDeployed(boolean value)
@@ -4709,6 +4737,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             toggleEngine();
         if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_AIR_BRAKE))
             toggleAirBrake(player);
+        if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_AFTERBURNER))
+            toggleAfterburner(player);
         if (DriveableInput.isDown(rising, DriveableInput.TRIM))
             setOrientation(getYaw(), 0F, 0F);
         if (DriveableInput.isDown(rising, DriveableInput.REPAIR) && seat.isDriverSeat())
@@ -4745,6 +4775,10 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         setDoorOpen(!isDoorOpen());
     }
+
+    /** Afterburner toggle. Only aircraft carry one, so the base driveable ignores the bind. */
+    protected void toggleAfterburner(@NotNull Player player)
+    {}
 
     /**
      * Air brake toggle. Only aircraft carry the surfaces, so the base driveable
@@ -5676,13 +5710,13 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     protected void emitConfiguredParticles()
     {
-        if (!level().isClientSide || configType == null || configType.getEmitters().isEmpty() || !ClientHooks.PLAYER.isLocalPlayerWithinSqr(this, EMITTER_PARTICLE_RANGE * EMITTER_PARTICLE_RANGE))
+        if (!level().isClientSide || configType == null || (configType.getEmitters().isEmpty() && configType.getAfterburnEmitters().isEmpty()) || !ClientHooks.PLAYER.isLocalPlayerWithinSqr(this, EMITTER_PARTICLE_RANGE * EMITTER_PARTICLE_RANGE))
             return;
         if (configType.isEmittersRequireOccupant() && !hasDriveableOccupant())
             return;
         if ((this instanceof Vehicle || this instanceof Plane) && !isEngineActive())
             return;
-        configType.getEmitters().forEach(emitter ->
+        (isAfterburnerBurning() ? java.util.stream.Stream.concat(configType.getEmitters().stream(), configType.getAfterburnEmitters().stream()) : configType.getEmitters().stream()).forEach(emitter ->
         {
             if (tickCount % emitter.getEmitRate() != 0 || !isPartIntact(emitter.getPart()))
                 return;

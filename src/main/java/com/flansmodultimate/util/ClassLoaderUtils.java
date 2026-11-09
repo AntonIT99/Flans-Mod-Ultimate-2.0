@@ -9,8 +9,7 @@ import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
+import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -72,6 +71,7 @@ public final class ClassLoaderUtils
         Map.entry("field_78811_r", "displayList"), Map.entry("field_78812_q", "compiled"), Map.entry("field_78813_p", "textureOffsetY"), Map.entry("field_82906_o", "offsetX,0"),
         Map.entry("field_82907_q", "offsetZ,0"), Map.entry("field_82908_p", "offsetY,0"));
 
+    private static final Map<String, ClassNameIndex> CLASS_NAME_INDEXES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, String> classMappings = Map.ofEntries(Map.entry("net/minecraft/client/model/ModelRenderer", "com/flansmodultimate/client/model/ModelRenderer"),
         Map.entry("net/minecraft/entity/Entity", "net/minecraft/world/entity/Entity"), Map.entry("net/minecraft/entity/EntityLivingBase", "net/minecraft/world/entity/LivingEntity"));
 
@@ -112,12 +112,58 @@ public final class ClassLoaderUtils
         return modClass != null ? modClass : getClassLoader(contentProvider).loadContentPackClass(className);
     }
 
+    /** @return the class name as the content pack spells it, whatever case its definition used, or null when the pack does not ship it */
+    @Nullable
+    public static String ownClassName(IContentProvider contentProvider, String className)
+    {
+        if (!contentProvider.isPreprocessed() && (contentProvider.isDirectory() || contentProvider.isArchive()))
+            return CLASS_NAME_INDEXES.computeIfAbsent(contentProvider.getModelSourceId(), id -> indexClassNames(contentProvider)).resolve(className);
+        return hasClassFile(contentProvider, className) ? className : null;
+    }
+
+    private static ClassNameIndex indexClassNames(IContentProvider contentProvider)
+    {
+        FileSystem fs = FileUtils.createFileSystem(contentProvider);
+        Path root = contentProvider.getModelPath("Model", fs).getParent();
+        try (java.util.stream.Stream<Path> files = Files.walk(root))
+        {
+            return new ClassNameIndex(files.filter(file -> file.toString().endsWith(FileUtils.CLASS_EXTENSION)).map(file -> {
+                String relative = root.relativize(file).toString().replace(file.getFileSystem().getSeparator(), ".");
+                return relative.substring(0, relative.length() - FileUtils.CLASS_EXTENSION.length());
+            }).toList());
+        }
+        catch (IOException e)
+        {
+            FlansLog.log.warn("Could not list the model classes of {}", contentProvider.getName(), e);
+            return new ClassNameIndex(java.util.List.of());
+        }
+        finally
+        {
+            FileUtils.closeFileSystem(fs, contentProvider);
+        }
+    }
+
+    public static String declaredClassName(byte[] classData)
+    {
+        return new ClassReader(classData).getClassName().replace('/', '.');
+    }
+
+    public static boolean isModClass(String className)
+    {
+        return findModClass(className) != null;
+    }
+
     public static boolean hasClassFile(IContentProvider contentProvider, String className)
     {
         FileSystem fs = FileUtils.createFileSystem(contentProvider);
         try
         {
             return (contentProvider.isDirectory() || contentProvider.isArchive()) && Files.isRegularFile(contentProvider.getModelPath(className, fs));
+        }
+        // A name read from a content pack may be no legal path on this platform, and then names no class file.
+        catch (InvalidPathException e)
+        {
+            return false;
         }
         finally
         {

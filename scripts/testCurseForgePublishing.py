@@ -150,7 +150,7 @@ tasks.matching { it.name.startsWith('publishCurseForge') && it.name != 'publishC
             assert uploaded["metadata"] == {
                 "changelog": "Pack-specific release notes\n", "changelogType": "markdown",
                 "displayName": f"[{minecraft}] Classic Packs-1.7",
-                "gameVersionNames": [minecraft, loader, "Client", "Server"], "releaseType": "beta",
+                "gameVersionNames": [minecraft, loader, "Client", "Server"] + (["Java 17"] if minecraft == "1.20.1" else []) + ["Java 21", "Java 25"], "releaseType": "beta",
                 "relations": {"projects": [{"slug": "test-main", "projectID": 101, "type": "requiredDependency"},
                                            {"slug": "custom-npcs", "type": "requiredDependency"}]}}, uploaded
             run("publishCurseForge", *mod, *pack, authenticated=True)

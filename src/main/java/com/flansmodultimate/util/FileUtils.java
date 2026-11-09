@@ -804,19 +804,9 @@ public final class FileUtils
             while ((entry = zis.getNextEntry()) != null)
             {
                 String rawName = entry.getName();
-                if (isMacOsMetadataPath(rawName))
+                String safeName = safeArchiveEntryName(rawName, entry.isDirectory());
+                if (safeName == null)
                     continue;
-
-                String safeName = sanitizeArchiveEntryName(rawName);
-
-                if (safeName.isBlank())
-                {
-                    FlansLog.log.warn("Skipping archive entry with empty sanitized name: '{}'", rawName);
-                    continue;
-                }
-
-                if (wasMeaningfullySanitized(rawName, safeName, entry.isDirectory()))
-                    FlansLog.log.warn("Sanitized invalid archive entry name: '{}' -> '{}'", rawName, safeName);
 
                 Path outPath = normalizedOutputDir.resolve(safeName).normalize();
 
@@ -845,6 +835,28 @@ public final class FileUtils
             FlansLog.log.error("Failed to extract archive for content pack {}", archivePath, e);
             return false;
         }
+    }
+
+    /**
+     * Returns the name an archive entry takes in a processed pack, or {@code null} when the entry
+     * does not belong in one. Reports the entries it drops or has to rename.
+     */
+    @Nullable
+    public static String safeArchiveEntryName(String rawName, boolean directory)
+    {
+        if (isMacOsMetadataPath(rawName))
+            return null;
+
+        String safeName = sanitizeArchiveEntryName(rawName);
+        if (safeName.isBlank())
+        {
+            FlansLog.log.warn("Skipping archive entry with empty sanitized name: '{}'", rawName);
+            return null;
+        }
+
+        if (wasMeaningfullySanitized(rawName, safeName, directory))
+            FlansLog.log.warn("Sanitized invalid archive entry name: '{}' -> '{}'", rawName, safeName);
+        return safeName;
     }
 
     /**
@@ -880,6 +892,20 @@ public final class FileUtils
      */
     public static boolean repackArchive(IContentProvider provider)
     {
+        return repackArchive(provider, tmp -> writeArchive(tmp, provider));
+    }
+
+    /**
+     * Installs the archive produced by the writer in the same way as {@link #repackArchive(IContentProvider)}.
+     *
+     * @param provider
+     *            archive provider being rewritten
+     * @param writer
+     *            writes the replacement archive to the temporary path it receives
+     * @return whether the processed archive was successfully installed
+     */
+    public static boolean repackArchive(IContentProvider provider, ArchiveWriter writer)
+    {
         boolean convertJarToZip = provider.isJarFile();
         Path originalArchive = provider.getPath();
         Path target = convertJarToZip ? provider.getPath().getParent().resolve(FilenameUtils.getBaseName(provider.getName()) + ZIP_EXTENSION) : provider.getPath();
@@ -899,7 +925,7 @@ public final class FileUtils
             Files.deleteIfExists(tmp);
 
             // 1) Write new archive to tmp (NOT to target)
-            writeArchive(tmp, provider);
+            writer.write(tmp);
 
             // 2) Swap: target -> bak, tmp -> target (atomic when supported)
             atomicReplace(tmp, target, bak);
@@ -1174,6 +1200,13 @@ public final class FileUtils
         {
             FlansLog.log.error("Failed to prepare extraction dir {}", outputDir, e);
         }
+    }
+
+    /** Writes the replacement for a content pack archive. */
+    @FunctionalInterface
+    public interface ArchiveWriter
+    {
+        void write(Path target) throws IOException;
     }
 
     /**

@@ -498,6 +498,41 @@ public final class AircraftPerformancePhysics
     }
 
     /**
+     * Share of the boosted engine rating available without the afterburner or war emergency power: the authored
+     * rating when there is one, then a legacy cruise speed, whose ratio is squared for jets and cubed for propellers
+     * because drag grows with speed squared, and otherwise the configured default.
+     */
+    public static double afterburnerDryShare(double dryRating, double wetRating, double cruiseRatio, boolean jet, double defaultShare)
+    {
+        if (finitePositive(dryRating) && finitePositive(wetRating))
+            return Math.min(1D, dryRating / wetRating);
+        if (finitePositive(cruiseRatio))
+            return Math.min(1D, Math.pow(cruiseRatio, jet ? 2D : 3D));
+        return Math.max(0D, Math.min(1D, defaultShare));
+    }
+
+    /**
+     * Deceleration from lowered landing flaps: the stronger of the wing-area drag increment and the assistance that
+     * also serves aircraft without real-world wing data. Lowered gear disturbs the flap airflow and adds to it.
+     */
+    @SuppressWarnings("java:S107") // The calculation needs the aircraft and configurable flap inputs.
+    public static double landingFlapDecelerationMs2(double airspeedMs, double wingAreaM2, double massKg, double dragFactor, double effectiveness, double assistDeceleration, boolean gearDeployed,
+        double gearMultiplier)
+    {
+        if (!Double.isFinite(airspeedMs))
+            return 0D;
+        double speed = Math.abs(airspeedMs);
+        double physical = finitePositive(massKg) && finitePositive(wingAreaM2)
+            ? 0.5D * VehiclePhysicsUnits.AIR_DENSITY * wingAreaM2 * VehiclePhysicsConstants.LANDING_FLAP_DRAG_COEFFICIENT * speed * speed / massKg
+            : 0D;
+        double ratio = Math.min(1D, speed * 3.6D / VehiclePhysicsConstants.LANDING_FLAP_ASSIST_REFERENCE_SPEED_KMH);
+        double assist = Math.max(0D, assistDeceleration) * ratio * ratio;
+        double configuration = Math.max(0D, effectiveness) * (gearDeployed ? Math.max(0D, gearMultiplier) : 1D);
+        double result = ModPhysics.dragForce(Math.max(physical, assist) * configuration, dragFactor);
+        return Double.isFinite(result) ? Math.max(0D, result) : 0D;
+    }
+
+    /**
      * Additional aerodynamic deceleration while changing attitude.
      *
      * <p>The simulation has no angle-of-attack or sideslip state, so ordinary

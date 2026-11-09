@@ -43,7 +43,7 @@ HitSound bullet
 FlakParticles 0
 SmokeTrail True
 TrailParticleType flansmod.rocketexhaust
-ExplodeParticles 8
+NumExplodeParticles 8
 ExplodeParticleType explode
 FlareParticleCount 6
 DebrisParticleCount 4

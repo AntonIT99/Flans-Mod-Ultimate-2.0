@@ -1,5 +1,8 @@
 # CurseForge releases
 
+For GitHub tag names and independent or combined module releases, see
+[GitHub releases and tags](github-releases.md).
+
 Every artifact has an independent upload task. A task is enabled only when its
 configured project URL is nonblank. All destinations start blank;
 regular `build`, `assemble`, and Maven publishing never upload to CurseForge.
@@ -90,7 +93,9 @@ Prepare a Markdown changelog. The default is the tracked `CHANGELOG.md` in the
 checkout root, which holds the notes of the next main mod release and is uploaded
 whole; the NPC module uses `src/npcs/CHANGELOG.md`. After a release, the notes
 move to `changelogs/<mod id>/<version>.md` and the file starts over for the next
-version. See "Changelogs" in `AGENTS.md` for how they are kept. These settings
+version: after bumping the version, run `rotateChangelogs`, or `rotateModChangelog`
+or `rotateNpcsChangelog` for one of them (`-PchangelogRotationDryRun=true` previews).
+See "Changelogs" in `AGENTS.md` for how they are kept. These settings
 apply to all tasks unless overridden:
 
 ```properties

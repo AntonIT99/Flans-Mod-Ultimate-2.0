@@ -107,6 +107,21 @@ class RecipeBookAdvancementTest
         }
     }
 
+    @Test
+    void malformedShapedRecipeWritesNothingAndDoesNotKeepTheGenerationStale() throws Exception
+    {
+        ToolType malformed = tool(List.of("Recipe I minecraft:iron_ingot", "XXX", "XXX", "XXX"));
+        Path staleRecipe = Files.createDirectories(generatedData.resolve("recipe")).resolve("example_shaped.json");
+        Files.writeString(staleRecipe, "{}");
+
+        RecipeJsonGenerator.writeRecipes(malformed, generatedData);
+
+        assertFalse(Files.exists(staleRecipe));
+        for (String folder : List.of("recipes", "advancements/recipes", "advancement/recipes"))
+            assertFalse(Files.exists(generatedData.resolve(folder + "/example_shaped.json")));
+        assertFalse(RecipeJsonGenerator.needsRegeneration(List.of(malformed), generatedData));
+    }
+
     private ToolType tool(List<String> lines)
     {
         ToolType type = new ToolType()

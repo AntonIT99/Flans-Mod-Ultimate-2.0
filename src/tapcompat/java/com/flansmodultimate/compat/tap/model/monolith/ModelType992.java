@@ -1,0 +1,85 @@
+package com.flansmodultimate.compat.tap.model.monolith;
+
+import com.flansmod.client.model.ModelMG;
+import com.flansmod.client.tmt.ModelRendererTurbo;
+
+public class ModelType992 extends ModelMG {
+   int textureX = 512;
+   int textureY = 512;
+
+   public ModelType992() {
+      this.bipodModel = new ModelRendererTurbo[4];
+      this.bipodModel[0] = new ModelRendererTurbo(this, 0, 400, this.textureX, this.textureY);
+      this.bipodModel[1] = new ModelRendererTurbo(this, 0, 400, this.textureX, this.textureY);
+      this.bipodModel[2] = new ModelRendererTurbo(this, 0, 420, this.textureX, this.textureY);
+      this.bipodModel[3] = new ModelRendererTurbo(this, 0, 420, this.textureX, this.textureY);
+      this.bipodModel[0].addBox(0.0F, 0.0F, 0.0F, 2, 1, 1, 0.0F);
+      this.bipodModel[0].setRotationPoint(-8.0F, -1.0F, -0.5F);
+      this.bipodModel[1].addBox(0.0F, 0.0F, 0.0F, 2, 1, 1, 0.0F);
+      this.bipodModel[1].setRotationPoint(6.0F, -1.0F, -0.5F);
+      this.bipodModel[2].addBox(0.0F, 0.0F, 0.0F, 1, 12, 1, 0.0F);
+      this.bipodModel[2].setRotationPoint(-1.0F, -11.0F, -0.5F);
+      this.bipodModel[2].rotateAngleZ = (float) (-Math.PI / 6);
+      this.bipodModel[3].addBox(0.0F, 0.0F, 0.0F, 1, 12, 1, 0.0F);
+      this.bipodModel[3].setRotationPoint(0.0F, -10.5F, -0.5F);
+      this.bipodModel[3].rotateAngleZ = (float) (Math.PI / 6);
+      this.gunModel = new ModelRendererTurbo[14];
+      this.gunModel[0] = new ModelRendererTurbo(this, 50, 200, this.textureX, this.textureY);
+      this.gunModel[1] = new ModelRendererTurbo(this, 50, 220, this.textureX, this.textureY);
+      this.gunModel[2] = new ModelRendererTurbo(this, 50, 250, this.textureX, this.textureY);
+      this.gunModel[3] = new ModelRendererTurbo(this, 50, 250, this.textureX, this.textureY);
+      this.gunModel[4] = new ModelRendererTurbo(this, 50, 280, this.textureX, this.textureY);
+      this.gunModel[5] = new ModelRendererTurbo(this, 50, 310, this.textureX, this.textureY);
+      this.gunModel[6] = new ModelRendererTurbo(this, 120, 320, this.textureX, this.textureY);
+      this.gunModel[7] = new ModelRendererTurbo(this, 120, 300, this.textureX, this.textureY);
+      this.gunModel[8] = new ModelRendererTurbo(this, 50, 350, this.textureX, this.textureY);
+      this.gunModel[9] = new ModelRendererTurbo(this, 50, 350, this.textureX, this.textureY);
+      this.gunModel[10] = new ModelRendererTurbo(this, 50, 370, this.textureX, this.textureY);
+      this.gunModel[11] = new ModelRendererTurbo(this, 50, 390, this.textureX, this.textureY);
+      this.gunModel[12] = new ModelRendererTurbo(this, 50, 420, this.textureX, this.textureY);
+      this.gunModel[13] = new ModelRendererTurbo(this, 50, 450, this.textureX, this.textureY);
+      this.gunModel[0].addBox(-1.0F, -12.0F, -0.5F, 2, 3, 1, 0.0F);
+      this.gunModel[0].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[1].addBox(-0.5F, -11.5F, -13.5F, 1, 1, 15, 0.0F);
+      this.gunModel[1].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[2].addBox(-0.2F, -12.0F, -21.0F, 1, 2, 8, 0.0F);
+      this.gunModel[2].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[3].addBox(-0.8F, -12.0F, -21.0F, 1, 2, 8, 0.0F);
+      this.gunModel[3].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[4].addBox(-1.0F, -13.5F, -25.5F, 2, 2, 13, 0.0F);
+      this.gunModel[4].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[5].addBox(-0.5F, -13.0F, -13.0F, 1, 1, 22, 0.0F);
+      this.gunModel[5].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[6].addBox(-1.5F, -13.5F, -0.5F, 3, 2, 1, 0.0F);
+      this.gunModel[6].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[7].addBox(-1.0F, -13.5F, 9.0F, 2, 2, 6, 0.0F);
+      this.gunModel[7].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[8].addBox(-0.3F, -14.0F, -20.0F, 1, 1, 3, 0.0F);
+      this.gunModel[8].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[9].addBox(-0.7F, -14.0F, -20.0F, 1, 1, 3, 0.0F);
+      this.gunModel[9].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[10].addBox(-0.5F, -11.5F, -25.0F, 1, 2, 4, 0.0F);
+      this.gunModel[10].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[11].addBox(-1.0F, -12.0F, -33.0F, 2, 2, 8, 0.0F);
+      this.gunModel[11].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[12].addBox(-1.0F, -10.0F, -33.0F, 2, 2, 8, 0.0F);
+      this.gunModel[12].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[12].rotateAngleX = 0.2094395F;
+      this.gunModel[13].addBox(-1.0F, -10.0F, -24.5F, 2, 4, 2, 0.0F);
+      this.gunModel[13].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.gunModel[13].rotateAngleX = -0.1745329F;
+      this.ammoModel = new ModelRendererTurbo[3];
+      this.ammoModel[0] = new ModelRendererTurbo(this, 100, 350, this.textureX, this.textureY);
+      this.ammoModel[1] = new ModelRendererTurbo(this, 100, 360, this.textureX, this.textureY);
+      this.ammoModel[2] = new ModelRendererTurbo(this, 100, 350, this.textureX, this.textureY);
+      this.ammoModel[0].addBox(-0.5F, -15.5F, -19.5F, 1, 2, 2, 0.0F);
+      this.ammoModel[0].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.ammoModel[1].addBox(-0.5F, -17.4F, -19.0F, 1, 2, 2, 0.0F);
+      this.ammoModel[1].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.ammoModel[1].rotateAngleX = (float) (-Math.PI / 12);
+      this.ammoModel[2].addBox(-0.5F, -19.0F, -18.0F, 1, 2, 2, 0.0F);
+      this.ammoModel[2].setRotationPoint(0.0F, -1.0F, 3.0F);
+      this.ammoModel[2].rotateAngleX = (float) (-Math.PI / 6);
+      this.flipAll();
+   }
+}

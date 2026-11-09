@@ -1,0 +1,84 @@
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+
+/**
+ * Archives a released changelog once its version has been bumped. The version on the
+ * first heading identifies the notes; a heading already on the current version is left alone.
+ */
+@org.gradle.api.tasks.UntrackedTask(because = 'Rotation moves tracked source files')
+abstract class RotateChangelog extends DefaultTask {
+    @Internal
+    abstract RegularFileProperty getChangelogFile()
+
+    @Internal
+    abstract DirectoryProperty getArchiveDirectory()
+
+    @Input
+    abstract Property<String> getCurrentVersion()
+
+    @Input
+    abstract Property<Boolean> getDryRun()
+
+    @TaskAction
+    void rotate() {
+        File changelog = changelogFile.get().asFile
+        if (!changelog.isFile())
+            throw new GradleException("Changelog does not exist: ${changelog}")
+
+        String text = changelog.getText(StandardCharsets.UTF_8.name())
+        String heading = text.readLines().find { !it.isBlank() } ?: ''
+        def match = heading =~ /^(#\s+.*\s)(\S+)\s*$/
+        if (!match.matches())
+            throw new GradleException("The first line of ${changelog} must be a heading ending in its version, but is: ${heading}")
+
+        String releasedVersion = match.group(2)
+        String version = currentVersion.get()
+        if (releasedVersion == version) {
+            logger.lifecycle("${changelog.name} is already on version ${version}; nothing to rotate.")
+            return
+        }
+
+        File archive = archiveDirectory.get().file("${releasedVersion}.md").asFile
+        if (archive.exists())
+            throw new GradleException("Archived changelog already exists: ${archive}")
+
+        String newChangelog = "${match.group(1)}${version}\n"
+        if (dryRun.get()) {
+            logger.lifecycle("Would move ${changelog} to ${archive} and start over with: ${newChangelog.trim()}")
+            return
+        }
+
+        Files.createDirectories(archive.parentFile.toPath())
+        Files.move(changelog.toPath(), archive.toPath())
+        changelog.setText(newChangelog, StandardCharsets.UTF_8.name())
+        logger.lifecycle("Archived ${releasedVersion} notes to ${archive} and started ${changelog.name} for ${version}.")
+    }
+}
+
+Provider<Boolean> rotationDryRun = providers.gradleProperty('changelogRotationDryRun').orElse('false').map { String value ->
+    if (!(value in ['true', 'false']))
+        throw new GradleException('changelogRotationDryRun must be true or false.')
+    value == 'true'
+}
+
+List<Map<String, String>> changelogs = [
+        [name: 'Mod', modId: mod_id.toString(), version: mod_version.toString(), file: 'CHANGELOG.md'] as Map<String, String>
+]
+changelogs.addAll((List<Map<String, String>>) fmuModuleChangelogs)
+
+def rotateAll = tasks.register('rotateChangelogs') { Task task ->
+    task.group = 'publishing'
+    task.description = 'Archives every changelog whose heading is older than its current version (preview with -PchangelogRotationDryRun=true).'
+}
+
+changelogs.each { Map<String, String> entry ->
+    def rotate = tasks.register("rotate${entry.name}Changelog", RotateChangelog) { RotateChangelog task ->
+        task.group = 'publishing'
+        task.description = "Archives the ${entry.modId} changelog after a version bump (preview with -PchangelogRotationDryRun=true)."
+        task.changelogFile.set(layout.projectDirectory.file(entry.file))
+        task.archiveDirectory.set(layout.projectDirectory.dir("changelogs/${entry.modId}"))
+        task.currentVersion.set(entry.version)
+        task.dryRun.set(rotationDryRun)
+    }
+    rotateAll.configure { Task task -> task.dependsOn(rotate) }
+}
