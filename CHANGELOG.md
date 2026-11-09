@@ -10,6 +10,10 @@
 * Aircraft with an afterburner or war emergency power can arm it with a new key (O); it lights near full throttle, adding thrust and top speed at the cost of fuel
 * Vehicle models support side and turret skirts, opening body and turret doors, and alternating track links
 
+## Performance
+
+* Models of nearby vehicles and carried items now load in the background, reducing the stutter when something is first seen
+
 ## Content Packs & Compatibility
 
 * Content packs tolerate more typing mistakes in their values; repaired issues go to the debug log unless `showAllParsingIssuesInErrorLog` is enabled

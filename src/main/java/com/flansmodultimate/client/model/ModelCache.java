@@ -39,7 +39,7 @@ public final class ModelCache
         }
     }
 
-    private static final Map<ModelCacheKey, Optional<IModelBase>> cache = new ConcurrentHashMap<>();
+    private static final SharedLoadCache<ModelCacheKey, IModelBase> cache = new SharedLoadCache<>();
     private static final Map<IModelBase, List<EnumRenderPass>> renderPassCache = new ConcurrentHashMap<>();
     private static final Map<IModelBase, List<EnumRenderPass>> shadowPassCache = new ConcurrentHashMap<>();
 
@@ -51,6 +51,7 @@ public final class ModelCache
         com.flansmodultimate.client.render.preview.WorldModelPreview.clear();
         com.flansmodultimate.client.render.preview.TypeModelPreview.clearBounds();
         ModelTextureFitter.clear();
+        ModelPreloader.clear();
         cache.clear();
         renderPassCache.clear();
         shadowPassCache.clear();
@@ -60,21 +61,37 @@ public final class ModelCache
 
     public static void loadAll()
     {
-        for (InfoType type : InfoType.getInfoTypes().values())
+        // One filesystem per pack archive for the whole pass; the scope only ever reuses them.
+        try (FileUtils.ArchiveFileSystemCache ignored = FileUtils.cacheArchiveFileSystems())
         {
+            for (InfoType type : InfoType.getInfoTypes().values())
+                loadModelsOf(type);
+        }
+    }
+
+    /** Loads every model this type draws, with the same keys and default models as the renderers ask for. */
+    static void loadModelsOf(InfoType type)
+    {
+        if (type instanceof ArmorType armorType)
+            getOrLoadTypeModel(armorType);
+        else
             getOrLoadTypeModel(type);
 
-            if (type instanceof GunType gunType)
-            {
-                if (StringUtils.isNotBlank(gunType.getDeployableModelClassName()))
-                    getOrLoadDeployableGunModel(gunType);
-                if (StringUtils.isNotBlank(gunType.getCasingModelClassName()))
-                    getOrLoadCasingModel(gunType);
-                if (StringUtils.isNotBlank(gunType.getFlashModelClassName()))
-                    getOrLoadFlashModel(gunType);
-                if (StringUtils.isNotBlank(gunType.getMuzzleFlashModelClassName()))
-                    getOrLoadMuzzleFlashModel(gunType);
-            }
+        if (type instanceof BulletType bulletType)
+            getOrLoadAlternateBulletModel(bulletType);
+
+        if (type instanceof GunType gunType)
+        {
+            if (StringUtils.isNotBlank(gunType.getDeployableModelClassName()))
+                getOrLoadDeployableGunModel(gunType);
+            if (StringUtils.isNotBlank(gunType.getCasingModelClassName()))
+                getOrLoadCasingModel(gunType);
+            if (StringUtils.isNotBlank(gunType.getFlashModelClassName()))
+                getOrLoadFlashModel(gunType);
+            if (StringUtils.isNotBlank(gunType.getMuzzleFlashModelClassName()))
+                getOrLoadMuzzleFlashModel(gunType);
+            getOrLoadSmokeModel(gunType, gunType.getChamberSmokeModelClassName(), gunType.getChamberSmokeTexture());
+            getOrLoadSmokeModel(gunType, gunType.getMuzzleSmokeModelClassName(), gunType.getMuzzleSmokeTexture());
         }
     }
 
@@ -97,7 +114,7 @@ public final class ModelCache
     public static IModelBase getLoadedTypeModel(InfoType type)
     {
         ModelCacheKey key = new ModelCacheKey(type.getModelClassName(), type.getShortName(), type.getContentPack().getName());
-        return cache.getOrDefault(key, Optional.empty()).orElse(null);
+        return cache.getIfLoaded(key);
     }
 
     /**
@@ -197,12 +214,13 @@ public final class ModelCache
                 return null;
         }
 
-        return cache.computeIfAbsent(modelCacheKey, key ->
+        String modelClassName = modelCacheKey.modelClassName();
+        return cache.getOrLoad(modelCacheKey, () ->
         {
-            IModelBase model = loadModel(key.modelClassName(), type, defaultModel);
+            IModelBase model = loadModel(modelClassName, type, defaultModel);
             ModelTextureFitter.fitToTexture(model, texture);
-            return Optional.ofNullable(model);
-        }).orElse(null);
+            return model;
+        });
     }
 
     /**
@@ -275,27 +293,7 @@ public final class ModelCache
             else if (modelClassName.equalsIgnoreCase(ModelDefaultArmor.class.getName()) && type instanceof ArmorType armorType)
                 model = new ModelDefaultArmor(armorType.getArmorItemType());
             else
-            {
-                ModelClassLocation modelLocation = ModelClassResolver.find(type.getContentPack(), modelClassName, ModClientConfig.get().searchModelsInOtherContentPacks);
-                try
-                {
-                    // A model class file shipped by the type's own content pack overrides a model class of the
-                    // same name compiled into the mod, unless that override is disabled in the client config.
-                    model = (IModelBase) ModelClassResolver.instantiate(modelLocation, ModClientConfig.get().preferBuiltInModelClasses);
-                    if (!modelLocation.contentPack().equals(type.getContentPack()))
-                        FlansLog.log.debug("Loaded model class {} for {} from fallback content pack [{}].", modelLocation.className(), type, modelLocation.contentPack().getName());
-                }
-                catch (Exception | LinkageError e)
-                {
-                    FlansLog.log.error("Could not load model class {} for {}", modelClassName, type);
-                    NoSuchFileException missingFile = findMissingFile(e);
-                    if (missingFile != null)
-                        FlansLog.log.error("File not found: {}", missingFile.getFile());
-                    else
-                        LogUtils.logErrorWithoutStacktrace(e);
-                }
-            }
-
+                model = loadContentPackModel(modelClassName, type);
         }
 
         if (model == null)
@@ -317,6 +315,35 @@ public final class ModelCache
         }
 
         return model;
+    }
+
+    @Nullable
+    private static IModelBase loadContentPackModel(String modelClassName, InfoType type)
+    {
+        // Resolving and loading a model class opens its pack archive several times over.
+        try (FileUtils.ArchiveFileSystemCache ignored = FileUtils.cacheArchiveFileSystems())
+        {
+            ModelClassLocation modelLocation = ModelClassResolver.find(type.getContentPack(), modelClassName, ModClientConfig.get().searchModelsInOtherContentPacks);
+            try
+            {
+                // A model class file shipped by the type's own content pack overrides a model class of the
+                // same name compiled into the mod, unless that override is disabled in the client config.
+                IModelBase model = (IModelBase) ModelClassResolver.instantiate(modelLocation, ModClientConfig.get().preferBuiltInModelClasses);
+                if (!modelLocation.contentPack().equals(type.getContentPack()))
+                    FlansLog.log.debug("Loaded model class {} for {} from fallback content pack [{}].", modelLocation.className(), type, modelLocation.contentPack().getName());
+                return model;
+            }
+            catch (Exception | LinkageError e)
+            {
+                FlansLog.log.error("Could not load model class {} for {}", modelClassName, type);
+                NoSuchFileException missingFile = findMissingFile(e);
+                if (missingFile != null)
+                    FlansLog.log.error("File not found: {}", missingFile.getFile());
+                else
+                    LogUtils.logErrorWithoutStacktrace(e);
+                return null;
+            }
+        }
     }
 
     @Nullable

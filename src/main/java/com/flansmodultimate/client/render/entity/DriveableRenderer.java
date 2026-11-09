@@ -8,6 +8,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.damage.DetachedPieces;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.model.ModelPreloader;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
@@ -122,7 +123,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     private void renderDriveable(T driveable, float partialTick, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         DriveableType type = driveable.getConfigType();
-        if (type == null || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelDriveable model))
+        // A first sighting is drawn once its model is ready rather than stalling the frame; a menu preview waits for it.
+        if (type == null || !isRenderingPreview() && ModelPreloader.isLoadPending(type) || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelDriveable model))
             return;
         // The pose the entity was handed over with, so the drawn model can be placed relative to the entity.
         Matrix4f entryPose = new Matrix4f(poseStack.last().pose());

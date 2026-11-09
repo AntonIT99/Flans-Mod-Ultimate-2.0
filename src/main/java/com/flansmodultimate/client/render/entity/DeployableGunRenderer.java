@@ -5,6 +5,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.model.ModelPreloader;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.effects.MuzzleFlashRenderer;
 import com.flansmodultimate.common.entity.DeployedGun;
@@ -40,6 +41,9 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
     @Override
     public void render(@NotNull DeployedGun deployedGun, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
+        if (ModelPreloader.isLoadPending(deployedGun.getConfigType()))
+            return;
+
         ModelMG model = ModelCache.getOrLoadDeployableGunModel(deployedGun.getConfigType());
         if (model == null)
             return;
