@@ -21,6 +21,10 @@ is_released() {
 
 require_changelog() {
     local heading
+    if [[ ! -f "$1" ]]; then
+        echo "::error::The changelog $1 of version $2 does not exist."
+        exit 1
+    fi
     heading="$(grep -m 1 . "$1" | tr -d '\r')"
     if [[ "$heading" != *" $2" ]]; then
         echo "::error file=$1::The changelog heading '$heading' does not end in version $2."
@@ -49,10 +53,11 @@ select_module() { # id, version, upload task
 main_id="$(property mod_id)"
 main_version="$(property mod_version)"
 if ! is_released "$main_id" "$main_version"; then
-    require_changelog CHANGELOG.md "$main_version"
+    main_changelog="changelogs/$main_id/$main_version.md"
+    require_changelog "$main_changelog" "$main_version"
     tags+=("$main_id-$minecraft-$main_version")
     select_module "$main_id" "$main_version" publishCurseForgeMod
-    cat CHANGELOG.md >> "$notes"
+    cat "$main_changelog" >> "$notes"
     echo >> "$notes"
     echo "Main mod: $main_version"
 fi
@@ -62,10 +67,11 @@ npc_descriptor=src/npcs/fmu-module.gradle
 npc_id="$(field "$npc_descriptor" modId)"
 npc_version="$(field "$npc_descriptor" archiveVersion)"
 if ! is_released "$npc_id" "$npc_version"; then
-    require_changelog src/npcs/CHANGELOG.md "$npc_version"
+    npc_changelog="changelogs/$npc_id/$npc_version.md"
+    require_changelog "$npc_changelog" "$npc_version"
     tags+=("$npc_id-$minecraft-$npc_version")
     select_module "$npc_id" "$npc_version" "$(upload_task "$(field "$npc_descriptor" jarTask)")"
-    cat src/npcs/CHANGELOG.md >> "$notes"
+    cat "$npc_changelog" >> "$notes"
     echo >> "$notes"
     echo "NPC mod: $npc_version"
 fi

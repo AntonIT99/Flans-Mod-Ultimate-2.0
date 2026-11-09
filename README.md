@@ -89,12 +89,12 @@ NPC Vehicles & Soldiers uses `2.X.Y`: `2.X` identifies the main mod's API
 compatibility line, and `Y` is the NPC module's independent revision, starting at
 zero. For example, NPC `2.2.0` and `2.2.1` both support main mod `2.2` and `2.2.x`,
 with a dependency range of `[2.2,2.3)`. Compatible main-mod fixes advance its patch
-version without requiring an NPC release. Breaking API changes advance the main
-mod's minor version (for example, `2.2` to `2.3`); an adapted NPC release then starts
-at `2.3.0`. Update `archiveVersion` in `src/npcs/fmu-module.gradle`, the main-mod
-range in `src/npcs/resources/META-INF/mods.toml`, and the NPC changelog together.
+version without requiring an NPC release. API changes advance the main
+mod's minor version (for example, `2.2` to `2.3`), and the NPC module moves with it,
+starting at `2.3.0`. Update `archiveVersion` in `src/npcs/fmu-module.gradle`, the main-mod
+range in `src/npcs/resources/META-INF/mods.toml`, and add `changelogs/wolffsmodnpcs/<version>.md` together.
 Content packs keep their existing independent versions; they do not use this API
-compatibility scheme. The published API artifact's `api_version` remains separate.
+compatibility scheme. The published API artifact's `api_version` equals the main mod's `2.X` line.
 
 Each module also has a separate, opt-in CurseForge upload task. Configure its
 project URL and ID in its `fmu-module.gradle`, then run a task such as `publishCurseForgeOfficialPacks` from

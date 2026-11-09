@@ -89,17 +89,15 @@ Supply it through the `CURSEFORGE_API_TOKEN` environment variable. The separate
 CurseForge discovery API key is not used. The token is read at task execution,
 kept out of configuration-cache inputs, and never printed by the release tooling.
 
-Prepare a Markdown changelog. The default is the tracked `CHANGELOG.md` in the
-checkout root, which holds the notes of the next main mod release and is uploaded
-whole; the NPC module uses `src/npcs/CHANGELOG.md`. After a release, the notes
-move to `changelogs/<mod id>/<version>.md` and the file starts over for the next
-version: after bumping the version, run `rotateChangelogs`, or `rotateModChangelog`
-or `rotateNpcsChangelog` for one of them (`-PchangelogRotationDryRun=true` previews).
+Prepare a Markdown changelog at `changelogs/<mod id>/<version>.md`, which is
+uploaded whole. The main mod uses the file matching `mod_version`. A module with
+its own `changelogs/<mod id>/` folder uses the file matching its `archiveVersion`,
+and validation fails if that file is missing; other modules upload the main mod's.
 See "Changelogs" in `AGENTS.md` for how they are kept. These settings
 apply to all tasks unless overridden:
 
 ```properties
-curseforgeChangelog=CHANGELOG.md
+curseforgeChangelog=release-notes/all-artifacts.md
 curseforgeReleaseType=release
 ```
 

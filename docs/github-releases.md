@@ -48,7 +48,7 @@ The workflow needs these repository secrets, and must exist on the branch being 
 If a CurseForge upload fails, the tag already exists, so a rerun will skip that
 module. Check the project's file list, then run its `publishCurseForge<Name>` task
 from the tag as described in the CurseForge guide. Content packs without a
-changelog of their own upload the root `CHANGELOG.md`.
+changelog of their own upload the main mod's.
 
 ## Create and push tags manually
 
