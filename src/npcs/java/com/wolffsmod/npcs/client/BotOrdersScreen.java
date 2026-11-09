@@ -374,12 +374,18 @@ public final class BotOrdersScreen extends Screen
         return squad.mine() ? MINE_COLOUR : OWN_COLOUR;
     }
 
+    /** Screen.render blurs whatever was drawn before its background, so the map is drawn right after it, under the widgets. */
+    @Override
+    public void renderBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    {
+        super.renderBackground(graphics, mouseX, mouseY, partialTick);
+        if (map && state.playing())
+            renderMap(graphics);
+    }
+
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        NpcClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
-        if (map && state.playing())
-            renderMap(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF);
         Component status;

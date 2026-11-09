@@ -1,6 +1,5 @@
 package com.wolffsmod.npcs.platform.client;
 
-import com.flansmodultimate.platform.client.ClientPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -16,10 +15,14 @@ import net.minecraft.world.entity.LivingEntity;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcClientPlatform
 {
-    /** Draws the dimmed background behind a screen. */
+    /**
+     * Draws the dimmed background behind a screen on versions that need it. Minecraft 1.21's {@code Screen.render} draws it
+     * itself, and a second, earlier draw would only blur twice.
+     */
+    @SuppressWarnings("java:S1172") // Part of the cross-version platform signature; other versions use the parameters.
     public static void renderBackground(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        ClientPlatform.renderBackground(screen, graphics, mouseX, mouseY, partialTick);
+        // Screen.render draws the background on this version.
     }
 
     /**
