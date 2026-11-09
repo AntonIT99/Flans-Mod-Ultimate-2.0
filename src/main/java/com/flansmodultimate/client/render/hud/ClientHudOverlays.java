@@ -14,6 +14,7 @@ import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.EnumFireMode;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.*;
@@ -220,7 +221,7 @@ public final class ClientHudOverlays
         // An AA gun reads its readiness from the same builder a driveable shell
         // bank does, so the two say the same thing in the same words.
         List<OrdnanceLine> readiness = new ArrayList<>();
-        addWeaponLine(readiness, "hud.flansmodultimate.driveable.shell", aaGun.getReloadTimer(), hasCurrentAmmo, aaGun.getMagazineLeft(), aaGun.getMagazineSize());
+        addWeaponLine(readiness, "hud.flansmodultimate.driveable.shell", aaGun.getHudReloadTicks(), hasCurrentAmmo, aaGun.getMagazineLeft(), aaGun.getMagazineSize());
         Component reloadText = readiness.get(0).text();
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
 
@@ -283,7 +284,7 @@ public final class ClientHudOverlays
         g.drawString(font, ModUtils.getDisplayName(type), vehicleHudLeftX(), vehicleHudLeftY(), HUD_WHITE, false);
 
         List<OrdnanceLine> lines = new ArrayList<>();
-        addGunAmmoLines(lines, ModUtils.getDisplayName(type), gun.getRoundsLeft(), gun.getMagazineSize(), gun.getReloadTimer());
+        addGunAmmoLines(lines, ModUtils.getDisplayName(type), gun.getRoundsLeft(), gun.getMagazineSize(), gun.getHudReloadTicks());
         int rightX = vehicleHudRightX(sw, maxLineWidth(font, lines));
         int rightY = vehicleHudRightY();
         int line = 0;
@@ -299,7 +300,8 @@ public final class ClientHudOverlays
      * @param rounds
      *            rounds left to fire, or a negative number when there is no gun to report on
      * @param reloadTicks
-     *            ticks of reload still owed, excluding the ordinary delay between shots
+     *            ticks of reload still owed, including a delay between shots long
+     *            enough to count as loading the next round; see {@link ShotCooldown#hudReloadTicks}
      */
     private static void addGunAmmoLines(List<OrdnanceLine> lines, Component gunName, int rounds, int magazineSize, int reloadTicks)
     {
@@ -420,10 +422,12 @@ public final class ClientHudOverlays
      * read identically.
      *
      * <p>
-     * A weapon is called ready whenever it is not reloading. The ordinary delay
+     * A weapon is called ready whenever it is not reloading. A short delay
      * between shots deliberately does not show as a reload: a gunner holding the
      * trigger on an autocannon would otherwise see it flicker between reloading
-     * and ready at the cyclic rate, which says nothing useful.
+     * and ready at the cyclic rate, which says nothing useful. A delay of a
+     * second or more does, since the crew is then loading the next round; the
+     * server folds it into the reload ticks, see {@link ShotCooldown#hudReloadTicks}.
      *
      * @param magazineSize
      *            rounds a full magazine holds; one or zero hides the count,

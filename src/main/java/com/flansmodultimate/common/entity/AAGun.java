@@ -93,6 +93,8 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     protected static final EntityDataAccessor<Component> DATA_CURRENT_AMMO_NAME = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.COMPONENT);
     protected static final EntityDataAccessor<Integer> DATA_MAGAZINE_LEFT = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_MAGAZINE_SIZE = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
+    /** The reload countdown the gunner's HUD shows; see {@link ShotCooldown#hudReloadTicks}. */
+    protected static final EntityDataAccessor<Integer> DATA_HUD_RELOAD_TICKS = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
 
     protected AAGunType configType;
     protected String shortname = StringUtils.EMPTY;
@@ -291,6 +293,12 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         entityData.set(DATA_RELOAD_TIMER, v);
     }
 
+    /** Ticks the gunner's HUD counts down as a reload, which includes a long delay between shots. */
+    public int getHudReloadTicks()
+    {
+        return entityData.get(DATA_HUD_RELOAD_TICKS);
+    }
+
     public int getHealth()
     {
         return entityData.get(DATA_HEALTH);
@@ -487,6 +495,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         data.define(DATA_CURRENT_AMMO_NAME, Component.empty());
         data.define(DATA_MAGAZINE_LEFT, 0);
         data.define(DATA_MAGAZINE_SIZE, 0);
+        data.define(DATA_HUD_RELOAD_TICKS, 0);
     }
 
     @Override
@@ -877,6 +886,10 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         {
             fireGun(level, getPlacer(level).orElse(null), false);
         }
+
+        int hudReloadTicks = ShotCooldown.hudReloadTicks(getReloadTimer(), shootDelay, type.getShootDelay());
+        if (entityData.get(DATA_HUD_RELOAD_TICKS) != hudReloadTicks)
+            entityData.set(DATA_HUD_RELOAD_TICKS, hudReloadTicks);
 
         absorbExternalImpulses();
         applyMotion();

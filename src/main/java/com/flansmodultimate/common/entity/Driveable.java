@@ -808,18 +808,25 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /**
-     * Ticks of <em>reload</em> a bank still owes, which is not the whole wait
-     * before it may fire: the ordinary delay between shots is excluded, so a crew
-     * is told it is reloading only when it actually is.
+     * Ticks of <em>reload</em> a bank still owes. A short delay between shots is
+     * excluded, so an autocannon is not shown flickering between reloading and
+     * ready; a delay long enough to count as loading the next round is included,
+     * see {@link ShotCooldown#hudReloadTicks}.
      */
     public int getSecondaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : ShotCooldown.displayTicks(bankReloadTicks[1]);
+        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : bankHudReloadTicks(true);
     }
 
     public int getPrimaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : ShotCooldown.displayTicks(bankReloadTicks[0]);
+        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : bankHudReloadTicks(false);
+    }
+
+    private int bankHudReloadTicks(boolean secondary)
+    {
+        int index = secondary ? 1 : 0;
+        return ShotCooldown.hudReloadTicks(bankReloadTicks[index], secondary ? secondaryShootDelay : primaryShootDelay, getConfiguredShootDelay(secondary));
     }
 
     /** Rounds a bank has left before its next reload; zero when it has nothing loaded. */
@@ -2290,8 +2297,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** Publishes what the driver's HUD reports about each bank. Server side; only changes go out. */
     private void publishBankState()
     {
-        setIfChanged(DATA_PRIMARY_RELOAD_TICKS, ShotCooldown.displayTicks(bankReloadTicks[0]));
-        setIfChanged(DATA_SECONDARY_RELOAD_TICKS, ShotCooldown.displayTicks(bankReloadTicks[1]));
+        setIfChanged(DATA_PRIMARY_RELOAD_TICKS, bankHudReloadTicks(false));
+        setIfChanged(DATA_SECONDARY_RELOAD_TICKS, bankHudReloadTicks(true));
         publishMagazine(false, DATA_PRIMARY_MAGAZINE_LEFT, DATA_PRIMARY_MAGAZINE_SIZE);
         publishMagazine(true, DATA_SECONDARY_MAGAZINE_LEFT, DATA_SECONDARY_MAGAZINE_SIZE);
     }
@@ -3568,7 +3575,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // watch the belt run down as a survival one does, which is how the
         // driver's gun banks already report.
         int magazineLeft = Math.max(0, passengerMagazineCapacity[index] - passengerRoundsFired[index]);
-        seat.setGunState(Math.min(rounds, magazineLeft), passengerMagazineCapacity[index], ShotCooldown.displayTicks(passengerReloadTicks[index]),
+        int reloadTicks = ShotCooldown.hudReloadTicks(passengerReloadTicks[index], passengerShootDelay[index], gun.getShootDelay(null));
+        seat.setGunState(Math.min(rounds, magazineLeft), passengerMagazineCapacity[index], reloadTicks,
             ammo.isEmpty() ? Component.empty() : ammo.getHoverName());
     }
 
