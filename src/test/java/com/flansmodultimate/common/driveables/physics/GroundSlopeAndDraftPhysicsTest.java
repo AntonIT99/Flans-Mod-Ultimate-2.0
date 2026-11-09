@@ -95,6 +95,34 @@ class GroundSlopeAndDraftPhysicsTest
     }
 
     @Test
+    void aHullWithoutADraftSettlesOnItsWaterlineWithoutBobbing()
+    {
+        double depth = -0.2D;
+        double velocity = -0.08D;
+        double previousDepth = depth;
+        int reversals = 0;
+        double previousStep = 0D;
+        for (int tick = 0; tick < 200; tick++)
+        {
+            velocity = MarineDraftPhysics.waterlineVelocity(velocity, depth, 0.05D);
+            depth -= velocity;
+            double step = depth - previousDepth;
+            if (step * previousStep < -1.0E-12D)
+                reversals++;
+            previousStep = step;
+            previousDepth = depth;
+        }
+        assertEquals(0D, depth, 1.0E-3D);
+        assertTrue(reversals <= 1, "a hull at rest must not keep crossing the surface, reversed " + reversals + " times");
+    }
+
+    @Test
+    void theSurfaceProbeReachesTheDeepestAuthoredDraft()
+    {
+        assertTrue(VehiclePhysicsConstants.DRAFT_SURFACE_PROBE_BLOCKS >= 12);
+    }
+
+    @Test
     void aHullAtItsDraftIsHeldThere()
     {
         assertEquals(0D, MarineDraftPhysics.verticalVelocity(0D, 62.5D, 64D, 1.5D, 0.25D), 1.0E-9D);

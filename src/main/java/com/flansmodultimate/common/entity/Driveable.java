@@ -7030,6 +7030,13 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                     return applyEpicShipFlotation(new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag));
                 }
             }
+            double waterlineDepth = legacyWaterlineDepth();
+            if (Double.isFinite(waterlineDepth))
+            {
+                double corrected = MarineDraftPhysics.waterlineVelocity(velocity.y, waterlineDepth, ceiling);
+                double drag = ModPhysics.dragRetention(0.92D, level());
+                return applyEpicShipFlotation(new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag));
+            }
             double lift = this instanceof Plane ? ceiling * Math.max(1, submergedFlotationWheels()) : ceiling;
             Vec3 floating = velocity.add(0D, lift, 0D).multiply(ModPhysics.dragRetention(0.92D, level()), ModPhysics.dragRetention(0.8D, level()), ModPhysics.dragRetention(0.92D, level()));
             return applyEpicShipFlotation(floating);
@@ -7050,7 +7057,35 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 return true;
         }
         boolean bodyContact = configType.getWheelPositions().isEmpty() || (configType.isEpicShip() && epicShipDamage().sinking());
-        return submergedFlotationWheels() > 0 || (bodyContact && isInWater());
+        return submergedFlotationWheels() > 0 || (bodyContact && isInWater()) || Double.isFinite(legacyWaterlineDepth());
+    }
+
+    /**
+     * How far the point a hull without a draft floats on is below the water surface: the lowest intact wheel
+     * anchor, or the box bottom of a hull without wheels. Negative just above the surface, and NaN once clear of
+     * it or where the legacy lift still applies, namely forced legacy movement or a definition with no buoyancy.
+     */
+    private double legacyWaterlineDepth()
+    {
+        ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
+        if (configType.getBuoyancy() <= 0F || ModCommonConfig.forceLegacyMovement(physics.category()))
+            return Double.NaN;
+        Vec3 waterline = configType.getWheelPositions().isEmpty() ? new Vec3(getX(), getBoundingBox().minY, getZ()) : null;
+        for (int index = 0; index < configType.getWheelPositions().size(); index++)
+        {
+            DriveablePosition wheel = configType.getWheelPosition(index);
+            if (wheel == null || !isPartIntact(wheel.getPart()))
+                continue;
+            Vec3 anchor = getWheelWorldPosition(index);
+            if (this instanceof Vehicle)
+                anchor = anchor.add(0D, -configType.getFloatOffset(), 0D);
+            if (waterline == null || anchor.y < waterline.y)
+                waterline = anchor;
+        }
+        if (waterline == null)
+            return Double.NaN;
+        Vec3 probe = waterline.add(0D, -VehiclePhysicsConstants.LEGACY_WATERLINE_BAND_BLOCKS, 0D);
+        return flotationPointInWater(probe) ? findWaterSurfaceY(probe) - waterline.y : Double.NaN;
     }
 
     public boolean isEpicShipAtSea()
