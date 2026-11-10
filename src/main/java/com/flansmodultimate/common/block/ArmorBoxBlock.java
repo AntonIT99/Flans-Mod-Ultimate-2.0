@@ -7,6 +7,7 @@ import com.flansmodultimate.platform.block.FlanBlock;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -76,7 +77,7 @@ public class ArmorBoxBlock extends FlanBlock implements IFlanBlock<ArmorBoxType>
 
         ArmorBoxType.ArmourBoxEntry entry = configType.getPages().get(pageIndex);
         ArmorType armorType = entry.getArmorType(pieceIndex);
-        if (armorType == null)
+        if (armorType == null || EraEnforcement.refuses(player, armorType))
             return;
 
         ItemStack resultStack = ModUtils.getItemStack(armorType).orElse(ItemStack.EMPTY);

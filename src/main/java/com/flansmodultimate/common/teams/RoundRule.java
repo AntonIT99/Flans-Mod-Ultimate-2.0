@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.teams;
 
+import com.flansmodultimate.common.eras.EraRestriction;
+import com.flansmodultimate.common.eras.IssueDates;
 import lombok.Getter;
 
 import net.minecraft.resources.ResourceLocation;
@@ -20,11 +22,13 @@ public enum RoundRule
                     128), HOME_BASE_NO_ENTRY("homeBaseNoEntry"), HOME_BASE_NO_DAMAGE("homeBaseNoDamage"), WARMUP_SECONDS("warmupSeconds", 0, 0, 300), MINIMUM_PLAYERS("minimumPlayers", 0, 0,
                         100), REQUIRE_READY("requireReady"), TEAM_SWITCH_SECONDS("teamSwitchSeconds", 0, 0, 3600), PREVENT_LEADING_SIDE_JOIN("preventLeadingSideJoin"), FLAG_NO_VEHICLES(
                             "flagNoVehicles"), FLAG_NO_FLIGHT("flagNoFlight"), FLAG_BANNED_ITEMS("flagBannedItems", Kind.ITEMS, ""), SHOW_ENEMY_NAMEPLATES(
-                                "showEnemyNameplates"), HIDE_ALL_NAMEPLATES("hideAllNameplates"), HIDE_KILL_MESSAGES("hideKillMessages"), RESTRICT_SPECTATORS("restrictSpectators");
+                                "showEnemyNameplates"), HIDE_ALL_NAMEPLATES("hideAllNameplates"), HIDE_KILL_MESSAGES("hideKillMessages"), RESTRICT_SPECTATORS("restrictSpectators"), ERA_WINDOW("eraWindow", Kind.ERA, "");
 
     public enum Kind
     {
-        BOOLEAN, INTEGER, ITEMS
+        BOOLEAN, INTEGER, ITEMS,
+        /** An {@link EraRestriction} in its one-line form, or empty for none. */
+        ERA
     }
 
     private final String key;
@@ -80,10 +84,27 @@ public enum RoundRule
                 return id.toString();
             }).distinct().sorted().collect(Collectors.joining(","));
         }
+        if (kind == Kind.ERA)
+            return validateEra(clean);
         int number = Integer.parseInt(clean);
         if (number < minimum || number > maximum)
             throw new IllegalArgumentException("Expected a number from " + minimum + " to " + maximum);
         return Integer.toString(number);
+    }
+
+    /** A round restriction covers its participants only, so it may not despawn entities as a world restriction may. */
+    private static String validateEra(String clean)
+    {
+        if (clean.isEmpty())
+            return clean;
+        EraRestriction restriction = EraRestriction.parse(clean);
+        restriction.validate(IssueDates.eras()).ifPresent(problem ->
+        {
+            throw new IllegalArgumentException(problem);
+        });
+        if (restriction.policies().despawn())
+            throw new IllegalArgumentException("despawn=on is only for server and dimension restrictions");
+        return restriction.toString();
     }
 
     public static Optional<RoundRule> find(String key)

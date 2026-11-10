@@ -26,6 +26,7 @@ import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.fluid.FluidPlatform;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4f;
@@ -76,6 +77,8 @@ public class GunItemHandler
      */
     public boolean gunCanBeHandled(LivingEntity entity)
     {
+        if (!EraEnforcement.permits(entity, item.configType))
+            return false;
         // We can always use a 1H gun
         if (item.configType.isOneHanded())
             return true;
@@ -246,7 +249,7 @@ public class GunItemHandler
     public void doPlayerThrow(Level level, Player player, ItemStack gunStack)
     {
         GunType type = item.configType;
-        if (!gunCanBeHandled(player))
+        if (EraEnforcement.refuses(player, type) || !gunCanBeHandled(player))
             return;
         if (!type.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode()))
             return;
@@ -274,6 +277,8 @@ public class GunItemHandler
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
+        if (EraEnforcement.refuses(player, item.configType))
+            return;
         if (item.configType.isDeployable() || !gunCanBeHandled(player) || FlansMod.teamsManager.isPacifism() || FlansMod.teamsManager.getRoundRuleRuntime().blocksCombat(player)
             || FlansMod.teamsManager.getRoundRuleRuntime().blocksItemUse(player, gunStack))
             return;
@@ -896,6 +901,8 @@ public class GunItemHandler
 
     public boolean tryPlaceDeployable(Level level, Player player, ItemStack stack)
     {
+        if (EraEnforcement.refuses(player, item.configType))
+            return false;
         double length = 5.0D;
         Vec3 eyePos = player.getEyePosition(1.0F);
         Vec3 lookDir = player.getLookAngle();

@@ -19,6 +19,7 @@
   "gui.flansmod.teams.capture_point.title": "キャプチャーポイント",
   "gui.flansmod.teams.choose_class": "クラスを選択",
   "gui.flansmod.teams.choose_team": "チームを選択",
+  "gui.flansmod.teams.class_era_blocked": "許可された期間外：%s",
   "gui.flansmod.teams.class_slots": "使用中の枠: %1$s/%2$s",
   "gui.flansmod.teams.deaths": "死亡数",
   "gui.flansmod.teams.defeat": "敗北",

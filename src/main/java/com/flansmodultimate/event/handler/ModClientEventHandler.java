@@ -21,6 +21,8 @@ import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.FlansLog;
+import com.flansmodultimate.client.eras.EraClientState;
+import com.flansmodultimate.client.eras.EraClientViews;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -61,6 +63,7 @@ public final class ModClientEventHandler
         event.enqueueWork(() ->
         {
             CustomItemRenderers.registerAll();
+            EraClientState.addListener(EraClientViews::refreshCreativeTabs);
             DistantHorizonsClient.init();
 
             // Paintjob registrations
@@ -84,6 +87,21 @@ public final class ModClientEventHandler
             ItemProperties.register(FlansModItems.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
                 (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
         });
+    }
+
+    /** Greys the slots of items an era restriction blocks for the local player. */
+    @SubscribeEvent
+    public static void onRegisterItemDecorations(RegisterItemDecorationsEvent event)
+    {
+        for (RegistryEntry<Item> item : FlansMod.getItems())
+        {
+            if (item.get() instanceof IFlanItem<?>)
+                event.register(item.get(), (graphics, font, stack, x, y) ->
+                {
+                    EraClientViews.renderSlotOverlay(graphics, stack, x, y);
+                    return false;
+                });
+        }
     }
 
     @SubscribeEvent

@@ -20,7 +20,7 @@ class PacketTeamsDisplayNamesTest
         Component className = Component.translatableWithFallback("class.pack.crew", "Crewman");
         PacketTeamsState packet = new PacketTeamsState();
         set(packet, "teamChoices", List.of(new PacketTeamsState.TeamChoice("army_2", "Army", 0x123456, teamName)));
-        set(packet, "classChoices", List.of(new PacketTeamsState.ClassChoice("crew", "Crewman", 0, 0, 0, -1, List.of(), className)));
+        set(packet, "classChoices", List.of(new PacketTeamsState.ClassChoice("crew", "Crewman", 0, 0, 0, -1, List.of(), className, Component.literal("Panzerschreck"))));
         var player = new PacketTeamsState.PlayerScore("[Bot] Army", 5, 6, 7, 0, "Crewman", Component.literal("[Bot] ").append(teamName), className);
         set(packet, "teamScores", List.of(new PacketTeamsState.TeamScore("army_2", "Army", 0x123456, 5, 2, List.of(player), teamName)));
         set(packet, "voteOptions", List.of(new PacketTeamsState.VoteOption("Map", "TDM", teamName.copy().append(" vs ").append(teamName), 1)));
@@ -35,6 +35,7 @@ class PacketTeamsDisplayNamesTest
             assertEquals("Army", decoded.getTeamChoices().get(0).name());
             assertEquals("team.pack.army", ((TranslatableContents) decoded.getTeamChoices().get(0).displayName().getContents()).getKey());
             assertEquals(className, decoded.getClassChoices().get(0).displayName());
+            assertTrue(decoded.getClassChoices().get(0).isEraBlocked());
             assertEquals(player, decoded.getTeamScores().get(0).players().get(0));
             assertEquals(packet.getVoteOptions(), decoded.getVoteOptions());
         }

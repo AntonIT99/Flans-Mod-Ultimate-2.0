@@ -14,7 +14,10 @@ import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.network.client.teams.*;
 import com.flansmodultimate.platform.world.ChunkTicketPlatform;
 import com.flansmodultimate.platform.world.SavedDataPlatform;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
+import com.flansmodultimate.common.eras.EraEnforcement;
+import com.flansmodultimate.common.eras.EraRestrictions;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -148,6 +151,9 @@ public final class TeamsManager
 
     @Getter
     private RoundRules roundRuleDefaults = new RoundRules();
+    /** Why the last {@link #startRound} refused under the era windows, for the command that asked; {@code null} otherwise. */
+    @Nullable
+    private String lastStartProblem;
     @Getter
     private final RoundRuleRuntime roundRuleRuntime = new RoundRuleRuntime(this);
     @Getter
@@ -959,6 +965,16 @@ public final class TeamsManager
 
     public boolean startRound(int index)
     {
+        return startRound(index, false);
+    }
+
+    /**
+     * Starts the round at {@code index}. Unless forced, a round one of whose teams has no class to play under the era
+     * windows is refused, and {@link #getLastStartProblem} says why.
+     */
+    public boolean startRound(int index, boolean force)
+    {
+        lastStartProblem = null;
         ensureData();
         generateRounds();
         if (!enabled || index < 0 || index >= Objects.requireNonNull(savedData).rounds.size())
@@ -966,6 +982,15 @@ public final class TeamsManager
         TeamsRound next = Objects.requireNonNull(savedData).rounds.get(index);
         if (next.getGametype() == null || getMap(next.getMapId()).isEmpty())
             return false;
+        if (!force)
+        {
+            lastStartProblem = TeamsEraScope.startProblem(this, next, roundRuleDefaults).orElse(null);
+            if (lastStartProblem != null)
+            {
+                FlansLog.log.warn("Round {} was not started: {}", index, lastStartProblem);
+                return false;
+            }
+        }
 
         announceRoundEnded(null);
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
@@ -1025,7 +1050,15 @@ public final class TeamsManager
             syncLoadouts(player, PacketLoadoutState.OpenScreen.CLOSE, 0, "");
             syncPlayer(player, getPlayerTeam(player) == null || getPlayerTeam(player) == Team.SPECTATORS ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.CLOSE);
         });
+        // The round's era window now covers its participants.
+        EraRestrictions.restrictionsChanged(getServer());
         return true;
+    }
+
+    @Nullable
+    public String getLastStartProblem()
+    {
+        return lastStartProblem;
     }
 
     public boolean startNextRound()
@@ -1036,7 +1069,17 @@ public final class TeamsManager
             return false;
         int queued = queuedRoundIndex();
         queuedRoundId = null;
-        return startRound(queued >= 0 ? queued : (rotationIndex + 1) % savedData.rounds.size());
+        int size = savedData.rounds.size();
+        int first = queued >= 0 ? queued : (rotationIndex + 1) % size;
+        // A round the era windows leave a team without a class is skipped rather than stalling the rotation.
+        for (int offset = 0; offset < size; offset++)
+        {
+            if (startRound((first + offset) % size))
+                return true;
+            if (lastStartProblem == null)
+                return false;
+        }
+        return false;
     }
 
     /**
@@ -1174,6 +1217,7 @@ public final class TeamsManager
         clearMapWrecks();
         roundRunning = false;
         roundRuleRuntime.clear();
+        EraRestrictions.restrictionsChanged(getServer());
         currentRoundId = null;
         roundInstanceId = null;
         lastWinnerId = "";
@@ -1510,8 +1554,9 @@ public final class TeamsManager
         {
             if (savedData.rounds.get(i).getId().equals(chosen))
             {
-                startRound(i);
-                return;
+                if (startRound(i))
+                    return;
+                break;
             }
         }
         startNextRound();
@@ -1596,6 +1641,8 @@ public final class TeamsManager
         }
         getStats(player).setSelection(team.getShortName(), data.getNewPlayerClass() == null ? "" : data.getNewPlayerClass().getShortName());
         markDirty();
+        // Joining or leaving a team decides whether the round's era window covers the player.
+        EraRestrictions.sync(player);
         return true;
     }
 
@@ -1658,7 +1705,20 @@ public final class TeamsManager
         int used = countPlayersUsingClass(team, playerClass, player);
         if (!ClassLimits.hasSlot(capacity, used))
             return Component.translatable("message.flansmodultimate.teams.class_full", playerClass.getNameComponent(), used, capacity);
+        List<InfoType> blocked = TeamsEraScope.blockedTypes(player, playerClass);
+        if (!blocked.isEmpty())
+            return Component.translatable("message.flansmodultimate.teams.class_era_blocked", playerClass.getNameComponent(), TeamsEraScope.names(blocked));
         return null;
+    }
+
+    /** Tells the player their class is blocked by an era window; {@code true} when it is. */
+    private boolean describeEraRefusal(ServerPlayer player, PlayerClass playerClass)
+    {
+        List<InfoType> blocked = TeamsEraScope.blockedTypes(player, playerClass);
+        if (blocked.isEmpty())
+            return false;
+        player.sendSystemMessage(Component.translatable("message.flansmodultimate.teams.class_era_blocked", playerClass.getNameComponent(), TeamsEraScope.names(blocked)));
+        return true;
     }
 
     /** Slots a limited class has on a team at its present size; {@link ClassLimits#UNLIMITED} when it has no limit. */
@@ -2032,6 +2092,9 @@ public final class TeamsManager
         PlayerData data = PlayerData.getInstance(player);
         Team team = data.getTeam();
         PlayerClass playerClass = data.getPlayerClass();
+        // A class chosen before an era window began gives no equipment the window blocks: the player respawns without it.
+        if (playerClass != null && describeEraRefusal(player, playerClass))
+            playerClass = null;
         data.setReloadedAfterRespawn(false);
         player.getInventory().clearContent();
         for (EquipmentSlot slot : List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET))
@@ -2053,6 +2116,8 @@ public final class TeamsManager
                 if (loadoutSlot == LoadoutSlot.ARMOUR)
                     continue;
                 ItemStack stack = loadout.get(loadoutSlot);
+                if (!EraEnforcement.permits(player, stack))
+                    continue;
                 if (!stack.isEmpty() && !player.getInventory().add(stack.copy()))
                     player.drop(stack.copy(), false);
                 if (stack.getItem() instanceof IFlanItem<?> flanItem)

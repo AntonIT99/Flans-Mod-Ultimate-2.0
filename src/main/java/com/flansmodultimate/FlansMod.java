@@ -1,6 +1,9 @@
 package com.flansmodultimate;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
+import com.flansmodultimate.common.eras.EraRestrictions;
+import com.flansmodultimate.common.eras.IssueDates;
+import com.flansmodultimate.common.teams.TeamsEraScope;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
@@ -64,6 +67,8 @@ public class FlansMod
         PacksManagerExtraction.waitForPacksManagerExtractionIfPresent();
 
         // Register Everything
+        IssueDates.loadAll();
+        EraRestrictions.addProvider(new TeamsEraScope());
         CategoryManager.loadAll();
         ContentManager.reconcileContentPackLocations();
         ContentManager.findContentInFlanFolder();

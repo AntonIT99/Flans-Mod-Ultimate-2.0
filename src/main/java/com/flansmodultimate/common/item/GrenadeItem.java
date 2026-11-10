@@ -10,6 +10,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.item.ItemAttributes;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -143,6 +144,8 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
 
     private boolean throwGrenade(Level level, Player player, ItemStack stack, boolean byHand, boolean underhand, float charge)
     {
+        if (EraEnforcement.refuses(player, configType))
+            return false;
         PlayerData data = PlayerData.getInstance(player);
 
         // If can throw grenade

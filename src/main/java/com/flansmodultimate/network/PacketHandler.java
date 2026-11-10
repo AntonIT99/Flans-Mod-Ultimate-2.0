@@ -5,6 +5,7 @@ import com.flansmodultimate.network.client.config.*;
 import com.flansmodultimate.network.client.debug.*;
 import com.flansmodultimate.network.client.driveable.*;
 import com.flansmodultimate.network.client.effects.*;
+import com.flansmodultimate.network.client.eras.PacketEraState;
 import com.flansmodultimate.network.client.gun.*;
 import com.flansmodultimate.network.client.teams.*;
 import com.flansmodultimate.network.server.PacketProneRequest;
@@ -68,7 +69,7 @@ public final class PacketHandler
             PacketCommonConfigValues.class, PacketContentFingerprint.class, PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDistantContacts.class, PacketDistantExplosion.class,
             PacketDriveableBankFired.class, PacketDriveableCrashFireball.class, PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveableDestroyed.class,
             PacketDriveableImpact.class, PacketDriveablePassengerFired.class, PacketDriveablePrediction.class, PacketDriveableRenderState.class, PacketDriveableScreenShake.class,
-            PacketExplodeParticles.class, PacketFlak.class, PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class, PacketGunFireModeClient.class,
+            PacketEraState.class, PacketExplodeParticles.class, PacketFlak.class, PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class, PacketGunFireModeClient.class,
             PacketGunHolderAnimation.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class, PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class,
             PacketGunShootClient.class, PacketGunShotPose.class, PacketGunToggleClient.class, PacketGunVariableZoomClient.class, PacketHeldItemPresentation.class, PacketHitMarker.class,
             PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class, PacketParticles.class, PacketPlayerClassSkins.class, PacketProneState.class, PacketPlaySound.class,

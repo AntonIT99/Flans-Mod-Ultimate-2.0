@@ -19,6 +19,7 @@
   "gui.flansmod.teams.capture_point.title": "Точка захвата",
   "gui.flansmod.teams.choose_class": "Выбрать класс",
   "gui.flansmod.teams.choose_team": "Выбрать команду",
+  "gui.flansmod.teams.class_era_blocked": "Вне разрешённого периода: %s",
   "gui.flansmod.teams.class_slots": "Занято мест: %1$s/%2$s",
   "gui.flansmod.teams.deaths": "Смерти",
   "gui.flansmod.teams.defeat": "Поражение",

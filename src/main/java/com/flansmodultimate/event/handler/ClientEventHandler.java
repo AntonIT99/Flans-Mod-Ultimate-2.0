@@ -6,6 +6,7 @@ import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
+import com.flansmodultimate.client.eras.EraClientState;
 import com.flansmodultimate.client.gui.TeamsDeployScreen;
 import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
@@ -37,10 +38,12 @@ import com.flansmodultimate.network.server.driveable.PacketRequestDismount;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.client.ContentMismatchScreens;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.client.eras.EraClientViews;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.*;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.Nullable;
@@ -559,6 +562,13 @@ public final class ClientEventHandler
         CommonConfigMirror.request();
     }
 
+    /** Every Flan's item tells its service dates, and why it is blocked when an era restriction blocks it. */
+    @SubscribeEvent
+    public static void onItemTooltip(ItemTooltipEvent event)
+    {
+        EraClientViews.appendTooltip(event.getItemStack(), event.getToolTip());
+    }
+
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
@@ -577,6 +587,7 @@ public final class ClientEventHandler
         GpuModelCache.clear();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
         TeamsClientState.clear();
+        EraClientState.clear();
         com.flansmodultimate.client.teams.EditorClientState.clear();
         PlayerSkinOverrides.clear();
         TeamFlagTextures.clear();

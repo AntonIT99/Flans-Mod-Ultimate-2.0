@@ -130,7 +130,7 @@ final class RoundRulesPage extends TeamsPage
 
     private static String displayValue(RoundRule rule, String value)
     {
-        return rule.getKind() == RoundRule.Kind.ITEMS && value.isEmpty() ? "—" : value;
+        return (rule.getKind() == RoundRule.Kind.ITEMS || rule.getKind() == RoundRule.Kind.ERA) && value.isEmpty() ? "—" : value;
     }
 
     @Override

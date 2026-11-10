@@ -9,6 +9,7 @@ import com.flansmodultimate.config.EnumBreakableArmor;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.item.ItemAttributes;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -173,6 +175,27 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     public float getToughness()
     {
         return configType.getToughness();
+    }
+
+    /**
+     * Takes off worn pieces an era restriction blocks, about once a second, so they give no protection or effects. A
+     * player gets them back in the inventory, or dropped at their feet when it is full; nothing is deleted.
+     */
+    public static void removeEraBlockedArmor(LivingEntity entity)
+    {
+        if (!(entity instanceof ServerPlayer player) || (player.tickCount + (player.getUUID().hashCode() & 0x7fffffff)) % 20 != 0)
+            return;
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            if (slot.getType() != EquipmentSlot.Type.ARMOR)
+                continue;
+            ItemStack worn = player.getItemBySlot(slot);
+            if (!(worn.getItem() instanceof CustomArmorItem armor) || !EraEnforcement.refuses(player, armor.getConfigType()))
+                continue;
+            player.setItemSlot(slot, ItemStack.EMPTY);
+            if (!player.getInventory().add(worn))
+                player.drop(worn, false);
+        }
     }
 
     public static void handleMobEffects(LivingEntity entity)

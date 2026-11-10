@@ -6,6 +6,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.world.Container;
@@ -96,7 +97,8 @@ public class GunWorkbenchSlot extends Slot
         AttachmentType attachmentType = ((AttachmentItem) stack.getItem()).getConfigType();
         GunType gunType = gunItem.getConfigType();
 
-        return gunType.isAllowAllAttachments() || gunType.getAllowedAttachments().contains(attachmentType);
+        // A blocked attachment cannot be fitted; the client predicts the same, so the slot refuses it at once.
+        return (gunType.isAllowAllAttachments() || gunType.getAllowedAttachments().contains(attachmentType)) && EraEnforcement.permits(menu.getPlayer(), attachmentType);
     }
 
     @Override

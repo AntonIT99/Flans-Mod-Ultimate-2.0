@@ -172,9 +172,9 @@ public final class TeamsCommand
                 manager().setRoundsGenerator(enabled);
                 return success(context, "Rounds generator " + (enabled ? ENABLED : DISABLED));
             })))
-            .then(Commands.literal("start").executes(context -> manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND))
-                .then(Commands.argument(INDEX, IntegerArgumentType.integer(0))
-                    .executes(context -> manager().startRound(IntegerArgumentType.getInteger(context, INDEX)) ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_INVALID_ROUND_INDEX))))
+            .then(Commands.literal("start").executes(context -> manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, startFailure(MSG_NO_VALID_ROUND)))
+                .then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(context -> startRound(context, false))
+                    .then(Commands.literal("force").executes(context -> startRound(context, true)))))
             .then(Commands.literal("next").executes(context -> manager().startNextRound() ? success(context, "Advanced to the next round") : failure(context, MSG_NO_VALID_ROUND)))
             .then(Commands.literal("setnext").then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::queueRound)))
             .then(Commands.literal("ping").executes(TeamsCommand::listPings))
@@ -1039,6 +1039,21 @@ public final class TeamsCommand
     {
         context.getSource().sendSuccess(() -> message, true);
         return 1;
+    }
+
+    /** Starts the round of the command's index; {@code force} starts it although an era window leaves a team without a class. */
+    private static int startRound(CommandContext<CommandSourceStack> context, boolean force)
+    {
+        if (manager().startRound(IntegerArgumentType.getInteger(context, INDEX), force))
+            return success(context, MSG_ROUND_STARTED);
+        return failure(context, startFailure(MSG_INVALID_ROUND_INDEX));
+    }
+
+    /** The era problem that stopped the last start, with a hint at forcing it, or the general message. */
+    private static String startFailure(String fallback)
+    {
+        String problem = manager().getLastStartProblem();
+        return problem == null ? fallback : problem + ". An operator can start it anyway with /teams admin start <index> force.";
     }
 
     private static int failure(CommandContext<CommandSourceStack> context, String message)

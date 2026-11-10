@@ -1,5 +1,6 @@
 package com.flansmodultimate.hooks;
 
+import com.flansmodultimate.hooks.client.ClientEraHooksImpl;
 import com.flansmodultimate.hooks.client.ClientGunHooksImpl;
 import com.flansmodultimate.hooks.client.ClientPlayerHooksImpl;
 import com.flansmodultimate.hooks.client.ClientRenderHooksImpl;
@@ -29,6 +30,11 @@ public final class ClientHookFactories
     public static IClientRenderHooks createRenderHooks()
     {
         return new ClientRenderHooksImpl();
+    }
+
+    public static IClientEraHooks createEraHooks()
+    {
+        return new ClientEraHooksImpl();
     }
 
     public static IClientSoundHooks createSoundHooks()

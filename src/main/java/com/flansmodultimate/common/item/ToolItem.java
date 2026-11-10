@@ -12,6 +12,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketFlak;
 import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -89,6 +90,8 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
+        if (EraEnforcement.refuses(player, configType))
+            return InteractionResultHolder.fail(stack);
 
         if (configType.getFoodness() > 0)
             return super.use(level, player, hand);

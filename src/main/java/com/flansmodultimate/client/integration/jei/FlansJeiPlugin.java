@@ -25,6 +25,7 @@ import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 
 /** Optional JEI entry point; common initialization never references this class. */
 @JeiPlugin
@@ -37,6 +38,18 @@ public final class FlansJeiPlugin implements IModPlugin
     public @NotNull ResourceLocation getPluginUid()
     {
         return ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "workbenches");
+    }
+
+    @Override
+    public void onRuntimeAvailable(@NotNull IJeiRuntime runtime)
+    {
+        EraJeiHiding.attach(runtime);
+    }
+
+    @Override
+    public void onRuntimeUnavailable()
+    {
+        EraJeiHiding.detach();
     }
 
     @Override

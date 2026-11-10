@@ -30,6 +30,9 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     @Getter
     private final GunWorkbenchContainer gunInv;
     private final ContainerLevelAccess access;
+    /** Whose era restrictions decide which attachments fit. */
+    @Getter
+    private final Player player;
     private final HolderLookup.Provider registries;
 
     // layout constants
@@ -63,6 +66,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     public GunWorkbenchMenu(int id, Inventory playerInv, BlockPos blockPos)
     {
         super(FlansModMenus.gunWorkbenchMenu.get(), id);
+        this.player = playerInv.player;
         this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
         this.registries = playerInv.player.level().registryAccess();
 

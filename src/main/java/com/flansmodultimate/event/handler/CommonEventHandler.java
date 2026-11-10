@@ -12,6 +12,7 @@ import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.driveables.collision.DriveableCollisionBypass;
 import com.flansmodultimate.common.entity.*;
+import com.flansmodultimate.common.eras.EraRestrictions;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.guns.GunArmPoses;
@@ -35,6 +36,7 @@ import com.flansmodultimate.network.client.teams.PacketKillMessage;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.world.LootTablePlatform;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import lombok.*;
 import net.minecraftforge.event.*;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -124,6 +126,7 @@ public final class CommonEventHandler
         ShootPointDebugCommand.register(event.getDispatcher());
         HitboxDebugCommand.register(event.getDispatcher());
         TeamsCommand.register(event.getDispatcher());
+        EraCommand.register(event.getDispatcher());
         ThrownGunDespawnCommand.register(event.getDispatcher());
         TryClassCommand.register(event.getDispatcher());
         TryTeamCommand.register(event.getDispatcher());
@@ -280,6 +283,7 @@ public final class CommonEventHandler
             HitboxDebugCommand.syncOnLogin(sp);
             com.flansmodultimate.common.teams.editor.TeamEditorService.get().sync(sp, "", "", "");
             FlansMod.teamsManager.playerLoggedIn(sp);
+            EraRestrictions.sync(sp);
             applyMaxHealth(sp);
         }
     }
@@ -303,7 +307,11 @@ public final class CommonEventHandler
     public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event)
     {
         if (event.getEntity() instanceof ServerPlayer player)
+        {
             ProneSupport.reset(player);
+            // A dimension can carry its own era restriction.
+            EraRestrictions.sync(player);
+        }
     }
 
     /** A player coming into view brings how they hold their guns and whether they lie prone, which only change when they change them. */
@@ -336,6 +344,7 @@ public final class CommonEventHandler
         EntityTrackingPins.unpin(event.getEntity().getUUID());
         regenTimers.remove(event.getEntity().getUUID());
         ProneSupport.forget(event.getEntity());
+        EraRestrictions.loggedOut(event.getEntity());
         if (event.getEntity() instanceof ServerPlayer player)
             FlansMod.teamsManager.playerLoggedOut(player);
     }
@@ -380,6 +389,9 @@ public final class CommonEventHandler
      */
     public static boolean canPickUp(ServerPlayer player, ItemEntity item)
     {
+        InfoType pickedType = EraEnforcement.typeOf(item.getItem());
+        if (pickedType != null && EraEnforcement.refuses(player, pickedType))
+            return false;
         TeamsManager manager = FlansMod.teamsManager;
         if (!manager.isEnabled() || manager.getCurrentRound().isEmpty())
             return true;
@@ -425,6 +437,7 @@ public final class CommonEventHandler
 
         if (living instanceof Player || living instanceof Mob)
         {
+            CustomArmorItem.removeEraBlockedArmor(living);
             CustomArmorItem.handleSpecialEffects(living);
             CustomArmorItem.handleMobEffects(living);
         }

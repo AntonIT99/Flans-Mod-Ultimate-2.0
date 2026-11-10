@@ -11,6 +11,7 @@ import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,7 +60,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand)
     {
         ItemStack heldStack = player.getItemInHand(hand);
-        if (!canPlayerPlace(player))
+        if (!canPlayerPlace(player) || EraEnforcement.refuses(player, configType))
             return InteractionResultHolder.fail(heldStack);
 
         BlockHitResult hit = raytracePlacement(level, player);
