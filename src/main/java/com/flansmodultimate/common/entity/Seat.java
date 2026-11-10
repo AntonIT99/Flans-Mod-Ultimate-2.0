@@ -19,6 +19,7 @@ import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.common.eras.EraEntities;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -693,7 +694,7 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     {
         // Nobody boards a wreck, NPC gunners included.
         return getPassengers().isEmpty() && (driveable == null || !driveable.isWreck()) && passenger instanceof LivingEntity
-            && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER));
+            && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER)) && EraEntities.mayBoard(passenger, this);
     }
 
     @Override

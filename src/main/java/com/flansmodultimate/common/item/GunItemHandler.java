@@ -27,6 +27,7 @@ import com.flansmodultimate.platform.fluid.FluidPlatform;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.common.eras.EraEnforcement;
+import com.flansmodultimate.common.eras.EraEntities;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4f;
@@ -936,6 +937,7 @@ public class GunItemHandler
                 if (!exists)
                 {
                     DeployedGun mg = new DeployedGun(level, mgPos, direction, item.configType);
+                    EraEntities.tagIfBypassing(mg, player);
                     level.addFreshEntity(mg);
 
                     if (!player.getAbilities().instabuild)

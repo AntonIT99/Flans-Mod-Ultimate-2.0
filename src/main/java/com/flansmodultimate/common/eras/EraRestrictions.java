@@ -132,12 +132,16 @@ public final class EraRestrictions
     {
         verdicts.set(newVerdicts());
         syncAll(server);
+        if (server != null)
+            EraEntities.sweep(server);
     }
 
     /** Call after a restriction was set or cleared. */
     public static void restrictionsChanged(@Nullable MinecraftServer server)
     {
         syncAll(server);
+        if (server != null)
+            EraEntities.sweep(server);
     }
 
     public static void syncAll(@Nullable MinecraftServer server)

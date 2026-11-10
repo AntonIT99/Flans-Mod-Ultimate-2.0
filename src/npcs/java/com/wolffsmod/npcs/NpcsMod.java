@@ -10,6 +10,7 @@ import com.wolffsmod.npcs.network.NpcNetwork;
 import com.wolffsmod.npcs.platform.network.NpcNetworkPlatform;
 import com.wolffsmod.npcs.scripting.FlansScriptApi;
 import com.wolffsmod.npcs.tactics.NpcThreats;
+import com.wolffsmod.npcs.teams.BattleEras;
 import com.wolffsmod.npcs.teams.BattlesSection;
 import com.wolffsmod.npcs.teams.FriendlyFire;
 import com.wolffsmod.npcs.teams.NpcSuppression;
@@ -46,6 +47,7 @@ public class NpcsMod
         FlansProjectiles.addSuppressionListener(NpcSuppression.INSTANCE);
         FlansProjectiles.addArmorImpactListener(NpcVehicleCombat::impact);
         FriendlyFire.register();
+        BattleEras.register();
         NpcPosture.register();
         FlansCommandCentre.addSection(BattlesSection.KEY, BattlesSection::build);
         modEventBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(FlansScriptApi::register));

@@ -229,6 +229,14 @@ final class WarsPage extends BattlePage
         button(view, tr("war.scope_all"), x + half + GAP, y, scopeWidth, tr("war.scope_all.tip"), () -> run(view, SCOPE, name, "all")).active = !war.scope().isEmpty();
         button(view, tr("war.scope_here"), x + half + GAP + scopeWidth + GAP, y, scopeWidth, tr("war.scope_here.tip"), () -> run(view, SCOPE, name, "here"));
         y += ROW;
+        String eraKey = "era@" + war.name();
+        view.addField(eraKey, x, y, width - 44, war.era(), tr("war.era")).setTooltip(Tooltip.create(tr("war.era.tip")));
+        button(view, tr("set"), x + width - 40, y, 40, () ->
+        {
+            String window = view.getField(eraKey).strip();
+            run(view, "teams war era", name, window.isEmpty() ? "clear" : window);
+        });
+        y += ROW;
         if (data.dimensions().isEmpty())
             return;
         dimension = keep(data.dimensions(), dimension.isEmpty() ? data.here() : dimension, "");

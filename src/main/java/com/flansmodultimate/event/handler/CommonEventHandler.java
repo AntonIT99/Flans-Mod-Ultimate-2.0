@@ -37,6 +37,7 @@ import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.world.LootTablePlatform;
 import com.flansmodultimate.common.eras.EraEnforcement;
+import com.flansmodultimate.common.eras.EraEntities;
 import lombok.*;
 import net.minecraftforge.event.*;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -109,6 +110,8 @@ public final class CommonEventHandler
     {
         if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob)
             AmbientMobArmor.equipIfPending(mob);
+        if (!event.getLevel().isClientSide)
+            EraEntities.checkJoined(event.getEntity());
     }
 
     @SubscribeEvent
@@ -438,6 +441,7 @@ public final class CommonEventHandler
         if (living instanceof Player || living instanceof Mob)
         {
             CustomArmorItem.removeEraBlockedArmor(living);
+            EraEntities.dismountBlocked(living);
             CustomArmorItem.handleSpecialEffects(living);
             CustomArmorItem.handleMobEffects(living);
         }

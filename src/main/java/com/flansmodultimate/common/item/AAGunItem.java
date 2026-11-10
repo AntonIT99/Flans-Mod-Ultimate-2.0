@@ -11,6 +11,7 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.common.eras.EraEnforcement;
+import com.flansmodultimate.common.eras.EraEntities;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -97,6 +98,8 @@ public class AAGunItem extends FlanItem implements IFlanItem<AAGunType>
             aaGun.discard();
             return null;
         }
+        if (placer != null)
+            EraEntities.tagIfBypassing(aaGun, placer);
         if (level.addFreshEntity(aaGun))
             return aaGun;
         limits.placementFailed(aaGun);

@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.teams.centre;
 
+import com.flansmodultimate.common.eras.EraSection;
 import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.teams.PacketCommandCentreState;
@@ -36,6 +37,7 @@ public final class CommandCentre
     static
     {
         SECTIONS.put(TeamsSection.KEY, TeamsSection::build);
+        SECTIONS.put(EraSection.KEY, EraSection::build);
     }
 
     /** A line of a command's output. */

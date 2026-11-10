@@ -55,6 +55,7 @@ class SkirmishTest
         skirmish.setDifficulty(BotSettings.Difficulty.VETERAN);
         skirmish.setProtection(false);
         skirmish.setFront(new Vec3(100D, 66D, 0D));
+        skirmish.setEraWindow("equal ww2");
         return skirmish;
     }
 
@@ -76,6 +77,7 @@ class SkirmishTest
         assertEquals(before.getDimension(), after.getDimension());
         assertEquals(before.getId(), after.getId());
         assertEquals("El Alamein", after.getName());
+        assertEquals("equal ww2", after.getEraWindow());
         assertEquals(before.getSides(), after.getSides());
         assertEquals(Skirmish.Intent.PUSH, after.getIntent());
         assertEquals(Skirmish.End.TIME, after.getEnd());

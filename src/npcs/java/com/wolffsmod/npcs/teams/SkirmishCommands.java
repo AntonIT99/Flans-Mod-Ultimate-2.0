@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.api.eras.FlansEras;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -39,6 +40,7 @@ import java.util.function.UnaryOperator;
 public final class SkirmishCommands
 {
     private static final String SKIRMISH = "skirmish";
+    private static final String ERA = "era";
     private static final String NAME = "name";
     private static final String FACTION = "faction";
     private static final String OTHER = "other";
@@ -103,6 +105,8 @@ public final class SkirmishCommands
         root.then(forces());
         root.then(settings());
         root.then(presets());
+        root.then(Commands.literal(ERA).then(skirmishArgument().then(Commands.literal("clear").executes(context -> setEra(context, "")))
+            .then(Commands.argument(ERA, StringArgumentType.greedyString()).executes(context -> setEra(context, StringArgumentType.getString(context, ERA))))));
         SkirmishTroopCommands.addTo(root);
         dispatcher.register(Commands.literal("teams").then(root));
     }
@@ -518,6 +522,26 @@ public final class SkirmishCommands
     private static Optional<Skirmish> skirmishOrEmpty(CommandContext<CommandSourceStack> context)
     {
         return SkirmishStore.get(context.getSource().getServer()).named(StringArgumentType.getString(context, NAME));
+    }
+
+    /** Sets or clears the era window of a draft, which its bots and the members of its factions will fight under. */
+    private static int setEra(CommandContext<CommandSourceStack> context, String restriction) throws CommandSyntaxException
+    {
+        Skirmish target = draft(context);
+        String window;
+        try
+        {
+            window = FlansEras.validateRestriction(restriction);
+        }
+        catch (IllegalArgumentException exception)
+        {
+            context.getSource().sendFailure(Component.literal(exception.getMessage()));
+            return 0;
+        }
+        target.setEraWindow(window);
+        SkirmishStore.get(context.getSource().getServer()).setDirty();
+        context.getSource().sendSuccess(() -> window.isEmpty() ? text("era_cleared", target.getName()) : text("era_set", target.getName(), window), true);
+        return 1;
     }
 
     private static Skirmish draft(CommandContext<CommandSourceStack> context) throws CommandSyntaxException

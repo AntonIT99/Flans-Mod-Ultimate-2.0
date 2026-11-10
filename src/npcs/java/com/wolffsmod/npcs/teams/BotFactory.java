@@ -133,7 +133,9 @@ public final class BotFactory
 
     private static Optional<EntityNPCInterface> soldier(ServerLevel level, Order order, String className, Vec3 position, RandomGenerator random, Consumer<EntityNPCInterface> enlist)
     {
-        IPlayerClass playerClass = order.team().getClasses().stream().filter(candidate -> candidate.getShortName().equals(className)).findFirst().map(IPlayerClass.class::cast).orElse(null);
+        IPlayerClass asked = order.team().getClasses().stream().filter(candidate -> candidate.getShortName().equals(className)).findFirst().map(IPlayerClass.class::cast).orElse(null);
+        // An era window swaps a blocked class for one the team may play; with none left, the bot does not come.
+        IPlayerClass playerClass = BattleEras.allowedClass(BattleEras.contextFor(level, order), order.team(), asked);
         if (playerClass == null)
             return Optional.empty();
         EntityNPCInterface npc = fromClone(level, order.force(), position).orElse(null);
@@ -177,6 +179,8 @@ public final class BotFactory
     public static Optional<EntityNPCInterface> vehicle(ServerLevel level, Order order, float yaw, RandomGenerator random)
     {
         Optional<FlanModelEntityType> type = FlanModelNpcs.type(order.slot().getRole());
+        if (type.isPresent() && !BattleEras.allows(BattleEras.contextFor(level, order), type.get().getInfoType()))
+            return Optional.empty();
         List<Integer> allowed = order.slot().getEntry() >= 0 && order.slot().getEntry() < order.force().getVehicles().size()
             ? order.force().getVehicles().get(order.slot().getEntry()).paintjobs()
             : List.of(0);

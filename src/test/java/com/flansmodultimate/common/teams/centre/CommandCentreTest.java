@@ -23,6 +23,9 @@ class CommandCentreTest
         assertFalse(CommandLines.isCentreCommand("execute run gamerule keepInventory true"));
         assertFalse(CommandLines.isCentreCommand("teamspeak"));
         assertFalse(CommandLines.isCentreCommand(CommandLines.normalise("/op somebody")));
+        assertTrue(CommandLines.isCentreCommand("flansmodultimate era server set equal WW2"));
+        assertTrue(CommandLines.isCentreCommand("FlansModUltimate era date clear m4a1"));
+        assertFalse(CommandLines.isCentreCommand("flansmodultimate rearm"));
     }
 
     @Test

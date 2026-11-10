@@ -73,6 +73,7 @@ public final class BattlesSection
     public static final String DIFFICULTY = "difficulty";
     public static final String CUSTOM_DIFFICULTY = "custom_difficulty";
     public static final String PROTECTION = "protection";
+    public static final String ERA_WINDOW = "era_window";
     public static final String MARKER_MAP = "marker_map";
     public static final String DIMENSION = "dimension";
     public static final String WAR = "war";
@@ -254,6 +255,7 @@ public final class BattlesSection
         tag.putString(DIFFICULTY, BotCommands.lower(skirmish.getDifficulty()));
         tag.put(CUSTOM_DIFFICULTY, skirmish.getCustomTraining().save());
         tag.putBoolean(PROTECTION, skirmish.isProtection());
+        tag.putString(ERA_WINDOW, skirmish.getEraWindow());
         tag.putString(MARKER_MAP, skirmish.getMarkerMap());
         tag.putString(DIMENSION, skirmish.getDimension().location().toString());
         tag.putBoolean(WAR, skirmish.getWar() != null);
@@ -297,6 +299,7 @@ public final class BattlesSection
         CompoundTag tag = new CompoundTag();
         tag.putString(NAME, war.getName());
         tag.putBoolean(RUNNING, war.isRunning());
+        tag.putString(ERA_WINDOW, war.getEraWindow());
         tag.putIntArray(FACTIONS, war.getFactions().stream().mapToInt(Integer::intValue).toArray());
         Map<Integer, Integer> holdings = war.holdings();
         tag.putIntArray(HOLDINGS, war.getFactions().stream().mapToInt(faction -> holdings.getOrDefault(faction, 0)).toArray());

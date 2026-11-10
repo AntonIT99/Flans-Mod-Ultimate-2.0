@@ -85,7 +85,9 @@ class WarTest
     void aStoredWarKeepsItsTerritoryEngagementsAndSettings()
     {
         War before = northAfrica();
+        before.setEraWindow("until 1945");
         War after = War.load(before.save()).orElseThrow();
+        assertEquals("until 1945", after.getEraWindow());
         assertEquals(before.getId(), after.getId());
         assertEquals(List.of(GERMANY, BRITAIN), after.getFactions());
         assertTrue(after.covers(Level.OVERWORLD));

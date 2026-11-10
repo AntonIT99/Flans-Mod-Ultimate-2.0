@@ -374,6 +374,14 @@ final class SkirmishesPage extends BattlePage
             () -> number(view, ticketsKey, 0, Integer.MAX_VALUE, tr("skirmish.tickets")).ifPresent(tickets -> run(view, SET, name, "tickets", tickets))).active = skirmish.draft();
         toggle(view, tr("skirmish.protection"), rules.protection(), right, y, half, enabled -> run(view, SET, name, "protection", Boolean.TRUE.equals(enabled) ? "on" : "off"))
             .setTooltip(Tooltip.create(tr("skirmish.protection.tip")));
+        y += ROW;
+        String eraKey = "era@" + skirmish.name();
+        view.addField(eraKey, x, y, width - 44, skirmish.era(), tr("skirmish.era")).setTooltip(Tooltip.create(tr("skirmish.era.tip")));
+        button(view, tr("set"), x + width - 40, y, 40, () ->
+        {
+            String window = view.getField(eraKey).strip();
+            run(view, "teams skirmish era", name, window.isEmpty() ? "clear" : window);
+        }).active = skirmish.draft();
     }
 
     @Override

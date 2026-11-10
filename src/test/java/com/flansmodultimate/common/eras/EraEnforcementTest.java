@@ -28,4 +28,13 @@ class EraEnforcementTest
         assertEquals("1942-02 – 1957", EraEnforcement.describePeriod(ServicePeriod.parse("1942-02 1957")));
         assertEquals("~1944 –", EraEnforcement.describePeriod(ServicePeriod.parse("~1944")));
     }
+
+    @Test
+    void onlyWorldScopesMayDespawnWhatTheyDidNotSpawn()
+    {
+        assertTrue(EraScope.Kind.SERVER.isDespawnAllowed());
+        assertTrue(EraScope.Kind.DIMENSION.isDespawnAllowed());
+        assertFalse(EraScope.Kind.ROUND.isDespawnAllowed());
+        assertFalse(EraScope.Kind.BATTLE.isDespawnAllowed());
+    }
 }

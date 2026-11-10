@@ -138,7 +138,7 @@ public final class TeamsEraScope implements EraScopeProvider
         return new ScopedRestriction(new EraScope(EraScope.Kind.ROUND, key), restriction);
     }
 
-    /** A player on a team or choosing one, or an entity a Teams spawner created. */
+    /** A player on a team or choosing one, a combatant such as a round bot, or an entity a Teams spawner created. */
     private static boolean isParticipant(Entity subject)
     {
         if (subject instanceof ServerPlayer player)
@@ -146,7 +146,13 @@ public final class TeamsEraScope implements EraScopeProvider
             PlayerData data = PlayerData.getInstance(player);
             return isPlaying(data.getTeam()) || isPlaying(data.getNewTeam());
         }
-        return subject.getPersistentData().hasUUID(SpawnerVehicles.SPAWNER);
+        return subject.getPersistentData().hasUUID(SpawnerVehicles.SPAWNER) || isPlaying(TeamsCombatants.getPlayingTeam(TeamsManager.getInstance(), subject));
+    }
+
+    /** The running round's restriction, for what its combatants are given before they exist. */
+    public static Optional<ScopedRestriction> currentRestriction()
+    {
+        return Optional.ofNullable(current(TeamsManager.getInstance()));
     }
 
     private static boolean isPlaying(@Nullable Team team)

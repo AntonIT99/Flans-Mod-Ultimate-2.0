@@ -74,6 +74,12 @@ public final class EraClientState
         return verdicts.check(state.restrictions(), type);
     }
 
+    /** Verdicts for the server's eras and dates, for judging restrictions other than the player's own. */
+    public static EraVerdicts verdicts()
+    {
+        return verdicts;
+    }
+
     @Nullable
     public static ServicePeriod periodOf(InfoType type)
     {

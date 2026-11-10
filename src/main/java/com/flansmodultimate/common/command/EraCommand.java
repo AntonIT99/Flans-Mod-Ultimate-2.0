@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.command;
 
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.eras.Era;
+import com.flansmodultimate.common.eras.EraEntities;
 import com.flansmodultimate.common.eras.EraRestriction;
 import com.flansmodultimate.common.eras.EraRestrictions;
 import com.flansmodultimate.common.eras.EraSavedData;
@@ -32,6 +34,10 @@ import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.io.IOException;
 import java.util.List;
@@ -54,6 +60,7 @@ public final class EraCommand
     private static final String FILTER = "filter";
     private static final String PAGE = "page";
     private static final int PAGE_SIZE = 15;
+    private static final double UNTAG_REACH = 8D;
     private static final String DATED = "dated";
     private static final String UNDATED = "undated";
     private static final String OVERRIDES = "overrides";
@@ -87,6 +94,7 @@ public final class EraCommand
         era.then(Commands.literal("bypass").requires(EraCommand::operator).executes(context -> bypass(context.getSource(), null))
             .then(Commands.literal("on").executes(context -> bypass(context.getSource(), true)))
             .then(Commands.literal("off").executes(context -> bypass(context.getSource(), false))));
+        era.then(Commands.literal("untag").requires(EraCommand::operator).executes(context -> untag(context.getSource())));
         era.then(Commands.literal("eras").requires(EraCommand::operator).executes(context -> listEras(context.getSource()))
             .then(Commands.literal("list").executes(context -> listEras(context.getSource())))
             .then(Commands.literal("reload").executes(context -> reload(context.getSource()))));
@@ -308,6 +316,34 @@ public final class EraCommand
         EraRestrictions.setBypassing(player, bypass);
         source.sendSuccess(() -> Component.literal(bypass ? "Era bypass on until you turn it off or log out" : "Era bypass off"), true);
         return 1;
+    }
+
+    /** Clears the bypass mark of the Flan's entity the operator rides or looks at, so strict despawning covers it again. */
+    private static int untag(CommandSourceStack source) throws CommandSyntaxException
+    {
+        ServerPlayer player = source.getPlayerOrException();
+        Entity target = player.getVehicle() instanceof Seat seat ? seat.getDriveable() : player.getVehicle();
+        if (target == null || EraEntities.typeOf(target) == null)
+        {
+            Vec3 eye = player.getEyePosition();
+            Vec3 end = eye.add(player.getLookAngle().scale(UNTAG_REACH));
+            EntityHitResult hit = ProjectileUtil.getEntityHitResult(player, eye, end, player.getBoundingBox().expandTowards(end.subtract(eye)).inflate(1D),
+                entity -> EraEntities.typeOf(entity) != null, UNTAG_REACH * UNTAG_REACH);
+            target = hit == null ? null : hit.getEntity();
+        }
+        if (target == null)
+        {
+            source.sendFailure(Component.literal("Ride or look at a Flan's vehicle, AA gun or deployed gun within " + (int) UNTAG_REACH + " blocks"));
+            return 0;
+        }
+        boolean tagged = EraEntities.isBypassTagged(target);
+        target.getPersistentData().remove(EraEntities.BYPASS_TAG);
+        Entity untagged = target;
+        source.sendSuccess(() -> Component.literal(tagged ? untagged.getName().getString() + " is no longer kept by an operator bypass" : untagged.getName().getString() + " had no bypass mark"),
+            true);
+        if (tagged && EraEntities.shouldDespawn(untagged))
+            EraEntities.sweep(source.getServer());
+        return tagged ? 1 : 0;
     }
 
     private static int listEras(CommandSourceStack source)

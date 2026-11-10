@@ -22,6 +22,7 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEntities;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -506,7 +507,8 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger)
     {
-        return super.canAddPassenger(passenger) && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ENTER));
+        return super.canAddPassenger(passenger) && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ENTER))
+            && EraEntities.mayBoard(passenger, this);
     }
 
     @Override

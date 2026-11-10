@@ -195,6 +195,12 @@ public record EraRestriction(BoundaryMode mode, @Nullable ServiceDate lower, @Nu
         return introduced <= highest && retiredMonth(period, introduced, eras) >= lowest;
     }
 
+    /** The last month the item counts as in service under this restriction's retirement policy, for drawing it. */
+    public int serviceEnd(ServicePeriod period, EraCatalog eras)
+    {
+        return retiredMonth(period, period.introduction().first(eras), eras);
+    }
+
     /**
      * The last month of service. A dated item never serves into the future, however open its service, so a window that
      * reaches only the future admits science fiction alone.

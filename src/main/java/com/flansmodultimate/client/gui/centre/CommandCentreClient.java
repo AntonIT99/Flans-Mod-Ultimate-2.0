@@ -34,7 +34,7 @@ public final class CommandCentreClient
 
     static
     {
-        for (ICommandCentrePage builtIn : List.of(new OverviewPage(), new RotationPage(), new MapsPage(), new RulesPage(), new RoundRulesPage(), new ServerPage()))
+        for (ICommandCentrePage builtIn : List.of(new OverviewPage(), new RotationPage(), new MapsPage(), new RulesPage(), new RoundRulesPage(), new ErasPage(), new TimelinePage(), new ServerPage()))
             PAGES.put(builtIn.getId(), builtIn);
     }
 

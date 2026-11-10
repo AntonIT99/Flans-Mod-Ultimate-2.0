@@ -6729,7 +6729,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return blast;
     }
 
-    protected void dropContents()
+    public void dropContents()
     {
         if (driveableData == null)
             return;
