@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.item.tooltip.TooltipKeys;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -30,11 +32,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 {
@@ -46,6 +50,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     protected static final int EFFECT_DURATION = 600; // 30 seconds
     protected static final int EFFECT_REFRESH_THRESHOLD = 60; // refresh when < 3 seconds remaining
     protected static final Map<UUID, Set<MobEffect>> LAST_ARMOR_EFFECTS = new HashMap<>();
+    private static final String DEPLETED_TAG = "FlansDepleted";
 
     protected static final UUID[] armor_uuid = new UUID[]{UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B"), UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D"),
         UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"), UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150")};
@@ -104,10 +109,58 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         return super.getMaxDamage(stack);
     }
 
+    /**
+     * @return whether this piece ran out of durability under the Teams {@code keepBrokenArmor} rule: it stays worn for its look but
+     *         gives no protection or bonuses, and keeps only its weight penalties, until it is repaired
+     */
+    public boolean isDepleted(ItemStack stack)
+    {
+        CompoundTag tag = stack.getTag();
+        return tag != null && tag.getBoolean(DEPLETED_TAG) && isDamageable(stack) && stack.getDamageValue() >= getMaxDamage(stack) - 1;
+    }
+
+    @Override
+    public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken)
+    {
+        return wear(stack, amount, FlansMod.teamsManager.keepsBrokenArmor());
+    }
+
+    /** @return the wear to apply, which stops at the last point of durability and marks the piece depleted when {@code keep} spares it from breaking */
+    int wear(ItemStack stack, int amount, boolean keep)
+    {
+        int remaining = getMaxDamage(stack) - 1 - stack.getDamageValue();
+        if (!keep || amount <= remaining)
+            return amount;
+        stack.getOrCreateTag().putBoolean(DEPLETED_TAG, true);
+        return Math.max(0, remaining);
+    }
+
+    @Override
+    public void setDamage(ItemStack stack, int damage)
+    {
+        super.setDamage(stack, damage);
+        if (damage < getMaxDamage(stack) - 1)
+            stack.removeTagKey(DEPLETED_TAG);
+    }
+
+    @Override
+    public int getEnchantmentLevel(ItemStack stack, Enchantment enchantment)
+    {
+        return isDepleted(stack) ? 0 : super.getEnchantmentLevel(stack, enchantment);
+    }
+
+    @Override
+    public Map<Enchantment, Integer> getAllEnchantments(ItemStack stack)
+    {
+        return isDepleted(stack) ? Map.of() : super.getAllEnchantments(stack);
+    }
+
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        if (isDepleted(stack))
+            tooltipComponents.add(Component.translatable(TooltipKeys.DEPLETED).withStyle(ChatFormatting.RED));
         if (!IFlanItem.showDetailedDescriptions())
             return;
         tooltipComponents.add(Component.empty());
@@ -158,19 +211,28 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     @NotNull
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot)
     {
-        return ItemAttributes.armor(slot, configType.getArmorItemType().getSlot(), super.getDefaultAttributeModifiers(slot), this::addAttributeModifiers);
+        return ItemAttributes.armor(slot, configType.getArmorItemType().getSlot(), super.getDefaultAttributeModifiers(slot), modifiers -> addAttributeModifiers(modifiers, false));
     }
 
-    private void addAttributeModifiers(ItemAttributes.Modifiers modifiers)
+    @Override
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack)
+    {
+        if (!isDepleted(stack))
+            return super.getAttributeModifiers(slot, stack);
+        return ItemAttributes.armor(slot, configType.getArmorItemType().getSlot(), super.getDefaultAttributeModifiers(slot), modifiers -> addAttributeModifiers(modifiers, true));
+    }
+
+    private void addAttributeModifiers(ItemAttributes.Modifiers modifiers, boolean depleted)
     {
         EquipmentSlot slot = configType.getArmorItemType().getSlot();
         String slotName = slot.getName();
         int index = slot.getIndex();
-        modifiers.add(Attributes.ARMOR, "armor/" + slotName, () -> armor_uuid[index], "Armor modifier", getDefense(), ItemAttributes.Operation.ADD_VALUE);
-        modifiers.add(Attributes.ARMOR_TOUGHNESS, "armor_toughness/" + slotName, () -> armor_uuid[index], "Armor toughness", getToughness(), ItemAttributes.Operation.ADD_VALUE);
-        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed/" + slotName, () -> speed_uuid[index], "Movement Speed", configType.getMoveSpeedModifier() - 1F,
+        float speed = configType.getMoveSpeedModifier() - 1F;
+        modifiers.add(Attributes.ARMOR, "armor/" + slotName, () -> armor_uuid[index], "Armor modifier", depleted ? 0 : getDefense(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.ARMOR_TOUGHNESS, "armor_toughness/" + slotName, () -> armor_uuid[index], "Armor toughness", depleted ? 0F : getToughness(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed/" + slotName, () -> speed_uuid[index], "Movement Speed", depleted ? Math.min(0F, speed) : speed,
             ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
-        modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance/" + slotName, () -> kb_uuid[index], "Knockback Resistance", configType.getKnockbackModifier(),
+        modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance/" + slotName, () -> kb_uuid[index], "Knockback Resistance", depleted ? 0F : configType.getKnockbackModifier(),
             ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
@@ -230,7 +292,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
         for (ItemStack armor : entity.getArmorSlots())
         {
-            if (!(armor.getItem() instanceof CustomArmorItem armorItem))
+            if (!(armor.getItem() instanceof CustomArmorItem armorItem) || armorItem.isDepleted(armor))
                 continue;
 
             collectArmorEffects(armorItem.configType, counts, desiredExtra);
@@ -390,7 +452,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             return;
         for (ItemStack armor : entity.getArmorSlots())
         {
-            if (armor.getItem() instanceof CustomArmorItem armorItem && armorItem.configType.isNegateFallDamage())
+            if (armor.getItem() instanceof CustomArmorItem armorItem && !armorItem.isDepleted(armor) && armorItem.configType.isNegateFallDamage())
             {
                 entity.fallDistance = 0F;
                 return;
@@ -414,7 +476,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
         for (ItemStack armor : entity.getArmorSlots())
         {
-            if (armor.getItem() instanceof CustomArmorItem armorItem && armorItem.configType.isOnWaterWalking())
+            if (armor.getItem() instanceof CustomArmorItem armorItem && !armorItem.isDepleted(armor) && armorItem.configType.isOnWaterWalking())
                 return true;
         }
         return false;
@@ -432,7 +494,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         float snorkelDepth = 0F;
         for (ItemStack armor : entity.getArmorSlots())
         {
-            if (armor.getItem() instanceof CustomArmorItem armorItem)
+            if (armor.getItem() instanceof CustomArmorItem armorItem && !armorItem.isDepleted(armor))
             {
                 airSupply += armorItem.configType.getAirSupply();
                 snorkelDepth = Math.max(snorkelDepth, armorItem.configType.getSnorkelDepth());
@@ -468,7 +530,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         for (ItemStack armor : entity.getArmorSlots())
         {
             if (armor.getItem() instanceof CustomArmorItem armorItem)
-                mul *= armorItem.configType.getJumpModifier();
+                mul *= armorItem.isDepleted(armor) ? Math.min(1F, armorItem.configType.getJumpModifier()) : armorItem.configType.getJumpModifier();
         }
 
         if (Math.abs(mul - 1F) < 1e-6f)
@@ -492,7 +554,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
         for (ItemStack stack : entity.getArmorSlots())
         {
-            if (stack.getItem() instanceof CustomArmorItem armorItem)
+            if (stack.getItem() instanceof CustomArmorItem armorItem && !armorItem.isDepleted(stack))
             {
                 double r = armorItem.getConfigType().getDefence();
                 if (r > 0.0)
@@ -569,7 +631,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         // Sum up defences from all 4 armor slots
         for (ItemStack stack : entity.getArmorSlots())
         {
-            if (!(stack.getItem() instanceof CustomArmorItem armorItem))
+            if (!(stack.getItem() instanceof CustomArmorItem armorItem) || armorItem.isDepleted(stack))
                 continue;
             totalNormalDef += (float) armorItem.getConfigType().getDefence();
             totalBulletDef += (float) armorItem.getConfigType().getBulletDefence();

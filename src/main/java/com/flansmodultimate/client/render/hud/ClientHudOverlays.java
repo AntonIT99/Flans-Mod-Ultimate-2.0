@@ -639,7 +639,7 @@ public final class ClientHudOverlays
 
         for (ItemStack stack : player.getArmorSlots())
         {
-            if (!(stack.getItem() instanceof CustomArmorItem armorItem))
+            if (!(stack.getItem() instanceof CustomArmorItem armorItem) || armorItem.isDepleted(stack))
                 continue;
 
             ArmorType armorType = armorItem.getConfigType();

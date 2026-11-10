@@ -80,6 +80,7 @@ public final class TeamsManager
     private static final String NBT_BULLETS = "bullets";
     private static final String NBT_ADVENTURE = "adventure";
     private static final String NBT_ARMOUR_DROPS = "armour_drops";
+    private static final String NBT_KEEP_BROKEN_ARMOR = "keep_broken_armor";
     private static final String NBT_FUEL = "fuel";
     private static final String NBT_VEHICLES_CAN_ZOOM = "vehicles_can_zoom";
     private static final String NBT_OVERRIDE_HUNGER = "override_hunger";
@@ -189,6 +190,8 @@ public final class TeamsManager
     private boolean forceAdventureMode = true;
     @Getter @Setter
     private boolean armourDrops = true;
+    @Getter @Setter
+    private boolean keepBrokenArmor = true;
     private boolean vehiclesNeedFuel = true;
     @Getter
     private boolean vehiclesCanZoom;
@@ -564,6 +567,12 @@ public final class TeamsManager
         if (savedData == null || currentRoundId == null)
             return Optional.empty();
         return savedData.rounds.stream().filter(round -> currentRoundId.equals(round.getId())).findFirst();
+    }
+
+    /** @return whether armor that runs out of durability now stays worn, which the {@code keepBrokenArmor} rule asks only of a Teams round */
+    public boolean keepsBrokenArmor()
+    {
+        return keepBrokenArmor && enabled && getCurrentRound().isPresent();
     }
 
     public Optional<com.flansmodultimate.common.teams.GameType> getCurrentGameType()
@@ -2822,6 +2831,8 @@ public final class TeamsManager
             forceAdventureMode = tag.getBoolean(NBT_ADVENTURE);
         if (tag.contains(NBT_ARMOUR_DROPS))
             armourDrops = tag.getBoolean(NBT_ARMOUR_DROPS);
+        if (tag.contains(NBT_KEEP_BROKEN_ARMOR))
+            keepBrokenArmor = tag.getBoolean(NBT_KEEP_BROKEN_ARMOR);
         if (tag.contains(NBT_FUEL))
             vehiclesNeedFuel = tag.getBoolean(NBT_FUEL);
         vehiclesCanZoom = tag.contains(NBT_VEHICLES_CAN_ZOOM) && tag.getBoolean(NBT_VEHICLES_CAN_ZOOM);
@@ -2952,6 +2963,7 @@ public final class TeamsManager
         tag.putBoolean(NBT_BULLETS, bulletsEnabled);
         tag.putBoolean(NBT_ADVENTURE, forceAdventureMode);
         tag.putBoolean(NBT_ARMOUR_DROPS, armourDrops);
+        tag.putBoolean(NBT_KEEP_BROKEN_ARMOR, keepBrokenArmor);
         tag.putBoolean(NBT_FUEL, vehiclesNeedFuel);
         tag.putBoolean(NBT_VEHICLES_CAN_ZOOM, vehiclesCanZoom);
         tag.putBoolean(NBT_OVERRIDE_HUNGER, overrideHunger);

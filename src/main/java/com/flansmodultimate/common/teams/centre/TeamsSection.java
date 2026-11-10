@@ -79,7 +79,7 @@ public final class TeamsSection
      * {@code overrideHunger}.
      */
     public static final List<String> SWITCHES = List.of("restoreBlocks", "bodyPartDamageModifiers", "explosions", "canBreakGlass", "canBreakGuns", "canBreakAAGuns", "vehiclesBreakBlocks",
-        "survivalCanBreakVehicles", "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "bombs", "shells", "bullets", "armourDrops", "overrideHunger", "regeneration", "alliedSpawns",
+        "survivalCanBreakVehicles", "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "bombs", "shells", "bullets", "armourDrops", "keepBrokenArmor", "overrideHunger", "regeneration", "alliedSpawns",
         "fuelNeeded", "vehiclesCanZoom", "movieProp", "bloodEffects", "corpses");
     /** How long abandoned driveables last, by the {@code /teams} command that sets each, in seconds. */
     public static final List<String> LIFETIMES = List.of("mgLife", "planeLife", "vehicleLife", "mechaLife", "aaLife");
@@ -269,6 +269,7 @@ public final class TeamsSection
         tag.putBoolean("shells", manager.isShellsEnabled());
         tag.putBoolean("bullets", manager.isBulletsEnabled());
         tag.putBoolean("armourDrops", manager.isArmourDrops());
+        tag.putBoolean("keepBrokenArmor", manager.isKeepBrokenArmor());
         tag.putBoolean("overrideHunger", manager.isOverrideHunger());
         tag.putBoolean("regeneration", manager.isRegeneration());
         tag.putBoolean("alliedSpawns", manager.isAlliedSpawnSharing());

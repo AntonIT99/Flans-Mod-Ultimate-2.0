@@ -174,7 +174,7 @@ public class PlayerHitbox
 
     private static float getSlotPenetrationResistance(ItemStack stack, float unarmored)
     {
-        return stack.getItem() instanceof CustomArmorItem armour ? armour.getConfigType().getPenetrationResistance() : unarmored;
+        return stack.getItem() instanceof CustomArmorItem armour && !armour.isDepleted(stack) ? armour.getConfigType().getPenetrationResistance() : unarmored;
     }
 
     public ShootingHelper.HitData hitByBullet(FiredShot shot, ShootingHelper.HitData hitData, @Nullable Bullet bullet)

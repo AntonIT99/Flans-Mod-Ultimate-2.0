@@ -141,7 +141,7 @@ public final class EquipmentSupport
 
     public static Optional<EquippedArmorProperties> armor(ItemStack stack)
     {
-        if (!(stack.getItem() instanceof CustomArmorItem item))
+        if (!(stack.getItem() instanceof CustomArmorItem item) || item.isDepleted(stack))
             return Optional.empty();
         var type = item.getConfigType();
         return Optional.of(new EquippedArmorProperties(type.getDefence(), type.getBulletDefence(), type.isNegateFallDamage(), type.isWaterBreathing(), type.isFireResistance(), type.isInvisible()));

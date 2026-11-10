@@ -32,6 +32,7 @@ public final class TooltipKeys
     public static final String DAMAGED_PARTS = "tooltip.flansmodultimate.damaged_parts";
     public static final String DEPLOYABLE = "tooltip.flansmodultimate.deployable";
     public static final String DISPERSION = "tooltip.flansmodultimate.dispersion";
+    public static final String DEPLETED = "tooltip.flansmodultimate.depleted";
     public static final String DURABILITY = "tooltip.flansmodultimate.durability";
     public static final String REPAIR_AMOUNT = "tooltip.flansmodultimate.repair_amount";
     public static final String TOOL_USES = "tooltip.flansmodultimate.tool_uses";

@@ -6,6 +6,7 @@ import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -77,6 +78,64 @@ class ArmorWearTest
         verify(sparedStack, never()).hurtAndBreak(anyInt(), any(LivingEntity.class), any());
         verify(wornStack).hurtAndBreak(eq(1), eq(worn), any());
         verify(mobStack, never()).hurtAndBreak(anyInt(), any(LivingEntity.class), any());
+    }
+
+    private static CustomArmorItem durableArmor(ItemStack stack, int maxDamage)
+    {
+        CustomArmorItem armor = mock(CustomArmorItem.class);
+        when(armor.wear(any(), anyInt(), anyBoolean())).thenCallRealMethod();
+        when(armor.isDepleted(any())).thenCallRealMethod();
+        when(armor.isDamageable(stack)).thenReturn(true);
+        when(armor.getMaxDamage(stack)).thenReturn(maxDamage);
+        return armor;
+    }
+
+    private static ItemStack stackWith(CompoundTag tag, int damage)
+    {
+        ItemStack stack = mock(ItemStack.class);
+        when(stack.getTag()).thenReturn(tag);
+        when(stack.getOrCreateTag()).thenReturn(tag);
+        when(stack.getDamageValue()).thenReturn(damage);
+        return stack;
+    }
+
+    @Test
+    void keptArmorStopsAtItsLastPointAndBecomesDepleted()
+    {
+        ItemStack stack = stackWith(new CompoundTag(), 95);
+        CustomArmorItem armor = durableArmor(stack, 100);
+
+        assertEquals(4, armor.wear(stack, 20, true));
+        when(stack.getDamageValue()).thenReturn(99);
+        assertTrue(armor.isDepleted(stack));
+        assertEquals(0, armor.wear(stack, 20, true));
+    }
+
+    @Test
+    void armorStillBreaksWhenTheRuleDoesNotKeepItAndOrdinaryWearDoesNotDepleteIt()
+    {
+        ItemStack stack = stackWith(new CompoundTag(), 95);
+        CustomArmorItem armor = durableArmor(stack, 100);
+
+        assertEquals(20, armor.wear(stack, 20, false));
+        assertEquals(2, armor.wear(stack, 2, true));
+        when(stack.getDamageValue()).thenReturn(99);
+        assertFalse(armor.isDepleted(stack));
+    }
+
+    @Test
+    void repairedOrUnbreakableArmorIsNoLongerDepleted()
+    {
+        CompoundTag tag = new CompoundTag();
+        ItemStack stack = stackWith(tag, 95);
+        CustomArmorItem armor = durableArmor(stack, 100);
+        armor.wear(stack, 20, true);
+
+        assertFalse(armor.isDepleted(stack));
+        when(stack.getDamageValue()).thenReturn(99);
+        assertTrue(armor.isDepleted(stack));
+        when(armor.isDamageable(stack)).thenReturn(false);
+        assertFalse(armor.isDepleted(stack));
     }
 
     @Test

@@ -21,7 +21,7 @@ public final class ReloadPouchSupport
         float selected = Float.NaN;
         for (ItemStack worn : holder.getArmorSlots())
         {
-            if (worn.getItem() instanceof CustomArmorItem armor && matches(armor.getConfigType(), item.getConfigType()))
+            if (worn.getItem() instanceof CustomArmorItem armor && !armor.isDepleted(worn) && matches(armor.getConfigType(), item.getConfigType()))
             {
                 float candidate = armor.getConfigType().getReloadMultiplier();
                 selected = Float.isNaN(selected) ? candidate : Math.min(selected, candidate);

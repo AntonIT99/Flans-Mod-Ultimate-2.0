@@ -30,7 +30,8 @@ final class TeamsRulePresets implements ISettingsPresets
         Map.entry("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks), Map.entry("survivalCanBreakVehicles", TeamsManager::setSurvivalCanBreakVehicles),
         Map.entry("survivalCanPlaceVehicles", TeamsManager::setSurvivalCanPlaceVehicles), Map.entry("forceAdventure", TeamsManager::setForceAdventureMode),
         Map.entry("pacifism", TeamsManager::setPacifism), Map.entry("bombs", TeamsManager::setBombsEnabled), Map.entry("shells", TeamsManager::setShellsEnabled),
-        Map.entry("bullets", TeamsManager::setBulletsEnabled), Map.entry("armourDrops", TeamsManager::setArmourDrops), Map.entry("overrideHunger", TeamsManager::setOverrideHunger),
+        Map.entry("bullets", TeamsManager::setBulletsEnabled), Map.entry("armourDrops", TeamsManager::setArmourDrops), Map.entry("keepBrokenArmor", TeamsManager::setKeepBrokenArmor),
+        Map.entry("overrideHunger", TeamsManager::setOverrideHunger),
         Map.entry("regeneration", TeamsManager::setRegeneration), Map.entry("alliedSpawns", TeamsManager::setAlliedSpawnSharing), Map.entry("fuelNeeded", TeamsManager::setVehiclesNeedFuel),
         Map.entry("vehiclesCanZoom", TeamsManager::setVehiclesCanZoom), Map.entry("movieProp", TeamsManager::setMovieProp), Map.entry("bloodEffects", TeamsManager::setBloodEffects),
         Map.entry("corpses", TeamsManager::setCorpses));

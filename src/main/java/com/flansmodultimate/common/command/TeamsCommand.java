@@ -465,7 +465,7 @@ public final class TeamsCommand
         {
             context.getSource().sendSuccess(() -> Component.translatable("message.flansmodultimate.centre.help"), false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|bloodEffects|parachutesCanBeHit|canBreakGuns|canBreakAAGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns|corpses> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection|playerRegenSeconds|botRegenSeconds|corpseLife|bloodLife> <seconds>"),
+                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|bloodEffects|parachutesCanBeHit|canBreakGuns|canBreakAAGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|keepBrokenArmor|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns|corpses> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection|playerRegenSeconds|botRegenSeconds|corpseLife|bloodLife> <seconds>"),
                 false);
             context.getSource()
                 .sendSuccess(() -> Component.literal("Rounds and server: /teams setRound <index>, /teams goToMap <index>, /teams ping, /teams bltss [<min> <divisor>], /teams motd <text>"), false);
@@ -512,6 +512,7 @@ public final class TeamsCommand
             .then(rule("survivalCanPlaceVehicles", TeamsManager::setSurvivalCanPlaceVehicles, enabled -> "Survival players can " + (enabled ? "now" : NO_LONGER) + " place vehicles"))
             .then(rule("armourDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : NO_LONGER) + " be dropped"))
             .then(rule("armorDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : NO_LONGER) + " be dropped"))
+            .then(rule("keepBrokenArmor", TeamsManager::setKeepBrokenArmor, enabled -> "Armor that runs out of durability during a round will " + (enabled ? "now stay on without protection" : "now break")))
             .then(rule("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks, enabled -> "Vehicles will " + (enabled ? "now" : NO_LONGER) + " break blocks"))
             .then(rule("alliedSpawns", TeamsManager::setAlliedSpawnSharing, enabled -> "Allied teams will " + (enabled ? "now" : NO_LONGER) + " spawn at each other's bases"))
             .then(Commands.literal("weaponDrops").requires(source -> source.hasPermission(2))

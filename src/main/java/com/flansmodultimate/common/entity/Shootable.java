@@ -239,7 +239,7 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
             ItemStack stack = entity.getItemBySlot(slot);
-            if (!stack.isEmpty() && stack.getItem() instanceof CustomArmorItem armour && armour.getConfigType().isSmokeProtection())
+            if (!stack.isEmpty() && stack.getItem() instanceof CustomArmorItem armour && !armour.isDepleted(stack) && armour.getConfigType().isSmokeProtection())
                 return true;
         }
         return false;

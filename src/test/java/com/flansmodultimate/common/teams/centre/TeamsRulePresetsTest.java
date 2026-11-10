@@ -43,6 +43,21 @@ class TeamsRulePresetsTest
     }
 
     @Test
+    void brokenArmorIsKeptByDefaultButOnlyWhileARoundIsRunning()
+    {
+        TeamsManager manager = new TeamsManager();
+        assertTrue(manager.isKeepBrokenArmor());
+        assertFalse(manager.keepsBrokenArmor());
+
+        TeamsRulePresets presets = new TeamsRulePresets(() -> manager);
+        CompoundTag rules = presets.capture("");
+        assertTrue(rules.getBoolean("keepBrokenArmor"));
+        rules.putBoolean("keepBrokenArmor", false);
+        presets.apply(rules, "");
+        assertFalse(manager.isKeepBrokenArmor());
+    }
+
+    @Test
     void fullSnapshotRestoresSeaLevelDefaultAndRejectsAllInvalidValuesBeforeMutation()
     {
         TeamsManager manager = new TeamsManager();
