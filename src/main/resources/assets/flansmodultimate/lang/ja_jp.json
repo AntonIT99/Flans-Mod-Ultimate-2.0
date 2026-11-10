@@ -647,6 +647,8 @@
   "options.flansmodultimate.hitMarkerStyle": "ヒットマーカーのスタイル",
   "options.flansmodultimate.holdToProne": "長押しで伏せる",
   "options.flansmodultimate.holdToProne.tooltip": "伏せキーを押している間だけ伏せます。無効の場合、押すたびに伏せと起立を切り替え、ジャンプでも立ち上がります。",
+  "options.flansmodultimate.invertGrenadeThrowButtons": "ææ¦´å¼¾ææ²ãã¿ã³ãå¥ãæ¿ã",
+  "options.flansmodultimate.invertGrenadeThrowButtons.tooltip": "é·æ¼ãææ²ã®ææ¦´å¼¾ã®ãã¿ã³ãå¥ãæ¿ãã¾ããä½¿ç¨ã§ä¸ææããæ»æã§ä¸ææãã«ãªãã¾ãã",
   "options.flansmodultimate.impostorPreset": "インポスター",
   "options.flansmodultimate.impostorPreset.tooltip": "遠くの車両や航空機に使うインポスターの固定段階です。高性能設定ほど早く切り替わりますが、画像品質の制限を受けます。オフは無効化、カスタムは現在の値を維持します。モデルLODとは独立しています。",
   "options.flansmodultimate.impostorPreset.values": "画面上のしきい値: %s px\n最短距離: %s ブロック\n優先距離: %s ブロック\n品質倍率: ×%s\n基本画像: %s px、%s 方向",
@@ -765,9 +767,9 @@
   "options.flansmodultimate.thrownGunDespawnSeconds": "投げた銃の消滅時間 (秒)",
   "options.flansmodultimate.tooltip.current_value": "現在の値: %s",
   "options.flansmodultimate.tooltip.default_value": "デフォルト値: %s",
+  "options.flansmodultimate.uncensoredContentByDefault": "無修正コンテンツをデフォルトで有効化",
   "options.flansmodultimate.useNewPenetrationSystem": "新しい貫通システムを使用",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "ワールド読込時にコンテンツ参照を検証",
-  "options.flansmodultimate.uncensoredContentByDefault": "無修正コンテンツをデフォルトで有効化",
   "options.flansmodultimate.value.aimpose.dynamic": "動的",
   "options.flansmodultimate.value.aimpose.enforced": "常時",
   "options.flansmodultimate.value.aimtype.hold": "長押し",

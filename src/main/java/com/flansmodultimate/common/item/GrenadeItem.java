@@ -7,6 +7,7 @@ import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.teams.TeamsSpawnProtection;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.item.ItemAttributes;
 import lombok.Getter;
@@ -19,7 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -73,7 +74,11 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
             return;
         tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_SPEED), IFlanItem.formatFloat(configType.getThrowSpeed() * 10F) + " m/s"));
         if (configType.isHoldToThrow())
-            tooltipComponents.add(Component.translatable(TooltipKeys.HOLD_TO_THROW).withStyle(ChatFormatting.YELLOW));
+        {
+            ModClientConfig clientConfig = ModClientConfig.get();
+            boolean inverted = clientConfig != null && clientConfig.invertGrenadeThrowButtons;
+            tooltipComponents.add(Component.translatable(inverted ? TooltipKeys.HOLD_TO_THROW_INVERTED : TooltipKeys.HOLD_TO_THROW).withStyle(ChatFormatting.YELLOW));
+        }
         tooltipComponents.add(Component.empty());
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
