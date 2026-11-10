@@ -1,5 +1,101 @@
 {
 
+    "French Modele 1886 Lebel Bayonet service period": {
+        "properties": {
+            "IssueDate": "~1887",
+            "RetirementDate": "1940"
+        },
+        "items": [
+            "lebelbayonet"
+        ]
+    },
+
+    "GP-25 underbarrel grenade launcher service period": {
+        "properties": {
+            "IssueDate": "1978"
+        },
+        "items": [
+            "gp25"
+        ]
+    },
+
+    "M68 Close Combat Optic service period": {
+        "properties": {
+            "IssueDate": "2000"
+        },
+        "items": [
+            "m68cco"
+        ]
+    },
+
+    "M150 Rifle Combat Optic service period": {
+        "properties": {
+            "IssueDate": "2008"
+        },
+        "items": [
+            "acog"
+        ]
+    },
+
+    "No. 32 Mk II Telescope service period": {
+        "properties": {
+            "IssueDate": "1943-04",
+            "RetirementDate": "~1970"
+        },
+        "items": [
+            "44_no32mkiiscope"
+        ]
+    },
+
+    "Pattern 1907 Bayonet service period": {
+        "properties": {
+            "IssueDate": "1908",
+            "RetirementDate": "~1959"
+        },
+        "items": [
+            "leebayonet"
+        ]
+    },
+
+    "PSO-1 Telescope service period": {
+        "properties": {
+            "IssueDate": "1963"
+        },
+        "items": [
+            "pso1"
+        ]
+    },
+
+    "PU Telescope service period": {
+        "properties": {
+            "IssueDate": "~1941",
+            "RetirementDate": "~1963"
+        },
+        "items": [
+            "44_puscope"
+        ]
+    },
+
+    "Schiessbecher rifle grenade launcher service period": {
+        "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "schiessbecher"
+        ]
+    },
+
+    "Seitengewehr 98/05 Bayonet service period": {
+        "properties": {
+            "IssueDate": "1905",
+            "RetirementDate": "~1935"
+        },
+        "items": [
+            "seitengewehr98"
+        ]
+    },
+
     "TPR foregrips": {
         "properties": {},
         "items": [
@@ -75,7 +171,9 @@
     },
 
     "TPR SMAW spotting rifle": {
-        "properties": {},
+        "properties": {
+            "IssueDate": "1984"
+        },
         "items": [
             "smawspottingrifle"
         ]
@@ -86,6 +184,56 @@
         "items": [
             "gp25",
             "schiessbecher"
+        ]
+    },
+
+    "Type 97 Rifle Telescope service period": {
+        "properties": {
+            "IssueDate": "~1939",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "44_type97scope"
+        ]
+    },
+
+    "Unertl 8X USMC Telescope service period": {
+        "properties": {
+            "IssueDate": "~1943",
+            "RetirementDate": "~1966"
+        },
+        "items": [
+            "44_unertl8xscope"
+        ]
+    },
+
+    "ZF 4 Telescope service period": {
+        "properties": {
+            "IssueDate": "~1944",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "44_zf4scope"
+        ]
+    },
+
+    "ZF 39 Telescope service period": {
+        "properties": {
+            "IssueDate": "~1940",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "44_zf39scope"
+        ]
+    },
+
+    "ZF 41 Telescope service period": {
+        "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "44_zf41scope"
         ]
     }
 }

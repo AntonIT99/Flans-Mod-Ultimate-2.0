@@ -445,6 +445,7 @@
 
     "Future Combat Trooper Armour (Boots)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.06",
             "BulletDefence": "0.07",
             "PenetrationResistance": "0.67",
@@ -460,6 +461,7 @@
 
     "Future Combat Trooper Armour (Chest)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.16",
             "BulletDefence": "0.19",
             "PenetrationResistance": "1.90",
@@ -476,6 +478,7 @@
 
     "Future Combat Trooper Armour (Helmet)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.06",
             "BulletDefence": "0.07",
             "PenetrationResistance": "1.90",
@@ -491,6 +494,7 @@
 
     "Future Combat Trooper Armour (Legs)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.12",
             "BulletDefence": "0.14",
             "PenetrationResistance": "1.24",
@@ -2131,6 +2135,58 @@
         ]
     },
 
+    "German M35 Stahlhelm service period": {
+        "properties": {
+            "IssueDate": "1936",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "m35stahlhelm"
+        ]
+    },
+
+    "German M38 Paratrooper Stahlhelm service period": {
+        "properties": {
+            "IssueDate": "1938",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "m38stahlhelm",
+            "m38stahlhelmjump"
+        ]
+    },
+
+    "German M42 Stahlhelm service period": {
+        "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "44_germanm42feldgraustahlhelm",
+            "m42stahlhelm"
+        ]
+    },
+
+    "German M1916 Stahlhelm service period": {
+        "properties": {
+            "IssueDate": "1916",
+            "RetirementDate": "~1936"
+        },
+        "items": [
+            "stahlhelm"
+        ]
+    },
+
+    "German Model 1895 Pickelhaube service period": {
+        "properties": {
+            "IssueDate": "1895",
+            "RetirementDate": "1916"
+        },
+        "items": [
+            "pickehaube"
+        ]
+    },
+
     "Heavy Assault Armour (Boots)": {
         "properties": {
             "Defence": "0.08",
@@ -2224,6 +2280,16 @@
         },
         "items": [
             "panhelmet"
+        ]
+    },
+
+    "Japanese Type 90 Army Helmet service period": {
+        "properties": {
+            "IssueDate": "1930",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "type90helmet"
         ]
     },
 
@@ -2689,8 +2755,29 @@
         ]
     },
 
+    "Soviet SSh-36 Steel Helmet service period": {
+        "properties": {
+            "IssueDate": "1936",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "ssh36"
+        ]
+    },
+
+    "Soviet SSh-40 Steel Helmet service period": {
+        "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "~1989"
+        },
+        "items": [
+            "ssh40"
+        ]
+    },
+
     "Star Wars Battle Droid Chassis": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.26",
             "BulletDefence": "0.24",
             "PenetrationResistance": "1.90",
@@ -2731,6 +2818,7 @@
 
     "Star Wars Droideka Chassis": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.08",
             "BulletDefence": "0.07",
             "PenetrationResistance": "1.90",
@@ -2744,6 +2832,7 @@
 
     "Star Wars Droideka Deflector Shield": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.26",
             "BulletDefence": "0.26",
             "PenetrationResistance": "2.40",
@@ -2759,6 +2848,7 @@
 
     "Star Wars Jedi And Sith Boots": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.02",
             "BulletDefence": "0.00",
             "PenetrationResistance": "0.35",
@@ -2774,6 +2864,7 @@
 
     "Star Wars Jedi And Sith Robes (Chest)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.03",
             "BulletDefence": "0.01",
             "PenetrationResistance": "1.00",
@@ -2788,6 +2879,7 @@
 
     "Star Wars Jedi And Sith Robes (Head)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.01",
             "BulletDefence": "0.00",
             "PenetrationResistance": "1.00",
@@ -2804,6 +2896,7 @@
 
     "Star Wars Jedi And Sith Robes (Legs)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.02",
             "BulletDefence": "0.01",
             "PenetrationResistance": "0.65",
@@ -2818,6 +2911,7 @@
 
     "Star Wars Jet Trooper Armour": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.06",
             "BulletDefence": "0.07",
             "PenetrationResistance": "0.67",
@@ -2832,6 +2926,7 @@
 
     "Star Wars Trooper Armour (Boots)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.06",
             "BulletDefence": "0.07",
             "PenetrationResistance": "0.67",
@@ -2869,6 +2964,7 @@
 
     "Star Wars Trooper Armour (Chest)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.16",
             "BulletDefence": "0.19",
             "PenetrationResistance": "1.90",
@@ -2907,6 +3003,7 @@
 
     "Star Wars Trooper Armour (Helmet)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.06",
             "BulletDefence": "0.07",
             "PenetrationResistance": "1.90",
@@ -2949,6 +3046,7 @@
 
     "Star Wars Trooper Armour (Legs)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.12",
             "BulletDefence": "0.14",
             "PenetrationResistance": "1.24",
@@ -2986,8 +3084,72 @@
         ]
     },
 
+    "U.S. Improved Outer Tactical Vest (OCP) service period": {
+        "properties": {
+            "IssueDate": "2015"
+        },
+        "items": [
+            "iotv"
+        ]
+    },
+
+    "U.S. Interceptor Outer Tactical Vest service period": {
+        "properties": {
+            "IssueDate": "1999",
+            "RetirementDate": "~2010"
+        },
+        "items": [
+            "interceptorbodyarmor"
+        ]
+    },
+
+    "U.S. M1 Steel Helmet service period": {
+        "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "1988"
+        },
+        "items": [
+            "44_americanm1helmetnetting",
+            "44_americanm1helmetnonetting",
+            "m1pot",
+            "m1potnetting"
+        ]
+    },
+
+    "U.S. M1952 Fragmentation Vest service period": {
+        "properties": {
+            "IssueDate": "1952",
+            "RetirementDate": "~1970"
+        },
+        "items": [
+            "m1956"
+        ]
+    },
+
+    "U.S. PASGT Helmet service period": {
+        "properties": {
+            "IssueDate": "1981",
+            "RetirementDate": "~2006"
+        },
+        "items": [
+            "pasgt",
+            "pasgtnaked"
+        ]
+    },
+
+    "U.S. PASGT Vest service period": {
+        "properties": {
+            "IssueDate": "1982",
+            "RetirementDate": "~2004"
+        },
+        "items": [
+            "pasgtvest"
+        ]
+    },
+
     "Warhammer 40k Imperial Guard Flak Armour (Boots)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.06",
             "BulletDefence": "0.05",
             "PenetrationResistance": "0.53",
@@ -3002,6 +3164,7 @@
 
     "Warhammer 40k Imperial Guard Flak Armour (Chest)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.16",
             "BulletDefence": "0.12",
             "PenetrationResistance": "1.50",
@@ -3017,6 +3180,7 @@
 
     "Warhammer 40k Imperial Guard Flak Armour (Helmet)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.06",
             "BulletDefence": "0.05",
             "PenetrationResistance": "1.50",
@@ -3031,6 +3195,7 @@
 
     "Warhammer 40k Imperial Guard Flak Armour (Legs)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.12",
             "BulletDefence": "0.09",
             "PenetrationResistance": "0.98",
@@ -3046,6 +3211,7 @@
 
     "Warhammer 40k Space Marine Power Armour (Boots)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.10",
             "BulletDefence": "0.10",
             "PenetrationResistance": "0.84",
@@ -3068,6 +3234,7 @@
 
     "Warhammer 40k Space Marine Power Armour (Chest)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.26",
             "BulletDefence": "0.26",
             "PenetrationResistance": "2.40",
@@ -3091,6 +3258,7 @@
 
     "Warhammer 40k Space Marine Power Armour (Helmet)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.10",
             "BulletDefence": "0.10",
             "PenetrationResistance": "2.40",
@@ -3113,6 +3281,7 @@
 
     "Warhammer 40k Space Marine Power Armour (Legs)": {
         "properties": {
+            "IssueDate": "Future",
             "Defence": "0.20",
             "BulletDefence": "0.19",
             "PenetrationResistance": "1.56",
@@ -3367,6 +3536,8 @@
 
     "WW1 Body Armour": {
         "properties": {
+            "IssueDate": "WW1",
+            "RetirementDate": "WW1",
             "Defence": "0.11",
             "BulletDefence": "0.05",
             "PenetrationResistance": "1.25",
@@ -3383,6 +3554,7 @@
 
     "WW1 Brewster Body Shield (Chest)": {
         "properties": {
+            "IssueDate": "~1917",
             "Defence": "0.21",
             "BulletDefence": "0.19",
             "PenetrationResistance": "1.90",

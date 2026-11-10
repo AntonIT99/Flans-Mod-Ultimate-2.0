@@ -1,5 +1,51 @@
 {
 
+    "Allied forces - World War I service period": {
+        "properties": {
+            "IssueDate": "WW1",
+            "RetirementDate": "WW1"
+        },
+        "items": [
+            "alliedww1"
+        ]
+    },
+
+    "British Army - World War II service period": {
+        "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2"
+        },
+        "items": [
+            "britishdesertteam",
+            "britishmidwar",
+            "britishteam",
+            "legacybritishaltteam",
+            "legacybritishdesertteam",
+            "legacybritishteam",
+            "w44_britisharmy"
+        ]
+    },
+
+    "British Expeditionary Force - 1939 to 1940 service period": {
+        "properties": {
+            "IssueDate": "1939-09",
+            "RetirementDate": "1940-06"
+        },
+        "items": [
+            "british"
+        ]
+    },
+
+    "British XXX Corps - El Alamein service period": {
+        "properties": {
+            "IssueDate": "1942-10",
+            "RetirementDate": "1942-11"
+        },
+        "items": [
+            "britishelalamein"
+        ]
+    },
+
     "China": {
         "properties": {
             "VictoryFlagTexture": "flag_team_china"
@@ -31,6 +77,17 @@
         ]
     },
 
+    "France - World War II service period": {
+        "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2"
+        },
+        "items": [
+            "franceww2",
+            "legacyfrenchteam"
+        ]
+    },
+
     "Germany - modern": {
         "properties": {
             "VictoryFlagTexture": "flag_team_germany"
@@ -49,6 +106,8 @@
 
     "Germany - World War I": {
         "properties": {
+            "IssueDate": "WW1",
+            "RetirementDate": "WW1",
             "VictoryFlagTexture": "flag_team_germany_ww1"
         },
         "propertyModes": {
@@ -61,6 +120,8 @@
 
     "Germany - World War II": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "VictoryFlagTexture": "flag_team_germany_ww2"
         },
         "propertyModes": {
@@ -140,6 +201,8 @@
 
     "Italy - World War II": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "VictoryFlagTexture": "flag_team_italy_1861-1946"
         },
         "propertyModes": {
@@ -166,6 +229,8 @@
 
     "Japan - World War II": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "VictoryFlagTexture": "flag_team_japan_ww2"
         },
         "propertyModes": {
@@ -183,6 +248,8 @@
 
     "Philippines - World War II": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "VictoryFlagTexture": "flag_team_philippines"
         },
         "propertyModes": {
@@ -190,6 +257,26 @@
         },
         "items": [
             "w44_philippinearmy"
+        ]
+    },
+
+    "Roman Empire service period": {
+        "properties": {
+            "IssueDate": "27BC",
+            "RetirementDate": "476"
+        },
+        "items": [
+            "wolffrome_empire"
+        ]
+    },
+
+    "Roman Republic service period": {
+        "properties": {
+            "IssueDate": "509BC",
+            "RetirementDate": "27BC"
+        },
+        "items": [
+            "wolffrome_republic"
         ]
     },
 
@@ -203,6 +290,15 @@
         "items": [
             "wolffrome_empire",
             "wolffrome_republic"
+        ]
+    },
+
+    "Russia - 2022 invasion of Ukraine service period": {
+        "properties": {
+            "IssueDate": "2022-02"
+        },
+        "items": [
+            "ukraineinvasionru"
         ]
     },
 
@@ -228,6 +324,8 @@
 
     "Russia - World War I": {
         "properties": {
+            "IssueDate": "WW1",
+            "RetirementDate": "WW1",
             "VictoryFlagTexture": "flag_team_russia_ww1"
         },
         "propertyModes": {
@@ -240,6 +338,8 @@
 
     "Soviet Union - Cold War": {
         "properties": {
+            "IssueDate": "ColdWar",
+            "RetirementDate": "ColdWar",
             "VictoryFlagTexture": "flag_team_ussr"
         },
         "propertyModes": {
@@ -253,6 +353,8 @@
 
     "Soviet Union - World War II": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "VictoryFlagTexture": "flag_team_ussr_ww2.svg"
         },
         "propertyModes": {
@@ -271,6 +373,7 @@
 
     "Star Wars - Galactic Empire": {
         "properties": {
+            "IssueDate": "Future",
             "VictoryFlagTexture": "flag_team_galactic_empire"
         },
         "propertyModes": {
@@ -283,6 +386,7 @@
 
     "Star Wars - Galactic Republic": {
         "properties": {
+            "IssueDate": "Future",
             "VictoryFlagTexture": "flag_team_galactic_republic"
         },
         "propertyModes": {
@@ -307,6 +411,7 @@
 
     "Star Wars - Jedi Order": {
         "properties": {
+            "IssueDate": "Future",
             "VictoryFlagTexture": "flag_team_jedi"
         },
         "propertyModes": {
@@ -319,6 +424,7 @@
 
     "Star Wars - Separatist Alliance": {
         "properties": {
+            "IssueDate": "Future",
             "VictoryFlagTexture": "flag_team_cis"
         },
         "propertyModes": {
@@ -332,6 +438,7 @@
 
     "Star Wars - Sith Order": {
         "properties": {
+            "IssueDate": "Future",
             "VictoryFlagTexture": "flag_team_sith"
         },
         "propertyModes": {
@@ -404,8 +511,20 @@
         ]
     },
 
+    "United States - Vietnam War service period": {
+        "properties": {
+            "IssueDate": "1965-03",
+            "RetirementDate": "1973-03"
+        },
+        "items": [
+            "usavietnam"
+        ]
+    },
+
     "United States - World War II": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "VictoryFlagTexture": "flag_team_usa_1912-1959"
         },
         "propertyModes": {
@@ -427,5 +546,15 @@
             "wolffgermany_americangeneralcorps"
         ]
     }
+,
 
+    "United States Army - 1980s service period": {
+        "properties": {
+            "IssueDate": "1980",
+            "RetirementDate": "1989"
+        },
+        "items": [
+            "usa80s"
+        ]
+    }
 }

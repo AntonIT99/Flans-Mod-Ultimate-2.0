@@ -1477,6 +1477,8 @@
 
     "120mm Gun Tank M103": {
         "properties": {
+            "IssueDate": "1958",
+            "RetirementDate": "1963",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 56700,
@@ -1604,6 +1606,8 @@
 
     "A7V": {
         "properties": {
+            "IssueDate": "1918-03",
+            "RetirementDate": "1918-11",
             "RealMassKg": 30000,
             "RealEnginePowerHp": 200,
             "RealMaxSpeedKmh": 15,
@@ -1701,6 +1705,8 @@
 
     "AAV-7A1": {
         "properties": {
+            "IssueDate": "~1983",
+            "RetirementDate": "2026-06",
             "RealMassKg": 29100,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 72.0,
@@ -2234,6 +2240,7 @@
 
     "Arpeggio Haruna (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealTurnRateDegPerSec": 1.33,
             "RealDisplacementT": 36600,
             "RealEnginePowerHp": 136000,
@@ -2455,6 +2462,7 @@
 
     "Baneblade (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 316000,
@@ -4678,6 +4686,8 @@
 
     "CSS Hunley": {
         "properties": {
+            "IssueDate": "1864-02",
+            "RetirementDate": "1864-02",
             "RealTurnRateDegPerSec": 3,
             "RealDisplacementLongTons": 7.5,
             "RealEnginePowerHp": 1,
@@ -4701,6 +4711,8 @@
 
     "CSS Virginia": {
         "properties": {
+            "IssueDate": "1862-02",
+            "RetirementDate": "1862-05",
             "RealTurnRateDegPerSec": 0.55,
             "RealDisplacementLongTons": 4000,
             "RealEnginePowerHp": 1200,
@@ -4811,6 +4823,8 @@
 
     "Dicker Max": {
         "properties": {
+            "IssueDate": "1941-06",
+            "RetirementDate": "~1942",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 22000,
@@ -4844,6 +4858,8 @@
 
     "DKM Admiral Graf Spee (1939)": {
         "properties": {
+            "IssueDate": "1939-08",
+            "RetirementDate": "1939-12",
             "RealTurnRateDegPerSec": 1.67,
             "RealDisplacementT": 16020,
             "RealEnginePowerHp": 54000,
@@ -4876,6 +4892,8 @@
 
     "DKM Bismarck (1940)": {
         "properties": {
+            "IssueDate": "1940-08",
+            "RetirementDate": "1941-05",
             "RealTurnRateDegPerSec": 1.23,
             "RealDisplacementT": 50300,
             "RealEnginePowerHp": 150170,
@@ -4938,6 +4956,8 @@
 
     "DKM Scharnhorst (1943)": {
         "properties": {
+            "IssueDate": "1943-03",
+            "RetirementDate": "1943-12",
             "RealTurnRateDegPerSec": 1.35,
             "RealDisplacementLongTons": 38100,
             "RealEnginePowerHp": 160000,
@@ -4969,6 +4989,8 @@
 
     "DKM Tirpitz (1941)": {
         "properties": {
+            "IssueDate": "1941-02",
+            "RetirementDate": "1944-11",
             "RealTurnRateDegPerSec": 1.21,
             "RealDisplacementT": 52600,
             "RealEnginePowerHp": 150170,
@@ -5000,6 +5022,8 @@
 
     "DKM U-14 (Type IIB)": {
         "properties": {
+            "IssueDate": "1936-01",
+            "RetirementDate": "1945-03",
             "RealTurnRateDegPerSec": 2.78,
             "RealDisplacementT": 328,
             "RealEnginePowerHp": 700,
@@ -5027,6 +5051,8 @@
 
     "DKM U-88 (Type VIIC)": {
         "properties": {
+            "IssueDate": "1942-04",
+            "RetirementDate": "1942-09",
             "RealTurnRateDegPerSec": 2.73,
             "RealDisplacementT": 871,
             "RealEnginePowerHp": 3200,
@@ -5054,6 +5080,8 @@
 
     "DKM U-505 (Type IXC)": {
         "properties": {
+            "IssueDate": "1942-02",
+            "RetirementDate": "1944-06",
             "RealTurnRateDegPerSec": 2.6,
             "RealDisplacementT": 1120,
             "RealEnginePowerHp": 4400,
@@ -5108,6 +5136,8 @@
 
     "DKM Z1 Leberecht Maass": {
         "properties": {
+            "IssueDate": "1937-01",
+            "RetirementDate": "1940-02",
             "RealTurnRateDegPerSec": 3.82,
             "RealDisplacementT": 3156,
             "RealEnginePowerHp": 70000,
@@ -5333,6 +5363,8 @@
 
     "Ferdinand Tank Destroyer": {
         "properties": {
+            "IssueDate": "1943-05",
+            "RetirementDate": "~1944",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 65000,
@@ -5465,6 +5497,8 @@
 
     "Flakpanzer Gepard": {
         "properties": {
+            "IssueDate": "1976",
+            "RetirementDate": "2010",
             "RealMassKg": 46000,
             "RealEnginePowerHp": 830,
             "RealMaxSpeedKmh": 65.0,
@@ -5525,6 +5559,8 @@
 
     "Flakpanzer IV Wirbelwind": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 22000,
@@ -5759,6 +5795,8 @@
 
     "FV107 Scimitar": {
         "properties": {
+            "IssueDate": "1971",
+            "RetirementDate": "2023-03",
             "RealMassKg": 8074,
             "RealEnginePowerHp": 190,
             "RealMaxSpeedKmh": 72.0,
@@ -5790,6 +5828,7 @@
 
     "FV510 Warrior": {
         "properties": {
+            "IssueDate": "1988",
             "RealMassKg": 24000,
             "RealEnginePowerHp": 550,
             "RealMaxSpeedKmh": 75,
@@ -5830,6 +5869,7 @@
 
     "FV4034 Challenger 2": {
         "properties": {
+            "IssueDate": "1998",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 28,
             "RealMassKg": 62500,
@@ -6188,6 +6228,7 @@
 
     "GTK Boxer": {
         "properties": {
+            "IssueDate": "2011",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 163.93,
             "RealMassKg": 36500,
@@ -6247,6 +6288,7 @@
 
     "HAA-10 Leviathan II AA (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 66770,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 67.0,
@@ -6408,6 +6450,8 @@
 
     "HMAS Canberra D33": {
         "properties": {
+            "IssueDate": "1928-07",
+            "RetirementDate": "1942-08",
             "RealTurnRateDegPerSec": 1.94,
             "RealDisplacementLongTons": 13450,
             "RealEnginePowerHp": 80000,
@@ -6551,6 +6595,8 @@
 
     "HMS Ark Royal (91)": {
         "properties": {
+            "IssueDate": "1938-12",
+            "RetirementDate": "1941-11",
             "RealTurnRateDegPerSec": 1.51,
             "RealDisplacementT": 27720,
             "RealEnginePowerHp": 102000,
@@ -6610,6 +6656,8 @@
 
     "HMS Cossack L03": {
         "properties": {
+            "IssueDate": "1938-06",
+            "RetirementDate": "1941-10",
             "RealTurnRateDegPerSec": 3.88,
             "RealDisplacementLongTons": 2519,
             "RealEnginePowerHp": 44000,
@@ -6641,6 +6689,8 @@
 
     "HMS Coventry D118": {
         "properties": {
+            "IssueDate": "1978-11",
+            "RetirementDate": "1982-05",
             "RealTurnRateDegPerSec": 2.6,
             "RealDisplacementLongTons": 4820,
             "RealEnginePowerHp": 50000,
@@ -6668,6 +6718,7 @@
 
     "HMS Daring D32": {
         "properties": {
+            "IssueDate": "2010-07",
             "RealDisplacementT": 8000.0,
             "RealEnginePowerHp": 53640,
             "RealMaxSpeedKn": 30.0,
@@ -6700,6 +6751,8 @@
 
     "HMS Dreadnought (1906)": {
         "properties": {
+            "IssueDate": "1906-12",
+            "RetirementDate": "1919",
             "RealDisplacementLongTons": 20730,
             "RealEnginePowerHp": 23000,
             "RealMaxSpeedKn": 21,
@@ -7028,6 +7081,8 @@
 
     "HMS Triumph N18": {
         "properties": {
+            "IssueDate": "1939-05",
+            "RetirementDate": "1942-01",
             "RealTurnRateDegPerSec": 1.92,
             "RealDisplacementLongTons": 1571,
             "RealEnginePowerHp": 2500,
@@ -7243,6 +7298,7 @@
 
     "HT-9 Leviathan tank (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 66770,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 67.0,
@@ -7273,6 +7329,7 @@
 
     "HT-11 Leviathan III railgun tank (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 66770,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 67.0,
@@ -7303,6 +7360,8 @@
 
     "Hummel (Sd.Kfz. 165)": {
         "properties": {
+            "IssueDate": "1943-03",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 23000,
@@ -7337,6 +7396,8 @@
 
     "IJN Akatsuki": {
         "properties": {
+            "IssueDate": "1932-11",
+            "RetirementDate": "1942-11",
             "RealTurnRateDegPerSec": 4.39,
             "RealDisplacementLongTons": 2050,
             "RealEnginePowerHp": 50000,
@@ -7501,6 +7562,8 @@
 
     "IJN I-19 (Type B1)": {
         "properties": {
+            "IssueDate": "1941-04",
+            "RetirementDate": "1943-11",
             "RealTurnRateDegPerSec": 2.26,
             "RealDisplacementT": 3654,
             "RealEnginePowerHp": 12400,
@@ -7559,6 +7622,8 @@
 
     "IJN Kaga (1928)": {
         "properties": {
+            "IssueDate": "1929-11",
+            "RetirementDate": "1933-10",
             "RealTurnRateDegPerSec": 1.2,
             "RealDisplacementT": 38200,
             "RealEnginePowerHp": 91000,
@@ -8005,6 +8070,7 @@
 
     "ILL-10 Weishaupt II railgun tank (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 90000,
             "RealEnginePowerHp": 2000,
             "RealMaxSpeedKmh": 65,
@@ -8049,6 +8115,7 @@
 
     "ILL-11 Weishaupt III L hover tank (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 80000,
             "RealEnginePowerHp": 2000,
             "RealMaxSpeedKmh": 70,
@@ -8495,6 +8562,8 @@
 
     "Jagdpanther": {
         "properties": {
+            "IssueDate": "1944-07",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 46000,
@@ -8597,6 +8666,8 @@
 
     "Jagdtiger": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 75200,
@@ -9576,6 +9647,7 @@
 
     "Leman Russ Battle Tank (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 60000,
@@ -9735,6 +9807,7 @@
 
     "Leopard 2A5 (2A6 chassis protection estimate)": {
         "properties": {
+            "IssueDate": "1995-11",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 32,
             "RealMassKg": 59500,
@@ -9770,6 +9843,7 @@
 
     "Leopard 2A6": {
         "properties": {
+            "IssueDate": "2001",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 32,
             "RealMassKg": 62300,
@@ -10099,6 +10173,8 @@
 
     "Light Tank M24 Chaffee": {
         "properties": {
+            "IssueDate": "1944-12",
+            "RetirementDate": "1953",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 30,
             "RealMassKg": 18370,
@@ -10314,6 +10390,8 @@
 
     "M1 Abrams (105mm M68)": {
         "properties": {
+            "IssueDate": "1980",
+            "RetirementDate": "1996-09",
             "RealMassKg": 54400,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 72.0,
@@ -10751,6 +10829,8 @@
 
     "M18 Hellcat": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "~1946",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 36,
             "RealMassKg": 17036,
@@ -11053,6 +11133,7 @@
 
     "M109A6 Paladin": {
         "properties": {
+            "IssueDate": "1994",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 28800,
@@ -11085,6 +11166,7 @@
 
     "M109A7 Paladin (A6 armor estimate)": {
         "properties": {
+            "IssueDate": "2017",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 35380,
@@ -11501,6 +11583,8 @@
 
     "M1128 Stryker Mobile Gun System": {
         "properties": {
+            "IssueDate": "2007",
+            "RetirementDate": "2022",
             "RealMassKg": 23400,
             "RealMaxSpeedKmh": 96.0,
             "RealMaxReverseSpeedKmh": 12.0,
@@ -13048,6 +13132,7 @@
 
     "MT-12 Brutus plasma tank (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 66770,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 67.0,
@@ -14249,6 +14334,8 @@
 
     "Panzerkampfwagen Tiger Ausf. B": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 69800,
@@ -14337,6 +14424,8 @@
 
     "Panzerkampfwagen V Panther Ausf. D": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 45500,
@@ -14365,6 +14454,8 @@
 
     "Panzerkampfwagen V Panther Ausf. G": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 45500,
@@ -14584,6 +14675,7 @@
 
     "Panzerkampfwagen VIII Maus": {
         "properties": {
+            "IssueDate": "~1943",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 188000,
@@ -16253,6 +16345,8 @@
 
     "Sd.Kfz. 234/2 Puma": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 159.15,
             "RealMassKg": 11740,
@@ -17110,6 +17204,8 @@
 
     "Sturmmörserwagen 606/4 mit 38 cm RW 61": {
         "properties": {
+            "IssueDate": "1944-08",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 12,
             "RealMassKg": 65000,
@@ -20893,6 +20989,8 @@
 
     "USS Alabama BB-60 (1945)": {
         "properties": {
+            "IssueDate": "1945-05",
+            "RetirementDate": "1947-01",
             "RealTurnRateDegPerSec": 1.14,
             "RealDisplacementLongTons": 44519,
             "RealEnginePowerHp": 130000,
@@ -20955,6 +21053,7 @@
 
     "USS Arleigh Burke DDG-51": {
         "properties": {
+            "IssueDate": "1991-07",
             "RealDisplacementT": 8449.0,
             "RealEnginePowerHp": 100000,
             "RealMaxSpeedKn": 31.0,
@@ -20987,6 +21086,8 @@
 
     "USS Astoria CA-34": {
         "properties": {
+            "IssueDate": "1934-04",
+            "RetirementDate": "1942-08",
             "RealTurnRateDegPerSec": 2.07,
             "RealDisplacementLongTons": 12463,
             "RealEnginePowerHp": 107000,
@@ -21018,6 +21119,8 @@
 
     "USS Atlanta CL-51 (1942)": {
         "properties": {
+            "IssueDate": "1941-12",
+            "RetirementDate": "1942-11",
             "RealTurnRateDegPerSec": 2.35,
             "RealDisplacementLongTons": 8340,
             "RealEnginePowerHp": 75000,
@@ -21139,6 +21242,8 @@
 
     "USS Bremerton Los Angeles-class (surfaced)": {
         "properties": {
+            "IssueDate": "1981-03",
+            "RetirementDate": "2018-07",
             "RealDisplacementT": 6080,
             "RealEnginePowerHp": 35000,
             "RealMaxSpeedKn": 20.0,
@@ -21309,6 +21414,8 @@
 
     "USS Essex CV-9 (1956)": {
         "properties": {
+            "IssueDate": "1956-08",
+            "RetirementDate": "1969-06",
             "RealTurnRateDegPerSec": 1.22,
             "RealDisplacementLongTons": 47000,
             "RealEnginePowerHp": 150000,
@@ -21337,6 +21444,8 @@
 
     "USS Evarts DE-5": {
         "properties": {
+            "IssueDate": "1943-04",
+            "RetirementDate": "1945-10",
             "RealTurnRateDegPerSec": 2.73,
             "RealDisplacementLongTons": 1430,
             "RealEnginePowerHp": 6000,
@@ -21518,6 +21627,8 @@
 
     "USS Liberty AGTR-5 (1967)": {
         "properties": {
+            "IssueDate": "1964-12",
+            "RetirementDate": "1968-06",
             "RealTurnRateDegPerSec": 1.2,
             "RealDisplacementLongTons": 10680,
             "RealEnginePowerHp": 5500,
@@ -21603,6 +21714,8 @@
 
     "USS Missouri BB-63 (1986)": {
         "properties": {
+            "IssueDate": "1986-05",
+            "RetirementDate": "1992-03",
             "RealTurnRateDegPerSec": 1.25,
             "RealDisplacementLongTons": 57500,
             "RealEnginePowerHp": 212000,
@@ -21634,6 +21747,8 @@
 
     "USS Monitor": {
         "properties": {
+            "IssueDate": "1862-02",
+            "RetirementDate": "1862-12",
             "RealTurnRateDegPerSec": 1.18,
             "RealDisplacementLongTons": 987,
             "RealEnginePowerHp": 320,
@@ -21682,6 +21797,7 @@
 
     "USS Nebraska SSBN-739": {
         "properties": {
+            "IssueDate": "1993-07",
             "RealTurnRateDegPerSec": 1.43,
             "RealDisplacementLongTons": 16764,
             "RealEnginePowerHp": 60000,
@@ -21860,6 +21976,8 @@
 
     "USS Robert E Lee SSBN-601 (surfaced)": {
         "properties": {
+            "IssueDate": "1960-09",
+            "RetirementDate": "1983-12",
             "RealDisplacementT": 5959.0,
             "RealEnginePowerHp": 15000.0,
             "RealMaxSpeedKn": 16.0,
@@ -21888,6 +22006,8 @@
 
     "USS S-44 SS-155": {
         "properties": {
+            "IssueDate": "1925-02",
+            "RetirementDate": "1943-10",
             "RealTurnRateDegPerSec": 2.2,
             "RealDisplacementLongTons": 903,
             "RealEnginePowerHp": 1200,
@@ -22001,6 +22121,8 @@
 
     "USS Tang SS-306": {
         "properties": {
+            "IssueDate": "1943-10",
+            "RetirementDate": "1944-10",
             "RealTurnRateDegPerSec": 2.21,
             "RealDisplacementLongTons": 2424,
             "RealEnginePowerHp": 5400,
@@ -22113,6 +22235,8 @@
 
     "USS Ward DD-139": {
         "properties": {
+            "IssueDate": "1918-07",
+            "RetirementDate": "1943-02",
             "RealTurnRateDegPerSec": 4.77,
             "RealDisplacementLongTons": 1247,
             "RealEnginePowerHp": 27000,
@@ -22144,6 +22268,8 @@
 
     "USS Warrington DD-383": {
         "properties": {
+            "IssueDate": "1938-02",
+            "RetirementDate": "1944-09",
             "RealTurnRateDegPerSec": 3.86,
             "RealDisplacementLongTons": 2767,
             "RealEnginePowerHp": 52000,
@@ -22206,6 +22332,8 @@
 
     "USS West Virginia BB-48 (1944)": {
         "properties": {
+            "IssueDate": "1944-07",
+            "RetirementDate": "1947-01",
             "RealTurnRateDegPerSec": 0.89,
             "RealDisplacementLongTons": 40950,
             "RealEnginePowerHp": 28900,
@@ -22237,6 +22365,8 @@
 
     "USS William D. Porter DD-579": {
         "properties": {
+            "IssueDate": "1943-07",
+            "RetirementDate": "1945-06",
             "RealTurnRateDegPerSec": 3.74,
             "RealDisplacementLongTons": 2924,
             "RealEnginePowerHp": 60000,
@@ -22301,6 +22431,7 @@
 
     "USS Zumwalt DDG-1000": {
         "properties": {
+            "IssueDate": "2022-08",
             "RealTurnRateDegPerSec": 1.77,
             "RealDisplacementLongTons": 15907,
             "RealEnginePowerHp": 78000,
@@ -22744,6 +22875,7 @@
 
     "Warp Star ride machine (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 300,
             "RealEnginePowerHp": 26,
             "RealMaxSpeedKmh": 95,
@@ -22765,6 +22897,8 @@
 
     "Wespe (Sd.Kfz. 124)": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11000,
