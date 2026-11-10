@@ -255,10 +255,10 @@ public final class GunArmPoses
         return entity.level().isClientSide ? data.isShownAiming() : data.isScoped();
     }
 
-    /** Whether the gun in the given hand is fired or reloaded, either of which raises it in the dynamic aim pose. */
+    /** Whether the gun in the given hand is fired, reloaded or raised in a melee block, any of which raises it in the dynamic aim pose. */
     private static boolean isActive(LivingEntity entity, InteractionHand hand)
     {
-        return isFiring(entity, hand) || isReloading(entity, hand);
+        return isFiring(entity, hand) || isReloading(entity, hand) || MeleeBlocking.isBlocking(entity, hand);
     }
 
     /** A player's own reload state on the server; otherwise the reload last recorded on this side. */

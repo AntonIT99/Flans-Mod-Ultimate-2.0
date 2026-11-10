@@ -295,6 +295,7 @@ public final class GunItemRenderer
         if (ModClientConfig.get().enableGunAnimationsInThirdPerson)
         {
             renderMeleeMovement(model.getType(), animations, poseStack);
+            renderBlockStance(model.getType(), animations, poseStack);
             renderSpinningCocking(model, animations, poseStack);
             renderReloadMovement(model, animations, stack, poseStack);
         }
@@ -383,6 +384,7 @@ public final class GunItemRenderer
         }
         renderSprintingMovement(model, animations, sprinting, poseStack);
         renderMeleeMovement(model.getType(), animations, poseStack);
+        renderBlockStance(model.getType(), animations, poseStack);
         renderLookAtGunMovement(animations, poseStack);
         renderSpinningCocking(model, animations, poseStack);
         if (keyframes.isEnabled())
@@ -461,16 +463,35 @@ public final class GunItemRenderer
         }
     }
 
+    /** Raises the weapon into its {@code BlockStanceTranslate} and {@code BlockStanceRotate} guard while a melee block is up */
+    private static void renderBlockStance(GunType gunType, GunAnimations animations, PoseStack poseStack)
+    {
+        float progress = Mth.lerp(ClientPlatform.partialTick(), animations.getLastMeleeBlockProgress(), animations.getMeleeBlockProgress());
+        if (progress <= 0F || !gunType.isCanBlock())
+            return;
+        // Ease in and out, so the guard does not snap into place
+        progress = progress * progress * (3F - 2F * progress);
+        Vector3f translate = gunType.getBlockStanceTranslate();
+        Vector3f rotate = gunType.getBlockStanceRotate();
+        poseStack.translate(translate.x * progress, translate.y * progress, translate.z * progress);
+        poseStack.mulPose(Axis.XP.rotationDegrees(rotate.x * progress));
+        poseStack.mulPose(Axis.YP.rotationDegrees(rotate.y * progress));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(rotate.z * progress));
+    }
+
     private static void renderMeleeMovement(GunType gunType, GunAnimations animations, PoseStack poseStack)
     {
         int progress = animations.getMeleeAnimationProgress();
-        if (progress <= 0 || progress >= gunType.getMeleePath().size())
+        MeleeSwing swing = gunType.getMeleeSwing(animations.getMeleeAnimationDirection());
+        List<Vector3f> path = swing.path();
+        List<Vector3f> pathAngles = swing.pathAngles();
+        if (progress <= 0 || progress >= path.size() || !swing.hasPath())
             return;
 
         float t = Mth.clamp(ClientPlatform.partialTick(), 0.0f, 1.0f);
 
-        Vector3f p0 = gunType.getMeleePath().get(progress);
-        Vector3f p1 = (progress + 1 < gunType.getMeleePath().size()) ? gunType.getMeleePath().get(progress + 1) : new Vector3f();
+        Vector3f p0 = path.get(progress);
+        Vector3f p1 = (progress + 1 < path.size()) ? path.get(progress + 1) : new Vector3f();
 
         float x = Mth.lerp(t, p0.x, p1.x);
         float y = Mth.lerp(t, p0.y, p1.y);
@@ -478,8 +499,8 @@ public final class GunItemRenderer
 
         poseStack.translate(x, y, z);
 
-        Vector3f a0 = gunType.getMeleePathAngles().get(progress);
-        Vector3f a1 = (progress + 1 < gunType.getMeleePathAngles().size()) ? gunType.getMeleePathAngles().get(progress + 1) : new Vector3f();
+        Vector3f a0 = pathAngles.get(progress);
+        Vector3f a1 = (progress + 1 < pathAngles.size()) ? pathAngles.get(progress + 1) : new Vector3f();
 
         float yaw = Mth.lerp(t, a0.y, a1.y);
         float roll = Mth.lerp(t, a0.z, a1.z);

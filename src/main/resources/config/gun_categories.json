@@ -15793,9 +15793,15 @@
 
     "Lightsaber (Fictional)": {
         "properties": {
+            "BlockDeflectChance": 0.75,
+            "BlockMoveSpeed": 0.7,
+            "BlockTime": 100,
+            "CanBlock": "true",
+            "HoldToBlock": "true",
             "MeleeDamage": 12,
             "MeleeDamageVsDriveables": 24,
-            "MeleeSpeed": 1.8
+            "MeleeSpeed": 1.8,
+            "ShieldMaxBlockableMeleeDamage": 15
         },
         "items": [
             "lightsaberblack",

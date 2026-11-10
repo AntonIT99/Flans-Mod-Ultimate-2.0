@@ -43,6 +43,7 @@ MeleeSpeed 1.8
 ShootSound lightsaber_swing
 ReloadSound boltgun_reload
 MeleeSound lightsaber_swing
+BlockSound lightsaber_swing
 IdleSound lightsaber_idle
 IdleSoundLength 265
 

@@ -529,7 +529,8 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         {
             boolean canZoom = configType.getSecondaryFunction().isZoom() || configType.getPrimaryFunction().isZoom() || configType.getZoomFactor() > 1F || configType.getFovFactor() > 1F;
 
-            if (!canZoom)
+            // The block key of a CanBlock weapon raises a guard instead of swinging it
+            if (!canZoom && !configType.isCanBlock())
                 ClientHooks.PLAYER.swingIfLocalPlayer(player, hand);
         }
 
@@ -605,46 +606,70 @@ public class GunItem extends FlanItem implements IPaintableItem<GunType>, ICusto
         data.updateHeldGuns(player);
         ensureGunTags(gunStack);
 
-        if (configType.isBayonetMode(gunStack))
-            handleBayonetMode(level, player, data, gunStack, hand);
-        else if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
-        {
-            EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand, level.registryAccess());
-            if (decision == EnumFireDecision.RELOAD)
-            {
-                boolean reloading = gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
-                if (!reloading)
-                    gunItemHandler.playEmptyClick(player, data, gunStack, hand);
-            }
-            else if (decision == EnumFireDecision.SHOOT)
-                gunItemHandler.doPlayerShoot(level, player, data, gunStack, hand);
+        // CanBlock turns the secondary function key into a melee block, and blocking stops this weapon's attacks
+        if (configType.isCanBlock())
+            gunItemHandler.updateMeleeBlock(player, data, gunStack, hand, data.isSecondaryFunctionKeyPressed());
 
-            // Stop shooting
-            if (data.isShooting(hand) && decision != EnumFireDecision.SHOOT)
-            {
-                data.setShooting(hand, false);
-                PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
-            }
-        }
+        if (MeleeBlocking.isBlocking(player, hand))
+            stopShooting(player, data, hand);
+        else if (configType.isBayonetMode(gunStack))
+            handleBayonetMode(level, player, data, gunStack, hand);
+        else if (configType.isShootMelee())
+            handleShootMelee(level, player, data, gunStack, hand);
+        else if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
+            handleShooting(level, player, data, gunStack, hand);
         else if (configType.getPrimaryFunction() == EnumFunction.CUSTOM_MELEE && data.isShootKeyPressed(hand))
             gunItemHandler.doCustomMelee(player, data, hand);
 
-        if (configType.getSecondaryFunction() == EnumFunction.CUSTOM_MELEE && data.isSecondaryFunctionKeyPressed())
+        if (!configType.isCanBlock() && !configType.isShootMelee() && configType.getSecondaryFunction() == EnumFunction.CUSTOM_MELEE && data.isSecondaryFunctionKeyPressed())
             gunItemHandler.doCustomMelee(player, data, hand);
 
         if (soundDelay > 0)
             soundDelay--;
     }
 
-    private void handleBayonetMode(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
+    private void handleShooting(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
+    {
+        EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand, level.registryAccess());
+        if (decision == EnumFireDecision.RELOAD)
+        {
+            boolean reloading = gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
+            if (!reloading)
+                gunItemHandler.playEmptyClick(player, data, gunStack, hand);
+        }
+        else if (decision == EnumFireDecision.SHOOT)
+            gunItemHandler.doPlayerShoot(level, player, data, gunStack, hand);
+
+        // Stop shooting
+        if (data.isShooting(hand) && decision != EnumFireDecision.SHOOT)
+        {
+            data.setShooting(hand, false);
+            PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
+        }
+    }
+
+    private static void stopShooting(ServerPlayer player, PlayerData data, InteractionHand hand)
     {
         if (data.isShooting(hand))
         {
             data.setShooting(hand, false);
             PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
         }
+    }
+
+    private void handleBayonetMode(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
+    {
+        stopShooting(player, data, hand);
         if (data.isShootKeyPressed(hand) && !data.isReloading(hand) && !data.isSecondaryModeSwitching(hand))
             gunItemHandler.doBayonetAttack(level, player, data, gunStack, hand);
+    }
+
+    /** A {@code ShootMelee} gun-sword attacks with the primary key, and with the secondary key too when it cannot block */
+    private void handleShootMelee(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
+    {
+        stopShooting(player, data, hand);
+        if (data.isShootKeyPressed(hand) || (!configType.isCanBlock() && data.isSecondaryFunctionKeyPressed()))
+            gunItemHandler.doShootMeleeAttack(level, player, data, gunStack, hand);
     }
 
     private void ensureGunTags(ItemStack stack)

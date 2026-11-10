@@ -20,7 +20,9 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.ParticleNameCodec;
+import com.flansmodultimate.network.client.effects.PacketBulletDeflect;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.network.PacketBuffer;
@@ -720,14 +722,15 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             lastHitHeadshot = false;
         }
 
+        Set<Entity> deflectionRolled = new HashSet<>();
         for (BulletHit bulletHit : hits)
         {
-            BulletHitEvent bulletHitEvent = new BulletHitEvent(this, bulletHit);
-            PlatformEvents.post(bulletHitEvent);
-            if (bulletHitEvent.isCanceled())
+            if (isHitIgnored(level, bulletHit))
                 continue;
 
             Vec3 hitPos = origin.add(velocity.scale(bulletHit.getIntersectTime()));
+            if (tryDeflect(bulletHit, hitPos, deflectionRolled))
+                break;
             // A block contact may bounce the round and change velocity. Feedback only covers the incoming traced segment.
             if (bulletHit instanceof BlockHit)
                 feedbackProgress = Math.min(feedbackProgress, bulletHit.getIntersectTime());
@@ -749,6 +752,56 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             }
         }
         nearMissRecipients = NearMissHandler.dispatch(level, firedShot, origin, origin.add(traceMotion.scale(feedbackProgress)), directHitPlayers, nearMissRecipients);
+    }
+
+    /** Posts the hit event, and leaves the deflection of a raised block to the server, which decides and tells the clients */
+    private boolean isHitIgnored(Level level, BulletHit bulletHit)
+    {
+        BulletHitEvent bulletHitEvent = new BulletHitEvent(this, bulletHit);
+        PlatformEvents.post(bulletHitEvent);
+        return bulletHitEvent.isCanceled() || level.isClientSide && isDeflectingBlockHit(bulletHit);
+    }
+
+    private boolean isDeflectingBlockHit(BulletHit bulletHit)
+    {
+        return bulletHit.getEntity() instanceof LivingEntity defender && configType.isDeflectable() && MeleeBlocking.meetsDeflectingBlock(defender, velocity);
+    }
+
+    /**
+     * A raised block with BlockDeflectChance may send the round back. Each defender rolls once per trace.
+     *
+     * @return whether the round was deflected and traces no further
+     */
+    private boolean tryDeflect(BulletHit bulletHit, Vec3 hitPos, Set<Entity> deflectionRolled)
+    {
+        if (!isDeflectingBlockHit(bulletHit) || !deflectionRolled.add(bulletHit.getEntity()))
+            return false;
+        Optional<Vec3> deflection = MeleeBlocking.rollDeflection((LivingEntity) bulletHit.getEntity(), velocity);
+        if (deflection.isEmpty())
+            return false;
+        deflect((LivingEntity) bulletHit.getEntity(), hitPos, deflection.get());
+        return true;
+    }
+
+    /**
+     * Sends the round back in the given direction at its current speed, as if fired by the defender, who then owns its hits and
+     * kills. Server side.
+     */
+    protected void deflect(LivingEntity defender, Vec3 hitPos, Vec3 direction)
+    {
+        applyDeflection(hitPos, direction.normalize().scale(velocity.length()));
+        firedShot.setAttacker(defender);
+        firedShot.setShooter(defender);
+        PacketHandler.sendToTracking(new PacketBulletDeflect(getId(), hitPos, velocity), this);
+    }
+
+    /** Moves the round to where it was deflected and gives it its new velocity; either side */
+    public void applyDeflection(Vec3 position, Vec3 newVelocity)
+    {
+        velocity = newVelocity;
+        setPos(position);
+        setDeltaMovement(velocity);
+        setOrientation(velocity);
     }
 
     public void handleBounceOrStop(Level level, BlockHitResult hitResult, Vec3 hitVec)
@@ -1306,5 +1359,4 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             ClientHooks.RENDER.spawnParticle(particleType, x, y, z, 0, 0, 0, 1F);
         }
     }
-
 }

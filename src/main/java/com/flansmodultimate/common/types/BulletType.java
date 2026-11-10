@@ -77,6 +77,9 @@ public class BulletType extends ShootableType
     /** If true then this bullet will burn entites it hits */
     @Getter
     protected boolean setEntitiesOnFire;
+    /** Whether a melee block with {@code BlockDeflectChance}, such as a lightsaber's, can send this projectile back */
+    @Getter
+    protected boolean deflectable = true;
 
     /** Exclusively for driveable usage. Replaces old isBomb and isShell booleans with something more flexible */
     @Getter
@@ -347,6 +350,7 @@ public class BulletType extends ShootableType
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);
         setEntitiesOnFire = readValue("SetEntitiesOnFire", setEntitiesOnFire, file);
+        deflectable = readValue("Deflectable", deflectable, file);
         readArmourImpactSounds(file);
         hitSoundEnable = readValue("HitSoundEnable", hitSoundEnable, file);
         dynamicHitSoundConfigured = file.hasConfigLine("DynamicHitSoundEnable");

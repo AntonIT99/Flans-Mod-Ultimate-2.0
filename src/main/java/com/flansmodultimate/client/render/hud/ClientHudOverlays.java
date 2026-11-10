@@ -847,7 +847,7 @@ public final class ClientHudOverlays
 
     private static boolean isAmmoHudGun(ItemStack stack)
     {
-        return !stack.isEmpty() && stack.getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isBayonetMode(stack);
+        return !stack.isEmpty() && stack.getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isBayonetMode(stack) && !gunItem.getConfigType().isShootMelee();
     }
 
     private static void renderLegacyPlayerAmmo(GuiGraphics g, int sw, int sh, EnumAmmoHudLayout layout)
@@ -870,7 +870,7 @@ public final class ClientHudOverlays
     private static void renderLegacyAmmoHand(GuiGraphics g, Font font, ItemStack gunStack, GunItem gunItem, InteractionHand hand, EnumAmmoHudLayout layout, int sw, int sh)
     {
         GunType gunType = gunItem.getConfigType();
-        if (gunType.isBayonetMode(gunStack))
+        if (gunType.isBayonetMode(gunStack) || gunType.isShootMelee())
             return;
         EnumAmmoHudLayout.Placement placement = layout.placement(hand);
         int x = 0;

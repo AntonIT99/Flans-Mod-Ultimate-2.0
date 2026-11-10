@@ -13,6 +13,8 @@ import com.flansmodultimate.common.driveables.MechaEquipmentSupport;
 import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader;
 import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.guns.EquipmentSupport;
+import com.flansmodultimate.common.guns.MeleeBlocking;
+import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.*;
@@ -96,6 +98,41 @@ public final class FlansEquipment
     public static Optional<EquippedShieldProperties> getShieldProperties(ItemStack weapon)
     {
         return EquipmentSupport.shield(weapon);
+    }
+
+    /** @return the melee block of a Flan weapon that can block, or empty for any other item; either side */
+    public static Optional<EquippedBlockProperties> getBlockProperties(ItemStack weapon)
+    {
+        if (!(weapon.getItem() instanceof GunItem gunItem) || !gunItem.getConfigType().isCanBlock())
+            return Optional.empty();
+        GunType type = gunItem.getConfigType();
+        return Optional.of(new EquippedBlockProperties(type.getBlockTime(), type.isHoldToBlock(), type.getBlockMoveSpeed(), type.getBlockDeflectChance(), type.getShieldMaxBlockableMeleeDamage()));
+    }
+
+    /**
+     * Raises a melee block with the blocking weapon in the given hand for its {@link EquippedBlockProperties#blockTime}, unless one
+     * is already raised with that hand. The holder is slowed, cannot strike and blocks or deflects frontal hits until the block
+     * runs out or {@link #lowerMeleeBlock} is called. Nearby clients see the guard. Server level thread only.
+     *
+     * @return whether a block is raised with that hand afterwards; false for a weapon that cannot block or is switched off
+     */
+    public static boolean raiseMeleeBlock(LivingEntity holder, InteractionHand hand)
+    {
+        if (MeleeBlocking.isBlocking(holder, hand))
+            return true;
+        return MeleeBlocking.raise(holder, hand);
+    }
+
+    /** Lowers the holder's raised melee block, if any, ending its slowdown. Server level thread only. */
+    public static void lowerMeleeBlock(LivingEntity holder)
+    {
+        MeleeBlocking.lower(holder);
+    }
+
+    /** @return whether the holder has a melee block raised with either hand; either side, each from its own state */
+    public static boolean isMeleeBlocking(LivingEntity holder)
+    {
+        return MeleeBlocking.isBlocking(holder);
     }
 
     /** @return additional Flan armor properties, or empty for another armor item; either side */

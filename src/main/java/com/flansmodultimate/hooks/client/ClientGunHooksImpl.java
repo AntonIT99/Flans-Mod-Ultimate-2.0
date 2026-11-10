@@ -12,7 +12,9 @@ import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.guns.EnumFunction;
+import com.flansmodultimate.common.guns.EnumMeleeDirection;
 import com.flansmodultimate.common.guns.GunArmPoses;
+import com.flansmodultimate.common.guns.MeleeSwing;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.GunItemHandler;
 import com.flansmodultimate.common.types.*;
@@ -27,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -51,13 +54,16 @@ public class ClientGunHooksImpl implements IClientGunHooks
     }
 
     @Override
-    public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
+    public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand, EnumMeleeDirection direction)
     {
         PlayerData data = PlayerData.getInstance(player);
-        if (!gunItem.getConfigType().isBayonetMode(player.getItemInHand(hand)))
-            data.doMelee(player, gunItem.getConfigType().getMeleeTime(player.getItemInHand(hand)), gunItem.getConfigType());
-        GunAnimations anim = ModClient.getGunAnimations(player, hand);
-        anim.doMelee(gunItem.getConfigType().getMeleeTime(player.getItemInHand(hand)));
+        GunType type = gunItem.getConfigType();
+        ItemStack stack = player.getItemInHand(hand);
+        MeleeSwing swing = type.getMeleeSwing(stack, direction);
+        // Bayonets and gun-swords strike with a projectile: their swing is animation only
+        if (!type.isBayonetMode(stack) && !type.isShootMelee())
+            data.doMelee(player, swing);
+        ModClient.getGunAnimations(player, hand).doMelee(swing.time(), swing.direction());
     }
 
     @Override
@@ -109,10 +115,16 @@ public class ClientGunHooksImpl implements IClientGunHooks
     }
 
     @Override
+    public void animateMeleeBlock(LivingEntity holder, InteractionHand hand, int ticks)
+    {
+        ModClient.getGunAnimations(holder, hand).setMeleeBlockTicks(ticks);
+    }
+
+    @Override
     public void animateRemoteMelee(LivingEntity holder, InteractionHand hand)
     {
         if (holder.getItemInHand(hand).getItem() instanceof GunItem gunItem)
-            ModClient.getGunAnimations(holder, hand).doMelee(gunItem.getConfigType().getMeleeTime(holder.getItemInHand(hand)));
+            ModClient.getGunAnimations(holder, hand).doMelee(gunItem.getConfigType().getMeleeTime(holder.getItemInHand(hand)), EnumMeleeDirection.FORWARD);
     }
 
     /** Starts one shot of the gun's model animation: pump, hammer, casing and muzzle flash. */
@@ -213,16 +225,41 @@ public class ClientGunHooksImpl implements IClientGunHooks
             data.setPrevShootKeyPressed(hand, primaryFunctionState.isPrevPressed());
             data.setSecondaryFunctionKeyPressed(secondaryFunctionState.isPressed());
 
+            // Directional melee swings follow the movement keys, so their changes are sent too
+            boolean meleeDirectionChanged = updateMeleeDirection(configType, data);
+            EnumMeleeDirection meleeDirection = data.getRequestedMeleeDirection();
+
             // Send update to server when keys are pressed or released
-            if (primaryFunctionState.isPressed() != primaryFunctionState.isPrevPressed() || secondaryFunctionState.isPressed() != secondaryFunctionState.isPrevPressed())
-                PacketHandler.sendToServer(new PacketGunInput(primaryFunctionState.isPressed(), secondaryFunctionState.isPressed(), hand));
+            if (primaryFunctionState.isPressed() != primaryFunctionState.isPrevPressed() || secondaryFunctionState.isPressed() != secondaryFunctionState.isPrevPressed() || meleeDirectionChanged)
+                PacketHandler.sendToServer(new PacketGunInput(primaryFunctionState.isPressed(), secondaryFunctionState.isPressed(), hand, meleeDirection));
         }
+    }
+
+    /** @return whether the movement keys changed the requested direction of a directional melee swing */
+    private static boolean updateMeleeDirection(GunType configType, PlayerData data)
+    {
+        if (!configType.hasDirectionalMelee())
+            return false;
+        EnumMeleeDirection held = getHeldMeleeDirection();
+        boolean changed = held != data.getRequestedMeleeDirection();
+        data.setRequestedMeleeDirection(held);
+        return changed;
+    }
+
+    /** @return the directional melee swing selected by the movement keys held */
+    private static EnumMeleeDirection getHeldMeleeDirection()
+    {
+        Options options = Minecraft.getInstance().options;
+        return EnumMeleeDirection.fromMovement(options.keyLeft.isDown(), options.keyRight.isDown(), options.keyUp.isDown());
     }
 
     private static void handleScope(GunItem gunItem, ItemStack gunStack, InteractionHand hand, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState,
         boolean dualWield)
     {
         GunType gunType = gunItem.getConfigType();
+        // The secondary key of a gun-sword or a blocking weapon attacks or blocks instead of aiming
+        if (gunType.isShootMelee() || gunType.isCanBlock())
+            return;
         boolean canZoom = gunType.getSecondaryFunction().isZoom() || gunType.getPrimaryFunction().isZoom() || gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F;
 
         if (dualWield || !canZoom)

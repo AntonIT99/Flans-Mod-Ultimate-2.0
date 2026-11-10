@@ -3,6 +3,7 @@ package com.flansmodultimate.hooks;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
+import com.flansmodultimate.common.guns.EnumMeleeDirection;
 import com.flansmodultimate.common.item.GunItem;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,7 +18,8 @@ public interface IClientGunHooks
 {
     void secondaryModeSwitch(Player player, InteractionHand hand, int ticks);
 
-    void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand);
+    /** Starts the confirmed custom melee swing of a player, in the given direction, with its animation. */
+    void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand, EnumMeleeDirection direction);
 
     /** Applies recoil, screen shake and the model animation once for a confirmed local shot. */
     void animateLocalShot(Player player, InteractionHand hand);
@@ -30,6 +32,9 @@ public interface IClientGunHooks
 
     /** Plays the melee animation of a gun swung by a mob. */
     void animateRemoteMelee(LivingEntity holder, InteractionHand hand);
+
+    /** Raises the guard stance of a melee block for the given ticks, or lowers it for zero. */
+    void animateMeleeBlock(LivingEntity holder, InteractionHand hand, int ticks);
 
     /**
      * @param tactical whether the gun still held live rounds when the reload began

@@ -8,6 +8,7 @@ import com.flansmodultimate.common.entity.ProneSupport;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.HeldItemPresentation;
+import com.flansmodultimate.common.guns.MeleeBlocking;
 import com.flansmodultimate.common.guns.ProneArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
@@ -633,7 +634,7 @@ public class PlayerSnapshot
             return;
 
         GunType gunType = gunItem.getConfigType();
-        if (!gunType.isShield())
+        if (!gunType.isShield() || !MeleeBlocking.isShieldUp(entity, type == EnumHitboxType.RIGHTITEM ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND))
             return;
 
         Matrix4f transform = new Matrix4f(armTransform).rotateX(-Mth.PI / 2F).rotateY(Mth.PI).translate((leftHand ? -1F : 1F) / 16F, 0.125F, -0.625F).rotateY(Mth.PI / 2F).translate(-0.08F, -0.12F,

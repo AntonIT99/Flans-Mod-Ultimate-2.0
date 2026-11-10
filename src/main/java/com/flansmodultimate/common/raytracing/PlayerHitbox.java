@@ -158,6 +158,25 @@ public class PlayerHitbox
         };
     }
 
+    /**
+     * @return the armour penetration resistance protecting this body part of the entity: the helmet for the head, leggings and boots
+     *         together for the legs, the chestplate elsewhere. Bare slots count with their unarmoured resistance.
+     */
+    public static float getArmorPenetrationResistance(LivingEntity entity, EnumHitboxType type)
+    {
+        if (type == EnumHitboxType.HEAD)
+            return getSlotPenetrationResistance(entity.getItemBySlot(EquipmentSlot.HEAD), ArmorType.UNARMORED_HELMET_PENETRATION_RESISTANCE);
+        if (type == EnumHitboxType.LEGS)
+            return getSlotPenetrationResistance(entity.getItemBySlot(EquipmentSlot.LEGS), ArmorType.UNARMORED_LEGGINGS_PENETRATION_RESISTANCE)
+                + getSlotPenetrationResistance(entity.getItemBySlot(EquipmentSlot.FEET), ArmorType.UNARMORED_BOOTS_PENETRATION_RESISTANCE);
+        return getSlotPenetrationResistance(entity.getItemBySlot(EquipmentSlot.CHEST), ArmorType.UNARMORED_CHESTPLATE_PENETRATION_RESISTANCE);
+    }
+
+    private static float getSlotPenetrationResistance(ItemStack stack, float unarmored)
+    {
+        return stack.getItem() instanceof CustomArmorItem armour ? armour.getConfigType().getPenetrationResistance() : unarmored;
+    }
+
     public ShootingHelper.HitData hitByBullet(FiredShot shot, ShootingHelper.HitData hitData, @Nullable Bullet bullet)
     {
         return hitByBullet(shot, hitData, bullet, entity.position().add(0D, entity.getBbHeight() * 0.6D, 0D), Vec3.ZERO);
@@ -175,23 +194,7 @@ public class PlayerHitbox
 
         bulletType.getHitEffects().forEach(effect -> entity.addEffect(new MobEffectInstance(effect)));
 
-        ItemStack head = entity.getItemBySlot(EquipmentSlot.HEAD);
-        ItemStack chest = entity.getItemBySlot(EquipmentSlot.CHEST);
-        ItemStack legs = entity.getItemBySlot(EquipmentSlot.LEGS);
-        ItemStack feet = entity.getItemBySlot(EquipmentSlot.FEET);
-
-        float headPenRes = !(head.getItem() instanceof CustomArmorItem headArmour) ? ArmorType.UNARMORED_HELMET_PENETRATION_RESISTANCE : headArmour.getConfigType().getPenetrationResistance();
-        float chestPenRes = !(chest.getItem() instanceof CustomArmorItem chestArmour) ? ArmorType.UNARMORED_CHESTPLATE_PENETRATION_RESISTANCE : chestArmour.getConfigType().getPenetrationResistance();
-        float legsPenRes = !(legs.getItem() instanceof CustomArmorItem legsArmour) ? ArmorType.UNARMORED_LEGGINGS_PENETRATION_RESISTANCE : legsArmour.getConfigType().getPenetrationResistance();
-        float feetPenRes = !(feet.getItem() instanceof CustomArmorItem feetArmour) ? ArmorType.UNARMORED_BOOTS_PENETRATION_RESISTANCE : feetArmour.getConfigType().getPenetrationResistance();
-        float totalPenetrationResistance;
-
-        if (type == EnumHitboxType.HEAD)
-            totalPenetrationResistance = headPenRes;
-        else if (type == EnumHitboxType.LEGS)
-            totalPenetrationResistance = legsPenRes + feetPenRes;
-        else
-            totalPenetrationResistance = chestPenRes;
+        float totalPenetrationResistance = getArmorPenetrationResistance(entity, type);
 
         float damageModifier = 1F;
         if (penetratingPower <= BulletType.DEFAULT_PENETRATING_POWER * totalPenetrationResistance && ModCommonConfig.get().useNewPenetrationSystem())

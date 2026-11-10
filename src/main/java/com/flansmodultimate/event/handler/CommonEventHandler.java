@@ -16,6 +16,7 @@ import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.HeldItemPresentation;
+import com.flansmodultimate.common.guns.MeleeBlocking;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.teams.TeamsCombatants;
@@ -207,6 +208,7 @@ public final class CommonEventHandler
             return;
 
         FlansMod.teamsManager.tick();
+        MeleeBlocking.tickNonPlayers();
         CraterCarver.tick();
         DistantSync.tick(server, ticker);
 
@@ -447,6 +449,9 @@ public final class CommonEventHandler
     {
         if (!entity.level().isClientSide && (isRejectedByTeams(entity, source) || FriendlyFireRules.sparesDamage(entity, source)))
             return true;
+        // A raised melee block keeps its holder from striking at all, vanilla swings included
+        if (!entity.level().isClientSide && isMeleeDamage(source) && source.getEntity() instanceof LivingEntity attacker && source.getDirectEntity() == attacker && MeleeBlocking.isBlocking(attacker))
+            return true;
         if (!entity.level().isClientSide)
         {
             // Hitting an enemy ends the attacker's own spawn protection, whether or not the victim is protected.
@@ -489,7 +494,12 @@ public final class CommonEventHandler
         float blockChance = 0F;
         for (InteractionHand hand : InteractionHand.values())
         {
-            if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield() && hitStrength <= gunItem.getConfigType().getShieldMaxBlockableMeleeDamage())
+            if (!(player.getItemInHand(hand).getItem() instanceof GunItem gunItem) || hitStrength > gunItem.getConfigType().getShieldMaxBlockableMeleeDamage())
+                continue;
+            // A raised CanBlock melee block always stops what it can hold, as in the Labjac Edition
+            if (MeleeBlocking.isBlocking(player, hand))
+                blockChance = 1F;
+            else if (MeleeBlocking.isShieldUp(player, hand))
                 blockChance = Math.max(blockChance, gunItem.getConfigType().getShieldBlockChance());
         }
 
@@ -595,7 +605,7 @@ public final class CommonEventHandler
         for (InteractionHand hand : InteractionHand.values())
         {
             ItemStack stack = player.getItemInHand(hand);
-            if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield())
+            if (stack.getItem() instanceof GunItem gunItem && MeleeBlocking.isShieldUp(player, hand))
             {
                 absorption = Math.max(absorption, gunItem.getConfigType().getShieldDamageAbsorption());
             }
