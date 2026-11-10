@@ -19,7 +19,7 @@ public final class FlansModCommandAliases
     /** Register after the standalone server commands so redirects see their complete trees. */
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        for (String command : List.of("craftingparts", "defaultammo", "digitalammo", "rearm", "tryclass", "tryteam", "teams", "ranks", "vehiclephysics"))
+        for (String command : List.of("craftingparts", "defaultammo", "digitalammo", "rearm", "tryclass", "tryteam", "teams", "ranks", "vehiclephysics", ArmorBreakingCommand.NAME))
             registerAlias(dispatcher, command, command);
         registerAlias(dispatcher, "particle", "fmparticle");
         registerAlias(dispatcher, "physics", "flansphysics");

@@ -68,5 +68,10 @@ class TeamsRulePresetsTest
         invalid.putBoolean("keepInventory", true);
         CompoundTag unknown = invalid;
         assertThrows(IllegalArgumentException.class, () -> presets.validate(unknown));
+        assertDoesNotThrow(() -> presets.validate(original));
+        invalid = original.copy();
+        invalid.putString(TeamsSection.BREAKABLE_ARMOR, "sometimes");
+        CompoundTag badArmorMode = invalid;
+        assertThrows(IllegalArgumentException.class, () -> presets.validate(badArmorMode));
     }
 }

@@ -9,6 +9,7 @@ import com.flansmodultimate.config.EnumBreakableArmor;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.item.ItemAttributes;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.common.eras.EraEnforcement;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
@@ -19,6 +20,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -26,6 +28,7 @@ import net.minecraft.world.effect.*;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FluidState;
@@ -68,6 +71,12 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         return configType.getEnchantability();
     }
 
+    /** @return whether an anvil turns away this input: armor that takes no enchantments can only be repaired, with its material or another of the same piece */
+    public boolean refusesAnvilInput(ItemStack stack, ItemStack input)
+    {
+        return getEnchantmentValue() == 0 && !input.isEmpty() && !isValidRepairItem(stack, input) && !input.is(this);
+    }
+
     @Override
     public @NotNull Component getName(@NotNull ItemStack stack)
     {
@@ -77,7 +86,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     @Override
     public boolean isDamageable(ItemStack stack)
     {
-        return switch (ModCommonConfig.get().breakableArmor())
+        return switch (ModCommonConfig.breakableArmor())
         {
             case UNBREAKABLE -> false;
             case ALL_BREAKABLE -> true;
@@ -88,7 +97,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     @Override
     public int getMaxDamage(ItemStack stack)
     {
-        if (ModCommonConfig.get().breakableArmor() == EnumBreakableArmor.ALL_BREAKABLE)
+        if (ModCommonConfig.breakableArmor() == EnumBreakableArmor.ALL_BREAKABLE)
         {
             return ModCommonConfig.get().defaultArmorDurability();
         }
@@ -114,8 +123,8 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         if (Math.abs(bulletAbsorption - damageAbsorption) > 0.0001)
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.BULLET_ABSORPTION), formatAbsorption(bulletAbsorption)));
 
-        if (configType.getDurability() > 0F)
-            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DURABILITY), IFlanItem.formatDouble(configType.getDurability())));
+        if (isDamageable(stack))
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DURABILITY), IFlanItem.formatDouble(getMaxDamage(stack))));
         if (configType.getEnchantability() > 0F)
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ENCHANTABILITY), IFlanItem.formatDouble(getEnchantmentValue(stack))));
 
@@ -581,6 +590,24 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
             finalDamage = 0.0F;
 
         event.setAmount(finalDamage);
+    }
+
+    /**
+     * Wears armor that took a whole hit. Vanilla stops at a hit Flan defense has reduced to nothing, before its own armor wear,
+     * so this applies the 1 point of wear vanilla gives any small hit. Only those whose armor vanilla wears at all are affected.
+     */
+    public static void wearFromAbsorbedHit(LivingEntity entity, DamageSource source)
+    {
+        if (source.is(DamageTypeTags.BYPASSES_ARMOR) || !(entity instanceof Player || entity instanceof IEquipmentPolicy policy && policy.flansArmorWears()))
+            return;
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            if (slot.getType() != EquipmentSlot.Type.ARMOR)
+                continue;
+            ItemStack stack = entity.getItemBySlot(slot);
+            if (stack.getItem() instanceof ArmorItem && (!source.is(DamageTypeTags.IS_FIRE) || !stack.getItem().isFireResistant()))
+                ItemStackData.hurtAndBreak(stack, 1, entity, slot);
+        }
     }
 
     private static boolean effectsEnabled(LivingEntity entity)

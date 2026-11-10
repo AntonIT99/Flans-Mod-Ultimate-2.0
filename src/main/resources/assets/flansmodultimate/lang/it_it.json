@@ -160,6 +160,8 @@
   "gui.flansmodultimate.centre.rule.botHealth.tip": "0 mantiene le impostazioni attuali; 1–1024 imposta i PV massimi (2 PV = un cuore). Funziona fuori dai round e mantiene la percentuale di salute rimanente.",
   "gui.flansmodultimate.centre.rule.botRegenSeconds": "Intervallo cura bot (s)",
   "gui.flansmodultimate.centre.rule.botRegenSeconds.tip": "Secondi per mezzo cuore durante i round; 0 disattiva la cura. Richiede rigenerazione passiva.",
+  "gui.flansmodultimate.centre.rule.breakableArmor": "Usura delle armature",
+  "gui.flansmodultimate.centre.rule.breakableArmor.tip": "Indica se armature e uniformi di Flan's perdono durabilità e si rompono: mai, secondo ogni pacchetto di contenuti o tutte con la durabilità predefinita. Equivale a /armorBreaking.",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit": "Paracadute vulnerabili",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit.tip": "I colpi diretti distruggono i paracadute aperti di giocatori e PNG. Disattivato per impostazione predefinita; le esplosioni non li distruggono mai.",
   "gui.flansmodultimate.centre.rule.playerHealth": "PV massimi dei giocatori",

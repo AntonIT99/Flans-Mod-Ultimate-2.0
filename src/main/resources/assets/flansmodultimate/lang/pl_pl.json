@@ -287,6 +287,8 @@
   "gui.flansmodultimate.centre.rule.botHealth.tip": "0 zachowuje bieżące ustawienia; 1–1024 zastępuje maksymalne HP (2 HP = jedno serce). Działa też poza rundami i zachowuje procent pozostałego zdrowia.",
   "gui.flansmodultimate.centre.rule.botRegenSeconds": "Odstęp regeneracji botów (s)",
   "gui.flansmodultimate.centre.rule.botRegenSeconds.tip": "Sekundy na pół serca podczas rund; 0 wyłącza leczenie. Wymaga włączonej pasywnej regeneracji.",
+  "gui.flansmodultimate.centre.rule.breakableArmor": "Niszczenie pancerzy",
+  "gui.flansmodultimate.centre.rule.breakableArmor.tip": "Czy pancerze i mundury Flan's tracą wytrzymałość i się niszczą: nigdy, według każdego pakietu zawartości lub wszystkie z domyślną wytrzymałością. To samo co /armorBreaking.",
   "gui.flansmodultimate.centre.rule.bullets": "Pociski",
   "gui.flansmodultimate.centre.rule.bullets.tip": "Broń wystrzeliwuje pociski",
   "gui.flansmodultimate.centre.rule.canBreakAAGuns": "Niszczalne działa przeciwlotnicze",

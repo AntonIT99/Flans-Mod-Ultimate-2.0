@@ -160,6 +160,8 @@
   "gui.flansmodultimate.centre.rule.botHealth.tip": "0 сохраняет прежние настройки; 1–1024 задаёт максимум ОЗ (2 ОЗ = одно сердце). Действует вне раундов и сохраняет оставшийся процент здоровья.",
   "gui.flansmodultimate.centre.rule.botRegenSeconds": "Интервал лечения ботов (с)",
   "gui.flansmodultimate.centre.rule.botRegenSeconds.tip": "Секунд на половину сердца во время раунда; 0 отключает лечение. Требуется пассивная регенерация.",
+  "gui.flansmodultimate.centre.rule.breakableArmor": "Износ брони",
+  "gui.flansmodultimate.centre.rule.breakableArmor.tip": "Теряют ли броня и униформа Flan's прочность и ломаются ли: никогда, по настройкам каждого контент-пака или вся броня с прочностью по умолчанию. То же, что /armorBreaking.",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit": "Уязвимые парашюты",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit.tip": "Прямые попадания уничтожают раскрытые парашюты игроков и NPC. По умолчанию выключено; взрывы их не уничтожают.",
   "gui.flansmodultimate.centre.rule.playerHealth": "Макс. ОЗ игроков",

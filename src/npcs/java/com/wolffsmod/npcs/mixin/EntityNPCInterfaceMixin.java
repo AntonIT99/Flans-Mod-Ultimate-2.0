@@ -432,6 +432,18 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     }
 
     @Override
+    public boolean flansArmorWears()
+    {
+        return flansArmorEffects() && NpcServerRules.armorDurability((EntityNPCInterface) (Object) this);
+    }
+
+    @Override
+    public boolean flansMeleeWears()
+    {
+        return NpcServerRules.meleeDurability((EntityNPCInterface) (Object) this);
+    }
+
+    @Override
     public boolean flansWeaponEffects()
     {
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.ITEM_WEAPONS);
@@ -879,7 +891,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     @Override
     protected void hurtArmor(DamageSource source, float amount)
     {
-        if (!flansArmorEffects() || amount <= 0F)
+        if (!flansArmorWears() || amount <= 0F)
             return;
         int wear = Math.max(1, (int) (amount / 4F));
         for (EquipmentSlot slot : EquipmentSlot.values())

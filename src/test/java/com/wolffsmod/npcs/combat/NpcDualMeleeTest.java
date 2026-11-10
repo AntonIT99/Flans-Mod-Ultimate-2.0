@@ -5,6 +5,7 @@ import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.sim.NpcServerRules;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.NpcAPI;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -221,10 +222,11 @@ class NpcDualMeleeTest
         when(target.getAllSlots()).thenReturn(List.of());
         when(target.hurt(any(), anyFloat())).thenReturn(true);
         NpcAPI npcApi = mock(NpcAPI.class);
-        try (var events = mockStatic(EventHooks.class); var api = mockStatic(NpcAPI.class))
+        try (var events = mockStatic(EventHooks.class); var api = mockStatic(NpcAPI.class); var rules = mockStatic(NpcServerRules.class))
         {
             api.when(NpcAPI::Instance).thenReturn(npcApi);
             events.when(() -> EventHooks.onNPCAttacksMelee(eq(npc), any())).thenReturn(false);
+            rules.when(() -> NpcServerRules.meleeDurability(npc)).thenReturn(true);
             assertTrue(NpcItemAttacks.melee(npc, target));
         }
         verify(target).hurt(any(DamageSource.class), eq(10.5F));
@@ -233,6 +235,26 @@ class NpcDualMeleeTest
         verify(npc).setItemSlot(EquipmentSlot.OFFHAND, axe);
         verify(npc, never()).setItemSlot(eq(EquipmentSlot.MAINHAND), any());
         assertEquals(2, axe.getDamageValue());
+        assertEquals(0, sword.getDamageValue());
+    }
+
+    @Test
+    void meleeWeaponsDoNotWearUnlessTheServerTurnsDurabilityOn()
+    {
+        EntityNPCInterface npc = npc(sword, axe);
+        LivingEntity target = mock(LivingEntity.class);
+        when(target.isAlive()).thenReturn(true);
+        when(target.getMobType()).thenReturn(MobType.UNDEFINED);
+        when(target.getAllSlots()).thenReturn(List.of());
+        when(target.hurt(any(), anyFloat())).thenReturn(true);
+        NpcAPI npcApi = mock(NpcAPI.class);
+        try (var events = mockStatic(EventHooks.class); var api = mockStatic(NpcAPI.class))
+        {
+            api.when(NpcAPI::Instance).thenReturn(npcApi);
+            events.when(() -> EventHooks.onNPCAttacksMelee(eq(npc), any())).thenReturn(false);
+            assertTrue(NpcItemAttacks.melee(npc, target));
+        }
+        verify(target).hurt(any(DamageSource.class), anyFloat());
         assertEquals(0, sword.getDamageValue());
     }
 

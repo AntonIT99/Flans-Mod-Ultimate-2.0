@@ -69,6 +69,8 @@ public final class TeamsSection
     public static final String DEFAULT_SCORE = "default_score";
     public static final String WEAPON_DROPS = "weaponDrops";
     public static final String SEA_LEVEL = "seaLevel";
+    /** How Flan's armor breaks, by the word {@code /armorBreaking} takes. */
+    public static final String BREAKABLE_ARMOR = "breakableArmor";
     /** Seconds of Teams spawn protection, by the {@code /teams} command that sets it. */
     public static final String SPAWN_PROTECTION = "spawnProtection";
 
@@ -283,6 +285,7 @@ public final class TeamsSection
             case DROPS -> "on";
             case SMART_DROPS -> "smart";
         });
+        tag.putString(BREAKABLE_ARMOR, com.flansmodultimate.config.ModCommonConfig.breakableArmor().word());
         tag.putInt("mgLife", manager.getMgLife());
         tag.putInt("planeLife", manager.getPlaneLife());
         tag.putInt("vehicleLife", manager.getVehicleLife());

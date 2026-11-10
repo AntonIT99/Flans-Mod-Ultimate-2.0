@@ -160,6 +160,8 @@
   "gui.flansmodultimate.centre.rule.botHealth.tip": "0で現在の設定を維持。1～1024で最大HPを上書き（2HP＝ハート1個）。ラウンド外でも有効で、残りHPの割合を維持します。",
   "gui.flansmodultimate.centre.rule.botRegenSeconds": "ボット回復間隔（秒）",
   "gui.flansmodultimate.centre.rule.botRegenSeconds.tip": "ラウンド中にハート半分を回復する間隔。0で無効。自然回復を有効にする必要があります。",
+  "gui.flansmodultimate.centre.rule.breakableArmor": "防具の破損",
+  "gui.flansmodultimate.centre.rule.breakableArmor.tip": "Flan's の防具と制服の耐久値が減って壊れるかどうか：壊れない、各コンテンツパックの設定に従う、すべて既定の耐久値を使う。/armorBreaking と同じです。",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit": "パラシュートへの被弾",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit.tip": "直撃でプレイヤーと NPC の開いたパラシュートが壊れます。初期設定は無効。爆発では壊れません。",
   "gui.flansmodultimate.centre.rule.playerHealth": "プレイヤー最大HP",

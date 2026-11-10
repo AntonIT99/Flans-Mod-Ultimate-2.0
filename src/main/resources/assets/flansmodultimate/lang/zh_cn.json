@@ -160,6 +160,8 @@
   "gui.flansmodultimate.centre.rule.botHealth.tip": "0 保持原设置；1–1024 覆盖最大生命值（2 点 = 一颗心）。回合外也生效，并保留剩余生命百分比。",
   "gui.flansmodultimate.centre.rule.botRegenSeconds": "机器人恢复间隔（秒）",
   "gui.flansmodultimate.centre.rule.botRegenSeconds.tip": "回合中每恢复半颗心所需的秒数；0 禁用恢复。需要启用被动生命恢复。",
+  "gui.flansmodultimate.centre.rule.breakableArmor": "盔甲损坏",
+  "gui.flansmodultimate.centre.rule.breakableArmor.tip": "Flan's 的盔甲和制服是否会损耗耐久并损坏：永不损坏、按各内容包设置，或全部使用默认耐久。与 /armorBreaking 相同。",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit": "降落伞可被击毁",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit.tip": "允许直接命中摧毁玩家和 NPC 的已展开降落伞。默认关闭；爆炸不会摧毁降落伞。",
   "gui.flansmodultimate.centre.rule.playerHealth": "玩家最大生命值",

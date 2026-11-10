@@ -158,9 +158,10 @@ class FlansModCommandAliasesTest
         VehiclePhysicsCommand.register(dispatcher);
         FMParticleCommand.register(dispatcher);
         WorldPhysicsCommand.register(dispatcher);
+        ArmorBreakingCommand.register(dispatcher);
         FlansModCommandAliases.register(dispatcher);
 
-        for (String name : List.of("craftingparts", "defaultammo", "digitalammo", "rearm", "tryclass", "tryteam", "teams", "ranks", "vehiclephysics", "particle", "physics"))
+        for (String name : List.of("craftingparts", "defaultammo", "digitalammo", "rearm", "tryclass", "tryteam", "teams", "ranks", "vehiclephysics", "armorBreaking", "particle", "physics"))
         {
             String original = switch (name)
             {

@@ -285,6 +285,8 @@
   "gui.flansmodultimate.centre.rule.botHealth.tip": "0 behält die bisherigen Einstellungen; 1–1024 überschreibt die maximalen HP (2 HP = ein Herz). Gilt auch außerhalb von Runden und erhält den verbleibenden Lebensanteil.",
   "gui.flansmodultimate.centre.rule.botRegenSeconds": "Bot-Regenerationsintervall (s)",
   "gui.flansmodultimate.centre.rule.botRegenSeconds.tip": "Sekunden pro halbem Herz in Runden; 0 deaktiviert die Heilung. Passive Regeneration muss aktiviert sein.",
+  "gui.flansmodultimate.centre.rule.breakableArmor": "Rüstungsverschleiß",
+  "gui.flansmodultimate.centre.rule.breakableArmor.tip": "Ob Flan's-Rüstungen und Uniformen an Haltbarkeit verlieren und zerbrechen: nie, wie im jeweiligen Inhaltspaket festgelegt, oder alle mit der Standardhaltbarkeit. Wie /armorBreaking.",
   "gui.flansmodultimate.centre.rule.bullets": "Kugeln",
   "gui.flansmodultimate.centre.rule.bullets.tip": "Waffen feuern Kugeln",
   "gui.flansmodultimate.centre.rule.canBreakAAGuns": "Flugabwehrgeschütze zerstörbar",

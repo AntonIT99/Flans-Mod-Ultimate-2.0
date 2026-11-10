@@ -2,8 +2,10 @@ package com.flansmodultimate.client.gui.centre;
 
 import com.flansmodultimate.api.client.commandcentre.CommandCentreRow;
 import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
+import com.flansmodultimate.common.command.ArmorBreakingCommand;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.teams.centre.TeamsSection;
+import com.flansmodultimate.config.EnumBreakableArmor;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
@@ -25,6 +27,7 @@ final class RulesPage extends TeamsPage
         "survivalCanPlaceVehicles", "forceAdventure", "pacifism", "parachutesCanBeHit");
     private static final List<String> COMBAT = List.of("bombs", "shells", "bullets", "armourDrops", "overrideHunger", "alliedSpawns", "fuelNeeded", "vehiclesCanZoom", "movieProp", "bloodEffects");
     private static final List<String> WEAPON_DROPS = List.of("on", "smart", "off");
+    private static final List<String> BREAKABLE_ARMOR = Arrays.stream(EnumBreakableArmor.values()).map(EnumBreakableArmor::word).toList();
     /** The game type variable every game type takes, for the score limit of the round being played. */
     private static final String SCORE_LIMIT = "scorelimit";
     private static final String SCORE_LIMIT_TEXT = "score_limit";
@@ -94,7 +97,8 @@ final class RulesPage extends TeamsPage
         {
             // The spawn protection and the weapon drops take the slot after the last switch.
             case PROTECTION -> (PROTECTION.size() + 1) / 2 + 1;
-            case COMBAT -> COMBAT.size() / 2 + 1;
+            // The weapon drops and armor breaking take the two slots after the last switch.
+            case COMBAT -> (COMBAT.size() + 3) / 2;
             case HEALTH -> HEALTH_ROWS;
             // The switches, the lifetimes, the remains and the sea level.
             case CLEANUP -> 1 + lifetimeRows() + remainsRows() + 1;
@@ -145,6 +149,13 @@ final class RulesPage extends TeamsPage
                     choice(view, tr(RULE + "weaponDrops"), WEAPON_DROPS, data.rules().getString(TeamsSection.WEAPON_DROPS), mode -> tr("weapon_drops." + mode),
                         left + (slot % 2) * (port.columnWidth() + GAP), port.y(slot / 2), port.columnWidth(), mode -> run(view, "teams weaponDrops", mode))
                         .setTooltip(Tooltip.create(tr(RULE + "weaponDrops.tip")));
+                }
+                int armorSlot = slot + 1;
+                if (port.shows(armorSlot / 2))
+                {
+                    choice(view, tr(RULE + TeamsSection.BREAKABLE_ARMOR), BREAKABLE_ARMOR, data.rules().getString(TeamsSection.BREAKABLE_ARMOR),
+                        mode -> Component.translatable("options.flansmodultimate.value.breakablearmor." + mode), left + (armorSlot % 2) * (port.columnWidth() + GAP), port.y(armorSlot / 2),
+                        port.columnWidth(), mode -> run(view, ArmorBreakingCommand.NAME, mode)).setTooltip(Tooltip.create(tr(RULE + TeamsSection.BREAKABLE_ARMOR + ".tip")));
                 }
             }
             case HEALTH -> initHealth(view, data.rules(), scrollArea(view));

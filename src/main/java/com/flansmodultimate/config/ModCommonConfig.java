@@ -462,7 +462,7 @@ public final class ModCommonConfig
 
         builder.push("Armor Settings");
         BREAKABLE_ARMOR = builder.comment("UNBREAKABLE = No armor breaks, ALL_BREAKABLE = All armor uses default durability, CONTENT_PACK = Use each armor definition.",
-            "Legacy numeric values 0, 1 and 2 are also accepted.").defineEnum("breakableArmor", EnumBreakableArmor.CONTENT_PACK, EnumGetMethod.ORDINAL_OR_NAME_IGNORECASE,
+            "Legacy numeric values 0, 1 and 2 are also accepted. Can also be changed in game with /armorBreaking.").defineEnum("breakableArmor", EnumBreakableArmor.CONTENT_PACK, EnumGetMethod.ORDINAL_OR_NAME_IGNORECASE,
                 value -> EnumGetMethod.ORDINAL_OR_NAME_IGNORECASE.validate(value, EnumBreakableArmor.class));
         DEFAULT_ARMOR_DURABILITY = builder.comment("Default durability if breakableArmor = ALL_BREAKABLE").defineInRange("defaultArmorDurability", 500, 1, Integer.MAX_VALUE);
         DEFAULT_ARMOR_ENCHANTABILITY = builder.comment("The quality of enchantments received for the same level of XP 0=UnEnchantable 25=Gold armor").defineInRange("defaultArmorEnchantability", 0, 0,
@@ -1212,6 +1212,18 @@ public final class ModCommonConfig
     public static void setParachutesCanBeHit(boolean enabled)
     {
         setRuntimeValue(PARACHUTES_CAN_BE_HIT.getPath(), enabled);
+    }
+
+    /** @return the armor durability policy; content pack definitions decide before the configuration is loaded */
+    public static EnumBreakableArmor breakableArmor()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? EnumBreakableArmor.CONTENT_PACK : config.breakableArmor();
+    }
+
+    public static void setBreakableArmor(EnumBreakableArmor mode)
+    {
+        setRuntimeValue(List.of("Armor Settings", "breakableArmor"), mode.name());
     }
 
     public static boolean autoRefillVehicleAmmo()

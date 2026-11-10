@@ -113,6 +113,20 @@ public final class NpcServerRules
         return server != null && server.peacefulCombat();
     }
 
+    /** @return whether armor the NPC wears loses durability, as the server's setting says; never off the server thread */
+    public static boolean armorDurability(EntityNPCInterface npc)
+    {
+        NpcServerSettings server = npc.level().isClientSide ? null : NpcServerSettings.of(npc);
+        return server != null && server.armorDurability();
+    }
+
+    /** @return whether melee weapons the NPC holds lose durability, as the server's setting says; never off the server thread */
+    public static boolean meleeDurability(EntityNPCInterface npc)
+    {
+        NpcServerSettings server = npc.level().isClientSide ? null : NpcServerSettings.of(npc);
+        return server != null && server.meleeDurability();
+    }
+
     /**
      * @return the damage a player takes from a hit, after armour, as the server's Cinematic mode allows: never enough to kill
      *         them

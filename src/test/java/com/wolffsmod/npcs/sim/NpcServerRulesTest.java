@@ -20,6 +20,13 @@ class NpcServerRulesTest
     }
 
     @Test
+    void npcEquipmentDoesNotWearOutUnlessAnOperatorTurnsItOn()
+    {
+        assertEquals(0, NpcServerSettings.Setting.ARMOR_DURABILITY.getFallback());
+        assertEquals(0, NpcServerSettings.Setting.MELEE_DURABILITY.getFallback());
+    }
+
+    @Test
     void cinematicModeLeavesPlayersHalfAHeartAndIsOffUnlessAnOperatorTurnsItOn()
     {
         assertEquals(0, NpcServerSettings.Setting.CINEMATIC.getFallback());

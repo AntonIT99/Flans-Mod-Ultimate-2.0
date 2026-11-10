@@ -287,6 +287,8 @@
   "gui.flansmodultimate.centre.rule.botHealth.tip": "0 keeps the current settings; 1–1024 overrides maximum HP (2 HP = one heart). Applies outside rounds too and preserves remaining health percentage.",
   "gui.flansmodultimate.centre.rule.botRegenSeconds": "Bot regeneration interval (s)",
   "gui.flansmodultimate.centre.rule.botRegenSeconds.tip": "Seconds per half-heart during rounds; 0 disables healing. Requires passive regeneration to be enabled.",
+  "gui.flansmodultimate.centre.rule.breakableArmor": "Armor breaking",
+  "gui.flansmodultimate.centre.rule.breakableArmor.tip": "Whether Flan's armor and uniforms lose durability and break: never, as each content pack defines, or all with the default durability. Same as /armorBreaking.",
   "gui.flansmodultimate.centre.rule.bullets": "Bullets",
   "gui.flansmodultimate.centre.rule.bullets.tip": "Guns fire bullets",
   "gui.flansmodultimate.centre.rule.canBreakAAGuns": "AA guns break",

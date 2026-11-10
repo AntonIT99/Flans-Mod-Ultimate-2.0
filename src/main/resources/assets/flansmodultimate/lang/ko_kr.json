@@ -160,6 +160,8 @@
   "gui.flansmodultimate.centre.rule.botHealth.tip": "0은 기존 설정 유지, 1–1024는 최대 HP 지정(2 HP = 하트 1개). 라운드 밖에서도 적용되며 남은 체력 비율을 유지합니다.",
   "gui.flansmodultimate.centre.rule.botRegenSeconds": "봇 회복 간격 (초)",
   "gui.flansmodultimate.centre.rule.botRegenSeconds.tip": "라운드 중 하트 반 칸 회복 간격입니다. 0은 회복을 끕니다. 자연 회복이 켜져 있어야 합니다.",
+  "gui.flansmodultimate.centre.rule.breakableArmor": "방어구 파손",
+  "gui.flansmodultimate.centre.rule.breakableArmor.tip": "Flan's 방어구와 제복의 내구도가 닳아 파손되는지 설정합니다: 파손 없음, 각 콘텐츠 팩 설정, 모두 기본 내구도 사용. /armorBreaking과 같습니다.",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit": "낙하산 피격 허용",
   "gui.flansmodultimate.centre.rule.parachutesCanBeHit.tip": "직격 시 플레이어와 NPC의 펼쳐진 낙하산이 파괴됩니다. 기본값은 꺼짐이며 폭발로는 파괴되지 않습니다.",
   "gui.flansmodultimate.centre.rule.playerHealth": "플레이어 최대 HP",

@@ -131,6 +131,7 @@ public final class CommonEventHandler
         TeamsCommand.register(event.getDispatcher());
         EraCommand.register(event.getDispatcher());
         ThrownGunDespawnCommand.register(event.getDispatcher());
+        ArmorBreakingCommand.register(event.getDispatcher());
         TryClassCommand.register(event.getDispatcher());
         TryTeamCommand.register(event.getDispatcher());
         VehicleCollisionDebugCommand.register(event.getDispatcher());
@@ -144,7 +145,7 @@ public final class CommonEventHandler
     public static void onAnvilUpdate(AnvilUpdateEvent event)
     {
         ItemStack left = event.getLeft();
-        if (left.getItem() instanceof CustomArmorItem armor && armor.getEnchantmentValue() == 0 && !event.getRight().isEmpty())
+        if (left.getItem() instanceof CustomArmorItem armor && armor.refusesAnvilInput(left, event.getRight()))
             event.setCanceled(true);
     }
 
@@ -609,10 +610,14 @@ public final class CommonEventHandler
             if (FlanDamageSources.isShootableDamage(source) && CustomArmorItem.tryApplyIgnoreArmorShot(damage, entity, source))
                 return;
 
+            float beforeArmor = damage.amount();
             CustomArmorItem.applyOldArmorRatioSystem(damage, entity);
 
             if (FlanDamageSources.isShootableDamage(source))
                 CustomArmorItem.applyArmorBulletDefense(damage, entity);
+
+            if (beforeArmor > 0F && damage.amount() <= 0F)
+                CustomArmorItem.wearFromAbsorbedHit(entity, source);
         }
     }
 

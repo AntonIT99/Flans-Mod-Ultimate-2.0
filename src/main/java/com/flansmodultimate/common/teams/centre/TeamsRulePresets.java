@@ -3,6 +3,8 @@ package com.flansmodultimate.common.teams.centre;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.commandcentre.ISettingsPresets;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.config.EnumBreakableArmor;
+import com.flansmodultimate.config.ModCommonConfig;
 
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
@@ -139,6 +141,8 @@ final class TeamsRulePresets implements ISettingsPresets
             return value instanceof IntTag number && number.getAsInt() >= 0 && number.getAsInt() <= maximum(key);
         if (key.equals(WEAPON_DROPS))
             return value instanceof StringTag && List.of("on", "off", SMART).contains(value.getAsString());
+        if (key.equals(TeamsSection.BREAKABLE_ARMOR))
+            return value instanceof StringTag && EnumBreakableArmor.fromWord(value.getAsString()).isPresent();
         if (key.equals(SEA_LEVEL))
             return value instanceof IntTag number && number.getAsInt() >= -2048 && number.getAsInt() <= 2048 || value instanceof StringTag && value.getAsString().equals("default");
         return false;
@@ -215,6 +219,8 @@ final class TeamsRulePresets implements ISettingsPresets
                 case SMART -> TeamsManager.EnumWeaponDrop.SMART_DROPS;
                 default -> TeamsManager.EnumWeaponDrop.NONE;
             });
+        if (data.contains(TeamsSection.BREAKABLE_ARMOR))
+            EnumBreakableArmor.fromWord(data.getString(TeamsSection.BREAKABLE_ARMOR)).ifPresent(ModCommonConfig::setBreakableArmor);
         if (data.contains(SEA_LEVEL))
             manager.setSeaLevelOverride(data.contains(SEA_LEVEL, Tag.TAG_INT) ? data.getInt(SEA_LEVEL) : null);
         manager.saveSettings();

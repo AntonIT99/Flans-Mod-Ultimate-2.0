@@ -46,6 +46,26 @@ public interface IEquipmentPolicy
         return flansArmorEffects();
     }
 
+    /**
+     * Read on the server when a hit would wear armor. A worn piece still follows its own durability rules.
+     *
+     * @return whether armor worn by this entity loses durability
+     */
+    default boolean flansArmorWears()
+    {
+        return true;
+    }
+
+    /**
+     * Read on the server when a melee hit would wear the equipment that struck it.
+     *
+     * @return whether this entity's melee weapons lose durability
+     */
+    default boolean flansMeleeWears()
+    {
+        return true;
+    }
+
     /** @return whether Flan held shields may block incoming attacks */
     default boolean flansWeaponEffects()
     {
