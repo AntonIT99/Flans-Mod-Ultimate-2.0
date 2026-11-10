@@ -16,6 +16,9 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.Set;
+import java.util.UUID;
+
 @NoArgsConstructor
 public class PacketGunScopedState implements IServerPacket
 {
@@ -56,16 +59,20 @@ public class PacketGunScopedState implements IServerPacket
             // Apply night vision while scoped if gun.allowNightVision = true
             if (gunItem.getConfigType().isAllowNightVision() || (scope != null && scope.isHasNightVision()))
             {
+                Set<UUID> scopeNightVision = CommonEventHandler.getNightVisionPlayers();
                 if (isScoped)
                 {
-                    // 1200 ticks = 60s, like before. Reapplying is fine.
-                    player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 1200, 0, false, false, true));
-                    CommonEventHandler.getNightVisionPlayers().add(player.getUUID());
+                    // Night vision from elsewhere, a potion say, is left alone: lowering the scope would end it.
+                    if (scopeNightVision.contains(player.getUUID()) || !player.hasEffect(MobEffects.NIGHT_VISION))
+                    {
+                        // 1200 ticks = 60s, like before. Reapplying is fine.
+                        player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 1200, 0, false, false, true));
+                        scopeNightVision.add(player.getUUID());
+                    }
                 }
-                else
+                else if (scopeNightVision.remove(player.getUUID()))
                 {
                     player.removeEffect(MobEffects.NIGHT_VISION);
-                    CommonEventHandler.getNightVisionPlayers().remove(player.getUUID());
                 }
             }
         }

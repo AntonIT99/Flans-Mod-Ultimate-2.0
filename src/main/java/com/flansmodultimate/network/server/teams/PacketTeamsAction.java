@@ -1,6 +1,5 @@
 package com.flansmodultimate.network.server.teams;
 
-import com.flansmodultimate.api.teams.ITeamsRespawnRule;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.PlayerClass;
@@ -146,7 +145,10 @@ public final class PacketTeamsAction implements IServerPacket
 
         if (team == Team.SPECTATORS || team.getClasses().isEmpty())
         {
-            manager.respawnPlayer(player, true, ITeamsRespawnRule.Reason.JOINED);
+            // No class menu follows to confirm the choice, so it is confirmed here on the same terms: picking one's own
+            // team again is no resupply, and leaving the fight, for another side or to watch, costs a life. Otherwise a
+            // fighter about to die could step out as a spectator and come back healed and resupplied.
+            manager.confirmSelection(player);
             manager.syncPlayer(player, PacketTeamsState.OpenScreen.CLOSE);
         }
         else if (manager.getCurrentLoadoutPool().isPresent())
