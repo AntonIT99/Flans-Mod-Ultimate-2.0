@@ -18,6 +18,7 @@ import com.wolffsmod.npcs.sim.NpcCombatants;
 import com.wolffsmod.npcs.sim.NpcInactiveReturn;
 import com.wolffsmod.npcs.sim.NpcPathWorkers;
 import com.wolffsmod.npcs.sim.NpcServerRules;
+import com.wolffsmod.npcs.tactics.NpcTacticCommands;
 import com.wolffsmod.npcs.teams.AllyNameTags;
 import com.wolffsmod.npcs.teams.BotCommands;
 import com.wolffsmod.npcs.teams.FactionCommands;
@@ -167,5 +168,6 @@ public final class NpcsGameEvents
         SkirmishCommands.register(event.getDispatcher());
         WarCommands.register(event.getDispatcher());
         FriendlyFireCommands.register(event.getDispatcher());
+        NpcTacticCommands.register(event.getDispatcher());
     }
 }
