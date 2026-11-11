@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.block;
 
+import com.flansmodultimate.common.eras.EraEnforcement;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.flansmodultimate.util.InventoryHelper;
@@ -73,9 +74,10 @@ class BoxPurchaseAccountingTest
                 BuiltInRegistries.BLOCK.freeze();
                 registry.freeze();
             }
-            try (var utils = mockStatic(ModUtils.class))
+            try (var utils = mockStatic(ModUtils.class); var eras = mockStatic(EraEnforcement.class))
             {
                 utils.when(() -> ModUtils.getItemStack(outputType)).thenAnswer(call -> Optional.of(new ItemStack(Items.STICK)));
+                eras.when(() -> EraEnforcement.refuses(player, outputType)).thenReturn(false);
                 inventory.setItem(0, ingredient.copy());
                 purchase(armor, player, outputType, gunBox, armorBox);
                 assertEquals(1, InventoryHelper.countInInventory(inventory, ingredient));
