@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TacticDecisionTest
@@ -269,6 +271,60 @@ class TacticDecisionTest
         // Out of sight it still opens the range first rather than closing in blindly.
         assertEquals(Move.GO_TO, decide(Tactic.STAND_OFF, at(8D), false, blast).move());
         assertEquals(Move.STAND, decide(Tactic.ADVANCE, at(30D), true, blast).move());
+    }
+
+    @Test
+    void aChargingNpcRunsAtItsTargetWhereverItIsAndNeverStandsToFire()
+    {
+        for (double distance : new double[] {RIFLE.preferred() * 3D, RIFLE.preferred(), 2D})
+        {
+            assertEquals(Order.closeIn(TacticDecision.RUN), decide(Tactic.CHARGE, at(distance), true), "in sight at " + distance);
+            assertEquals(Order.closeIn(TacticDecision.RUN), decide(Tactic.CHARGE, at(distance), false), "out of sight at " + distance);
+        }
+        assertFalse(Tactic.CHARGE.usesDistance());
+        assertEquals(Tactic.CHARGE, NpcTactics.resolve(Tactic.CHARGE, TacticKind.STANDARD, true));
+        assertEquals(Tactic.CUSTOM_NPCS, NpcTactics.resolve(Tactic.CHARGE, TacticKind.VEHICLE, true), "it is written for soldiers only");
+    }
+
+    @Test
+    void anAssaultingNpcRunsForItsObjectiveFightsWhatItMeetsAndHoldsTheObjective()
+    {
+        Vec3 objective = at(200D);
+        Vec3 position = at(400D);
+        Order onward = TacticDecision.decide(Tactic.ASSAULT, situation(position, true, objective, false, false), new NpcTacticState(), 0L);
+        assertEquals(new Order(Move.GO_TO, TacticDecision.RUN, objective), onward, "a target in sight beyond its tactic distance does not stop it");
+        Vec3 close = at(RIFLE.preferred());
+        assertEquals(Move.STAND, TacticDecision.decide(Tactic.ASSAULT, situation(close, true, objective, false, false), new NpcTacticState(), 0L).move(), "it fights an enemy it meets");
+        assertEquals(Move.GO_TO, TacticDecision.decide(Tactic.ASSAULT, situation(close, false, objective, false, false), new NpcTacticState(), 0L).move(), "one out of sight it passes");
+        Vec3 there = objective.add(TacticDecision.HOLD_RADIUS, 0D, 0D);
+        assertEquals(Move.STAND, TacticDecision.decide(Tactic.ASSAULT, situation(there, false, objective, false, false), new NpcTacticState(), 0L).move(), "it holds the objective");
+        assertTrue(Tactic.ASSAULT.usesDistance());
+        assertEquals(Tactic.ASSAULT, NpcTactics.resolve(Tactic.ASSAULT, TacticKind.VEHICLE, true));
+    }
+
+    @Test
+    void anAssaultRouteGoesOnPastPointsReachedNeverBackAndStartsFromTheNearestAfterAReload()
+    {
+        List<Vec3> route = List.of(at(0D), at(20D), at(40D), at(60D));
+        assertEquals(1, NpcAssault.advance(at(0D), route, -1), "from where it was placed it heads for the second point");
+        assertEquals(1, NpcAssault.advance(at(10D), route, 1));
+        assertEquals(2, NpcAssault.advance(at(20D - NpcAssault.REACHED), route, 1), "it moves on before it would stand at a point on the way");
+        assertEquals(2, NpcAssault.advance(at(5D), route, 2), "pushed back, it still heads on");
+        assertEquals(2, NpcAssault.advance(at(35D), route, -1), "a reloaded NPC starts from the point nearest it");
+        assertEquals(3, NpcAssault.advance(at(60D), route, 3), "the last point it keeps");
+        assertTrue(NpcAssault.REACHED > TacticDecision.HOLD_RADIUS);
+    }
+
+    @Test
+    void anAssaultRouteIsForgottenWhenThePathChanges()
+    {
+        NpcTacticState memory = new NpcTacticState();
+        assertEquals(-1, memory.assaultIndex(7));
+        memory.assault(7, 2);
+        assertEquals(2, memory.assaultIndex(7));
+        memory.prepare(Tactic.ASSAULT, 3, 0L, 1);
+        assertEquals(2, memory.assaultIndex(7), "a new fight does not send it back along its route");
+        assertEquals(-1, memory.assaultIndex(8));
     }
 
     private static Order decide(Tactic tactic, Vec3 position, boolean inSight)

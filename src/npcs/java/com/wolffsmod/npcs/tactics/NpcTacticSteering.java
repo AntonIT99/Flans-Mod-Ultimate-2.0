@@ -19,6 +19,7 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Carries out a tactic for one tick: looks for cover when the tactic needs it, decides, and hands the path to the NPC's
@@ -61,17 +62,27 @@ public final class NpcTacticSteering
         Vec3 home = new Vec3(npc.getStartXPos(), npc.getStartYPos(), npc.getStartZPos());
         if (TeamsBots.isCommander(npc))
             home = TeamsBots.combatIntent(npc).map(NpcCombatIntent::destination).orElse(home);
+        // An assaulting NPC heads for the next point of its route as a holding one keeps to its home; without a route it advances.
+        Tactic deciding = tactic;
+        if (tactic == Tactic.ASSAULT)
+        {
+            Optional<NpcAssault.Point> next = NpcAssault.next(npc);
+            if (next.isPresent())
+                home = next.get().spot();
+            else
+                deciding = Tactic.ADVANCE;
+        }
         Situation situation = new Situation(npc.getSensing().hasLineOfSight(target), npc.position(), target.position(), home, engagement, memory.isReloading(now), hit);
-        Order order = TacticDecision.decide(tactic, situation, memory, now);
+        Order order = TacticDecision.decide(deciding, situation, memory, now);
         // A vehicle without a shot from where it would stand, or close in from, drives to where it has one; one that holds or
-        // carries troops stays put, a transport having no shot to look for.
-        if (tactic != Tactic.HOLD && tactic != Tactic.TRANSPORT && (order.move() != TacticDecision.Move.GO_TO || NpcVehicleCombat.armorFlank(npc, target) != null)
+        // carries troops stays put, a transport having no shot to look for, and a charge stops for nothing.
+        if (tactic != Tactic.HOLD && tactic != Tactic.TRANSPORT && tactic != Tactic.CHARGE && (order.move() != TacticDecision.Move.GO_TO || NpcVehicleCombat.armorFlank(npc, target) != null)
             && NpcFiringPosition.reposition(npc, target))
         {
             memory.order(null, now);
             return;
         }
-        follow(npc, order, memory, target, now);
+        follow(npc, order, memory, target, now, tactic != Tactic.CHARGE);
     }
 
     private static void refreshCover(EntityNPCInterface npc, LivingEntity target, NpcTacticState memory, Engagement engagement, long now)
@@ -98,10 +109,14 @@ public final class NpcTacticSteering
         }
     }
 
-    private static void follow(EntityNPCInterface npc, Order order, NpcTacticState memory, LivingEntity target, long now)
+    /**
+     * @param suppressible
+     *            whether fire that pins the NPC down stops it closing in, as it does for every tactic but a charge
+     */
+    private static void follow(EntityNPCInterface npc, Order order, NpcTacticState memory, LivingEntity target, long now, boolean suppressible)
     {
         PathNavigation navigation = npc.getNavigation();
-        if (NpcSuppression.isPinned(npc) && advances(npc, order, target))
+        if (suppressible && NpcSuppression.isPinned(npc) && advances(npc, order, target))
         {
             // Pinned down by fire, it moves no closer to its target until the fire lets up; it may still fall back.
             navigation.stop();

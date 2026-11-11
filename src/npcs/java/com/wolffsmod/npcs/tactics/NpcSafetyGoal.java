@@ -4,6 +4,7 @@ import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.*;
+import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.tactics.NpcSafetyState.Action;
 import com.wolffsmod.npcs.teams.*;
@@ -182,9 +183,9 @@ public final class NpcSafetyGoal extends Goal
             return;
         if (defendFromAir(now))
             return;
-        if (TeamsBots.movesUnderFire(npc))
+        if (TeamsBots.movesUnderFire(npc) || NpcTactics.of(npc) == Tactic.CHARGE)
         {
-            // On its way to an objective: the objective goal walks it on while it fires; no stopping for cover or bounds.
+            // On its way to an objective, or charging: it walks on while it fires; no stopping for cover or bounds.
             state.clear();
             state.setAdvanceIntent(null);
             return;

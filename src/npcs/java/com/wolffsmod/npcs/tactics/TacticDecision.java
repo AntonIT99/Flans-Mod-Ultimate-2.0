@@ -67,7 +67,7 @@ public final class TacticDecision
      * @param target
      *            where its target is
      * @param home
-     *            where the NPC was placed
+     *            where the NPC was placed, or for Assault position the point of its route it heads for
      * @param reloading
      *            whether it is reloading
      * @param hit
@@ -112,6 +112,8 @@ public final class TacticDecision
             case CIRCLE -> circle(situation, memory);
             case STRAFE -> strafe(situation, memory, now);
             case TRANSPORT -> transport(situation);
+            case CHARGE -> Order.closeIn(RUN);
+            case ASSAULT -> assault(situation);
             case CUSTOM_NPCS, STRAFING_RUN, ORBIT -> throw new IllegalArgumentException(tactic + " is not decided here");
         };
     }
@@ -153,6 +155,24 @@ public final class TacticDecision
         if (distance > engagement.preferred())
             return Order.closeIn(distance > engagement.preferred() * 2D ? RUN : WALK);
         return Order.STAND;
+    }
+
+    /**
+     * Fights an enemy it sees within its tactic distance where it stands, and otherwise runs on to the point of its route it
+     * heads for, its home here, holding that point once it is there as a holding NPC holds where it was placed. The route
+     * moves the home on to its next point before the NPC gets this close, so it only stands still at the last.
+     */
+    private static Order assault(Situation situation)
+    {
+        Engagement engagement = situation.engagement();
+        double distance = situation.targetDistance();
+        if (distance < engagement.minimum())
+            return retreat(situation, engagement.minimum() - distance);
+        if (situation.inSight() && distance <= engagement.preferred())
+            return Order.STAND;
+        if (horizontal(situation.position(), situation.home()) <= HOLD_RADIUS)
+            return Order.STAND;
+        return new Order(Move.GO_TO, RUN, situation.home());
     }
 
     /** @return an order to back straight away from the target by the blocks it is too close, and a margin so it does not hover at the edge */
