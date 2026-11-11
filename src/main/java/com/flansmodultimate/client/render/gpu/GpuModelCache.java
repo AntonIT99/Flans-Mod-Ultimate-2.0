@@ -400,12 +400,11 @@ public final class GpuModelCache
     public static VertexConsumer begin(MultiBufferSource source, EnumRenderPass pass, ResourceLocation texture, boolean translucent, boolean cull, boolean allowed, boolean armor)
     {
         if (depth != 0)
-            contexts.get(depth - 1).batch.suspend();
+            contexts.get(depth - 1).suspend();
         RenderType vanilla = armor ? pass.getArmorRenderType(texture, translucent, cull) : pass.getRenderType(texture, translucent, cull);
         ModClientConfig config = ModClientConfig.get();
-        if (!allowed || config == null || !config.enableGpuModelCache || shader == null || failed || pass != EnumRenderPass.DEFAULT || translucent && !config.enableFastTranslucentRendering
-            || source.getClass() != MultiBufferSource.BufferSource.class || VehicleThermalRenderer.isRenderingMask() || Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS
-            || incompatibleRenderer())
+        // Scopes that never asked for the rigid paths keep the plain buffer, as does everything with the option off.
+        if (!allowed || config == null || !config.enableGpuModelCache || pass != EnumRenderPass.DEFAULT || VehicleThermalRenderer.isRenderingMask())
         {
             if (RenderDiagnostics.enabled)
                 RenderDiagnostics.excludedScopes++;
@@ -413,29 +412,45 @@ public final class GpuModelCache
         }
         if (depth == contexts.size())
             contexts.add(new Context());
-        RenderType gpu = armor ? CustomRenderType.gpuArmorModel(texture, translucent, cull) : CustomRenderType.gpuModel(texture, translucent, cull);
         Context context = contexts.get(depth);
+        // The renderer cannot draw cached meshes here, but the scope still gains the rigid submission paths.
+        if (shader == null || failed || translucent && !config.enableFastTranslucentRendering || source.getClass() != MultiBufferSource.BufferSource.class
+            || Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS || incompatibleRenderer())
+        {
+            if (RenderDiagnostics.enabled)
+                RenderDiagnostics.excludedScopes++;
+            context.direct.begin(source, vanilla);
+            context.active = context.direct;
+            depth++;
+            return context.direct;
+        }
+        RenderType gpu = armor ? CustomRenderType.gpuArmorModel(texture, translucent, cull) : CustomRenderType.gpuModel(texture, translucent, cull);
         context.source = (MultiBufferSource.BufferSource) source;
         context.vanilla = vanilla;
         context.gpu = gpu;
         context.batch.begin(context);
+        context.active = context.batch;
         depth++;
         return context.batch;
     }
 
     public static void end(VertexConsumer consumer)
     {
-        if (!(consumer instanceof RigidBatch batch))
+        if (!(consumer instanceof RigidBatch) && !(consumer instanceof DirectRigidSink))
             return;
-        if (depth == 0 || contexts.get(depth - 1).batch != batch)
+        if (depth == 0 || contexts.get(depth - 1).active != consumer)
             throw new IllegalStateException("GPU model scopes must close in reverse order");
         Context context = contexts.get(depth - 1);
         try
         {
-            batch.end();
+            if (consumer == context.batch)
+                context.batch.end();
+            else
+                context.direct.end();
         }
         finally
         {
+            context.active = null;
             context.source = null;
             context.vanilla = context.gpu = null;
             context.previousShader = null;
@@ -458,12 +473,24 @@ public final class GpuModelCache
     private static final class Context implements RigidBatch.Backend, Supplier<ShaderInstance>
     {
         private final RigidBatch batch = new RigidBatch(PARTS_PER_BATCH, GEOMETRIES_PER_BATCH, (int) (UPLOAD_BYTES_PER_TICK / DefaultVertexFormat.NEW_ENTITY.getVertexSize()));
+        private final DirectRigidSink direct = new DirectRigidSink();
+        /** The consumer this nesting depth handed out: the batch, or the direct sink. */
+        private VertexConsumer active;
         private MultiBufferSource.BufferSource source;
         private RenderType vanilla;
         private RenderType gpu;
         private ShaderInstance previousShader;
         /** Render state stays set up between consecutive GPU draws of this scope. */
         private boolean open;
+
+        /** A nested scope is about to render: complete this scope's pending work first. */
+        private void suspend()
+        {
+            if (active == direct)
+                direct.suspend();
+            else
+                batch.suspend();
+        }
 
         @Override
         public boolean draw(RigidBatch batch, boolean flushPending)

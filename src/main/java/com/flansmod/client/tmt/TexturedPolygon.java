@@ -169,6 +169,61 @@ public class TexturedPolygon
         }
     }
 
+    /** Quads {@link #appendRigidQuads} writes for this face. */
+    public int rigidQuadCount()
+    {
+        return nVertices < 3 ? 0 : renderVertexIndices.length / 4;
+    }
+
+    /**
+     * Appends this face in local space as {@link #draw} emits a rigid face: per quad the face normal, then four
+     * vertices of position and texture coordinates, {@link EntityVertexBatch#QUAD_FLOATS} floats in all. Only for
+     * faces that pass {@link #isRigidGpuGeometry(boolean)}, which have neither per-vertex nor inverted normals.
+     *
+     * @return the offset after the appended quads; unchanged for a face that draws nothing
+     */
+    public int appendRigidQuads(float[] out, int offset)
+    {
+        if (nVertices < 3)
+            return offset;
+        if (hasTransformVertices)
+            refreshTransformedVertices(Long.MIN_VALUE);
+
+        float normalX;
+        float normalY;
+        float normalZ;
+        if (normals.length == 3)
+        {
+            normalX = normals[0];
+            normalY = normals[1];
+            normalZ = normals[2];
+        }
+        else if (vertexPositions.length >= 3)
+        {
+            updateFaceNormal();
+            normalX = cachedFaceNormalX;
+            normalY = cachedFaceNormalY;
+            normalZ = cachedFaceNormalZ;
+        }
+        else
+            return offset;
+
+        float[] staticVertices = getCompiledStaticVertices();
+        int[] indices = renderVertexIndices;
+        for (int index = 0; index + 3 < indices.length; index += 4)
+        {
+            out[offset++] = normalX;
+            out[offset++] = normalY;
+            out[offset++] = normalZ;
+            for (int corner = 0; corner < 4; corner++)
+            {
+                System.arraycopy(staticVertices, indices[index + corner] * 5, out, offset, 5);
+                offset += 5;
+            }
+        }
+        return offset;
+    }
+
     private float[] getCompiledStaticVertices()
     {
         if (compiledStaticVertices != null)
@@ -379,6 +434,14 @@ public class TexturedPolygon
 
     private void setFaceNormal(Vector3f transformedNormal, Matrix3f normalMatrix, float normalSign)
     {
+        updateFaceNormal();
+        transformedNormal.set(cachedFaceNormalX * normalSign, cachedFaceNormalY * normalSign, cachedFaceNormalZ * normalSign);
+        normalMatrix.transform(transformedNormal);
+    }
+
+    /** The unit normal of the first three vertices, kept until a vertex moves. */
+    private void updateFaceNormal()
+    {
         if (!cachedFaceNormalValid)
         {
             Vec3 vector0 = vertexPositions[0].vector3D;
@@ -410,9 +473,6 @@ public class TexturedPolygon
             cachedFaceNormalZ = (float) normalZ;
             cachedFaceNormalValid = true;
         }
-
-        transformedNormal.set(cachedFaceNormalX * normalSign, cachedFaceNormalY * normalSign, cachedFaceNormalZ * normalSign);
-        normalMatrix.transform(transformedNormal);
     }
 
     private void emitVertex(Matrix4f positionMatrix, Matrix3f normalMatrix, Vector3f transformedNormal, VertexConsumer vertexConsumer, int packedOverlay, int finalLight, float red, float green,
