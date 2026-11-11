@@ -20,7 +20,7 @@ class NpcWeaponOptionsTest
         Feature.FULL_THROTTLE, Feature.STAY_ACTIVE, Feature.PATH_DEBUG, Feature.CONSUME_AMMO, Feature.HITBOX_OUTLINES, Feature.MELEE_DUAL_WIELD, Feature.ADVANCED_SEARCH_INTERVALS,
         Feature.STAGGER_NEAR_SEARCH, Feature.FITTING_SLOT_AMMO, Feature.AIM_DEBUG, Feature.UNMANNED_GUNS_FIRE, Feature.RETURN_WHEN_INACTIVE, Feature.WEAPON_FIRING_RANGE, Feature.NON_LETHAL,
         Feature.SUPPRESSIBLE, Feature.ALLY_NAME_TAGS, Feature.GUN_STABILISER,
-        Feature.KEEP_CORPSE);
+        Feature.KEEP_CORPSE, Feature.WAIT_FOR_SIGNAL);
 
     @Test
     void driverGunChoiceSurvivesSaveAndReload()

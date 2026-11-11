@@ -63,7 +63,8 @@ import java.util.*;
  * and each kind of armor protection the NPC keeps its own value for. An equipped ranged weapon is fired by a goal of its own,
  * which leaves the NPC's movement to a tactic of the mod's own, to Custom NPCs' tactical variant or else to an approach goal,
  * and it selects the ranged variant of Custom NPCs' tactic. The entity carries what its tactic remembers, and an assaulting NPC
- * walks its route between fights by a goal that comes before Custom NPCs' return home. An NPC wearing an AA
+ * walks its route between fights by a goal that comes before Custom NPCs' return home; one waiting for its start signal is
+ * held where it was placed by a goal ahead of all of them. An NPC wearing an AA
  * gun, vehicle or plane model strikes nothing in melee; a mecha requires a sword addon, synchronized for its model to draw.</li>
  * <li>Recognized, enabled Flan ammunition replaces the ranged attack; every other projectile retains the original path.</li>
  * <li>Infantry hold unsuitable ranged fire against airborne targets.</li>
@@ -211,6 +212,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private BotObjectiveGoal wolffsmodnpcsObjectiveGoal;
     @Unique
     private NpcAssaultGoal wolffsmodnpcsAssaultGoal;
+    @Unique
+    private NpcSignalGoal wolffsmodnpcsSignalGoal;
     @Unique @Nullable
     private NpcBuildingClearGoal wolffsmodnpcsBuildingClearGoal;
     @Unique
@@ -578,6 +581,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         else
             wolffsmodnpcsAssaultGoal = new NpcAssaultGoal(npc);
         goalSelector.addGoal(1, wolffsmodnpcsAssaultGoal);
+        // It keeps an NPC waiting for its start signal where it was placed, ahead of everything else that would move it.
+        if (wolffsmodnpcsSignalGoal != null)
+            goalSelector.removeGoal(wolffsmodnpcsSignalGoal);
+        else
+            wolffsmodnpcsSignalGoal = new NpcSignalGoal(npc);
+        goalSelector.addGoal(0, wolffsmodnpcsSignalGoal);
         // It carries a Teams bot to its squad's task, and any NPC to its duty, while it has nobody to fight.
         if (wolffsmodnpcsObjectiveGoal != null)
             goalSelector.removeGoal(wolffsmodnpcsObjectiveGoal);

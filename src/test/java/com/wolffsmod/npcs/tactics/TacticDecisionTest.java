@@ -316,6 +316,24 @@ class TacticDecisionTest
     }
 
     @Test
+    void anNpcHoldingALineFightsFromCoverAndWithoutCoverHoldsWhereItWasPlacedRatherThanAdvancing()
+    {
+        Vec3 home = at(40D);
+        Order back = TacticDecision.decide(Tactic.HOLD_LINE, situation(home.add(6D, 0D, 0D), true, home, false, false), new NpcTacticState(), 0L);
+        assertEquals(new Order(Move.GO_TO, TacticDecision.WALK, home), back, "without cover it keeps to where it was placed");
+        assertEquals(Move.STAND, TacticDecision.decide(Tactic.HOLD_LINE, situation(home, false, home, false, false), new NpcTacticState(), 0L).move(),
+            "a target out of sight does not draw it out");
+        NpcTacticState memory = new NpcTacticState();
+        Cover cover = new Cover(new BlockPos(42, 0, 0), new BlockPos(42, 0, 2));
+        memory.cover(cover, 0L);
+        Order toCover = TacticDecision.decide(Tactic.HOLD_LINE, situation(home, true, home, false, false), memory, 0L);
+        assertEquals(cover.standPoint(), toCover.point(), "with cover it fights from it as a cover NPC does");
+        assertEquals(Tactic.HOLD_LINE, NpcTactics.resolve(Tactic.HOLD_LINE, TacticKind.STANDARD, true));
+        assertEquals(Tactic.CUSTOM_NPCS, NpcTactics.resolve(Tactic.HOLD_LINE, TacticKind.VEHICLE, true), "it is written for soldiers only");
+        assertFalse(Tactic.HOLD_LINE.usesDistance());
+    }
+
+    @Test
     void anAssaultRouteIsForgottenWhenThePathChanges()
     {
         NpcTacticState memory = new NpcTacticState();

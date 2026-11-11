@@ -60,7 +60,7 @@ public final class NpcOutrangedGoal extends Goal
     public static boolean outranged(EntityNPCInterface npc)
     {
         if (!NpcEquipment.enabled(npc, Feature.OUTRANGED_COVER) || npc.isPassenger() || !NpcEquipmentRangedGoal.engages(npc) || TacticKind.of(npc) != TacticKind.STANDARD
-            || NpcTactics.of(npc) == Tactic.CHARGE)
+            || NpcTactics.of(npc) == Tactic.CHARGE || NpcTactics.of(npc) == Tactic.HOLD_LINE)
             return false;
         LivingEntity target = npc.getTarget();
         return target != null && NpcThreats.threat(npc) == target && !npc.isInRange(target, NpcWeaponRange.firing(npc));

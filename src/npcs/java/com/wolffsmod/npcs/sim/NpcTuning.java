@@ -427,7 +427,12 @@ public final class NpcTuning
          * Takes the points of its Custom NPCs moving path one after another, fighting the enemies it meets within its tactic
          * distance, and holds the last one. Without a path of two points or more it advances.
          */
-        ASSAULT(EnumSet.of(TacticKind.STANDARD, TacticKind.VEHICLE, TacticKind.MECHA), true);
+        ASSAULT(EnumSet.of(TacticKind.STANDARD, TacticKind.VEHICLE, TacticKind.MECHA), true),
+        /**
+         * Fights from cover within its cover radius of where it was placed, as one fighting from cover does, but never leaves
+         * that ground: without cover there it holds where it was placed. Defenders of a trench spread along it this way.
+         */
+        HOLD_LINE(EnumSet.of(TacticKind.STANDARD), false);
 
         private final Set<TacticKind> kinds;
         /** Whether the tactic distance setting means anything to it. */

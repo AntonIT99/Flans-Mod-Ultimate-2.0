@@ -29,6 +29,9 @@ public final class NpcTactics
     {
         if (TeamsBots.isCommander(npc))
             return Tactic.HOLD;
+        // Until its start signal, an NPC waiting for one holds where it was placed, whatever its tactic.
+        if (NpcSignal.waiting(npc) && Tactic.HOLD.appliesTo(TacticKind.of(npc)) && NpcEquipment.fightsAtRange(npc))
+            return Tactic.HOLD;
         Tactic stored = NpcTuning.of(npc).tactic();
         if (stored == Tactic.CUSTOM_NPCS && TacticKind.of(npc) == TacticKind.STANDARD && NpcInfantryRole.of(npc) == ClassRole.SKIRMISHER && NpcEquipment.fightsAtRange(npc)
             && NpcCombatMovement.allowed(npc) && CustomNpcsPlatform.tacticalVariant(npc) == 0)

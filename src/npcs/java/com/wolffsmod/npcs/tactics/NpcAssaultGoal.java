@@ -90,6 +90,6 @@ public final class NpcAssaultGoal extends Goal
     private boolean free()
     {
         return NpcAssault.assigned(npc) && !npc.level().isClientSide && npc.isAlive() && !npc.isKilled() && npc.getTarget() == null && npc.getOwner() == null
-            && (!npc.isPassenger() || NpcDrivers.isDriver(npc)) && !BotTag.isBot(npc) && !NpcSuppression.isPinned(npc);
+            && (!npc.isPassenger() || NpcDrivers.isDriver(npc)) && !BotTag.isBot(npc) && !NpcSuppression.isPinned(npc) && !NpcSignal.waiting(npc);
     }
 }

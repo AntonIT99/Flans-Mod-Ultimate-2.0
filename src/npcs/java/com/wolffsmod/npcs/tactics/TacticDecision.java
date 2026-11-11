@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Objects;
+
 /**
  * Where a tactic sends the NPC this tick. It decides from what the NPC knows and from what its tactic remembers, so that
  * it can be tested without a world; looking for cover is left to the caller.
@@ -104,8 +106,9 @@ public final class TacticDecision
         return switch (tactic)
         {
             case ADVANCE -> advance(situation);
-            case HOLD -> horizontal(situation.position(), situation.home()) <= HOLD_RADIUS ? Order.STAND : new Order(Move.GO_TO, WALK, situation.home());
-            case COVER -> cover(situation, memory, now);
+            case HOLD -> hold(situation);
+            case COVER -> memory.getCover() == null ? advance(situation) : cover(situation, memory, now);
+            case HOLD_LINE -> memory.getCover() == null ? hold(situation) : cover(situation, memory, now);
             case STAND_OFF -> standOff(situation);
             case BOUNDING -> bounding(situation, memory, now);
             case FLANK -> flank(situation, memory, now);
@@ -181,12 +184,16 @@ public final class TacticDecision
         return Order.goTo(situation, away(situation.position(), situation.target(), blocks + RETREAT_MARGIN), RUN, ARRIVED);
     }
 
-    /** Hides in cover, steps out to fire when ready, and back in to reload or when hit. Without cover it advances. */
+    /** Stays where it was placed, and goes back there when it is pushed away. */
+    private static Order hold(Situation situation)
+    {
+        return horizontal(situation.position(), situation.home()) <= HOLD_RADIUS ? Order.STAND : new Order(Move.GO_TO, WALK, situation.home());
+    }
+
+    /** Hides in the cover it has, steps out to fire when ready, and back in to reload or when hit. */
     private static Order cover(Situation situation, NpcTacticState memory, long now)
     {
-        Cover cover = memory.getCover();
-        if (cover == null)
-            return advance(situation);
+        Cover cover = Objects.requireNonNull(memory.getCover());
         boolean wantsCover = situation.reloading() || situation.hit();
         if (memory.getPhase() == Phase.PEEK && (wantsCover || now - memory.getPhaseStarted() >= PEEK_TICKS))
             memory.enter(Phase.HIDE, now);
