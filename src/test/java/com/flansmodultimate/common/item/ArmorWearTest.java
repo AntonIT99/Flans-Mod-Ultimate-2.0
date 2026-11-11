@@ -14,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -42,9 +43,44 @@ class ArmorWearTest
         Player player = mock(Player.class);
         ItemStack stack = wornBy(player);
 
-        CustomArmorItem.wearFromAbsorbedHit(player, mock(DamageSource.class));
+        CustomArmorItem.wearArmor(player, mock(DamageSource.class), 10F, true);
 
         verify(stack).hurtAndBreak(eq(1), eq(player), any());
+    }
+
+    @Test
+    void flanArmorLosesWhatItAbsorbsAndVanillaWearThenPassesOverIt()
+    {
+        Player player = mock(Player.class);
+        Level level = mock(Level.class);
+        when(player.level()).thenReturn(level);
+        when(level.getGameTime()).thenReturn(7L);
+        ItemStack light = flanPiece(0.03F);
+        ItemStack heavy = flanPiece(0.5F);
+        ItemStack plain = flanPiece(0F);
+        when(player.getItemBySlot(any(EquipmentSlot.class))).thenReturn(ItemStack.EMPTY);
+        when(player.getItemBySlot(EquipmentSlot.HEAD)).thenReturn(light);
+        when(player.getItemBySlot(EquipmentSlot.CHEST)).thenReturn(heavy);
+        when(player.getItemBySlot(EquipmentSlot.LEGS)).thenReturn(plain);
+
+        CustomArmorItem.wearArmor(player, mock(DamageSource.class), 30F, false);
+
+        verify(light).hurtAndBreak(eq(1), eq(player), any());
+        verify(heavy).hurtAndBreak(eq(15), eq(player), any());
+        verify(plain, never()).hurtAndBreak(anyInt(), any(LivingEntity.class), any());
+        assertTrue(CustomArmorItem.wornThisHit(heavy, player));
+        assertFalse(CustomArmorItem.wornThisHit(plain, player));
+        when(level.getGameTime()).thenReturn(8L);
+        assertFalse(CustomArmorItem.wornThisHit(heavy, player));
+    }
+
+    private static ItemStack flanPiece(float ratio)
+    {
+        CustomArmorItem armor = mock(CustomArmorItem.class);
+        when(armor.wearRatio(anyBoolean())).thenReturn(ratio);
+        ItemStack stack = mock(ItemStack.class);
+        when(stack.getItem()).thenReturn(armor);
+        return stack;
     }
 
     @Test
@@ -55,7 +91,7 @@ class ArmorWearTest
         DamageSource source = mock(DamageSource.class);
         when(source.is(DamageTypeTags.BYPASSES_ARMOR)).thenReturn(true);
 
-        CustomArmorItem.wearFromAbsorbedHit(player, source);
+        CustomArmorItem.wearArmor(player, source, 10F, true);
 
         verify(stack, never()).hurtAndBreak(anyInt(), any(LivingEntity.class), any());
     }
@@ -71,9 +107,9 @@ class ArmorWearTest
         LivingEntity mob = mock(LivingEntity.class);
         ItemStack mobStack = wornBy(mob);
 
-        CustomArmorItem.wearFromAbsorbedHit(spared, mock(DamageSource.class));
-        CustomArmorItem.wearFromAbsorbedHit(worn, mock(DamageSource.class));
-        CustomArmorItem.wearFromAbsorbedHit(mob, mock(DamageSource.class));
+        CustomArmorItem.wearArmor(spared, mock(DamageSource.class), 10F, true);
+        CustomArmorItem.wearArmor(worn, mock(DamageSource.class), 10F, true);
+        CustomArmorItem.wearArmor(mob, mock(DamageSource.class), 10F, true);
 
         verify(sparedStack, never()).hurtAndBreak(anyInt(), any(LivingEntity.class), any());
         verify(wornStack).hurtAndBreak(eq(1), eq(worn), any());

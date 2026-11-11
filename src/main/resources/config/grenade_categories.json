@@ -180,6 +180,15 @@
         ]
     },
 
+    "Composition C-4 service period": {
+        "properties": {
+            "IssueDate": "~1956"
+        },
+        "items": [
+            "c4"
+        ]
+    },
+
     "Creeper Charge (Fictional)": {
         "properties": {
             "ThrowSpeedMs": 12,
@@ -313,6 +322,8 @@
 
     "Geballte Ladung 3kg": {
         "properties": {
+            "IssueDate": "Interwar",
+            "RetirementDate": "1945-05",
             "ThrowSpeedMs": 0,
             "Mass": 3000,
             "ExplosiveMassTNTKg": "3",
@@ -925,6 +936,8 @@
 
     "Stielhandgranate Geballte Ladung": {
         "properties": {
+            "IssueDate": "~1940",
+            "RetirementDate": "1945-05",
             "ThrowSpeedMs": 14,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,

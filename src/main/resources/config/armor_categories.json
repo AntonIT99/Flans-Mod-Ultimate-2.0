@@ -402,6 +402,17 @@
         ]
     },
 
+    "British Mk II steel helmet service period": {
+        "properties": {
+            "IssueDate": "1938",
+            "RetirementDate": "~1960"
+        },
+        "items": [
+            "broadiemk2",
+            "broadiemk2desert"
+        ]
+    },
+
     "Diving Suit": {
         "properties": {
             "Defence": "0.11",
@@ -440,6 +451,16 @@
         },
         "items": [
             "fred"
+        ]
+    },
+
+    "French M2 gas mask service period": {
+        "properties": {
+            "IssueDate": "1915-12",
+            "RetirementDate": "1918"
+        },
+        "items": [
+            "m2gasmask"
         ]
     },
 
@@ -2135,6 +2156,16 @@
         ]
     },
 
+    "German GM-15 gas mask service period": {
+        "properties": {
+            "IssueDate": "1915",
+            "RetirementDate": "~1916"
+        },
+        "items": [
+            "gm15"
+        ]
+    },
+
     "German M35 Stahlhelm service period": {
         "properties": {
             "IssueDate": "1936",
@@ -2308,6 +2339,17 @@
             "pp_afrikakorpstankcommanderhat",
             "pp_afrikakorpstankdrivercap",
             "pilothatnippon"
+        ]
+    },
+
+    "M1 helmet Mitchell cover service period": {
+        "properties": {
+            "IssueDate": "~1959",
+            "RetirementDate": "~1980"
+        },
+        "items": [
+            "m1potmitchell",
+            "44_americanm1helmetmitchellcamo"
         ]
     },
 
@@ -2755,6 +2797,73 @@
         ]
     },
 
+    "Russian 6B23 Flora vest service period": {
+        "properties": {
+            "IssueDate": "~2004"
+        },
+        "items": [
+            "6b23flora"
+        ]
+    },
+
+    "Russian 6B45 vest service period": {
+        "properties": {
+            "IssueDate": "~2014"
+        },
+        "items": [
+            "6b45"
+        ]
+    },
+
+    "Russian 6B47 helmet service period": {
+        "properties": {
+            "IssueDate": "~2014"
+        },
+        "items": [
+            "6b47",
+            "6b47naked"
+        ]
+    },
+
+    "Russian Zelinsky-Kummant gas mask service period": {
+        "properties": {
+            "IssueDate": "1916-02",
+            "RetirementDate": "~1928"
+        },
+        "items": [
+            "zk"
+        ]
+    },
+
+    "Soviet 6B2 vest service period": {
+        "properties": {
+            "IssueDate": "1981"
+        },
+        "items": [
+            "6b2"
+        ]
+    },
+
+    "Soviet 6B4 vest service period": {
+        "properties": {
+            "IssueDate": "~1985",
+            "RetirementDate": "~1998"
+        },
+        "items": [
+            "6b4"
+        ]
+    },
+
+    "Soviet 6B5 vest service period": {
+        "properties": {
+            "IssueDate": "~1988",
+            "RetirementDate": "~2000"
+        },
+        "items": [
+            "6b5"
+        ]
+    },
+
     "Soviet SSh-36 Steel Helmet service period": {
         "properties": {
             "IssueDate": "1936",
@@ -3084,6 +3193,15 @@
         ]
     },
 
+    "U.S. Advanced Combat Helmet service period": {
+        "properties": {
+            "IssueDate": "2003"
+        },
+        "items": [
+            "achnaked"
+        ]
+    },
+
     "U.S. Improved Outer Tactical Vest (OCP) service period": {
         "properties": {
             "IssueDate": "2015"
@@ -3116,6 +3234,18 @@
         ]
     },
 
+    "U.S. M42 airborne jump uniform service period": {
+        "properties": {
+            "IssueDate": "~1942",
+            "RetirementDate": "1944"
+        },
+        "items": [
+            "44_americanm42airbornechest",
+            "44_americanm42airbornepants",
+            "usairborne"
+        ]
+    },
+
     "U.S. M1952 Fragmentation Vest service period": {
         "properties": {
             "IssueDate": "1952",
@@ -3123,6 +3253,46 @@
         },
         "items": [
             "m1956"
+        ]
+    },
+
+    "U.S. Marine Corps Combat Utility Uniform service period": {
+        "properties": {
+            "IssueDate": "2002"
+        },
+        "items": [
+            "usmcbodyd",
+            "usmcbodyw"
+        ]
+    },
+
+    "U.S. Marine Corps Desert MARPAT FROG service period": {
+        "properties": {
+            "IssueDate": "2007-02"
+        },
+        "items": [
+            "usmcbodyd2015"
+        ]
+    },
+
+    "U.S. Marine Corps Enhanced Combat Helmet service period": {
+        "properties": {
+            "IssueDate": "2014"
+        },
+        "items": [
+            "echdesert",
+            "echmarpat"
+        ]
+    },
+
+    "U.S. Marine Corps Lightweight Helmet service period": {
+        "properties": {
+            "IssueDate": "2003",
+            "RetirementDate": "~2020"
+        },
+        "items": [
+            "lwh",
+            "lwhwood"
         ]
     },
 

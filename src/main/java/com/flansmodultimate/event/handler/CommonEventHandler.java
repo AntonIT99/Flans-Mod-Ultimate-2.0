@@ -616,8 +616,7 @@ public final class CommonEventHandler
             if (FlanDamageSources.isShootableDamage(source))
                 CustomArmorItem.applyArmorBulletDefense(damage, entity);
 
-            if (beforeArmor > 0F && damage.amount() <= 0F)
-                CustomArmorItem.wearFromAbsorbedHit(entity, source);
+            CustomArmorItem.wearArmor(entity, source, beforeArmor, damage.amount() <= 0F);
         }
     }
 

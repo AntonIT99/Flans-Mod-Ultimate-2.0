@@ -32,6 +32,8 @@
 
     "2 cm FlaK 38": {
         "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "1945-05",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -278,6 +280,8 @@
 
     "3.7 cm FlaK M42": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1945-05",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -604,7 +608,7 @@
 
     "5-inch/54 Mark 45 Naval Gun": {
         "properties": {
-            "IssueDate": "1971",
+            "IssueDate": "1974",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -632,7 +636,7 @@
 
     "5-inch/62 Mark 45 Mod 4 Naval Gun": {
         "properties": {
-            "IssueDate": "2000",
+            "IssueDate": "2001-03",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -906,6 +910,8 @@
 
     "7.7mm Type 89 Machine Gun": {
         "properties": {
+            "IssueDate": "~1929",
+            "RetirementDate": "1945-09",
             "Recoil": 0.12,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.01,
@@ -933,6 +939,8 @@
 
     "7.7mm Type 97 Fixed Machine Gun": {
         "properties": {
+            "IssueDate": "1937",
+            "RetirementDate": "1945-09",
             "Recoil": 0.12,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.01,
@@ -1319,8 +1327,8 @@
 
     "8-inch/55 Mark 12 Naval Gun": {
         "properties": {
-            "IssueDate": "1939",
-            "RetirementDate": "1971-04",
+            "IssueDate": "~1934",
+            "RetirementDate": "1956-05",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -1348,6 +1356,8 @@
 
     "8-inch/55 Mark 15 Naval Gun": {
         "properties": {
+            "IssueDate": "1943-06",
+            "RetirementDate": "1971-04",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -1830,6 +1840,8 @@
 
     "12.7mm Ho-103 Machine Gun": {
         "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "1945-09",
             "Recoil": 0.22,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.018,
@@ -1998,6 +2010,8 @@
 
     "13.5-inch/45 Mark VI": {
         "properties": {
+            "IssueDate": "1914-08",
+            "RetirementDate": "1922",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -2108,6 +2122,8 @@
 
     "14-inch/50 Mark 11 Naval Gun": {
         "properties": {
+            "IssueDate": "~1940",
+            "RetirementDate": "1952",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -2249,6 +2265,8 @@
 
     "15.5 cm/60 3rd Year Type": {
         "properties": {
+            "IssueDate": "1935",
+            "RetirementDate": "1945-09",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -2277,6 +2295,8 @@
 
     "16-inch/45 Mark 5 Naval Gun": {
         "properties": {
+            "IssueDate": "~1938",
+            "RetirementDate": "1947-04",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -2446,6 +2466,8 @@
 
     "20.3 cm 3rd Year Type No.2 Naval Gun": {
         "properties": {
+            "IssueDate": "1932",
+            "RetirementDate": "1945-09",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -2782,6 +2804,8 @@
 
     "20mm MG FF Cannon": {
         "properties": {
+            "IssueDate": "~1936",
+            "RetirementDate": "1945-05",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -2890,6 +2914,7 @@
 
     "20mm Phalanx CIWS (Block 1B)": {
         "properties": {
+            "IssueDate": "2000-09",
             "Recoil": 1.2,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.096,
@@ -3002,6 +3027,8 @@
 
     "20mm Type 97 Anti-Tank Rifle": {
         "properties": {
+            "IssueDate": "~1939",
+            "RetirementDate": "1945-09",
             "Recoil": 11,
             "RecoilYaw": 0,
             "RandomRecoilRange": 1.1,
@@ -3029,6 +3056,8 @@
 
     "20mm Type 99 Mark 1 Cannon": {
         "properties": {
+            "IssueDate": "1939",
+            "RetirementDate": "1945-09",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -3056,6 +3085,8 @@
 
     "20mm Type 99 Mark 2 Cannon": {
         "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "1945-09",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -3333,6 +3364,7 @@
 
     "25mm GAU-22/A": {
         "properties": {
+            "IssueDate": "2018-08",
             "Recoil": 1.2,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.096,
@@ -3997,6 +4029,7 @@
 
     "30mm M230 Chain Gun": {
         "properties": {
+            "IssueDate": "1986-04",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -4109,6 +4142,8 @@
 
     "30mm MK 103 Cannon": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-05",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -4136,6 +4171,8 @@
 
     "30mm MK 108 Cannon": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-05",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -5120,6 +5157,8 @@
 
     "75mm KwK 37 L/24": {
         "properties": {
+            "IssueDate": "1937",
+            "RetirementDate": "1945-05",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -5477,6 +5516,8 @@
 
     "100mm Type 98 High-Angle Gun": {
         "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "1945-09",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -5880,6 +5921,8 @@
 
     "128mm Pak 44": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1945-05",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -5989,6 +6032,8 @@
 
     "140mm/40 11th Year Type Deck Gun": {
         "properties": {
+            "IssueDate": "1924",
+            "RetirementDate": "1945-09",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -6016,6 +6061,8 @@
 
     "140mm/50 Type 3 Naval Gun": {
         "properties": {
+            "IssueDate": "~1916",
+            "RetirementDate": "1945-09",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -6205,6 +6252,8 @@
 
     "155mm Type 3 Naval Gun": {
         "properties": {
+            "IssueDate": "1935",
+            "RetirementDate": "1945-09",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -6316,6 +6365,8 @@
 
     "203mm No.2 Naval Gun": {
         "properties": {
+            "IssueDate": "1932",
+            "RetirementDate": "1945-09",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6343,6 +6394,8 @@
 
     "203mm/50 Modele 1929 Naval Gun": {
         "properties": {
+            "IssueDate": "1934-05",
+            "RetirementDate": "1942-02",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6370,6 +6423,8 @@
 
     "203mm/50 Modele 1931 Naval Gun": {
         "properties": {
+            "IssueDate": "1934",
+            "RetirementDate": "1942-11",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6397,6 +6452,8 @@
 
     "203mm/53 Ansaldo Naval Gun": {
         "properties": {
+            "IssueDate": "1931",
+            "RetirementDate": "1943-04",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6563,6 +6620,8 @@
 
     "305mm/46 Model 1909 Naval Gun": {
         "properties": {
+            "IssueDate": "1913",
+            "RetirementDate": "1937",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6617,6 +6676,8 @@
 
     "320mm Model 1934 Naval Gun": {
         "properties": {
+            "IssueDate": "1937",
+            "RetirementDate": "1955-10",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6644,6 +6705,8 @@
 
     "340mm/45 Modele 1912 Naval Gun": {
         "properties": {
+            "IssueDate": "1915",
+            "RetirementDate": "1953-02",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6730,6 +6793,8 @@
 
     "356mm Type 41 Naval Gun": {
         "properties": {
+            "IssueDate": "1915-04",
+            "RetirementDate": "1945-07",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6785,6 +6850,8 @@
 
     "380mm/45 Modele 1935 Naval Gun": {
         "properties": {
+            "IssueDate": "1940-09",
+            "RetirementDate": "1958",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6812,6 +6879,8 @@
 
     "381mm/50 Ansaldo M1934 Naval Gun": {
         "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "1948",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6927,6 +6996,8 @@
 
     "410mm Type 3 Naval Gun": {
         "properties": {
+            "IssueDate": "1920-11",
+            "RetirementDate": "1945-09",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -6954,6 +7025,8 @@
 
     "460mm Type 94 Naval Gun": {
         "properties": {
+            "IssueDate": "1941-12",
+            "RetirementDate": "1945-04",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -7783,6 +7856,8 @@
 
     "Arisaka Type 38 Carbine": {
         "properties": {
+            "IssueDate": "~1906",
+            "RetirementDate": "1945-09",
             "Recoil": 4.2,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.42,
@@ -11450,6 +11525,8 @@
 
     "FG42 I": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-05",
             "Recoil": 3.9,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.39,
@@ -11601,6 +11678,8 @@
 
     "Flammenwerfer 35": {
         "properties": {
+            "IssueDate": "1935",
+            "RetirementDate": "1945-05",
             "Recoil": 0.03,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.003,
@@ -12679,6 +12758,8 @@
 
     "Gewehr 41 (W)": {
         "properties": {
+            "IssueDate": "1942-12",
+            "RetirementDate": "1945-05",
             "Recoil": 4.3,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.43,
@@ -18125,6 +18206,8 @@
 
     "MG 17": {
         "properties": {
+            "IssueDate": "~1934",
+            "RetirementDate": "1945-05",
             "Recoil": 0.12,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.01,
@@ -18276,6 +18359,8 @@
 
     "MG 131": {
         "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "1945-05",
             "Recoil": 0.22,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.018,
@@ -18358,6 +18443,8 @@
 
     "MG FF/M": {
         "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "1945-05",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -18497,6 +18584,8 @@
 
     "MK 108": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-05",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -19090,6 +19179,8 @@
 
     "MP 41": {
         "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "1945-05",
             "Recoil": 1.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.14,
@@ -19426,6 +19517,8 @@
 
     "Nambu Type 94": {
         "properties": {
+            "IssueDate": "1935",
+            "RetirementDate": "1945-09",
             "Recoil": 1.5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.225,
@@ -19454,6 +19547,8 @@
 
     "Nambu Type 100/44": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1945-09",
             "Recoil": 1.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.14,
@@ -20238,6 +20333,8 @@
 
     "Panzerfaust 60": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1945-05",
             "Recoil": 0.45,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.045,
@@ -20268,6 +20365,8 @@
 
     "Panzerfaust 100": {
         "properties": {
+            "IssueDate": "1944-11",
+            "RetirementDate": "1945-05",
             "Recoil": 0.45,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.045,
@@ -22294,6 +22393,8 @@
 
     "RPzB 54 Panzerschreck": {
         "properties": {
+            "IssueDate": "1943-10",
+            "RetirementDate": "1945-05",
             "Recoil": 0.3,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.03,
@@ -24346,6 +24447,8 @@
 
     "Type 14 Nambu": {
         "properties": {
+            "IssueDate": "~1926",
+            "RetirementDate": "1945-09",
             "Recoil": 1.5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.225,
@@ -24406,6 +24509,8 @@
 
     "Type 89 Grenade Discharger": {
         "properties": {
+            "IssueDate": "1929",
+            "RetirementDate": "1945-09",
             "Recoil": 2.8,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.28,
@@ -24434,6 +24539,8 @@
 
     "Type 92": {
         "properties": {
+            "IssueDate": "1932",
+            "RetirementDate": "1945-09",
             "Recoil": 0.25,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.025,
@@ -24461,6 +24568,8 @@
 
     "Type 93 Flamethrower": {
         "properties": {
+            "IssueDate": "1933",
+            "RetirementDate": "1945-09",
             "Recoil": 0.03,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.003,
@@ -24548,6 +24657,8 @@
 
     "Type 97 fixed aircraft machine gun": {
         "properties": {
+            "IssueDate": "1937",
+            "RetirementDate": "1945-09",
             "Recoil": 0.12,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.01,
@@ -24633,6 +24744,8 @@
 
     "Type 99-1 cannon": {
         "properties": {
+            "IssueDate": "1939",
+            "RetirementDate": "1945-09",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,

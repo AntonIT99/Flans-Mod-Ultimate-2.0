@@ -51,6 +51,11 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     protected static final int EFFECT_REFRESH_THRESHOLD = 60; // refresh when < 3 seconds remaining
     protected static final Map<UUID, Set<MobEffect>> LAST_ARMOR_EFFECTS = new HashMap<>();
     private static final String DEPLETED_TAG = "FlansDepleted";
+    /** The pieces {@link #wearArmor} wore for the hit being resolved on this thread. */
+    private static final ThreadLocal<LegacyWear> LEGACY_WEAR = new ThreadLocal<>();
+
+    private record LegacyWear(LivingEntity entity, long tick, Set<ItemStack> stacks)
+    {}
 
     protected static final UUID[] armor_uuid = new UUID[]{UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B"), UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D"),
         UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"), UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150")};
@@ -122,6 +127,8 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     @Override
     public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken)
     {
+        if (wornThisHit(stack, entity))
+            return 0;
         return wear(stack, amount, FlansMod.teamsManager.keepsBrokenArmor());
     }
 
@@ -655,21 +662,54 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     }
 
     /**
-     * Wears armor that took a whole hit. Vanilla stops at a hit Flan defense has reduced to nothing, before its own armor wear,
-     * so this applies the 1 point of wear vanilla gives any small hit. Only those whose armor vanilla wears at all are affected.
+     * Wears the armor a hit reaches, before Flan defense reduces it. A Flan piece with defense against the hit loses what it absorbs, at
+     * least 1 point, as in 1.7.10, whose pack durabilities assume this rather than vanilla's quarter of the whole hit on every piece;
+     * the later vanilla wear passes over it. Other pieces keep vanilla's wear, and take its 1 point when Flan defense absorbed the
+     * whole hit, which vanilla then skips. Only those whose armor vanilla wears at all are affected.
+     *
+     * @param incoming
+     *            the damage before Flan defense
+     * @param absorbedWhole
+     *            whether Flan defense reduced the hit to nothing
      */
-    public static void wearFromAbsorbedHit(LivingEntity entity, DamageSource source)
+    public static void wearArmor(LivingEntity entity, DamageSource source, float incoming, boolean absorbedWhole)
     {
-        if (source.is(DamageTypeTags.BYPASSES_ARMOR) || !(entity instanceof Player || entity instanceof IEquipmentPolicy policy && policy.flansArmorWears()))
+        LEGACY_WEAR.remove();
+        if (incoming <= 0F || source.is(DamageTypeTags.BYPASSES_ARMOR) || !(entity instanceof Player || entity instanceof IEquipmentPolicy policy && policy.flansArmorWears()))
             return;
+        boolean bullet = FlanDamageSources.isShootableDamage(source);
+        Set<ItemStack> worn = Collections.newSetFromMap(new IdentityHashMap<>());
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
             if (slot.getType() != EquipmentSlot.Type.ARMOR)
                 continue;
             ItemStack stack = entity.getItemBySlot(slot);
-            if (stack.getItem() instanceof ArmorItem && (!source.is(DamageTypeTags.IS_FIRE) || !stack.getItem().isFireResistant()))
+            if (!(stack.getItem() instanceof ArmorItem) || source.is(DamageTypeTags.IS_FIRE) && stack.getItem().isFireResistant())
+                continue;
+            float ratio = stack.getItem() instanceof CustomArmorItem armor && !armor.isDepleted(stack) ? armor.wearRatio(bullet) : 0F;
+            if (ratio > 0F)
+            {
+                worn.add(stack);
+                ItemStackData.hurtAndBreak(stack, Math.max(1, (int) (incoming * Math.min(1F, ratio))), entity, slot);
+            }
+            else if (absorbedWhole)
                 ItemStackData.hurtAndBreak(stack, 1, entity, slot);
         }
+        if (!worn.isEmpty())
+            LEGACY_WEAR.set(new LegacyWear(entity, entity.level().getGameTime(), worn));
+    }
+
+    /** @return the share of a hit this piece absorbs, which is also the share of it that wears the piece */
+    float wearRatio(boolean bullet)
+    {
+        return (float) (bullet ? configType.getBulletDefence() : configType.getDefence());
+    }
+
+    /** @return whether {@link #wearArmor} already wore this piece for the entity's current hit, so vanilla's armor wear passes over it */
+    static boolean wornThisHit(ItemStack stack, LivingEntity entity)
+    {
+        LegacyWear wear = LEGACY_WEAR.get();
+        return wear != null && wear.entity() == entity && wear.tick() == entity.level().getGameTime() && wear.stacks().contains(stack);
     }
 
     private static boolean effectsEnabled(LivingEntity entity)

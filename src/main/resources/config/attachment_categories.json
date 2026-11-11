@@ -1,5 +1,41 @@
 {
 
+    "1P29 Tyulpan sight service period": {
+        "properties": {
+            "IssueDate": "~1988"
+        },
+        "items": [
+            "1p29"
+        ]
+    },
+
+    "1P87 Valday sight service period": {
+        "properties": {
+            "IssueDate": "~2015"
+        },
+        "items": [
+            "1p87"
+        ]
+    },
+
+    "ELCAN Specter DR 1-4x service period": {
+        "properties": {
+            "IssueDate": "2006"
+        },
+        "items": [
+            "elcan"
+        ]
+    },
+
+    "EOTech EXPS3-0 service period": {
+        "properties": {
+            "IssueDate": "~2010"
+        },
+        "items": [
+            "exps3"
+        ]
+    },
+
     "French Modele 1886 Lebel Bayonet service period": {
         "properties": {
             "IssueDate": "~1887",
@@ -19,6 +55,16 @@
         ]
     },
 
+    "Greek Mannlicher-Schoenauer M1903 bayonet service period": {
+        "properties": {
+            "IssueDate": "~1907",
+            "RetirementDate": "~1950"
+        },
+        "items": [
+            "mannlichery1903bayonet"
+        ]
+    },
+
     "M68 Close Combat Optic service period": {
         "properties": {
             "IssueDate": "2000"
@@ -34,6 +80,16 @@
         },
         "items": [
             "acog"
+        ]
+    },
+
+    "Mannlicher M1895 bayonet service period": {
+        "properties": {
+            "IssueDate": "~1895",
+            "RetirementDate": "~1945"
+        },
+        "items": [
+            "m95bayonet"
         ]
     },
 
