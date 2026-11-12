@@ -280,6 +280,8 @@
 
     "Airco D.H.2": {
         "properties": {
+            "IssueDate": "1916-01",
+            "RetirementDate": "1918",
             "RealTurnRateDegPerSec": 30.81,
             "RealMassKg": 653,
             "RealMaxSpeedKmh": 130,
@@ -830,6 +832,8 @@
 
     "Arado Ar 234 B-2 Blitz": {
         "properties": {
+            "IssueDate": "1944-12",
+            "RetirementDate": "1945-05",
             "RealTurnRateDegPerSec": 22.09,
             "RealMassKg": 9800,
             "RealEngineThrustKn": 17.66,
@@ -1156,6 +1160,8 @@
 
     "Bell OH-58A Kiowa": {
         "properties": {
+            "IssueDate": "1969-08",
+            "RetirementDate": "2017-10",
             "RealMassKg": 1361,
             "RealEnginePowerHp": 317,
             "RealMaxSpeedKmh": 222,
@@ -1277,6 +1283,8 @@
 
     "Bell UH-1D Iroquois": {
         "properties": {
+            "IssueDate": "1963-08",
+            "RetirementDate": "2021-06",
             "RealTurnRateDegPerSec": 18.13,
             "RealMassKg": 3220,
             "RealEnginePowerHp": 1100,
@@ -1483,6 +1491,8 @@
 
     "Boeing B-29 Superfortress": {
         "properties": {
+            "IssueDate": "1944-04",
+            "RetirementDate": "1954",
             "RealTurnRateDegPerSec": 7.39,
             "RealMassKg": 54431,
             "RealEnginePowerHp": 8800,
@@ -1731,6 +1741,8 @@
 
     "Boeing E-3 Sentry": {
         "properties": {
+            "IssueDate": "1991-07",
+            "RetirementDate": "2021-09",
             "RealTurnRateDegPerSec": 7.17,
             "RealMassKg": 156036,
             "RealEngineThrustKn": 382.56,
@@ -1856,6 +1868,7 @@
 
     "Boeing MH-47G (CH-47F flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "2007-02",
             "RealMassKg": 22680,
             "RealEnginePowerHp": 9466,
             "RealMaxSpeedKmh": 302,
@@ -1873,6 +1886,8 @@
 
     "Boeing P-26A Peashooter": {
         "properties": {
+            "IssueDate": "1934",
+            "RetirementDate": "1941",
             "RealTurnRateDegPerSec": 37.3,
             "RealMassKg": 1524,
             "RealEnginePowerHp": 600,
@@ -1907,6 +1922,8 @@
 
     "Boeing VC-137C Stratoliner": {
         "properties": {
+            "IssueDate": "1962-10",
+            "RetirementDate": "2001-08",
             "RealMassKg": 134717,
             "RealEngineThrustKn": 320.27,
             "RealMaxSpeedKmh": 1009,
@@ -2055,6 +2072,8 @@
 
     "Bristol F.2B (Falcon III)": {
         "properties": {
+            "IssueDate": "1917",
+            "RetirementDate": "1932",
             "RealTurnRateDegPerSec": 22.13,
             "RealMassKg": 1262,
             "RealMaxSpeedKmh": 205,
@@ -2334,6 +2353,7 @@
 
     "Chengdu J-20": {
         "properties": {
+            "IssueDate": "2018-02",
             "RealTurnRateDegPerSec": 19.65,
             "RealMassKg": 32000,
             "RealEngineThrustKn": 294,
@@ -2730,6 +2750,8 @@
 
     "Dassault Mirage IIIE": {
         "properties": {
+            "IssueDate": "1965-04",
+            "RetirementDate": "1994-06",
             "RealTurnRateDegPerSec": 32.35,
             "RealMassKg": 9030,
             "RealEngineThrustKn": 59.92,
@@ -2749,6 +2771,8 @@
 
     "Dassault Mirage IVA": {
         "properties": {
+            "IssueDate": "1964-10",
+            "RetirementDate": "1987",
             "RealTurnRateDegPerSec": 22.4,
             "RealMassKg": 32000,
             "RealEngineThrustKn": 141.2,
@@ -2834,6 +2858,8 @@
 
     "Dewoitine D.520 C.1": {
         "properties": {
+            "IssueDate": "1940-02",
+            "RetirementDate": "1953-09",
             "RealTurnRateDegPerSec": 31.21,
             "RealMassKg": 2677,
             "RealEnginePowerPS": 950,
@@ -3032,6 +3058,8 @@
 
     "Douglas A-4M Skyhawk (C airframe surrogate)": {
         "properties": {
+            "IssueDate": "1971-04",
+            "RetirementDate": "1994-06",
             "RealTurnRateDegPerSec": 31.65,
             "RealMassKg": 8318,
             "RealEngineThrustKn": 49.82,
@@ -3066,6 +3094,8 @@
 
     "Douglas AC-47D Spooky": {
         "properties": {
+            "IssueDate": "1964-12",
+            "RetirementDate": "1975",
             "RealMassKg": 14969,
             "RealEnginePowerHp": 2400,
             "RealMaxSpeedKmh": 370,
@@ -3421,6 +3451,7 @@
 
     "Fairchild Republic A-10C Thunderbolt II": {
         "properties": {
+            "IssueDate": "2007-08",
             "RealTurnRateDegPerSec": 18.16,
             "RealMassKg": 13782,
             "RealEngineThrustKn": 80.64,
@@ -3663,6 +3694,8 @@
 
     "Fokker Dr.I": {
         "properties": {
+            "IssueDate": "1917-10",
+            "RetirementDate": "1918",
             "RealTurnRateDegPerSec": 44.27,
             "RealMassKg": 586,
             "RealEnginePowerPS": 110,
@@ -3680,6 +3713,8 @@
 
     "Fokker E.III": {
         "properties": {
+            "IssueDate": "1915",
+            "RetirementDate": "1916",
             "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 641,
             "RealMaxSpeedKmh": 142,
@@ -3827,6 +3862,7 @@
 
     "General Dynamics F-16I Sufa": {
         "properties": {
+            "IssueDate": "2004",
             "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 11770,
             "RealEngineThrustKn": 129.7,
@@ -3849,6 +3885,8 @@
 
     "General Dynamics F-16N Viper (C airframe surrogate)": {
         "properties": {
+            "IssueDate": "1987-06",
+            "RetirementDate": "1995",
             "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 12460,
             "RealEngineThrustKn": 125.44,
@@ -3990,6 +4028,8 @@
 
     "Grumman A-6B Intruder (E flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1967",
+            "RetirementDate": "1979-12",
             "RealMassKg": 27397,
             "RealEngineThrustKn": 82.74,
             "RealMaxSpeedKmh": 1040,
@@ -4081,6 +4121,8 @@
 
     "Grumman E-1B Tracer": {
         "properties": {
+            "IssueDate": "1960",
+            "RetirementDate": "1977",
             "RealMassKg": 11249,
             "RealEnginePowerHp": 3050,
             "RealMaxSpeedKmh": 383,
@@ -4278,6 +4320,8 @@
 
     "Grumman F-11A Tiger": {
         "properties": {
+            "IssueDate": "1957-03",
+            "RetirementDate": "1969",
             "RealMassKg": 9541,
             "RealEngineThrustKn": 46.71,
             "RealMaxSpeedKmh": 1169,
@@ -4317,6 +4361,8 @@
 
     "Grumman F-14B Tomcat (D flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1988-08",
+            "RetirementDate": "2005",
             "RealMassKg": 27669,
             "RealEngineThrustKn": 239.76,
             "RealMaxSpeedKmh": 2485,
@@ -4644,6 +4690,8 @@
 
     "Hawker Osprey (Swedish S9)": {
         "properties": {
+            "IssueDate": "1934",
+            "RetirementDate": "1947",
             "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 2245,
             "RealEnginePowerHp": 600,
@@ -4662,6 +4710,8 @@
 
     "Hawker Tempest Mk V": {
         "properties": {
+            "IssueDate": "1944-04",
+            "RetirementDate": "1948-04",
             "RealTurnRateDegPerSec": 25.47,
             "RealMassKg": 5171,
             "RealEnginePowerHp": 2420,
@@ -5268,6 +5318,7 @@
 
     "Kamov Ka-52 Alligator": {
         "properties": {
+            "IssueDate": "2011-05",
             "RealTurnRateDegPerSec": 18.29,
             "RealMassKg": 10400,
             "RealEnginePowerHp": 4800,
@@ -5375,6 +5426,8 @@
 
     "Kawasaki Ki-32": {
         "properties": {
+            "IssueDate": "1938-07",
+            "RetirementDate": "1942",
             "RealTurnRateDegPerSec": 21.22,
             "RealMassKg": 2990,
             "RealEnginePowerPS": 850,
@@ -6042,6 +6095,8 @@
 
     "Lockheed S-3B Viking (A flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1988-07",
+            "RetirementDate": "2009-01",
             "RealMassKg": 17324,
             "RealEngineThrustKn": 82.52,
             "RealMaxSpeedKmh": 795,
@@ -6184,6 +6239,8 @@
 
     "LTV A-7D Corsair II (E flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1970",
+            "RetirementDate": "1993-10",
             "RealMassKg": 19050,
             "RealEngineThrustKn": 64.5,
             "RealMaxSpeedKmh": 1100,
@@ -6293,6 +6350,8 @@
 
     "Martin B-57G Tropic Moon III (B flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1970-09",
+            "RetirementDate": "1974",
             "RealTurnRateDegPerSec": 13.6,
             "RealMassKg": 20230,
             "RealEngineThrustKn": 64.14,
@@ -6677,6 +6736,7 @@
 
     "McDonnell Douglas F/A-18C Hornet": {
         "properties": {
+            "IssueDate": "1987-11",
             "RealTurnRateDegPerSec": 23.07,
             "RealMassKg": 16150,
             "RealEngineThrustKn": 156.91,
@@ -6696,6 +6756,7 @@
 
     "McDonnell Douglas F/A-18D Hornet (C flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1987-12",
             "RealTurnRateDegPerSec": 23.07,
             "RealMassKg": 16150,
             "RealEngineThrustKn": 156.91,
@@ -7034,6 +7095,8 @@
 
     "Messerschmitt Me 163 B Komet": {
         "properties": {
+            "IssueDate": "1944-07",
+            "RetirementDate": "1945",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 4309,
             "RealEngineThrustKn": 14.71,
@@ -7051,6 +7114,8 @@
 
     "Messerschmitt Me 262 A-1a": {
         "properties": {
+            "IssueDate": "1944-07",
+            "RetirementDate": "1945-05",
             "RealTurnRateDegPerSec": 25.26,
             "RealMassKg": 6473,
             "RealEngineThrustKn": 17.62,
@@ -7629,6 +7694,8 @@
 
     "Mitsubishi A6M3 Type 0 Model 22": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945",
             "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 2290,
             "RealEnginePowerPS": 1130,
@@ -7663,6 +7730,8 @@
 
     "Mitsubishi A6M5 Type 0 Model 52": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-08",
             "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 2300,
             "RealEnginePowerPS": 1130,
@@ -7820,6 +7889,8 @@
 
     "Mitsubishi T-2": {
         "properties": {
+            "IssueDate": "1976-04",
+            "RetirementDate": "2006-03",
             "RealMassKg": 9675,
             "RealEngineThrustKn": 63.52,
             "RealMaxSpeedKmh": 1700,
@@ -7870,6 +7941,8 @@
 
     "Nakajima A6M2-N": {
         "properties": {
+            "IssueDate": "1942-06",
+            "RetirementDate": "1945-08",
             "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 2030,
             "RealEnginePowerPS": 940,
@@ -8094,6 +8167,8 @@
 
     "North American A-36A Apache": {
         "properties": {
+            "IssueDate": "1943-04",
+            "RetirementDate": "1944",
             "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 4535,
             "RealEnginePowerHp": 1325,
@@ -9360,6 +9435,7 @@
 
     "Shenyang J-11B": {
         "properties": {
+            "IssueDate": "2007",
             "RealTurnRateDegPerSec": 18.04,
             "RealMassKg": 26100,
             "RealEngineThrustKn": 246.54,
@@ -10354,6 +10430,8 @@
 
     "Sopwith Triplane": {
         "properties": {
+            "IssueDate": "1916-12",
+            "RetirementDate": "1917-12",
             "RealTurnRateDegPerSec": 32.87,
             "RealMassKg": 699,
             "RealMaxSpeedKmh": 185,
@@ -10493,6 +10571,7 @@
 
     "Sukhoi Su-30SM": {
         "properties": {
+            "IssueDate": "2013-11",
             "RealTurnRateDegPerSec": 18.04,
             "RealMassKg": 28440,
             "RealEngineThrustKn": 238.69,
@@ -10515,6 +10594,7 @@
 
     "Sukhoi Su-33": {
         "properties": {
+            "IssueDate": "1995-12",
             "RealTurnRateDegPerSec": 18.04,
             "RealMassKg": 28480,
             "RealEngineThrustKn": 248.89,
@@ -10560,6 +10640,7 @@
 
     "Sukhoi Su-35S": {
         "properties": {
+            "IssueDate": "2014-02",
             "RealTurnRateDegPerSec": 18.04,
             "RealMassKg": 25300,
             "RealEngineThrustKn": 284.39,
@@ -11237,6 +11318,8 @@
 
     "VL Myrsky II": {
         "properties": {
+            "IssueDate": "1944-07",
+            "RetirementDate": "1947-05",
             "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 2947,
             "RealEnginePowerHp": 1065,
@@ -11297,6 +11380,8 @@
 
     "Vought F4U-7 Corsair": {
         "properties": {
+            "IssueDate": "1953-01",
+            "RetirementDate": "1964",
             "RealTurnRateDegPerSec": 25.47,
             "RealMassKg": 5330,
             "RealEnginePowerHp": 2380,
@@ -11494,6 +11579,8 @@
 
     "Westland Wyvern S.4": {
         "properties": {
+            "IssueDate": "1953-05",
+            "RetirementDate": "1958-04",
             "RealTurnRateDegPerSec": 23.73,
             "RealMassKg": 7880,
             "RealEnginePowerHp": 3670,
@@ -11625,6 +11712,8 @@
 
     "Yakovlev Yak-38": {
         "properties": {
+            "IssueDate": "1977",
+            "RetirementDate": "1991",
             "RealTurnRateDegPerSec": 37.89,
             "RealMassKg": 9400,
             "RealEngineThrustKn": 64.72,

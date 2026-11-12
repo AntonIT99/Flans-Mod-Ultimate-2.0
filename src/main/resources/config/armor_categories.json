@@ -1,5 +1,45 @@
 {
 
+    "Adrian M1915 Italian Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1915-10",
+            "RetirementDate": "~1934"
+        },
+        "items": [
+            "adrianshitaly"
+        ]
+    },
+
+    "Adrian M1915 Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1915-09",
+            "RetirementDate": "~1940"
+        },
+        "items": [
+            "adrianfrench"
+        ]
+    },
+
+    "Adrian M1915 Hellenic Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "~1916",
+            "RetirementDate": "~1940"
+        },
+        "items": [
+            "adriangreek"
+        ]
+    },
+
+    "Adrian M1926 Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "~1926",
+            "RetirementDate": "~1951"
+        },
+        "items": [
+            "m26adrian"
+        ]
+    },
+
     "Ancient And Medieval Body Armour (Boots Slot)": {
         "properties": {
             "Defence": "0.06",
@@ -410,6 +450,26 @@
         "items": [
             "broadiemk2",
             "broadiemk2desert"
+        ]
+    },
+
+    "Brodie Mk I British Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1916",
+            "RetirementDate": "~1940"
+        },
+        "items": [
+            "broadie"
+        ]
+    },
+
+    "Brodie Mk I Portuguese Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1917",
+            "RetirementDate": "1940"
+        },
+        "items": [
+            "broadiepoortugal"
         ]
     },
 
@@ -2218,6 +2278,16 @@
         ]
     },
 
+    "GK80 Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1980-02",
+            "RetirementDate": "~2010"
+        },
+        "items": [
+            "gk80"
+        ]
+    },
+
     "Heavy Assault Armour (Boots)": {
         "properties": {
             "Defence": "0.08",
@@ -2350,6 +2420,65 @@
         "items": [
             "m1potmitchell",
             "44_americanm1helmetmitchellcamo"
+        ]
+    },
+
+    "M33 Italian Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "~1934",
+            "RetirementDate": "~1992"
+        },
+        "items": [
+            "m33helmet"
+        ]
+    },
+
+    "M56 East German Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1957",
+            "RetirementDate": "1990-10"
+        },
+        "items": [
+            "m56"
+        ]
+    },
+
+    "M59 Yugoslav Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "~1961",
+            "RetirementDate": "~1987"
+        },
+        "items": [
+            "m59"
+        ]
+    },
+
+    "M72 Bulgarian Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1972",
+            "RetirementDate": "~2005"
+        },
+        "items": [
+            "m72"
+        ]
+    },
+
+    "M1934/39 Hellenic Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1937",
+            "RetirementDate": "~1949"
+        },
+        "items": [
+            "hellenichelmetww2"
+        ]
+    },
+
+    "Mk III British Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1944"
+        },
+        "items": [
+            "mk3"
         ]
     },
 
@@ -2815,6 +2944,15 @@
         ]
     },
 
+    "Russian 6B45-1 assault vest service period": {
+        "properties": {
+            "IssueDate": "~2015"
+        },
+        "items": [
+            "6b45heavy"
+        ]
+    },
+
     "Russian 6B47 helmet service period": {
         "properties": {
             "IssueDate": "~2014"
@@ -2825,6 +2963,16 @@
         ]
     },
 
+    "Russian VSR-93 field uniform service period": {
+        "properties": {
+            "IssueDate": "~1993",
+            "RetirementDate": "~1998"
+        },
+        "items": [
+            "ruvsrjacket93"
+        ]
+    },
+
     "Russian Zelinsky-Kummant gas mask service period": {
         "properties": {
             "IssueDate": "1916-02",
@@ -2832,6 +2980,16 @@
         },
         "items": [
             "zk"
+        ]
+    },
+
+    "ShM-41 Soviet Gas Mask Service Period": {
+        "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "~1956"
+        },
+        "items": [
+            "shm41"
         ]
     },
 
@@ -2864,6 +3022,26 @@
         ]
     },
 
+    "Soviet Afghanka khaki field uniform service period": {
+        "properties": {
+            "IssueDate": "1984",
+            "RetirementDate": "~1994"
+        },
+        "items": [
+            "ussrafghanka"
+        ]
+    },
+
+    "Soviet M69 khaki field uniform service period": {
+        "properties": {
+            "IssueDate": "1970-01",
+            "RetirementDate": "~1988"
+        },
+        "items": [
+            "ussrm69"
+        ]
+    },
+
     "Soviet SSh-36 Steel Helmet service period": {
         "properties": {
             "IssueDate": "1936",
@@ -2881,6 +3059,15 @@
         },
         "items": [
             "ssh40"
+        ]
+    },
+
+    "SSh-68 Soviet Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "~1968"
+        },
+        "items": [
+            "ssh68"
         ]
     },
 
@@ -3243,6 +3430,30 @@
             "44_americanm42airbornechest",
             "44_americanm42airbornepants",
             "usairborne"
+        ]
+    },
+
+    "U.S. M1941 field uniform service period": {
+        "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "~1945"
+        },
+        "items": [
+            "44_americanm1941combatfielduniformchest",
+            "44_americanm1941combatfielduniformpants",
+            "usm1941"
+        ]
+    },
+
+    "U.S. M1943 field uniform service period": {
+        "properties": {
+            "IssueDate": "~1944",
+            "RetirementDate": "~1951"
+        },
+        "items": [
+            "44_americanm1943combatfielduniformchest",
+            "44_americanm1943combatfielduniformpants",
+            "usm1943"
         ]
     },
 

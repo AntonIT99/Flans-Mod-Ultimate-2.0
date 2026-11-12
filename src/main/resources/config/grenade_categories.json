@@ -641,7 +641,8 @@
 
     "No.27 White Phosphorus Grenade": {
         "properties": {
-            "IssueDate": "~1916",
+            "IssueDate": "1916",
+            "RetirementDate": "~1923",
             "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,

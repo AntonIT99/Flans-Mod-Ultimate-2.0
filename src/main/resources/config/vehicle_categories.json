@@ -126,6 +126,7 @@
 
     "2S1 Gvozdika": {
         "properties": {
+            "IssueDate": "~1973",
             "RealMassKg": 15700,
             "RealEnginePowerHp": 300,
             "RealMaxSpeedKmh": 60.0,
@@ -198,6 +199,7 @@
 
     "2S19 Msta-S": {
         "properties": {
+            "IssueDate": "1989",
             "RealMassKg": 42000,
             "RealEnginePowerHp": 840,
             "RealMaxSpeedKmh": 60.0,
@@ -434,6 +436,8 @@
 
     "7TP": {
         "properties": {
+            "IssueDate": "1938",
+            "RetirementDate": "1939",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 9900,
@@ -1233,6 +1237,8 @@
 
     "75mm Howitzer Motor Carriage M8 Scott": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "~1946",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15700,
@@ -1927,6 +1933,7 @@
 
     "AMX M4": {
         "properties": {
+            "IssueDate": "~1949",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 55000,
@@ -2077,6 +2084,7 @@
 
     "AMX-40 export prototype (RHAe estimate)": {
         "properties": {
+            "IssueDate": "~1983",
             "RealMassKg": 43700,
             "RealMaxSpeedKmh": 70.0,
             "RealMaxReverseSpeedKmh": 27.0,
@@ -2131,6 +2139,7 @@
 
     "AMX-50 Surbaisse": {
         "properties": {
+            "IssueDate": "~1956",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 59200,
@@ -2167,6 +2176,8 @@
 
     "ARA Santisima Trinidad D-2": {
         "properties": {
+            "IssueDate": "1981-12",
+            "RetirementDate": "1989",
             "RealTurnRateDegPerSec": 2.6,
             "RealDisplacementLongTons": 4820,
             "RealEnginePowerHp": 50000,
@@ -2926,6 +2937,7 @@
 
     "BMP-3": {
         "properties": {
+            "IssueDate": "1987",
             "RealMassKg": 18700,
             "RealEnginePowerHp": 500,
             "RealMaxSpeedKmh": 70.0,
@@ -3148,6 +3160,7 @@
 
     "BRDM-2": {
         "properties": {
+            "IssueDate": "1963",
             "RealMassKg": 7000,
             "RealEnginePowerHp": 140,
             "RealMaxSpeedKmh": 100,
@@ -3612,6 +3625,8 @@
 
     "Carro Armato M11/39": {
         "properties": {
+            "IssueDate": "1939",
+            "RetirementDate": "1941-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11175,
@@ -3666,6 +3681,8 @@
 
     "Carro Armato M15/42": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "~1955",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15500,
@@ -3693,6 +3710,8 @@
 
     "Carro Armato P26/40": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 26000,
@@ -3805,6 +3824,8 @@
 
     "Centurion Mk 3": {
         "properties": {
+            "IssueDate": "1948",
+            "RetirementDate": "1956",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 50800,
@@ -4606,6 +4627,8 @@
 
     "Cruiser Tank A30 Challenger": {
         "properties": {
+            "IssueDate": "1944-08",
+            "RetirementDate": "1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 33000,
@@ -5217,6 +5240,8 @@
 
     "DKM Z39 (1945)": {
         "properties": {
+            "IssueDate": "1945-04",
+            "RetirementDate": "1945-05",
             "RealTurnRateDegPerSec": 3.41,
             "RealDisplacementLongTons": 3691,
             "RealEnginePowerHp": 70000,
@@ -5815,7 +5840,7 @@
 
     "FV107 Scimitar": {
         "properties": {
-            "IssueDate": "1971",
+            "IssueDate": "1974",
             "RetirementDate": "2023-03",
             "RealMassKg": 8074,
             "RealEnginePowerHp": 190,
@@ -5972,6 +5997,8 @@
 
     "Garford-Putilov armoured car": {
         "properties": {
+            "IssueDate": "1915",
+            "RetirementDate": "1931-03",
             "RealMassKg": 8600,
             "RealEnginePowerHp": 30,
             "RealMaxSpeedKmh": 18,
@@ -6960,6 +6987,8 @@
 
     "HMS Repulse (1941)": {
         "properties": {
+            "IssueDate": "1941-08",
+            "RetirementDate": "1941-12",
             "RealTurnRateDegPerSec": 1.24,
             "RealDisplacementLongTons": 38300,
             "RealEnginePowerHp": 112000,
@@ -6991,6 +7020,8 @@
 
     "HMS Roberts F40 (1944)": {
         "properties": {
+            "IssueDate": "1943-05",
+            "RetirementDate": "1945-11",
             "RealTurnRateDegPerSec": 0.84,
             "RealDisplacementLongTons": 9150,
             "RealEnginePowerHp": 4800,
@@ -7053,6 +7084,8 @@
 
     "HMS Royal Oak (1939)": {
         "properties": {
+            "IssueDate": "1936-10",
+            "RetirementDate": "1939-10",
             "RealTurnRateDegPerSec": 1,
             "RealDisplacementLongTons": 33500,
             "RealEnginePowerHp": 40000,
@@ -7305,6 +7338,8 @@
 
     "HSwMS Gotland (1938)": {
         "properties": {
+            "IssueDate": "1938",
+            "RetirementDate": "1943",
             "RealTurnRateDegPerSec": 2.28,
             "RealDisplacementLongTons": 5550,
             "RealEnginePowerHp": 33000,
@@ -8504,6 +8539,7 @@
 
     "IS-7": {
         "properties": {
+            "IssueDate": "~1948",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 68000,
@@ -8576,6 +8612,8 @@
 
     "IT-1 Drakon": {
         "properties": {
+            "IssueDate": "1968",
+            "RetirementDate": "~1973",
             "RealMassKg": 34500,
             "RealEnginePowerHp": 580,
             "RealMaxSpeedKmh": 50.0,
@@ -9102,6 +9140,8 @@
 
     "Kiev Project 1143": {
         "properties": {
+            "IssueDate": "1977-04",
+            "RetirementDate": "1991-08",
             "RealDisplacementT": 41370.0,
             "RealEnginePowerHp": 180000.0,
             "RealMaxSpeedKn": 32.5,
@@ -9134,6 +9174,8 @@
 
     "Kirov Project 1144 (1980)": {
         "properties": {
+            "IssueDate": "1981-03",
+            "RetirementDate": "1990",
             "RealDisplacementT": 25860.0,
             "RealEnginePowerHp": 140000.0,
             "RealMaxSpeedKn": 31.0,
@@ -9482,6 +9524,8 @@
 
     "LARS-1 on Magirus-Deutz 178 D 15 A": {
         "properties": {
+            "IssueDate": "1969",
+            "RetirementDate": "~1983",
             "RealMassKg": 15000,
             "RealEnginePowerHp": 178,
             "RealMaxSpeedKmh": 73.6,
@@ -10008,6 +10052,7 @@
 
     "Leopard 2K prototype": {
         "properties": {
+            "IssueDate": "~1972",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 32,
             "RealMassKg": 50000,
@@ -11249,6 +11294,7 @@
 
     "M113A3 APC": {
         "properties": {
+            "IssueDate": "~1986",
             "RealMassKg": 12338,
             "RealEnginePowerHp": 275,
             "RealMaxSpeedKmh": 67.6,
@@ -11298,6 +11344,8 @@
 
     "M163 VADS": {
         "properties": {
+            "IssueDate": "1968-08",
+            "RetirementDate": "1994",
             "RealMassKg": 11200,
             "RealEnginePowerHp": 212,
             "RealMaxSpeedKmh": 64.0,
@@ -11582,6 +11630,8 @@
 
     "M1128 MGS slat armor (installed mass estimate)": {
         "properties": {
+            "IssueDate": "2007",
+            "RetirementDate": "2022",
             "RealMassKg": 21000,
             "RealMaxSpeedKmh": 96.0,
             "RealMaxReverseSpeedKmh": 12.0,
@@ -11896,6 +11946,8 @@
 
     "Marder 1A1": {
         "properties": {
+            "IssueDate": "1979",
+            "RetirementDate": "~1989",
             "RealMassKg": 29200,
             "RealMaxSpeedKmh": 65,
             "RealMaxReverseSpeedKmh": 25.0,
@@ -12012,6 +12064,8 @@
 
     "Mark I Male": {
         "properties": {
+            "IssueDate": "1916-08",
+            "RetirementDate": "1917",
             "RealMassKg": 28400,
             "RealEnginePowerHp": 105,
             "RealMaxSpeedKmh": 6,
@@ -12033,6 +12087,8 @@
 
     "Mark V Male": {
         "properties": {
+            "IssueDate": "1918-07",
+            "RetirementDate": "~1925",
             "RealMassKg": 29465,
             "RealEnginePowerHp": 150,
             "RealMaxSpeedKmh": 8,
@@ -12854,6 +12910,8 @@
 
     "MN Algerie (1934)": {
         "properties": {
+            "IssueDate": "1934-10",
+            "RetirementDate": "1942-04",
             "RealTurnRateDegPerSec": 1.9,
             "RealDisplacementT": 13900,
             "RealEnginePowerHp": 84000,
@@ -13157,6 +13215,8 @@
 
     "Moskva Project 1123 (1967)": {
         "properties": {
+            "IssueDate": "1968-01",
+            "RetirementDate": "1970-12",
             "RealDisplacementT": 15280.0,
             "RealEnginePowerHp": 90000.0,
             "RealMaxSpeedKn": 28.5,
@@ -13327,6 +13387,8 @@
 
     "Nusret (1913)": {
         "properties": {
+            "IssueDate": "1913",
+            "RetirementDate": "1937",
             "RealTurnRateDegPerSec": 3.09,
             "RealDisplacementT": 365,
             "RealEnginePowerHp": 1200,
@@ -14815,6 +14877,8 @@
 
     "PBR Mark II": {
         "properties": {
+            "IssueDate": "1967",
+            "RetirementDate": "~1995",
             "RealTurnRateDegPerSec": 16.98,
             "RealDisplacementLongTons": 8.9,
             "RealEnginePowerHp": 430,
@@ -15188,6 +15252,8 @@
 
     "Project 651 Juliett (surfaced)": {
         "properties": {
+            "IssueDate": "1964",
+            "RetirementDate": "1994",
             "RealDisplacementT": 3140.0,
             "RealEnginePowerHp": 8000.0,
             "RealMaxSpeedKn": 16.0,
@@ -15332,6 +15398,8 @@
 
     "Project 1134 Berkut": {
         "properties": {
+            "IssueDate": "1967-10",
+            "RetirementDate": "1994",
             "RealDisplacementT": 7170.0,
             "RealEnginePowerHp": 92000.0,
             "RealMaxSpeedKn": 34.0,
@@ -15394,6 +15462,7 @@
 
     "PZInz 140 (4TP)": {
         "properties": {
+            "IssueDate": "~1937",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 4330,
@@ -15785,6 +15854,8 @@
 
     "RM Carlo Mirabello (1917)": {
         "properties": {
+            "IssueDate": "1917",
+            "RetirementDate": "1919",
             "RealTurnRateDegPerSec": 4.11,
             "RealDisplacementT": 1972,
             "RealEnginePowerHp": 44000,
@@ -15812,6 +15883,8 @@
 
     "RM Giulio Cesare (1914)": {
         "properties": {
+            "IssueDate": "1914",
+            "RetirementDate": "1933-10",
             "RealTurnRateDegPerSec": 1.08,
             "RealDisplacementT": 25086,
             "RealEnginePowerHp": 31000,
@@ -15843,6 +15916,8 @@
 
     "RM Giulio Cesare (1937)": {
         "properties": {
+            "IssueDate": "1937",
+            "RetirementDate": "1943-09",
             "RealTurnRateDegPerSec": 1.34,
             "RealDisplacementT": 29100,
             "RealEnginePowerHp": 93000,
@@ -15905,6 +15980,8 @@
 
     "RM Roma (1942)": {
         "properties": {
+            "IssueDate": "1942-08",
+            "RetirementDate": "1943-09",
             "RealTurnRateDegPerSec": 1.24,
             "RealDisplacementT": 45485,
             "RealEnginePowerHp": 130000,
@@ -16173,6 +16250,7 @@
 
     "Samsung K9 Thunder": {
         "properties": {
+            "IssueDate": "1999",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 47000,
@@ -16599,6 +16677,8 @@
 
     "Semovente da 75/18": {
         "properties": {
+            "IssueDate": "1942-01",
+            "RetirementDate": "1943-04",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 13100,
@@ -16622,6 +16702,8 @@
 
     "Semovente da 75/34": {
         "properties": {
+            "IssueDate": "1943-07",
+            "RetirementDate": "1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15000,
@@ -16645,6 +16727,8 @@
 
     "Semovente da 90/53": {
         "properties": {
+            "IssueDate": "1942-12",
+            "RetirementDate": "1943",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 17000,
@@ -16835,6 +16919,8 @@
 
     "Spruance-class destroyer (original fit)": {
         "properties": {
+            "IssueDate": "1976-05",
+            "RetirementDate": "1998-09",
             "RealDisplacementT": 8040.0,
             "RealEnginePowerHp": 80000,
             "RealMaxSpeedKn": 32.5,
@@ -16867,6 +16953,8 @@
 
     "Spruance-class destroyer (VLS retrofit)": {
         "properties": {
+            "IssueDate": "1987",
+            "RetirementDate": "2005-09",
             "RealDisplacementT": 8600.0,
             "RealEnginePowerHp": 80000,
             "RealMaxSpeedKn": 32.5,
@@ -17032,6 +17120,8 @@
 
     "Stridsvagn m/42": {
         "properties": {
+            "IssueDate": "1943-04",
+            "RetirementDate": "1960",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 22500,
@@ -17671,6 +17761,8 @@
 
     "T-10M": {
         "properties": {
+            "IssueDate": "1958",
+            "RetirementDate": "1993",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 50000,
@@ -18086,6 +18178,7 @@
 
     "T-44-100": {
         "properties": {
+            "IssueDate": "~1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 31800,
@@ -18178,6 +18271,8 @@
 
     "T-60": {
         "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 5800,
@@ -18323,6 +18418,7 @@
 
     "T-64BV": {
         "properties": {
+            "IssueDate": "1985",
             "RealMassKg": 42400,
             "RealEnginePowerHp": 700,
             "RealMaxSpeedKmh": 60.0,
@@ -18954,6 +19050,7 @@
 
     "T-90M": {
         "properties": {
+            "IssueDate": "2020-04",
             "RealMassKg": 50000,
             "RealEnginePowerHp": 1130,
             "RealMaxSpeedKmh": 60.0,
@@ -19808,6 +19905,8 @@
 
     "Type 2 Ka-Mi": {
         "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 12300,
@@ -19904,6 +20003,7 @@
 
     "Type 3 Chi-Nu II": {
         "properties": {
+            "IssueDate": "~1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 19800,
@@ -19952,6 +20052,8 @@
 
     "Type 3 Ho-Ni III": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 17000,
@@ -20036,6 +20138,7 @@
 
     "Type 5 Chi-Ri": {
         "properties": {
+            "IssueDate": "~1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 37600,
@@ -20308,6 +20411,7 @@
 
     "Type 73 APC": {
         "properties": {
+            "IssueDate": "1974",
             "RealMassKg": 13300,
             "RealEnginePowerHp": 300,
             "RealMaxSpeedKmh": 70.0,
@@ -20382,6 +20486,7 @@
 
     "Type 87 reconnaissance combat vehicle": {
         "properties": {
+            "IssueDate": "1987",
             "RealMassKg": 15000,
             "RealEnginePowerHp": 305,
             "RealMaxSpeedKmh": 100.0,
@@ -21134,6 +21239,8 @@
 
     "USS Arizona BB-39 (1941)": {
         "properties": {
+            "IssueDate": "1941-01",
+            "RetirementDate": "1941-12",
             "RealTurnRateDegPerSec": 0.92,
             "RealDisplacementLongTons": 37654,
             "RealEnginePowerHp": 34000,
@@ -21507,6 +21614,8 @@
 
     "USS Essex": {
         "properties": {
+            "IssueDate": "1862-07",
+            "RetirementDate": "1865-07",
             "RealTurnRateDegPerSec": 0.81,
             "RealDisplacementLongTons": 1000,
             "RealEnginePowerHp": 200,
@@ -21622,6 +21731,8 @@
 
     "USS Helena CL-50 (1943)": {
         "properties": {
+            "IssueDate": "1942-09",
+            "RetirementDate": "1943-07",
             "RealTurnRateDegPerSec": 2.07,
             "RealDisplacementLongTons": 12207,
             "RealEnginePowerHp": 100000,
@@ -21774,6 +21885,8 @@
 
     "USS Long Beach CGN-9 (1964)": {
         "properties": {
+            "IssueDate": "1963-08",
+            "RetirementDate": "1978",
             "RealTurnRateDegPerSec": 1.69,
             "RealDisplacementLongTons": 17525,
             "RealEnginePowerHp": 80000,
@@ -22186,6 +22299,8 @@
 
     "USS Shangri-La CV-17 (1943)": {
         "properties": {
+            "IssueDate": "1945-02",
+            "RetirementDate": "1952-11",
             "RealTurnRateDegPerSec": 1.46,
             "RealDisplacementLongTons": 36380,
             "RealEnginePowerHp": 150000,
@@ -22270,6 +22385,8 @@
 
     "USS Torsk SS-423": {
         "properties": {
+            "IssueDate": "1945-04",
+            "RetirementDate": "1951-11",
             "RealTurnRateDegPerSec": 2.21,
             "RealDisplacementLongTons": 2414,
             "RealEnginePowerHp": 5400,
@@ -22330,6 +22447,8 @@
 
     "USS Wahoo SS-238 (1943)": {
         "properties": {
+            "IssueDate": "1943-08",
+            "RetirementDate": "1943-10",
             "RealTurnRateDegPerSec": 2.3,
             "RealDisplacementLongTons": 2410,
             "RealEnginePowerHp": 5400,
@@ -22900,6 +23019,8 @@
 
     "VMRF Sverdlov (1952)": {
         "properties": {
+            "IssueDate": "1952-08",
+            "RetirementDate": "1960-12",
             "RealTurnRateDegPerSec": 1.88,
             "RealDisplacementT": 16640,
             "RealEnginePowerHp": 130000,
@@ -23654,6 +23775,8 @@
 
     "ZSU-57-2": {
         "properties": {
+            "IssueDate": "~1956",
+            "RetirementDate": "~1970",
             "RealMassKg": 28000,
             "RealEnginePowerHp": 520,
             "RealMaxSpeedKmh": 50.0,

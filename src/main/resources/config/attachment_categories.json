@@ -46,6 +46,15 @@
         ]
     },
 
+    "Goerz Gewehr 98 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "~1915"
+        },
+        "items": [
+            "goerze"
+        ]
+    },
+
     "GP-25 underbarrel grenade launcher service period": {
         "properties": {
             "IssueDate": "1978"
@@ -62,6 +71,24 @@
         },
         "items": [
             "mannlichery1903bayonet"
+        ]
+    },
+
+    "Hensoldt G3 4x24 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "~1967"
+        },
+        "items": [
+            "zf24"
+        ]
+    },
+
+    "KAC Vertical Foregrip Service Period": {
+        "properties": {
+            "IssueDate": "1997"
+        },
+        "items": [
+            "kacgrip"
         ]
     },
 
@@ -113,6 +140,15 @@
         ]
     },
 
+    "PGO-7V3 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "1988"
+        },
+        "items": [
+            "pgo72"
+        ]
+    },
+
     "PSO-1 Telescope service period": {
         "properties": {
             "IssueDate": "1963"
@@ -129,6 +165,16 @@
         },
         "items": [
             "44_puscope"
+        ]
+    },
+
+    "Reichert Mannlicher M95 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "WW1",
+            "RetirementDate": "~1918"
+        },
+        "items": [
+            "reichert"
         ]
     },
 
