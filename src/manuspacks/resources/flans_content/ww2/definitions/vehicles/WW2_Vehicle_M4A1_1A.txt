@@ -9,6 +9,9 @@ Icon Icon_WW2_Vehicle_M4A1_1A
 Texture Skin_WW2_Vehicle_M4A1_1A
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob British Icon_WW2_Vehicle_M4A1_1A skin_ww2_vehicle_m4a1_1a_british green 8
+
 // Recipe and Inventory
 FuelTankSize 2000
 CargoSlots 0

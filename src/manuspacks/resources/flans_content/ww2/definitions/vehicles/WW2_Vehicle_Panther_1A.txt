@@ -9,6 +9,11 @@ Icon Icon_WW2_Vehicle_Panther_1A
 Texture Skin_WW2_Vehicle_Panther_1A
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Beige Icon_WW2_Vehicle_Panther_1A skin_ww2_vehicle_panther_1a_beige yellow 8
+AdvPaintJob Sommertarnung Icon_WW2_Vehicle_Panther_1A skin_ww2_vehicle_panther_1a_sommertarnung green 8
+AdvPaintJob Dunkelgrau Icon_WW2_Vehicle_Panther_1A skin_ww2_vehicle_panther_1a_dunkelgrau gray 8
+
 // Recipe and Inventory
 FuelTankSize 2500
 CargoSlots 0

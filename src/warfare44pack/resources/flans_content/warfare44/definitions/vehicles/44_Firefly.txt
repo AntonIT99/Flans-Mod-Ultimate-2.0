@@ -24,6 +24,7 @@ FuelTankSize 2000
 
 // Paintjobs
 advpaintjob Alternate 44_Firefly 44_firefly_2 gray 8
+advpaintjob Alternate2 44_Firefly 44_firefly_3 gray 8
 AddDye 5 green
 
 // Real-world specifications

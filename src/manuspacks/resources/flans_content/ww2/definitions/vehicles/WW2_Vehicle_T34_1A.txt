@@ -11,6 +11,7 @@ RotateWheels True
 // Paintjobs
 AdvPaintJob Snow Icon_WW2_Vehicle_T34_1A skin_ww2_vehicle_t34_1a_snow white 8
 AdvPaintJob Winter Icon_WW2_Vehicle_T34_1A skin_ww2_vehicle_t34_1a_winter white 8
+AdvPaintJob Alternate Icon_WW2_Vehicle_T34_1A skin_ww2_vehicle_t34_1a_alternate green 8
 
 // Recipe and Inventory
 FuelTankSize 2000
