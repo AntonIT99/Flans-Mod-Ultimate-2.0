@@ -50,6 +50,8 @@ final class RulesPage extends TeamsPage
     private Tab tab = Tab.PROTECTION;
     private String selectedGameRule = "";
 
+    static final String ID = "flansmodultimate:rules";
+
     RulesPage()
     {
         super("rules", Items.WRITABLE_BOOK, 400);
