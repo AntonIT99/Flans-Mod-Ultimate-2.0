@@ -56,7 +56,8 @@ def main():
         with tempfile.TemporaryDirectory(prefix="fmu-curseforge-test-") as directory:
             fixture = Path(directory)
             (fixture / "settings.gradle").write_text("rootProject.name = 'release-fixture'\n")
-            (fixture / "CHANGELOG.md").write_text("Release notes: Grüße 🚀\n", encoding="utf-8", newline="\n")
+            (fixture / "changelogs/fixturemod").mkdir(parents=True)
+            (fixture / "changelogs/fixturemod/2.0.md").write_text("Release notes: Grüße 🚀\n", encoding="utf-8", newline="\n")
             (fixture / "pack-notes.md").write_text("Pack-specific release notes\n", encoding="utf-8", newline="\n")
             script = (root / "gradle/curseforge.gradle").as_posix().replace("'", "\\'")
             build = """
@@ -98,7 +99,7 @@ tasks.matching { it.name.startsWith('publishCurseForge') && it.name != 'publishC
                 build = build.replace(key, value)
             (fixture / "build.gradle").write_text(build, encoding="utf-8")
             (fixture / "gradle.properties").write_text(
-                f"minecraft_version={minecraft}\norg.gradle.configuration-cache=true\n", encoding="utf-8")
+                f"minecraft_version={minecraft}\nmod_id=fixturemod\nmod_version=2.0\norg.gradle.configuration-cache=true\n", encoding="utf-8")
             mod = ["-PcurseforgeModProjectUrl=https://www.curseforge.com/minecraft/mc-mods/test-main",
                    "-PcurseforgeModProjectId=101"]
             pack = ["-PcurseforgeOfficialPacksProjectUrl=https://www.curseforge.com/minecraft/mc-mods/test-pack",

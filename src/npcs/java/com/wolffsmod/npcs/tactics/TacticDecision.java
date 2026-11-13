@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Objects;
+
 /**
  * Where a tactic sends the NPC this tick. It decides from what the NPC knows and from what its tactic remembers, so that
  * it can be tested without a world; looking for cover is left to the caller.
@@ -67,7 +69,7 @@ public final class TacticDecision
      * @param target
      *            where its target is
      * @param home
-     *            where the NPC was placed
+     *            where the NPC was placed, or for Assault position the point of its route it heads for
      * @param reloading
      *            whether it is reloading
      * @param hit
@@ -104,14 +106,17 @@ public final class TacticDecision
         return switch (tactic)
         {
             case ADVANCE -> advance(situation);
-            case HOLD -> horizontal(situation.position(), situation.home()) <= HOLD_RADIUS ? Order.STAND : new Order(Move.GO_TO, WALK, situation.home());
-            case COVER -> cover(situation, memory, now);
+            case HOLD -> hold(situation);
+            case COVER -> memory.getCover() == null ? advance(situation) : cover(situation, memory, now);
+            case HOLD_LINE -> memory.getCover() == null ? hold(situation) : cover(situation, memory, now);
             case STAND_OFF -> standOff(situation);
             case BOUNDING -> bounding(situation, memory, now);
             case FLANK -> flank(situation, memory, now);
             case CIRCLE -> circle(situation, memory);
             case STRAFE -> strafe(situation, memory, now);
             case TRANSPORT -> transport(situation);
+            case CHARGE -> Order.closeIn(RUN);
+            case ASSAULT -> assault(situation);
             case CUSTOM_NPCS, STRAFING_RUN, ORBIT -> throw new IllegalArgumentException(tactic + " is not decided here");
         };
     }
@@ -155,18 +160,40 @@ public final class TacticDecision
         return Order.STAND;
     }
 
+    /**
+     * Fights an enemy it sees within its tactic distance where it stands, and otherwise runs on to the point of its route it
+     * heads for, its home here, holding that point once it is there as a holding NPC holds where it was placed. The route
+     * moves the home on to its next point before the NPC gets this close, so it only stands still at the last.
+     */
+    private static Order assault(Situation situation)
+    {
+        Engagement engagement = situation.engagement();
+        double distance = situation.targetDistance();
+        if (distance < engagement.minimum())
+            return retreat(situation, engagement.minimum() - distance);
+        if (situation.inSight() && distance <= engagement.preferred())
+            return Order.STAND;
+        if (horizontal(situation.position(), situation.home()) <= HOLD_RADIUS)
+            return Order.STAND;
+        return new Order(Move.GO_TO, RUN, situation.home());
+    }
+
     /** @return an order to back straight away from the target by the blocks it is too close, and a margin so it does not hover at the edge */
     private static Order retreat(Situation situation, double blocks)
     {
         return Order.goTo(situation, away(situation.position(), situation.target(), blocks + RETREAT_MARGIN), RUN, ARRIVED);
     }
 
-    /** Hides in cover, steps out to fire when ready, and back in to reload or when hit. Without cover it advances. */
+    /** Stays where it was placed, and goes back there when it is pushed away. */
+    private static Order hold(Situation situation)
+    {
+        return horizontal(situation.position(), situation.home()) <= HOLD_RADIUS ? Order.STAND : new Order(Move.GO_TO, WALK, situation.home());
+    }
+
+    /** Hides in the cover it has, steps out to fire when ready, and back in to reload or when hit. */
     private static Order cover(Situation situation, NpcTacticState memory, long now)
     {
-        Cover cover = memory.getCover();
-        if (cover == null)
-            return advance(situation);
+        Cover cover = Objects.requireNonNull(memory.getCover());
         boolean wantsCover = situation.reloading() || situation.hit();
         if (memory.getPhase() == Phase.PEEK && (wantsCover || now - memory.getPhaseStarted() >= PEEK_TICKS))
             memory.enter(Phase.HIDE, now);

@@ -45,6 +45,14 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected static final float DEFAULT_SHIELD_BLOCK_CHANCE = 0.5F;
     /** Blocks every blade and polearm of the melee ladder up to a sledgehammer (9), not energy blades */
     protected static final float DEFAULT_SHIELD_MAX_BLOCKABLE_MELEE_DAMAGE = 10F;
+    /** Labjac Edition melee block duration in ticks */
+    protected static final int DEFAULT_BLOCK_TIME = 100;
+    /** Slowness IV, as in the Labjac Edition */
+    protected static final float DEFAULT_BLOCK_MOVE_SPEED = 0.4F;
+    private static final String HIP_FIRE_WHILE_SPRINTING_KEY = "HipFireWhileSprinting";
+    /** Spread and bullet speed multipliers applied to a {@code ShootMelee} gun-sword's projectile */
+    protected static final float SHOOT_MELEE_SPREAD_MULTIPLIER = 10F;
+    protected static final float SHOOT_MELEE_SPEED_MULTIPLIER = 0.8F;
 
     /** Extended Recoil System */
     protected final GunRecoil recoil = new GunRecoil();
@@ -622,6 +630,66 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected final ArrayList<Vector3f> meleeDamagePoints = new ArrayList<>();
     @Getter
     protected boolean useCustomMeleeWhenShoot;
+    /**
+     * Optional left, right and overhead custom melee swings, chosen by holding strafe left, strafe right or forward while attacking
+     */
+    protected final EnumMap<EnumMeleeDirection, MeleeSwing> directionalMeleeSwings = new EnumMap<>(EnumMeleeDirection.class);
+    /** The default {@code AddNode} swing, built on first use after loading */
+    private MeleeSwing defaultMeleeSwing;
+    /**
+     * Labjac Edition gun-sword: attacks fire the default ammo as a short-lived projectile without loading or consuming a magazine,
+     * playing the custom melee swing instead of the shot animation
+     */
+    @Getter
+    protected boolean shootMelee;
+    /**
+     * Whether the secondary function key raises a timed melee block with this weapon
+     */
+    @Getter
+    protected boolean canBlock;
+    /**
+     * Duration of a melee block in ticks
+     */
+    @Getter
+    protected int blockTime = DEFAULT_BLOCK_TIME;
+    /**
+     * The sound to play when raising a melee block
+     */
+    @Getter
+    protected String blockSound;
+    /**
+     * Whether a block lasts only while the key is held, at most {@link #blockTime} ticks, rather than for its full time
+     */
+    @Getter
+    protected boolean holdToBlock;
+    /**
+     * Movement speed multiplier while blocking; the Labjac Edition's Slowness IV by default
+     */
+    @Getter
+    protected float blockMoveSpeed = DEFAULT_BLOCK_MOVE_SPEED;
+    /**
+     * Chance between 0.00-1.00 that a raised block sends a frontal projectile back where the holder looks
+     */
+    @Getter
+    protected float blockDeflectChance;
+    /**
+     * The sound to play when a raised block deflects a projectile
+     */
+    @Getter
+    protected String deflectSound;
+    /**
+     * Held weapon translation and rotation, in blocks and degrees, of the guard stance while blocking
+     */
+    @Getter
+    protected Vector3f blockStanceTranslate = new Vector3f(-0.1F, 0.1F, -0.1F);
+    @Getter
+    protected Vector3f blockStanceRotate = new Vector3f(0F, -25F, 55F);
+    /**
+     * Armour penetration of custom melee swings, in the units of armour {@code PenetrationResistance}. A swing striking armour that
+     * resists more is deflected. Negative disables the check.
+     */
+    @Getter
+    protected float meleeArmorPenetration = -1F;
 
     // Deployable Settings
     /**
@@ -941,8 +1009,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         pivotHeight = readValue("PivotHeight", pivotHeight, file);
         itemUseAction = readValue("ItemUseAction", itemUseAction, UseAnim.class, file);
         // This is needed, because the presence of the value overrides the default value of zero.
-        if (file.hasConfigLine("HipFireWhileSprinting"))
-            hipFireWhileSprinting = readValue("HipFireWhileSprinting", false, file) ? 1 : 2;
+        if (file.hasConfigLine(HIP_FIRE_WHILE_SPRINTING_KEY))
+            hipFireWhileSprinting = readValue(HIP_FIRE_WHILE_SPRINTING_KEY, false, file) ? 1 : 2;
 
         // Melee
         meleeTime = readValue("MeleeTime", meleeTime, file);
@@ -953,6 +1021,12 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         }));
         readFloatValuesInLines("MeleeDamagePoint", file, 3).ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
         readFloatValuesInLines("MeleeDamageOffset", file, 3).ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
+        readDirectionalMeleeSwing(EnumMeleeDirection.LEFT, file);
+        readDirectionalMeleeSwing(EnumMeleeDirection.RIGHT, file);
+        readDirectionalMeleeSwing(EnumMeleeDirection.UP, file);
+        meleeArmorPenetration = readValue("SwordArmorPen", meleeArmorPenetration, file);
+        meleeArmorPenetration = readValue("MeleeArmorPenetration", meleeArmorPenetration, file);
+        readShootMelee(file);
 
         // Player modifiers
         moveSpeedModifier = readValue("MoveSpeedModifier", moveSpeedModifier, file);
@@ -1744,6 +1818,62 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     }
 
     /**
+     * Reads a Labjac Edition directional swing: {@code MeleeLeft true} with {@code MeleeLeftTime}, {@code AddLeftNode} and
+     * {@code MeleeLeftDamagePoint} lines, likewise for Right and Up. Without its own damage points the swing uses the default ones.
+     */
+    private void readDirectionalMeleeSwing(EnumMeleeDirection direction, TypeFile file)
+    {
+        String name = direction.getConfigName();
+        String meleeKey = "Melee" + name;
+        if (!readValue(meleeKey, false, file))
+            return;
+
+        List<Vector3f> path = new ArrayList<>();
+        List<Vector3f> angles = new ArrayList<>();
+        List<Vector3f> points = new ArrayList<>();
+        readFloatValuesInLines("Add" + name + "Node", file, 6).ifPresent(lines -> lines.forEach(values ->
+        {
+            path.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F));
+            angles.add(new Vector3f(values[3], values[4], values[5]));
+        }));
+        readFloatValuesInLines(meleeKey + "DamagePoint", file, 3).ifPresent(lines -> lines.forEach(values -> points.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
+        readFloatValuesInLines(meleeKey + "DamageOffset", file, 3).ifPresent(lines -> lines.forEach(values -> points.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
+
+        if (path.isEmpty())
+        {
+            logError(meleeKey + " needs Add" + name + "Node lines; the swing is ignored", file);
+            return;
+        }
+        int time = Math.max(1, readValue(meleeKey + "Time", meleeTime, file));
+        directionalMeleeSwings.put(direction, new MeleeSwing(direction, time, path, angles, points.isEmpty() ? meleeDamagePoints : points));
+    }
+
+    /**
+     * Reads the Labjac Edition gun-sword settings. {@code ShootMelee} widens the projectile's spread, slows it, allows attacking while
+     * sprinting and makes the weapon block, unless the definition says otherwise.
+     */
+    private void readShootMelee(TypeFile file)
+    {
+        shootMelee = readValue("ShootMelee", shootMelee, file);
+        if (shootMelee)
+        {
+            bulletSpread *= SHOOT_MELEE_SPREAD_MULTIPLIER;
+            bulletSpeed *= SHOOT_MELEE_SPEED_MULTIPLIER;
+            if (!file.hasConfigLine(HIP_FIRE_WHILE_SPRINTING_KEY))
+                hipFireWhileSprinting = 1;
+        }
+        canBlock = readValue("CanBlock", shootMelee, file);
+        blockTime = Math.max(1, readValue("BlockTime", blockTime, file));
+        blockSound = readSound("BlockSound", blockSound, file);
+        holdToBlock = readValue("HoldToBlock", holdToBlock, file);
+        blockMoveSpeed = Mth.clamp(readValue("BlockMoveSpeed", blockMoveSpeed, file), 0F, 1F);
+        blockDeflectChance = Mth.clamp(readValue("BlockDeflectChance", blockDeflectChance, file), 0F, 1F);
+        deflectSound = readSound("DeflectSound", deflectSound, file);
+        readFloatValues("BlockStanceTranslate", file, 3).ifPresent(values -> blockStanceTranslate = new Vector3f(values[0], values[1], values[2]));
+        readFloatValues("BlockStanceRotate", file, 3).ifPresent(values -> blockStanceRotate = new Vector3f(values[0], values[1], values[2]));
+    }
+
+    /**
      * Get the damage of a specific gun, taking into account attachments
      */
     public float getDamage(@Nullable ItemStack stack)
@@ -2210,6 +2340,48 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public int getMeleeTime(ItemStack stack)
     {
         return isBayonetMode(stack) ? getGrip(stack).getBayonetMeleeTime() : meleeTime;
+    }
+
+    /**
+     * @return the custom melee swing for the requested direction, or the default swing when this weapon has no such swing or attacks
+     *         with a bayonet
+     */
+    public MeleeSwing getMeleeSwing(ItemStack stack, EnumMeleeDirection direction)
+    {
+        if (!isBayonetMode(stack))
+        {
+            MeleeSwing swing = directionalMeleeSwings.get(direction);
+            if (swing != null)
+                return swing;
+        }
+        int time = getMeleeTime(stack);
+        MeleeSwing defaultSwing = getDefaultMeleeSwing();
+        return time == defaultSwing.time() ? defaultSwing : new MeleeSwing(EnumMeleeDirection.FORWARD, time, meleePath, meleePathAngles, meleeDamagePoints);
+    }
+
+    /**
+     * @return the path of the given swing for animation, falling back to the default path
+     */
+    public MeleeSwing getMeleeSwing(EnumMeleeDirection direction)
+    {
+        MeleeSwing swing = directionalMeleeSwings.get(direction);
+        return swing != null ? swing : getDefaultMeleeSwing();
+    }
+
+    private MeleeSwing getDefaultMeleeSwing()
+    {
+        MeleeSwing swing = defaultMeleeSwing;
+        if (swing == null)
+        {
+            swing = new MeleeSwing(EnumMeleeDirection.FORWARD, meleeTime, meleePath, meleePathAngles, meleeDamagePoints);
+            defaultMeleeSwing = swing;
+        }
+        return swing;
+    }
+
+    public boolean hasDirectionalMelee()
+    {
+        return !directionalMeleeSwings.isEmpty();
     }
 
     public boolean canToggleSecondaryFire(ItemStack stack)

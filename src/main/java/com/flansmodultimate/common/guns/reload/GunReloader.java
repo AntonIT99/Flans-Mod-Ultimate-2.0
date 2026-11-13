@@ -13,6 +13,7 @@ import com.flansmodultimate.network.client.gun.PacketCancelGunReloadClient;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.HolderLookup;
@@ -45,6 +46,9 @@ public record GunReloader(GunItem item)
         // melee/no-ammo guard
         List<ShootableType> allowed = item.getConfigType().getAmmoTypes();
         if (allowed == null || allowed.isEmpty())
+            return false;
+        allowed = EraEnforcement.permitted(player, allowed);
+        if (allowed.isEmpty())
             return false;
 
         // Prevent spam / double queue
@@ -179,7 +183,7 @@ public record GunReloader(GunItem item)
 
         // Re-validate ammo allowed (inventory may have changed since queue)
         List<ShootableType> allowed = gunItem.getConfigType().getAmmoTypes();
-        if (allowed == null || !allowed.contains(newShootable.getConfigType()))
+        if (allowed == null || !allowed.contains(newShootable.getConfigType()) || !EraEnforcement.permits(reloadingEntity, newShootable.getConfigType()))
             return;
 
         ItemStack oldMag = gunItem.getAmmoItemStack(actualGunStack, ammoIndex, level.registryAccess());

@@ -420,7 +420,19 @@ public final class NpcTuning
          * Carries the crew it is loaded with to its tactic distance from the target, stops there to put them down and keeps
          * that distance. The one tactic a vehicle without a weapon of its own can follow.
          */
-        TRANSPORT(EnumSet.of(TacticKind.VEHICLE), true, false);
+        TRANSPORT(EnumSet.of(TacticKind.VEHICLE), true, false),
+        /** Runs straight at its target firing as it goes, and never stops to stand, take cover or wait out fire that pins it. */
+        CHARGE(EnumSet.of(TacticKind.STANDARD), false),
+        /**
+         * Takes the points of its Custom NPCs moving path one after another, fighting the enemies it meets within its tactic
+         * distance, and holds the last one. Without a path of two points or more it advances.
+         */
+        ASSAULT(EnumSet.of(TacticKind.STANDARD, TacticKind.VEHICLE, TacticKind.MECHA), true),
+        /**
+         * Fights from cover within its cover radius of where it was placed, as one fighting from cover does, but never leaves
+         * that ground: without cover there it holds where it was placed. Defenders of a trench spread along it this way.
+         */
+        HOLD_LINE(EnumSet.of(TacticKind.STANDARD), false);
 
         private final Set<TacticKind> kinds;
         /** Whether the tactic distance setting means anything to it. */

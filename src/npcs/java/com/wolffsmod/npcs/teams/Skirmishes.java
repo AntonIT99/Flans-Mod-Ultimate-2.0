@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs.teams;
 
 import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.api.FlansModApi;
+import com.flansmodultimate.api.eras.FlansEras;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.controllers.FactionController;
@@ -68,6 +70,10 @@ final class Skirmishes
         if (clash.isPresent())
             return clash.get();
         ServerLevel level = Objects.requireNonNull(server.getLevel(skirmish.getDimension()));
+        List<String> serving = skirmish.getSides().stream().flatMap(side -> side.teams().stream()).toList();
+        Optional<String> classless = BattleEras.teamWithoutClass(level, skirmish, FlansModApi.getTeams().stream().filter(team -> serving.contains(team.getShortName())).toList());
+        if (classless.isPresent())
+            return refused("era_no_class", classless.get());
         skirmish.setState(Skirmish.State.RUNNING);
         skirmish.setStartedAt(level.getGameTime());
         skirmish.setFront(null);
@@ -77,6 +83,8 @@ final class Skirmishes
         BotBattles.add(battle);
         SkirmishStore.get(server).setDirty();
         notes.add(0, text("started", skirmish.getName()));
+        // Its era window now covers its bots and the members of its factions.
+        FlansEras.restrictionsChanged(server);
         return new Outcome(true, notes);
     }
 
@@ -157,6 +165,7 @@ final class Skirmishes
         }
         BotOrders.clearWaypoints(server);
         SkirmishStore.get(server).remove(skirmish);
+        FlansEras.restrictionsChanged(server);
         return removed;
     }
 

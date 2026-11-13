@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.teams.centre;
 
+import com.flansmodultimate.common.command.FlansModCommandAliases;
 import com.flansmodultimate.api.commandcentre.FlansCommandCentre;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import lombok.AccessLevel;
@@ -13,6 +14,9 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommandLines
 {
+    /** The era commands, which the command centre's era pages give. */
+    private static final String ERA_COMMAND = FlansModCommandAliases.ROOT + " era ";
+
     /** A command line without its slash and the spaces around it. */
     public static String normalise(String command)
     {
@@ -22,11 +26,12 @@ public final class CommandLines
         return line;
     }
 
-    /** Whether a normalised line is a {@code /teams} command, or a vanilla {@code /gamerule} command. */
+    /** Whether a normalised line is a {@code /teams} command, a vanilla {@code /gamerule} command or an era command. */
     public static boolean isCentreCommand(String line)
     {
         String lower = line.toLowerCase(Locale.ROOT);
-        return lower.equals(FlansCommandCentre.COMMAND) || lower.startsWith(FlansCommandCentre.COMMAND + " ") || lower.equals("gamerule") || lower.startsWith("gamerule ");
+        return lower.equals(FlansCommandCentre.COMMAND) || lower.startsWith(FlansCommandCentre.COMMAND + " ") || lower.equals("gamerule") || lower.startsWith("gamerule ")
+            || lower.startsWith(ERA_COMMAND);
     }
 
     /** Joins the words of a command with spaces, each written as it is. */

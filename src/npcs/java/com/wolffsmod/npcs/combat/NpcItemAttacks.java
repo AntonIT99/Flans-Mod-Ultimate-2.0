@@ -9,6 +9,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.properties.NpcSounds;
+import com.wolffsmod.npcs.sim.NpcServerRules;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
@@ -129,10 +130,20 @@ public final class NpcItemAttacks
                 NpcPlatform.meleePostAttackEffects(npc, living, weapon, NpcEquipment.enabled(npc, Feature.MELEE_DUAL_WIELD));
             else
                 npcEffect(npc, living);
-            NpcPlatform.hurtEnemy(weapon, living, npc);
+            NpcPlatform.hurtEnemy(wearing(npc, weapon), living, npc);
             npc.setItemSlot(hand == InteractionHand.OFF_HAND ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND, weapon);
         }
         npc.setLastHurtMob(target);
+    }
+
+    /** The stack that takes a hit's wear: the weapon, or an unworn copy where the server spares NPC melee weapons, so the item's own hit behaviour still runs. */
+    private static ItemStack wearing(EntityNPCInterface npc, ItemStack weapon)
+    {
+        if (NpcServerRules.meleeDurability(npc))
+            return weapon;
+        ItemStack copy = weapon.copy();
+        copy.setDamageValue(0);
+        return copy;
     }
 
     /** The push Custom NPCs gives a target with the NPC's own melee knockback. */

@@ -209,6 +209,8 @@ final class Wars
         skirmish.setTickets(war.getTickets());
         skirmish.setDifficulty(war.getDifficulty());
         skirmish.setCustomTraining(war.getCustomTraining());
+        // Every engagement is fought under the war's era window.
+        skirmish.setEraWindow(war.getEraWindow());
         skirmishes.add(skirmish);
         Skirmishes.Outcome outcome = Skirmishes.start(server, skirmish);
         if (!outcome.started())

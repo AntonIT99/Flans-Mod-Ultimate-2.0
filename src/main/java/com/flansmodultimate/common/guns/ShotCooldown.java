@@ -34,6 +34,14 @@ public final class ShotCooldown
      */
     public static final float MIN_DELAY = 0.05F;
 
+    /**
+     * The shortest delay between shots, in ticks, that the HUD reports as a
+     * reload. One second keeps machine guns and autocannons from flickering
+     * between reloading and ready at their cyclic rate, while a naval gun or a
+     * tank gun that waits several seconds between rounds gets a countdown.
+     */
+    public static final float HUD_RELOAD_MIN_DELAY = 20F;
+
     private ShotCooldown() {}
 
     /** A declared shot delay, held to something a firing loop can terminate on. */
@@ -89,5 +97,26 @@ public final class ShotCooldown
     public static int displayTicks(float cooldown)
     {
         return cooldown <= 0F ? 0 : Mth.ceil(cooldown);
+    }
+
+    /**
+     * The reload countdown the HUD shows for a weapon, in whole ticks.
+     *
+     * <p>
+     * A weapon whose delay between shots reaches {@link #HUD_RELOAD_MIN_DELAY} is
+     * loading its next round for all of that delay, so the wait counts as a reload.
+     * The choice follows the weapon's delay rather than what is left of it, so a
+     * weapon either always reports its shot delay or never does.
+     *
+     * @param reloadTicks
+     *            reload still owed, excluding the delay between shots
+     * @param cooldown
+     *            the shot cooldown still running
+     * @param shotDelay
+     *            the weapon's delay between shots, in ticks
+     */
+    public static int hudReloadTicks(float reloadTicks, float cooldown, float shotDelay)
+    {
+        return displayTicks(shotDelay >= HUD_RELOAD_MIN_DELAY ? Math.max(reloadTicks, cooldown) : reloadTicks);
     }
 }

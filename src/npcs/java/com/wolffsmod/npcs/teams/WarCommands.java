@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.api.eras.FlansEras;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -36,6 +37,7 @@ import java.util.function.ObjIntConsumer;
 public final class WarCommands
 {
     private static final String WAR = "war";
+    private static final String ERA = "era";
     private static final String NAME = "name";
     private static final String FACTION = "faction";
     private static final String DIMENSION = "dimension";
@@ -70,6 +72,8 @@ public final class WarCommands
             warArgument().then(Commands.literal("add").then(Commands.argument(FACTION, StringArgumentType.string()).suggests(FactionCommands.MANAGED).executes(context -> faction(context, true))))
                 .then(Commands.literal("remove").then(Commands.argument(FACTION, StringArgumentType.string()).suggests(WAR_FACTIONS).executes(context -> faction(context, false))))));
         root.then(scope());
+        root.then(Commands.literal(ERA).then(warArgument().then(Commands.literal("clear").executes(context -> setEra(context, "")))
+            .then(Commands.argument(ERA, StringArgumentType.greedyString()).executes(context -> setEra(context, StringArgumentType.getString(context, ERA))))));
         root.then(Commands.literal("claim").then(warArgument().then(Commands.argument(FACTION, StringArgumentType.string()).suggests(WAR_FACTIONS).executes(context -> claim(context, true, 0))
             .then(Commands.argument(RADIUS, IntegerArgumentType.integer(0, 32)).executes(context -> claim(context, true, IntegerArgumentType.getInteger(context, RADIUS)))))));
         root.then(Commands.literal("unclaim").then(warArgument().executes(context -> claim(context, false, 0))
@@ -277,6 +281,26 @@ public final class WarCommands
     }
 
     // --- Lookups ---
+
+    /** Sets or clears the era window the war's engagements are fought under, from its next engagement on. */
+    private static int setEra(CommandContext<CommandSourceStack> context, String restriction) throws CommandSyntaxException
+    {
+        War target = war(context);
+        String window;
+        try
+        {
+            window = FlansEras.validateRestriction(restriction);
+        }
+        catch (IllegalArgumentException exception)
+        {
+            context.getSource().sendFailure(Component.literal(exception.getMessage()));
+            return 0;
+        }
+        target.setEraWindow(window);
+        WarStore.get(context.getSource().getServer()).setDirty();
+        context.getSource().sendSuccess(() -> window.isEmpty() ? text("era_cleared", target.getName()) : text("era_set", target.getName(), window), true);
+        return 1;
+    }
 
     private static War war(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {

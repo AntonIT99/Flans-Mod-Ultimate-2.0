@@ -89,6 +89,8 @@ class NpcMeleeRoleGoalTest
         ItemStack sword = new ItemStack(Items.IRON_SWORD);
         when(npc.getTarget()).thenReturn(target);
         when(npc.getMainHandItem()).thenReturn(sword);
+        when(npc.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(sword);
+        when(target.getMainHandItem()).thenReturn(ItemStack.EMPTY);
         when(npc.getNavigation()).thenReturn(navigation);
         when(npc.getSensing()).thenReturn(sensing);
         when(sensing.hasLineOfSight(target)).thenReturn(true);

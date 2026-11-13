@@ -22,6 +22,7 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEntities;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -79,6 +80,8 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     protected static final EntityDataAccessor<Integer> DATA_ROUNDS_LEFT = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
     /** What a full magazine of the loaded ammunition holds. */
     protected static final EntityDataAccessor<Integer> DATA_MAGAZINE_SIZE = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
+    /** The reload countdown the gunner's HUD shows; see {@link ShotCooldown#hudReloadTicks}. */
+    protected static final EntityDataAccessor<Integer> DATA_HUD_RELOAD_TICKS = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
 
     protected GunType configType;
     protected String shortname = StringUtils.EMPTY;
@@ -144,6 +147,12 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     {
         reloadTimer = v;
         entityData.set(DATA_RELOAD_TIMER, v);
+    }
+
+    /** Ticks the gunner's HUD counts down as a reload, which includes a long delay between shots. */
+    public int getHudReloadTicks()
+    {
+        return entityData.get(DATA_HUD_RELOAD_TICKS);
     }
 
     public boolean hasAmmo()
@@ -225,6 +234,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         data.define(DATA_MUZZLE_FLASH_FRAME, 0);
         data.define(DATA_ROUNDS_LEFT, 0);
         data.define(DATA_MAGAZINE_SIZE, 0);
+        data.define(DATA_HUD_RELOAD_TICKS, 0);
     }
 
     public int getMuzzleFlashTicks()
@@ -497,7 +507,8 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger)
     {
-        return super.canAddPassenger(passenger) && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ENTER));
+        return super.canAddPassenger(passenger) && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ENTER))
+            && EraEntities.mayBoard(passenger, this);
     }
 
     @Override
@@ -767,6 +778,10 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         }
         prevShootKeyPressed = shootKeyPressed;
         pendingShootPress = false;
+
+        int hudReloadTicks = ShotCooldown.hudReloadTicks(reloadTimer, shootTimer, configType.getShootDelay(null));
+        if (entityData.get(DATA_HUD_RELOAD_TICKS) != hudReloadTicks)
+            entityData.set(DATA_HUD_RELOAD_TICKS, hudReloadTicks);
     }
 
     protected int findAmmo(Player player)

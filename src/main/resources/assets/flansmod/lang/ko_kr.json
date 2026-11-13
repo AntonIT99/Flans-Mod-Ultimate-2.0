@@ -19,6 +19,7 @@
   "gui.flansmod.teams.capture_point.title": "점령 지점",
   "gui.flansmod.teams.choose_class": "클래스 선택",
   "gui.flansmod.teams.choose_team": "팀 선택",
+  "gui.flansmod.teams.class_era_blocked": "허용된 기간 밖: %s",
   "gui.flansmod.teams.class_slots": "사용 중인 자리: %1$s/%2$s",
   "gui.flansmod.teams.deaths": "사망",
   "gui.flansmod.teams.defeat": "패배",

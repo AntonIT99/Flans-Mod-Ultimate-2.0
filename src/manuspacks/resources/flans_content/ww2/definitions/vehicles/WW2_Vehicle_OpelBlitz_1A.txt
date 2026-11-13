@@ -8,6 +8,10 @@ Icon Icon_WW2_Vehicle_OpelBlitz_1A
 Texture Skin_WW2_Vehicle_OpelBlitz_1A
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Hungarian Icon_WW2_Vehicle_OpelBlitz_1A skin_ww2_vehicle_opelblitz_1a_hungarian green 8
+AdvPaintJob Romanian Icon_WW2_Vehicle_OpelBlitz_1A skin_ww2_vehicle_opelblitz_1a_romanian green 8
+
 // Recipe and Inventory
 FuelTankSize 1500
 CargoSlots 24

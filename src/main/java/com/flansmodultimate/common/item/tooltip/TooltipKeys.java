@@ -32,6 +32,7 @@ public final class TooltipKeys
     public static final String DAMAGED_PARTS = "tooltip.flansmodultimate.damaged_parts";
     public static final String DEPLOYABLE = "tooltip.flansmodultimate.deployable";
     public static final String DISPERSION = "tooltip.flansmodultimate.dispersion";
+    public static final String DEPLETED = "tooltip.flansmodultimate.depleted";
     public static final String DURABILITY = "tooltip.flansmodultimate.durability";
     public static final String REPAIR_AMOUNT = "tooltip.flansmodultimate.repair_amount";
     public static final String TOOL_USES = "tooltip.flansmodultimate.tool_uses";
@@ -77,6 +78,7 @@ public final class TooltipKeys
     public static final String MUZZLE_VELOCITY = "tooltip.flansmodultimate.muzzle_velocity";
     public static final String THROW_SPEED = "tooltip.flansmodultimate.throw_speed";
     public static final String HOLD_TO_THROW = "tooltip.flansmodultimate.hold_to_throw";
+    public static final String HOLD_TO_THROW_INVERTED = "tooltip.flansmodultimate.hold_to_throw_inverted";
     public static final String TOGGLED_OFF = "tooltip.flansmodultimate.toggled_off";
     public static final String TOGGLED_ON = "tooltip.flansmodultimate.toggled_on";
     public static final String OPERATOR_STICK_CHANGE_MODE = "tooltip.flansmodultimate.operator_stick.change_mode";

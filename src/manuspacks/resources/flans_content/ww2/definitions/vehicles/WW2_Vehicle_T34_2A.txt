@@ -8,6 +8,9 @@ Icon Icon_WW2_Vehicle_T34_2A
 Texture Skin_WW2_Vehicle_T34_2A
 RotateWheels True
 
+// Paintjobs
+AdvPaintJob Alternate Icon_WW2_Vehicle_T34_2A skin_ww2_vehicle_t34_2a_alternate green 8
+
 // Recipe and Inventory
 FuelTankSize 2500
 CargoSlots 0

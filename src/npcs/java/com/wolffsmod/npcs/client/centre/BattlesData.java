@@ -45,7 +45,7 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
     {}
 
     /** A skirmish, with its rules and its sides. */
-    record SkirmishInfo(String name, String state, Rules rules, String dimension, boolean war, List<Side> sides)
+    record SkirmishInfo(String name, String state, Rules rules, String dimension, boolean war, List<Side> sides, String era)
     {
         boolean draft()
         {
@@ -81,7 +81,8 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
     {}
 
     /** A war, with the territory around the operator. */
-    record WarInfo(String name, boolean running, List<Integer> factions, List<Integer> holdings, List<String> scope, WarRules rules, List<Engagement> engagements, Territory map)
+    @SuppressWarnings("java:S107") // One component per part of the war the page shows, read in section order.
+    record WarInfo(String name, boolean running, List<Integer> factions, List<Integer> holdings, List<String> scope, WarRules rules, List<Engagement> engagements, Territory map, String era)
     {}
 
     record WarRules(int infantry, int respawn, int tickets, int range, int engagements, int flip, String difficulty, BotTraining custom)
@@ -187,7 +188,8 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
             return new Side(entry.getInt(BattlesSection.FACTION), entry.getString(BattlesSection.NAME), entry.getInt(BattlesSection.COLOUR), position, entry.getDouble(BattlesSection.RADIUS),
                 entry.getInt(BattlesSection.INFANTRY), entry.getInt(BattlesSection.SQUADS), entry.getInt(BattlesSection.VEHICLES), fight);
         });
-        return new SkirmishInfo(tag.getString(BattlesSection.NAME), tag.getString(BattlesSection.STATE), rules, tag.getString(BattlesSection.DIMENSION), tag.getBoolean(BattlesSection.WAR), sides);
+        return new SkirmishInfo(tag.getString(BattlesSection.NAME), tag.getString(BattlesSection.STATE), rules, tag.getString(BattlesSection.DIMENSION), tag.getBoolean(BattlesSection.WAR), sides,
+            tag.getString(BattlesSection.ERA_WINDOW));
     }
 
     /** @return the custom difficulty values of a skirmish or war */
@@ -211,7 +213,7 @@ record BattlesData(List<FactionInfo> factions, List<FactionInfo> others, List<Te
         Territory territory = new Territory(map.getInt(BattlesSection.CENTRE_X), map.getInt(BattlesSection.CENTRE_Z), map.getInt(BattlesSection.RADIUS), ints(map, BattlesSection.OWNERS),
             Set.copyOf(contested), map.getBoolean(BattlesSection.DIMENSION));
         return new WarInfo(tag.getString(BattlesSection.NAME), tag.getBoolean(BattlesSection.RUNNING), ints(tag, BattlesSection.FACTIONS), ints(tag, BattlesSection.HOLDINGS),
-            strings(tag, BattlesSection.SCOPE), rules, engagements, territory);
+            strings(tag, BattlesSection.SCOPE), rules, engagements, territory, tag.getString(BattlesSection.ERA_WINDOW));
     }
 
     private static RoundInfo round(CompoundTag tag)

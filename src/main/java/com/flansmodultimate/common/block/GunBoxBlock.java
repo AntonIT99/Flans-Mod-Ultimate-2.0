@@ -12,6 +12,7 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -81,7 +82,7 @@ public class GunBoxBlock extends FlanBlock implements IFlanBlock<GunBoxType>
             return;
 
         InfoType entryType = entry.getType();
-        if (entryType == null)
+        if (entryType == null || EraEnforcement.refuses(player, entryType))
             return;
 
         ItemStack resultStack = ModUtils.getItemStack(entryType).orElse(ItemStack.EMPTY);

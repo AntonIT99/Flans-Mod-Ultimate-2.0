@@ -19,6 +19,7 @@
   "gui.flansmod.teams.capture_point.title": "Eroberungspunkt",
   "gui.flansmod.teams.choose_class": "Klasse auswählen",
   "gui.flansmod.teams.choose_team": "Team auswählen",
+  "gui.flansmod.teams.class_era_blocked": "Außerhalb des erlaubten Zeitraums: %s",
   "gui.flansmod.teams.class_slots": "Belegte Plätze: %1$s/%2$s",
   "gui.flansmod.teams.deaths": "Tode",
   "gui.flansmod.teams.defeat": "Niederlage",

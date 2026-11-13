@@ -25,7 +25,7 @@ class CommonConfigSnapshotRoundTripTest
             values[i] = switch (components[i].getName())
             {
                 case "disableCrosshairWhileScoped", "forceUncensoredContent", "gunScreenShake", "vehicleScreenShake", "explosionScreenShake" -> disableScopedCrosshair;
-                case "disableCrosshairForGuns", "preferOffhandAmmoOnReload" -> !disableScopedCrosshair;
+                case "disableCrosshairForGuns", "preferOffhandAmmoOnReload", "uncensoredContentByDefault" -> !disableScopedCrosshair;
                 case "breakableArmor" -> armorMode;
                 default -> sample(components[i]);
             };
@@ -39,6 +39,7 @@ class CommonConfigSnapshotRoundTripTest
             assertEquals(original, decoded);
             assertEquals(armorMode, decoded.breakableArmor());
             assertEquals(disableScopedCrosshair, decoded.forceUncensoredContent());
+            assertEquals(!disableScopedCrosshair, decoded.uncensoredContentByDefault());
             assertEquals(disableScopedCrosshair, decoded.disableCrosshairWhileScoped());
             assertEquals(!disableScopedCrosshair, decoded.disableCrosshairForGuns());
             // Every other boolean in the snapshot is sampled as true, so a read in the wrong place would

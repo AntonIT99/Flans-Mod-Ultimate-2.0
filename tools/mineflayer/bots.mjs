@@ -162,9 +162,9 @@ export async function control(session, action) {
       const hand = action.offhand ? 1 : 0;
       if (!Number.isInteger(action.milliseconds) || action.milliseconds < 1 || action.milliseconds > 10000) throw new Error("Firing must last 1–10000 ms");
       try {
-        session.sendModPacket("PacketGunInput", Buffer.from([1, 0, hand]));
+        session.sendModPacket("PacketGunInput", Buffer.from([1, 0, hand, 0]));
         await delay(action.milliseconds);
-      } finally { if (session.snapshot().connected) session.sendModPacket("PacketGunInput", Buffer.from([0, 0, hand])); }
+      } finally { if (session.snapshot().connected) session.sendModPacket("PacketGunInput", Buffer.from([0, 0, hand, 0])); }
       break;
     }
     default: throw new Error(`Unknown bot action ${action.action}`);

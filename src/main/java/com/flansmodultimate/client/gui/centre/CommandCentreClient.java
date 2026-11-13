@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class CommandCentreClient
 {
     private static final Map<String, ICommandCentrePage> PAGES = new ConcurrentHashMap<>();
+    /** Pages shown as tabs of one side bar entry, the entry's own page first. */
+    private static final List<List<String>> TAB_GROUPS = List.of(List.of(RulesPage.ID, RoundRulesPage.ID), List.of(ErasPage.ID, TimelinePage.ID));
     private static final List<CommandCentre.Feedback> PENDING = new ArrayList<>();
     private static CompoundTag sections = new CompoundTag();
     @Nullable
@@ -34,7 +36,7 @@ public final class CommandCentreClient
 
     static
     {
-        for (ICommandCentrePage builtIn : List.of(new OverviewPage(), new RotationPage(), new MapsPage(), new RulesPage(), new RoundRulesPage(), new ServerPage()))
+        for (ICommandCentrePage builtIn : List.of(new OverviewPage(), new RotationPage(), new MapsPage(), new RulesPage(), new RoundRulesPage(), new ErasPage(), new TimelinePage(), new ServerPage()))
             PAGES.put(builtIn.getId(), builtIn);
     }
 
@@ -58,6 +60,12 @@ public final class CommandCentreClient
     static Optional<RoundRulesPage> roundRulesPage()
     {
         return PAGES.get(RoundRulesPage.ID) instanceof RoundRulesPage rules ? Optional.of(rules) : Optional.empty();
+    }
+
+    /** The ids of the pages shown as tabs together with the given page, in tab order; empty when it has no tabs. */
+    static List<String> tabGroup(String id)
+    {
+        return TAB_GROUPS.stream().filter(group -> group.contains(id)).findFirst().orElse(List.of());
     }
 
     static String shownPage()

@@ -14,11 +14,13 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Carries out a tactic for one tick: looks for cover when the tactic needs it, decides, and hands the path to the NPC's
@@ -55,26 +57,43 @@ public final class NpcTacticSteering
         memory.prepare(tactic, target.getId(), now, (npc.getId() & 1) == 0 ? 1 : -1);
         // A transport keeps its tactic distance rather than firing from it, so its own distances stand in for a weapon's.
         Engagement engagement = tactic == Tactic.TRANSPORT ? NpcTactics.unloading(npc) : NpcTactics.engagement(npc);
-        if (tactic == Tactic.COVER)
-            refreshCover(npc, target, memory, engagement, now);
-        boolean hit = npc.getLastHurtByMob() != null && npc.tickCount - npc.getLastHurtByMobTimestamp() < HIT_TICKS;
         Vec3 home = new Vec3(npc.getStartXPos(), npc.getStartYPos(), npc.getStartZPos());
+        // One holding a line looks for cover round where it was placed, so that it never leaves that ground.
+        if (tactic == Tactic.COVER)
+            refreshCover(npc, target, memory, engagement, npc.blockPosition(), now);
+        else if (tactic == Tactic.HOLD_LINE)
+            refreshCover(npc, target, memory, engagement, BlockPos.containing(home), now);
+        boolean hit = npc.getLastHurtByMob() != null && npc.tickCount - npc.getLastHurtByMobTimestamp() < HIT_TICKS;
         if (TeamsBots.isCommander(npc))
             home = TeamsBots.combatIntent(npc).map(NpcCombatIntent::destination).orElse(home);
+        // An assaulting NPC heads for the next point of its route as a holding one keeps to its home; without a route it advances.
+        Tactic deciding = tactic;
+        if (tactic == Tactic.ASSAULT)
+        {
+            Optional<NpcAssault.Point> next = NpcAssault.next(npc);
+            if (next.isPresent())
+                home = next.get().spot();
+            else
+                deciding = Tactic.ADVANCE;
+        }
         Situation situation = new Situation(npc.getSensing().hasLineOfSight(target), npc.position(), target.position(), home, engagement, memory.isReloading(now), hit);
-        Order order = TacticDecision.decide(tactic, situation, memory, now);
+        Order order = TacticDecision.decide(deciding, situation, memory, now);
         // A vehicle without a shot from where it would stand, or close in from, drives to where it has one; one that holds or
-        // carries troops stays put, a transport having no shot to look for.
-        if (tactic != Tactic.HOLD && tactic != Tactic.TRANSPORT && (order.move() != TacticDecision.Move.GO_TO || NpcVehicleCombat.armorFlank(npc, target) != null)
+        // carries troops stays put, a transport having no shot to look for, and a charge stops for nothing.
+        if (tactic != Tactic.HOLD && tactic != Tactic.HOLD_LINE && tactic != Tactic.TRANSPORT && tactic != Tactic.CHARGE && (order.move() != TacticDecision.Move.GO_TO || NpcVehicleCombat.armorFlank(npc, target) != null)
             && NpcFiringPosition.reposition(npc, target))
         {
             memory.order(null, now);
             return;
         }
-        follow(npc, order, memory, target, now);
+        follow(npc, order, memory, target, now, tactic != Tactic.CHARGE);
     }
 
-    private static void refreshCover(EntityNPCInterface npc, LivingEntity target, NpcTacticState memory, Engagement engagement, long now)
+    /**
+     * @param origin
+     *            the block a new search for cover goes round
+     */
+    private static void refreshCover(EntityNPCInterface npc, LivingEntity target, NpcTacticState memory, Engagement engagement, BlockPos origin, long now)
     {
         Cover cover = memory.getCover();
         if (cover != null)
@@ -90,7 +109,7 @@ public final class NpcTacticSteering
         }
         else if (now - memory.getCoverSearchedAt() < COVER_SEARCH_INTERVAL)
             return;
-        NpcCover.Result<Cover> result = NpcCover.find(npc, target, NpcTuning.of(npc).get(Value.COVER_RADIUS), engagement);
+        NpcCover.Result<Cover> result = NpcCover.find(npc, target, origin, NpcTuning.of(npc).get(Value.COVER_RADIUS), engagement);
         if (result.complete())
         {
             Cover found = result.value();
@@ -98,10 +117,14 @@ public final class NpcTacticSteering
         }
     }
 
-    private static void follow(EntityNPCInterface npc, Order order, NpcTacticState memory, LivingEntity target, long now)
+    /**
+     * @param suppressible
+     *            whether fire that pins the NPC down stops it closing in, as it does for every tactic but a charge
+     */
+    private static void follow(EntityNPCInterface npc, Order order, NpcTacticState memory, LivingEntity target, long now, boolean suppressible)
     {
         PathNavigation navigation = npc.getNavigation();
-        if (NpcSuppression.isPinned(npc) && advances(npc, order, target))
+        if (suppressible && NpcSuppression.isPinned(npc) && advances(npc, order, target))
         {
             // Pinned down by fire, it moves no closer to its target until the fire lets up; it may still fall back.
             navigation.stop();

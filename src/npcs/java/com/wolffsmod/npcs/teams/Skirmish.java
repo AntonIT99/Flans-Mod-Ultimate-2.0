@@ -55,6 +55,7 @@ final class Skirmish
     private static final String NBT_BATTLE = "battle";
     private static final String NBT_MARKERS = "markers";
     private static final String NBT_WAR = "war";
+    private static final String NBT_ERA_WINDOW = "era_window";
 
     /** Where the sides' ground squads go. */
     public enum Intent
@@ -131,6 +132,8 @@ final class Skirmish
     /** The war it is an engagement of, or null for a skirmish of its own. */
     @Nullable
     private UUID war;
+    /** The era restriction its bots and members of its factions fight under, in its one-line form; empty for none. */
+    private String eraWindow = "";
     private State state = State.DRAFT;
     private long startedAt;
     private long endedAt;
@@ -236,6 +239,7 @@ final class Skirmish
         tag.putString(NBT_MARKERS, markerMap);
         if (war != null)
             tag.putUUID(NBT_WAR, war);
+        tag.putString(NBT_ERA_WINDOW, eraWindow);
         tag.putString(NBT_STATE, state.name());
         tag.putLong(NBT_STARTED, startedAt);
         tag.putLong(NBT_ENDED, endedAt);
@@ -280,6 +284,7 @@ final class Skirmish
         skirmish.protection = tag.getBoolean(NBT_PROTECTION);
         skirmish.markerMap = tag.getString(NBT_MARKERS);
         skirmish.war = tag.hasUUID(NBT_WAR) ? tag.getUUID(NBT_WAR) : null;
+        skirmish.eraWindow = tag.getString(NBT_ERA_WINDOW);
         skirmish.state = BotSettings.parse(State.class, tag.getString(NBT_STATE), State.DRAFT);
         skirmish.startedAt = tag.getLong(NBT_STARTED);
         skirmish.endedAt = tag.getLong(NBT_ENDED);

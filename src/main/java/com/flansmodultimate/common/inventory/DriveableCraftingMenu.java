@@ -7,6 +7,7 @@ import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEnforcement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,7 +77,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
 
     public boolean canCraft(@NotNull DriveableType type)
     {
-        if (ModUtils.getItem(type).isEmpty())
+        if (ModUtils.getItem(type).isEmpty() || !EraEnforcement.permits(playerInventory.player, type))
             return false;
         if (type.numEngines() <= 0)
             return playerInventory.player.getAbilities().instabuild || InventoryHelper.canConsumeAll(playerInventory, type.getDriveableRecipe());
@@ -94,6 +95,8 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
 
     private static void craft(Player player, DriveableType type)
     {
+        if (EraEnforcement.refuses(player, type))
+            return;
         boolean creative = player.getAbilities().instabuild;
         PartType engine = findBestEngine(player.getInventory(), type, creative);
         if (engine == null && type.numEngines() > 0)

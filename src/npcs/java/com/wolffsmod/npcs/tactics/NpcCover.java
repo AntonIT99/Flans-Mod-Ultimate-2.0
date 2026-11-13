@@ -338,9 +338,18 @@ public final class NpcCover
      */
     public static Result<Cover> find(EntityNPCInterface npc, LivingEntity target, int radius, Engagement engagement)
     {
+        return find(npc, target, npc.blockPosition(), radius, engagement);
+    }
+
+    /**
+     * Finds cover as {@link #find(EntityNPCInterface, LivingEntity, int, Engagement)} does, round the given block rather
+     * than the NPC: where it was placed, for one that keeps to that ground.
+     */
+    public static Result<Cover> find(EntityNPCInterface npc, LivingEntity target, BlockPos origin, int radius, Engagement engagement)
+    {
         Searches searches = NpcTacticState.of(npc).getCoverSearches();
-        if (searches.firing == null || !searches.firing.matches(npc, target, npc.blockPosition(), radius, engagement.firing()))
-            searches.firing = new RingSearch(npc, target, npc.blockPosition(), radius, engagement.firing(), true);
+        if (searches.firing == null || !searches.firing.matches(npc, target, origin, radius, engagement.firing()))
+            searches.firing = new RingSearch(npc, target, origin, radius, engagement.firing(), true);
         Result<Cover> result = searches.firing.step();
         if (result.complete())
             searches.firing = null;

@@ -1,6 +1,7 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.equipment.IEquipmentPolicy;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.item.GloveItem;
 import com.flansmodultimate.config.CommonConfigSnapshot;
@@ -116,7 +117,8 @@ public final class EnchantmentModule
             return;
 
         event.setAmount(event.amount() * (float) Math.pow(1.10F, level));
-        damageEquipment(offHandStack, attacker, EquipmentSlot.OFFHAND, 1);
+        if (!(attacker instanceof IEquipmentPolicy policy) || policy.flansMeleeWears())
+            damageEquipment(offHandStack, attacker, EquipmentSlot.OFFHAND, 1);
     }
 
     public static void applyJuggernaut(MutableDamageContext event)
@@ -145,7 +147,7 @@ public final class EnchantmentModule
         float absorbedDamage = Math.min(event.amount() - threshold, 256.0F);
         int armorDamage = Mth.floor(absorbedDamage);
 
-        if (armorDamage > 0)
+        if (armorDamage > 0 && (!(entity instanceof IEquipmentPolicy policy) || policy.flansArmorWears()))
         {
             for (EquipmentSlot slot : ARMOR_SLOTS)
             {

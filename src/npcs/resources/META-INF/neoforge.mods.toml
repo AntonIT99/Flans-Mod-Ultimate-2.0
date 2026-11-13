@@ -28,7 +28,7 @@ description='''Companion mod for Flan's Mod Ultimate 2 with extended CustomNPCs 
 [[dependencies.wolffsmodnpcs]]
     modId="flansmodultimate"
     type="required"
-    versionRange="[2.2,2.3)"
+    versionRange="[2.3,2.4)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.wolffsmodnpcs]]

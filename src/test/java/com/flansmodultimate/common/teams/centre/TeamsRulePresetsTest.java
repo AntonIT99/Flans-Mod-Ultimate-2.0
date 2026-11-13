@@ -43,6 +43,21 @@ class TeamsRulePresetsTest
     }
 
     @Test
+    void brokenArmorIsKeptByDefaultButOnlyWhileARoundIsRunning()
+    {
+        TeamsManager manager = new TeamsManager();
+        assertTrue(manager.isKeepBrokenArmor());
+        assertFalse(manager.keepsBrokenArmor());
+
+        TeamsRulePresets presets = new TeamsRulePresets(() -> manager);
+        CompoundTag rules = presets.capture("");
+        assertTrue(rules.getBoolean("keepBrokenArmor"));
+        rules.putBoolean("keepBrokenArmor", false);
+        presets.apply(rules, "");
+        assertFalse(manager.isKeepBrokenArmor());
+    }
+
+    @Test
     void fullSnapshotRestoresSeaLevelDefaultAndRejectsAllInvalidValuesBeforeMutation()
     {
         TeamsManager manager = new TeamsManager();
@@ -68,5 +83,10 @@ class TeamsRulePresetsTest
         invalid.putBoolean("keepInventory", true);
         CompoundTag unknown = invalid;
         assertThrows(IllegalArgumentException.class, () -> presets.validate(unknown));
+        assertDoesNotThrow(() -> presets.validate(original));
+        invalid = original.copy();
+        invalid.putString(TeamsSection.BREAKABLE_ARMOR, "sometimes");
+        CompoundTag badArmorMode = invalid;
+        assertThrows(IllegalArgumentException.class, () -> presets.validate(badArmorMode));
     }
 }

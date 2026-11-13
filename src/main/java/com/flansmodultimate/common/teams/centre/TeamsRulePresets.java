@@ -3,6 +3,8 @@ package com.flansmodultimate.common.teams.centre;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.commandcentre.ISettingsPresets;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.config.EnumBreakableArmor;
+import com.flansmodultimate.config.ModCommonConfig;
 
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
@@ -28,7 +30,8 @@ final class TeamsRulePresets implements ISettingsPresets
         Map.entry("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks), Map.entry("survivalCanBreakVehicles", TeamsManager::setSurvivalCanBreakVehicles),
         Map.entry("survivalCanPlaceVehicles", TeamsManager::setSurvivalCanPlaceVehicles), Map.entry("forceAdventure", TeamsManager::setForceAdventureMode),
         Map.entry("pacifism", TeamsManager::setPacifism), Map.entry("bombs", TeamsManager::setBombsEnabled), Map.entry("shells", TeamsManager::setShellsEnabled),
-        Map.entry("bullets", TeamsManager::setBulletsEnabled), Map.entry("armourDrops", TeamsManager::setArmourDrops), Map.entry("overrideHunger", TeamsManager::setOverrideHunger),
+        Map.entry("bullets", TeamsManager::setBulletsEnabled), Map.entry("armourDrops", TeamsManager::setArmourDrops), Map.entry("keepBrokenArmor", TeamsManager::setKeepBrokenArmor),
+        Map.entry("overrideHunger", TeamsManager::setOverrideHunger),
         Map.entry("regeneration", TeamsManager::setRegeneration), Map.entry("alliedSpawns", TeamsManager::setAlliedSpawnSharing), Map.entry("fuelNeeded", TeamsManager::setVehiclesNeedFuel),
         Map.entry("vehiclesCanZoom", TeamsManager::setVehiclesCanZoom), Map.entry("movieProp", TeamsManager::setMovieProp), Map.entry("bloodEffects", TeamsManager::setBloodEffects),
         Map.entry("corpses", TeamsManager::setCorpses));
@@ -139,6 +142,8 @@ final class TeamsRulePresets implements ISettingsPresets
             return value instanceof IntTag number && number.getAsInt() >= 0 && number.getAsInt() <= maximum(key);
         if (key.equals(WEAPON_DROPS))
             return value instanceof StringTag && List.of("on", "off", SMART).contains(value.getAsString());
+        if (key.equals(TeamsSection.BREAKABLE_ARMOR))
+            return value instanceof StringTag && EnumBreakableArmor.fromWord(value.getAsString()).isPresent();
         if (key.equals(SEA_LEVEL))
             return value instanceof IntTag number && number.getAsInt() >= -2048 && number.getAsInt() <= 2048 || value instanceof StringTag && value.getAsString().equals("default");
         return false;
@@ -215,6 +220,8 @@ final class TeamsRulePresets implements ISettingsPresets
                 case SMART -> TeamsManager.EnumWeaponDrop.SMART_DROPS;
                 default -> TeamsManager.EnumWeaponDrop.NONE;
             });
+        if (data.contains(TeamsSection.BREAKABLE_ARMOR))
+            EnumBreakableArmor.fromWord(data.getString(TeamsSection.BREAKABLE_ARMOR)).ifPresent(ModCommonConfig::setBreakableArmor);
         if (data.contains(SEA_LEVEL))
             manager.setSeaLevelOverride(data.contains(SEA_LEVEL, Tag.TAG_INT) ? data.getInt(SEA_LEVEL) : null);
         manager.saveSettings();

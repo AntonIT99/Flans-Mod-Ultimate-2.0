@@ -1,6 +1,7 @@
 {
     "Alpha Titan operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 10000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -62,11 +63,22 @@
 
     "Banana assault walker operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 10000,
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
             "bm"
+        ]
+    },
+
+    "Byzantine Macedonian Cataphract Horse Service Period": {
+        "properties": {
+            "IssueDate": "10C",
+            "RetirementDate": "11C"
+        },
+        "items": [
+            "byzanhorse"
         ]
     },
 
@@ -78,6 +90,16 @@
         "items": [
             "cannoncamel",
             "gatlingcamel"
+        ]
+    },
+
+    "Carthaginian Punic War Elephant Service Period": {
+        "properties": {
+            "IssueDate": "~262BC",
+            "RetirementDate": "201BC"
+        },
+        "items": [
+            "delandephant"
         ]
     },
 
@@ -95,6 +117,7 @@
 
     "Colorado fleet-girl operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 30000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -153,6 +176,7 @@
 
     "Heavy Assault Protection Armor operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 1000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -163,11 +187,22 @@
 
     "Heavy Banana walker operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 15000,
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
             "hbm"
+        ]
+    },
+
+    "Hellenistic Cataphract Horse Service Period": {
+        "properties": {
+            "IssueDate": "3CBC",
+            "RetirementDate": "1CBC"
+        },
+        "items": [
+            "hellenichorse"
         ]
     },
 
@@ -184,6 +219,7 @@
 
     "HWR-00 Mk II Monster canonical operational mass (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 285500,
             "UseRealisticVehicleHealth": "true"
         },
@@ -196,6 +232,7 @@
 
     "Mad Cat canonical operational mass (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 75000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -206,6 +243,8 @@
 
     "Mughal armoured elephant operational mass estimate (Generic)": {
         "properties": {
+            "IssueDate": "~1567",
+            "RetirementDate": "EarlyModern",
             "RealMassKg": 5500,
             "UseRealisticVehicleHealth": "true"
         },
@@ -226,6 +265,7 @@
 
     "Peregrine II operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 50000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -239,8 +279,19 @@
         ]
     },
 
+    "Persian Zamburak service period": {
+        "properties": {
+            "IssueDate": "EarlyModern",
+            "RetirementDate": "~1810"
+        },
+        "items": [
+            "cannoncamel"
+        ]
+    },
+
     "Prawn exosuit operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 5000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -255,6 +306,7 @@
 
     "Prinz Eugen fleet-girl operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 55000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -265,6 +317,7 @@
 
     "Proto Titan operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 1250,
             "UseRealisticVehicleHealth": "true"
         },
@@ -317,8 +370,29 @@
         ]
     },
 
+    "Roman Republican War Elephant Service Period": {
+        "properties": {
+            "IssueDate": "~200BC",
+            "RetirementDate": "46BC"
+        },
+        "items": [
+            "romaphant"
+        ]
+    },
+
+    "Sasanian Frontally Armoured Cataphract Horse Service Period": {
+        "properties": {
+            "IssueDate": "6C",
+            "RetirementDate": "7C"
+        },
+        "items": [
+            "sassyhorse"
+        ]
+    },
+
     "Scaled Metal Gear REX operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 60000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -329,6 +403,7 @@
 
     "Type IV Omega operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 10000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -339,6 +414,7 @@
 
     "Type IX Fafnir operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 60000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -372,6 +448,7 @@
 
     "Warhound Titan canonical operational mass (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 410000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -382,6 +459,7 @@
 
     "Zero Titan II operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 30000,
             "UseRealisticVehicleHealth": "true"
         },
@@ -392,6 +470,7 @@
 
     "Zero Titan operational mass estimate (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RealMassKg": 30000,
             "UseRealisticVehicleHealth": "true"
         },

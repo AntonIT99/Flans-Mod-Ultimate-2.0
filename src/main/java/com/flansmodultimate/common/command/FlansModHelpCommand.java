@@ -31,6 +31,7 @@ public final class FlansModHelpCommand
             List.of(new Entry("entities list", "Find Flan entities", "radius <radius> | dimension <dimension> | world", "", true),
                 new Entry("entities remove", "Remove Flan entities", "[force] radius <radius> | [force] dimension <dimension> | [force] world", "", true),
                 new Entry("repair", "Fully repair driveables or vehicle NPCs; order NPC maintenance", "[target] | start <target>", "", true),
+                new Entry("armorBreaking", "Choose whether Flan's armor can break", "[on | off | unbreakable | content_pack | all_breakable]", "/armorBreaking", true),
                 new Entry("physics", "Inspect dimension physics", "[gravity | drag] [<dimension> [<factor> | reset]]", "/flansphysics", true),
                 new Entry("particle", "Spawn a mod particle", "<name> [<pos> [<delta> <speed> <count> ...]]", "/fmparticle", true))),
         new Topic("debug", "Vehicle diagnostics", "Inspect physics, edit hitboxes and shoot points", true,

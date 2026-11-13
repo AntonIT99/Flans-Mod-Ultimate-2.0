@@ -1,8 +1,11 @@
 package com.flansmodultimate.client.render.gpu;
 
 import com.flansmod.client.tmt.TexturedPolygon;
+import com.flansmodultimate.client.render.EntityVertexBatch;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
+import java.util.Arrays;
 
 /** Revision-checked local geometry; poses, lighting and tint deliberately are not cached. */
 public final class RigidGeometry
@@ -14,6 +17,8 @@ public final class RigidGeometry
     private final RigidGeometry source;
     private final PoseStack.Pose localPose;
     private final PoseStack.Pose transformedPose;
+    /** Emission-ordered quads in local space, built on the first {@link #emit}. */
+    private float[] quads;
 
     public RigidGeometry(TexturedPolygon[] polygons)
     {
@@ -120,5 +125,39 @@ public final class RigidGeometry
         }
         for (TexturedPolygon face : faces)
             face.draw(pose, consumer, light, overlay, red, green, blue, alpha);
+    }
+
+    /**
+     * Writes the same vertices as {@link #draw} from one flat array kept with the geometry, instead of walking
+     * its polygons. For {@link #supported() supported} geometry that is drawn on the CPU every frame, where the
+     * walk costs more than the arithmetic; geometry drawn from a cached mesh never builds the array.
+     * Render thread only.
+     */
+    // Mirrors the vanilla render call shape: pose, buffer, light, overlay and tint.
+    @SuppressWarnings("java:S107")
+    public void emit(PoseStack.Pose pose, VertexConsumer consumer, int light, int overlay, float red, float green, float blue, float alpha)
+    {
+        if (source != null)
+        {
+            transformedPose.pose().set(pose.pose()).mul(localPose.pose());
+            transformedPose.normal().set(pose.normal()).mul(localPose.normal());
+            source.emit(transformedPose, consumer, light, overlay, red, green, blue, alpha);
+            return;
+        }
+        if (quads == null)
+            quads = flatten();
+        EntityVertexBatch.quads(consumer, quads, pose.pose(), pose.normal(), red, green, blue, alpha, overlay, light);
+    }
+
+    private float[] flatten()
+    {
+        int count = 0;
+        for (TexturedPolygon face : faces)
+            count += face.rigidQuadCount();
+        float[] data = new float[count * EntityVertexBatch.QUAD_FLOATS];
+        int length = 0;
+        for (TexturedPolygon face : faces)
+            length = face.appendRigidQuads(data, length);
+        return length == data.length ? data : Arrays.copyOf(data, length);
     }
 }

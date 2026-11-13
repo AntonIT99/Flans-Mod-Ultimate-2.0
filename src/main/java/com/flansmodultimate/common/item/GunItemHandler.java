@@ -26,6 +26,8 @@ import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.fluid.FluidPlatform;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEnforcement;
+import com.flansmodultimate.common.eras.EraEntities;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4f;
@@ -76,6 +78,8 @@ public class GunItemHandler
      */
     public boolean gunCanBeHandled(LivingEntity entity)
     {
+        if (!EraEnforcement.permits(entity, item.configType))
+            return false;
         // We can always use a 1H gun
         if (item.configType.isOneHanded())
             return true;
@@ -164,12 +168,12 @@ public class GunItemHandler
             hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem(), () -> {});
         data.setShootTime(hand, ShotCooldown.clampDelay(type.getShootDelay(stack)));
         playShootSound(level, player, stack, false);
-        PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand), player);
+        PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand, EnumMeleeDirection.FORWARD), player);
     }
 
     public void doCustomMelee(ServerPlayer player, PlayerData data, InteractionHand hand)
     {
-        if (item.configType.isDeployable() || !gunCanBeHandled(player) || data.getMeleeLength() > 0)
+        if (item.configType.isDeployable() || !gunCanBeHandled(player) || data.getMeleeLength() > 0 || MeleeBlocking.isBlocking(player))
             return;
         if (item.configType.isPoweredOff(player.getItemInHand(hand)))
             return;
@@ -180,8 +184,62 @@ public class GunItemHandler
             PacketPlaySound.sendSoundPacket(player, item.configType.getMeleeSoundRange(), item.configType.getMeleeSound(), item.configType.isDistortSound());
 
         TeamsSpawnProtection.end(player);
-        data.doMelee(player, item.configType.getMeleeTime(player.getItemInHand(hand)), item.configType);
-        PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand), player);
+        MeleeSwing swing = item.configType.getMeleeSwing(player.getItemInHand(hand), data.getRequestedMeleeDirection());
+        data.doMelee(player, swing);
+        PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand, swing.direction()), player);
+    }
+
+    /**
+     * {@code ShootMelee} gun-sword attack: fires the default ammo as a short-lived projectile without loading or consuming a magazine,
+     * and plays the selected melee swing on clients. The shoot delay is the cooldown between attacks.
+     */
+    public void doShootMeleeAttack(Level level, ServerPlayer player, PlayerData data, ItemStack stack, InteractionHand hand)
+    {
+        GunType type = item.configType;
+        if (!type.isShootMelee() || type.isDeployable() || !gunCanBeHandled(player) || type.isPoweredOff(stack) || MeleeBlocking.isBlocking(player) || data.getShootTime(hand) > 0F
+            || data.getShootClickDelay() > 0 || data.isReloading(hand) || data.isSecondaryModeSwitching(hand))
+            return;
+        if (!type.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode()))
+            return;
+        if (FlansMod.teamsManager.isPacifism() || FlansMod.teamsManager.getRoundRuleRuntime().blocksCombat(player) || FlansMod.teamsManager.getRoundRuleRuntime().blocksItemUse(player, stack)
+            || player.getVehicle() instanceof Seat)
+            return;
+        if (player.isSprinting() && !type.canHipFireWhileSprinting())
+            return;
+        ShootableType ammunition = type.getDefaultAmmo().orElse(null);
+        if (ammunition == null)
+            return;
+
+        TeamsSpawnProtection.end(player);
+        ShootingHelper.fireGun(level, player, type, ammunition, stack, ItemStack.EMPTY, hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem(), () -> {});
+        data.setShootTime(hand, ShotCooldown.clampDelay(type.getShootDelay(stack)));
+        if (StringUtils.isNotBlank(type.getMeleeSound()))
+            PacketPlaySound.sendSoundPacket(player, type.getMeleeSoundRange(), type.getMeleeSound(), type.isDistortSound());
+        else
+            playShootSound(level, player, stack, false);
+        MeleeSwing swing = type.getMeleeSwing(stack, data.getRequestedMeleeDirection());
+        PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand, swing.direction()), player);
+    }
+
+    /**
+     * Follows the block key of a {@code CanBlock} weapon. A timed block lasts {@code BlockTime} ticks and a held key renews it once
+     * fewer than {@link MeleeBlocking#RENEW_TICKS} remain, as in the Labjac Edition. With {@code HoldToBlock} the block lasts until the
+     * key is released, at most {@code BlockTime} ticks, after which the key must be released before blocking again.
+     */
+    public void updateMeleeBlock(ServerPlayer player, PlayerData data, ItemStack stack, InteractionHand hand, boolean pressed)
+    {
+        GunType type = item.configType;
+        if (!pressed)
+        {
+            MeleeBlocking.release(player);
+            if (type.isHoldToBlock() && MeleeBlocking.isBlocking(player, hand))
+                MeleeBlocking.lower(player);
+            return;
+        }
+        if (type.isDeployable() || !gunCanBeHandled(player) || type.isPoweredOff(stack) || data.getMeleeLength() > 0)
+            return;
+        if (type.isHoldToBlock() ? !MeleeBlocking.isBlocking(player) && !MeleeBlocking.isAwaitingRelease(player) : MeleeBlocking.remainingTicks(player) < MeleeBlocking.RENEW_TICKS)
+            MeleeBlocking.raise(player, hand);
     }
 
     /**
@@ -192,7 +250,7 @@ public class GunItemHandler
     public void doPlayerThrow(Level level, Player player, ItemStack gunStack)
     {
         GunType type = item.configType;
-        if (!gunCanBeHandled(player))
+        if (EraEnforcement.refuses(player, type) || !gunCanBeHandled(player))
             return;
         if (!type.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode()))
             return;
@@ -220,6 +278,8 @@ public class GunItemHandler
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
     {
+        if (EraEnforcement.refuses(player, item.configType))
+            return;
         if (item.configType.isDeployable() || !gunCanBeHandled(player) || FlansMod.teamsManager.isPacifism() || FlansMod.teamsManager.getRoundRuleRuntime().blocksCombat(player)
             || FlansMod.teamsManager.getRoundRuleRuntime().blocksItemUse(player, gunStack))
             return;
@@ -337,7 +397,8 @@ public class GunItemHandler
 
     public boolean doPlayerReload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean isForced)
     {
-        if (data.isSecondaryModeSwitching(hand))
+        // A gun-sword strikes without a magazine
+        if (data.isSecondaryModeSwitching(hand) || item.configType.isShootMelee())
             return false;
         UUID reloadSoundUUID = UUID.randomUUID();
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
@@ -568,27 +629,23 @@ public class GunItemHandler
 
     public void checkForMelee(Level level, Player player, PlayerData data, ItemStack itemstack)
     {
-        if (!shouldProcessMelee(player, data, itemstack))
+        if (data.getMeleeLength() <= 0 || player.getInventory().getSelected() != itemstack)
             return;
 
-        for (int pointIdx = 0; pointIdx < item.configType.getMeleeDamagePoints().size() && data.getMeleeLength() > 0; pointIdx++)
-            processDamagePoint(level, player, data, itemstack, pointIdx);
+        MeleeSwing swing = data.getCurrentMeleeSwing();
+        // A swing without a path deals no damage, but still lasts its time before the next one
+        if (swing != null && swing.hasPath())
+        {
+            for (int pointIdx = 0; pointIdx < swing.damagePoints().size() && pointIdx < data.getLastMeleePositions().length && data.getMeleeLength() > 0; pointIdx++)
+                processDamagePoint(level, player, data, itemstack, swing, pointIdx);
+        }
 
         advanceAndResetIfDone(data);
     }
 
-    private boolean shouldProcessMelee(Player player, PlayerData data, ItemStack itemstack)
+    private void processDamagePoint(Level level, Player player, PlayerData data, ItemStack itemstack, MeleeSwing swing, int pointIdx)
     {
-        if (data.getMeleeLength() <= 0)
-            return false;
-        if (item.configType.getMeleePath().isEmpty())
-            return false;
-        return player.getInventory().getSelected() == itemstack;
-    }
-
-    private void processDamagePoint(Level level, Player player, PlayerData data, ItemStack itemstack, int pointIdx)
-    {
-        Vector3f nextWorldPosF = computeNextDamagePointWorldPos(player, data, pointIdx);
+        Vector3f nextWorldPosF = computeNextDamagePointWorldPos(player, data, swing, pointIdx);
         Vector3f lastWorldPosF = data.getLastMeleePositions()[pointIdx];
 
         Vec3 end = new Vec3(nextWorldPosF.x, nextWorldPosF.y, nextWorldPosF.z);
@@ -618,12 +675,13 @@ public class GunItemHandler
         data.getLastMeleePositions()[pointIdx] = nextWorldPosF;
     }
 
-    private Vector3f computeNextDamagePointWorldPos(Player player, PlayerData data, int pointIdx)
+    private static Vector3f computeNextDamagePointWorldPos(Player player, PlayerData data, MeleeSwing swing, int pointIdx)
     {
-        Vector3f meleeDamagePoint = JomlUtils.fromFlansVector(item.configType.getMeleeDamagePoints().get(pointIdx));
+        Vector3f meleeDamagePoint = JomlUtils.fromFlansVector(swing.damagePoints().get(pointIdx));
 
-        Vector3f nextPos = JomlUtils.fromFlansVector(item.configType.getMeleePath().get((data.getMeleeProgress() + 1) % item.configType.getMeleePath().size()));
-        Vector3f nextAngles = JomlUtils.fromFlansVector(item.configType.getMeleePathAngles().get((data.getMeleeProgress() + 1) % item.configType.getMeleePathAngles().size()));
+        int nextNode = (data.getMeleeProgress() + 1) % swing.path().size();
+        Vector3f nextPos = JomlUtils.fromFlansVector(swing.path().get(nextNode));
+        Vector3f nextAngles = JomlUtils.fromFlansVector(swing.pathAngles().get(nextNode));
 
         RotatedAxes nextAxes = new RotatedAxes().rotateGlobalRoll(-nextAngles.x).rotateGlobalPitch(-nextAngles.z).rotateGlobalYaw(-nextAngles.y);
 
@@ -716,8 +774,9 @@ public class GunItemHandler
             if (doesHitBlock(segment.end, attacker))
                 continue;
 
-            // A held shield is met before anything behind it: the swing stops there, as in the Ganesha fork
-            if (hit instanceof PlayerBulletHit ph && (ph.getHitbox().type == EnumHitboxType.LEFTITEM || ph.getHitbox().type == EnumHitboxType.RIGHTITEM))
+            // A held shield is met before anything behind it: the swing stops there, as in the Ganesha fork.
+            // Armour resisting more than the swing's MeleeArmorPenetration deflects it the same way, as in the Labjac Edition.
+            if (isShieldHit(hit) || isDeflectedByArmor(hit))
             {
                 if (!level.isClientSide && StringUtils.isNotBlank(item.configType.getShieldHitSound()))
                     PacketPlaySound.sendSoundPacket(attacker, item.configType.getMeleeSoundRange(), item.configType.getShieldHitSound(), true);
@@ -731,6 +790,23 @@ public class GunItemHandler
             else if (hit instanceof EntityHit eh)
                 applyEntityHit(attacker, attackerData, itemstack, swingDistance, eh, pointIdx, dPos);
         }
+    }
+
+    private static boolean isShieldHit(BulletHit hit)
+    {
+        return hit instanceof PlayerBulletHit ph && (ph.getHitbox().type == EnumHitboxType.LEFTITEM || ph.getHitbox().type == EnumHitboxType.RIGHTITEM);
+    }
+
+    private boolean isDeflectedByArmor(BulletHit hit)
+    {
+        float penetration = item.configType.getMeleeArmorPenetration();
+        if (penetration < 0F)
+            return false;
+        if (hit instanceof PlayerBulletHit ph)
+            return PlayerHitbox.getArmorPenetrationResistance(ph.getHitbox().entity, ph.getHitbox().type) > penetration;
+        if (hit instanceof EntityHit eh && eh.getEntity() instanceof LivingEntity living)
+            return PlayerHitbox.getArmorPenetrationResistance(living, EnumHitboxType.BODY) > penetration;
+        return false;
     }
 
     public boolean doesHitBlock(Vec3 endPos, Entity player)
@@ -826,6 +902,8 @@ public class GunItemHandler
 
     public boolean tryPlaceDeployable(Level level, Player player, ItemStack stack)
     {
+        if (EraEnforcement.refuses(player, item.configType))
+            return false;
         double length = 5.0D;
         Vec3 eyePos = player.getEyePosition(1.0F);
         Vec3 lookDir = player.getLookAngle();
@@ -859,6 +937,7 @@ public class GunItemHandler
                 if (!exists)
                 {
                     DeployedGun mg = new DeployedGun(level, mgPos, direction, item.configType);
+                    EraEntities.tagIfBypassing(mg, player);
                     level.addFreshEntity(mg);
 
                     if (!player.getAbilities().instabuild)

@@ -97,6 +97,12 @@ public final class NpcTacticState
     private final NpcTacticalPosture posture = new NpcTacticalPosture();
     @Getter @Setter @Nullable
     private UUID meleeThrowTarget;
+    /**
+     * The point of its assault route the NPC heads for, and the route it was worked out on. It outlasts every fight, which
+     * starts the tactic over but must not send the NPC back along its route; -1 until the NPC has worked it out.
+     */
+    private int assaultIndex = -1;
+    private int assaultRoute;
 
     /** A position learned from incoming fire; a hidden attacker's subsequent movement is not followed. */
     public record Threat(LivingEntity entity, Vec3 position, long until)
@@ -175,6 +181,19 @@ public final class NpcTacticState
     public boolean isReloading(long now)
     {
         return now < reloadedAt;
+    }
+
+    /** @return the point of the assault route the NPC heads for, or -1 when it has none yet or the route has changed since */
+    public int assaultIndex(int route)
+    {
+        return route == assaultRoute ? assaultIndex : -1;
+    }
+
+    /** Records the point of the given assault route the NPC heads for. */
+    public void assault(int route, int index)
+    {
+        assaultRoute = route;
+        assaultIndex = index;
     }
 
     /** @return the role of the weapon, worked out again only when another weapon is held */

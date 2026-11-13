@@ -16,8 +16,9 @@ public final class NpcCombatMovement
 {
     public static boolean allowed(EntityNPCInterface npc)
     {
-        return !npc.isNoAi() && npc.isAlive() && !npc.isKilled() && npc.ais.onAttack == 0 && NpcTuning.of(npc).tactic() != Tactic.HOLD
-            && NpcCombatPolicy.value(npc, Value.COMBAT_MOVEMENT) != MovementFreedom.HOLD.ordinal();
+        Tactic tactic = NpcTuning.of(npc).tactic();
+        return !npc.isNoAi() && npc.isAlive() && !npc.isKilled() && npc.ais.onAttack == 0 && tactic != Tactic.HOLD && tactic != Tactic.HOLD_LINE
+            && NpcCombatPolicy.value(npc, Value.COMBAT_MOVEMENT) != MovementFreedom.HOLD.ordinal() && !NpcSignal.waiting(npc);
     }
 
     public static Vec3 anchor(EntityNPCInterface npc)

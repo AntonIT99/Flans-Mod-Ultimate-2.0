@@ -25,6 +25,7 @@ FuelTankSize 2000
 
 // Paintjobs
 advpaintjob Beige 44_Puma_Beige 44_Puma_Beige yellow 4
+advpaintjob DunkelgelbCamo 44_Puma 44_puma_dunkelgelb_camo yellow 8
 AddDye 4 gray
 
 // Real-world specifications

@@ -149,6 +149,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int SERVER_ITEM_DROPS_ID = 1226;
     private static final int SERVER_PEACEFUL_COMBAT_ID = 1227;
     private static final int SERVER_CINEMATIC_ID = 1228;
+    private static final int SERVER_ARMOR_DURABILITY_ID = 1229;
+    private static final int SERVER_MELEE_DURABILITY_ID = 1230;
     /** The first of the labels a page of read-only lines lays out, one per line or table cell. */
     private static final int LINE_LABEL_ID = 1500;
     /** Room for the lines of a page of read-only lines. */
@@ -292,7 +294,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         HEALTH_PERCENT(SERVER_HEALTH_ID, Setting.HEALTH_PERCENT), AMMO_POLICY(SERVER_AMMO_ID, Setting.AMMO_POLICY),
         NAME_TAG_RANGE(SERVER_NAME_TAG_RANGE_ID, Setting.NAME_TAG_RANGE), ITEM_DROPS(SERVER_ITEM_DROPS_ID, Setting.ITEM_DROPS),
         FRIENDLY_FIRE_NPCS(SERVER_FRIENDLY_FIRE_NPCS_ID, Setting.FRIENDLY_FIRE_NPCS), FRIENDLY_FIRE_PLAYERS(SERVER_FRIENDLY_FIRE_PLAYERS_ID, Setting.FRIENDLY_FIRE_PLAYERS),
-        PEACEFUL_COMBAT(SERVER_PEACEFUL_COMBAT_ID, Setting.PEACEFUL_COMBAT), CINEMATIC(SERVER_CINEMATIC_ID, Setting.CINEMATIC);
+        PEACEFUL_COMBAT(SERVER_PEACEFUL_COMBAT_ID, Setting.PEACEFUL_COMBAT), CINEMATIC(SERVER_CINEMATIC_ID, Setting.CINEMATIC),
+        ARMOR_DURABILITY(SERVER_ARMOR_DURABILITY_ID, Setting.ARMOR_DURABILITY), MELEE_DURABILITY(SERVER_MELEE_DURABILITY_ID, Setting.MELEE_DURABILITY);
         // spotless:on
 
         private final int id;
@@ -321,7 +324,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
         private boolean toggle()
         {
-            return this == PROFILING || this == FREEZE_AI || this == ITEM_DROPS || this == PEACEFUL_COMBAT || this == CINEMATIC;
+            return this == PROFILING || this == FREEZE_AI || this == ITEM_DROPS || this == PEACEFUL_COMBAT || this == CINEMATIC || this == ARMOR_DURABILITY || this == MELEE_DURABILITY;
         }
 
         /** @return the named choices of a row that is one, or none */
@@ -552,7 +555,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         PARTS(Section.PROTECTION, Scope.DRIVEABLES, Tab.of(Feature.PART_HITBOXES, Feature.PART_HEALTH, Feature.PART_EFFECTS, Feature.AUTOMATIC_REPAIRS,
             Feature.PART_REPAIR, Feature.SOLID_HITBOXES)),
         TACTICS(Section.PLANNING, Scope.ALL,
-            Tab.named("tactic_movement", Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN, Feature.SHIP_WEAPON_BEARING),
+            Tab.named("tactic_movement", Value.TACTIC, Value.TACTIC_DISTANCE, Value.COVER_RADIUS, Feature.WAIT_FOR_SIGNAL, Feature.BLAST_STANDOFF, Value.BLAST_MARGIN,
+                Feature.SHIP_WEAPON_BEARING),
             Tab.named("return_fire", Value.THREAT_MEMORY, Value.ALERT_RADIUS, Feature.OUTRANGED_COVER, Feature.SUPPRESSIBLE),
             Tab.named("survival", Scope.STANDARD, Feature.TACTICAL_COVER, Feature.AVOID_UNWINNABLE_FIGHTS, Feature.VEHICLE_EVASION, Feature.ADAPTIVE_FLANKING),
             Tab.named("advance", Scope.STANDARD, Feature.COMBAT_ADVANCE, Feature.COVERING_FIRE, Feature.TACTICAL_POSTURES, Value.ADVANCE_DISTANCE, Value.ADVANCE_FIRE_TICKS),
@@ -603,6 +607,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         SERVER_RULES(Section.SERVER_RULES, Scope.ALL,
             Tab.of(ServerRow.HEALTH_PERCENT, ServerRow.AMMO_POLICY, ServerRow.NAME_TAG_RANGE, ServerRow.ITEM_DROPS, ServerRow.PEACEFUL_COMBAT, ServerRow.CINEMATIC)),
         SERVER_FRIENDLY_FIRE(Section.SERVER_RULES, Scope.ALL, Tab.of(ServerRow.FRIENDLY_FIRE_NPCS, ServerRow.FRIENDLY_FIRE_PLAYERS)),
+        SERVER_EQUIPMENT(Section.SERVER_RULES, Scope.ALL, Tab.of(ServerRow.ARMOR_DURABILITY, ServerRow.MELEE_DURABILITY)),
         FACTIONS(Section.SERVER_WORLD, Scope.ALL, Tab.named("team_factions")),
         /** The loaded NPCs of every level, which the server counts when the page opens; lines, not rows. */
         CENSUS(Section.SERVER_WORLD, Scope.ALL, Tab.of()),

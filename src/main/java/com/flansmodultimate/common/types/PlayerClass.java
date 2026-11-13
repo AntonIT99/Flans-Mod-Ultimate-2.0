@@ -127,6 +127,29 @@ public class PlayerClass extends InfoType implements IPlayerClass
         return result;
     }
 
+    /**
+     * Every Flan's type the class grants: its starting items, the attachments fitted to them and its armour. Names that
+     * resolve to no content type, such as vanilla items, are left out.
+     */
+    public List<InfoType> getGrantedTypes()
+    {
+        Set<InfoType> types = new LinkedHashSet<>();
+        for (StartingItem definition : startingItems)
+            for (String part : definition.itemAndAttachments().split("\\+"))
+            {
+                InfoType type = InfoType.getInfoType(part, contentPack);
+                if (type != null)
+                    types.add(type);
+            }
+        for (String id : armour.values())
+        {
+            InfoType type = InfoType.getInfoType(id, contentPack);
+            if (type != null)
+                types.add(type);
+        }
+        return List.copyOf(types);
+    }
+
     /** Cached server-side preview used by frequent scoreboard snapshots. */
     public List<ItemStack> createStartingItemPreviews()
     {

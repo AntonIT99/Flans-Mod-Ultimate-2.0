@@ -1,5 +1,6 @@
 package com.flansmodultimate.hooks;
 
+import com.flansmodultimate.hooks.server.ClientEraHooksNoop;
 import com.flansmodultimate.hooks.server.ClientGunHooksNoop;
 import com.flansmodultimate.hooks.server.ClientPlayerHooksNoop;
 import com.flansmodultimate.hooks.server.ClientRenderHooksNoop;
@@ -16,5 +17,6 @@ public final class ClientHooks
     public static final IClientTooltipHooks TOOLTIPS = PlatformEnvironment.isClient() ? ClientHookFactories.createTooltipsHooks() : new ClientTooltipHooksNoop();
     public static final IClientGunHooks GUN = PlatformEnvironment.isClient() ? ClientHookFactories.createGunHooks() : new ClientGunHooksNoop();
     public static final IClientRenderHooks RENDER = PlatformEnvironment.isClient() ? ClientHookFactories.createRenderHooks() : new ClientRenderHooksNoop();
+    public static final IClientEraHooks ERA = PlatformEnvironment.isClient() ? ClientHookFactories.createEraHooks() : new ClientEraHooksNoop();
     public static final IClientSoundHooks SOUND = PlatformEnvironment.isClient() ? ClientHookFactories.createSoundHooks() : new ClientSoundHooksNoop();
 }

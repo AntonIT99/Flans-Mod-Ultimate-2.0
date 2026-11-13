@@ -26,6 +26,9 @@ public final class RenderDiagnostics
     static long culledParts;
     static long fallbackVertices;
     static long excludedScopes;
+    static long directParts;
+    static long directCulledParts;
+    static long directVertices;
     private static long shadowDriveables;
     private static long shadowImpostors;
     private static long shadowParts;
@@ -74,6 +77,7 @@ public final class RenderDiagnostics
     {
         hits = misses = uploads = uploadBytes = evictions = workingSetEvictions = throttled = 0;
         draws = immediateDraws = paletteEntries = stateSetups = ranges = vertices = submittedParts = culledParts = fallbackVertices = excludedScopes = 0;
+        directParts = directCulledParts = directVertices = 0;
         shadowDriveables = shadowImpostors = shadowParts = shadowCulledParts = shadowEntitiesSkipped = 0;
         bulkWrites = bulkVertices = 0;
         frames = peakBytes = peakMeshes = 0;
@@ -289,11 +293,12 @@ public final class RenderDiagnostics
             "%d frames in %.1f s (%.0f FPS, %.2f ms); per frame: %.1f driveables using %.2f ms of CPU, "
                 + "%.2f ms of it and of held guns in GPU model draw submission (mesh lookup %.2f, palette upload %.2f, GL draws %.2f); "
                 + "GPU calls %.1f (%.1f render state setups, %.1f palette entries per call), ranges %.1f (bridging gaps up to %d indices), "
-                + "GPU vertices %.0f, parts %.0f (%.0f size-culled), CPU fallback vertices %.0f, uploads %.2f; " + "part arrays: %.0f parts cached, %.0f by the normal path%s; "
+                + "GPU vertices %.0f, parts %.0f (%.0f size-culled), CPU fallback vertices %.0f, uploads %.2f; "
+                + "rigid parts written directly %.0f (%.0f more size-culled) as %.0f vertices; " + "part arrays: %.0f parts cached, %.0f by the normal path%s; "
                 + "CPU-path parts %.1f%s writing %.0f vertices; geometry changes %.2f, part re-validations %.0f " + "(%.0f scanning every vertex)",
             frames, seconds, seconds > 0 ? n / seconds : 0, seconds * 1000 / n, driveables / n, driveableNanos / 1E6 / n, drawNanos / 1E6 / n, lookupNanos / 1E6 / n, paletteNanos / 1E6 / n,
             glDrawNanos / 1E6 / n, draws / n, stateSetups / n, (double) paletteEntries / Math.max(1, immediateDraws), ranges / n, VisibleRanges.bridgedGap, vertices / n, submittedParts / n,
-            culledParts / n, fallbackVertices / n, uploads / n, cachedArrayParts / n, uncachedArrayParts / n, reasons(uncachedArrayReasons, n), cpuParts / n, cpuReasons(n), cpuVertices / n,
+            culledParts / n, fallbackVertices / n, uploads / n, directParts / n, directCulledParts / n, directVertices / n, cachedArrayParts / n, uncachedArrayParts / n, reasons(uncachedArrayReasons, n), cpuParts / n, cpuReasons(n), cpuVertices / n,
             geometryChanges / n, faceRevalidations / n, scannedRevalidations / n);
     }
 

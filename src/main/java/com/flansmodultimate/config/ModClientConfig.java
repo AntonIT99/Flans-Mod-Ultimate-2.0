@@ -38,6 +38,9 @@ public final class ModClientConfig
 
     private static final AtomicReference<Boolean> startupUncensoredContentEnabled = new AtomicReference<>();
     private static final AtomicBoolean serverForcesUncensoredContent = new AtomicBoolean();
+    private static final AtomicBoolean serverEnablesUncensoredContentByDefault = new AtomicBoolean();
+    /** The player's choice for this connection while the server turns uncensored content on by default; null until made. */
+    private static final AtomicReference<Boolean> sessionUncensoredContentChoice = new AtomicReference<>();
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean showDetailedItemDescriptions;
@@ -132,6 +135,7 @@ public final class ModClientConfig
     public final EnumMouseButton shootButtonOffhand;
     public final EnumMouseButton aimButton;
     public final EnumAimType aimType;
+    public final boolean invertGrenadeThrowButtons;
     public final EnumGunBlockInteraction gunBlockInteraction;
     public final boolean predictDriveableMovement;
     public final boolean holdToProne;
@@ -294,6 +298,7 @@ public final class ModClientConfig
     public static final EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
     public static final BooleanValue PREDICT_DRIVEABLE_MOVEMENT;
     public static final BooleanValue HOLD_TO_PRONE;
+    public static final BooleanValue INVERT_GRENADE_THROW_BUTTONS;
 
     private static final Supplier<Boolean> COMBINE_AMMO_ON_RELOAD;
     private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
@@ -644,6 +649,7 @@ public final class ModClientConfig
             "Simulate the vehicle or plane you are driving on your own client, so it answers the controls at once instead of a network round trip later. The server stays authoritative and corrects any difference. Off shows only the movement the server reports.")
             .define("predictDriveableMovement", true);
         HOLD_TO_PRONE = builder.comment("Lie prone only while the Go Prone key is held, instead of each press switching between lying down and standing up.").define("holdToProne", false);
+        INVERT_GRENADE_THROW_BUTTONS = builder.comment("Swap the buttons of hold-to-throw grenades: use throws overhand and attack tosses underhand.").define("invertGrenadeThrowButtons", false);
         builder.pop();
 
         builder.push("Reload Settings");
@@ -846,6 +852,7 @@ public final class ModClientConfig
         gunBlockInteraction = GUN_BLOCK_INTERACTION.get();
         predictDriveableMovement = PREDICT_DRIVEABLE_MOVEMENT.get();
         holdToProne = HOLD_TO_PRONE.get();
+        invertGrenadeThrowButtons = INVERT_GRENADE_THROW_BUTTONS.get();
 
         combineAmmoOnReload = COMBINE_AMMO_ON_RELOAD.get();
         ammoToUpperInventoryOnReload = AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get();
@@ -920,19 +927,53 @@ public final class ModClientConfig
         return serverForcesUncensoredContent.get();
     }
 
-    /** Applies a server requirement for this connection without changing the saved client preference. Client thread. */
-    public static void setServerForcesUncensoredContent(boolean forced)
+    /** Whether the connected server turns uncensored content on unless the player turns it off for the session. */
+    public static boolean isUncensoredContentServerDefault()
+    {
+        return serverEnablesUncensoredContentByDefault.get() && !serverForcesUncensoredContent.get();
+    }
+
+    /**
+     * Applies the server's uncensored-content mode for this connection without changing the saved client preference.
+     * A session choice made under a server default is dropped whenever the mode changes. Client thread.
+     */
+    public static void applyServerUncensoredContent(boolean forced, boolean byDefault)
     {
         boolean previous = isUncensoredContentEnabled();
+        if (serverForcesUncensoredContent.get() != forced || serverEnablesUncensoredContentByDefault.get() != byDefault)
+            sessionUncensoredContentChoice.set(null);
         serverForcesUncensoredContent.set(forced);
+        serverEnablesUncensoredContentByDefault.set(byDefault);
         if (previous != isUncensoredContentEnabled())
             Minecraft.getInstance().reloadResourcePacks();
+    }
+
+    /** Records the player's choice from the options screen: kept for the session under a server default, and saved. Client thread. */
+    public static void chooseUncensoredContent(boolean enabled)
+    {
+        if (isUncensoredContentServerDefault())
+        {
+            boolean previous = isUncensoredContentEnabled();
+            sessionUncensoredContentChoice.set(enabled);
+            boolean savedChanges = ENABLE_UNCENSORED_CONTENT.get() != enabled;
+            setAndSave(ENABLE_UNCENSORED_CONTENT, enabled);
+            // A saved change reloads resources on bake; otherwise only the session choice moved
+            if (!savedChanges && previous != isUncensoredContentEnabled())
+                Minecraft.getInstance().reloadResourcePacks();
+            return;
+        }
+        setAndSave(ENABLE_UNCENSORED_CONTENT, enabled);
     }
 
     public static boolean isUncensoredContentEnabled()
     {
         if (serverForcesUncensoredContent.get())
             return true;
+        if (serverEnablesUncensoredContentByDefault.get())
+        {
+            Boolean choice = sessionUncensoredContentChoice.get();
+            return choice == null || choice;
+        }
         ModClientConfig config = get();
         if (config != null)
             return config.enableUncensoredContent;

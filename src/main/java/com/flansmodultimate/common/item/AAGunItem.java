@@ -10,6 +10,8 @@ import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.item.FlanItem;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.common.eras.EraEnforcement;
+import com.flansmodultimate.common.eras.EraEntities;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,6 +56,8 @@ public class AAGunItem extends FlanItem implements IFlanItem<AAGunType>
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
+        if (EraEnforcement.refuses(player, configType))
+            return InteractionResultHolder.fail(stack);
         BlockHitResult hit = raytracePlacement(level, player);
 
         if (hit.getType() != HitResult.Type.BLOCK)
@@ -94,6 +98,8 @@ public class AAGunItem extends FlanItem implements IFlanItem<AAGunType>
             aaGun.discard();
             return null;
         }
+        if (placer != null)
+            EraEntities.tagIfBypassing(aaGun, placer);
         if (level.addFreshEntity(aaGun))
             return aaGun;
         limits.placementFailed(aaGun);

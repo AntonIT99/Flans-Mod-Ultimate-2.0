@@ -18,7 +18,8 @@ import java.util.function.UnaryOperator;
  *
  * <p>
  * A boat without {@code RealDraftM} or an authored core box keeps legacy
- * flotation. An entity's compact collision box is not its keel.
+ * flotation. An entity's compact collision box is not its keel, and hull part
+ * boxes are not drawn to real draft: the wheel anchors are its authored waterline.
  */
 public final class MarineDraftPhysics
 {
@@ -67,6 +68,30 @@ public final class MarineDraftPhysics
         // to rise; negative means it is sitting too high and should settle.
         double targetHullBottomY = waterSurfaceY - draftM;
         double error = targetHullBottomY - hullBottomY;
+        return restoringVelocity(currentVerticalVelocity, error, ceiling);
+    }
+
+    /**
+     * Vertical velocity for a hull without a declared draft, which rides with its
+     * legacy waterline point on the surface. Switching between constant lift in
+     * the water and full gravity out of it would bob the hull across the surface
+     * forever, so it settles with the same damped response as a declared draft.
+     *
+     * @param currentVerticalVelocity
+     *            current vertical velocity in blocks per tick
+     * @param depthBelowSurface
+     *            how far the waterline point is below the surface, negative above it
+     * @param maxBuoyancy
+     *            the legacy buoyancy clamp, capping the response
+     * @return the new vertical velocity in blocks per tick
+     */
+    public static double waterlineVelocity(double currentVerticalVelocity, double depthBelowSurface, double maxBuoyancy)
+    {
+        return restoringVelocity(currentVerticalVelocity, depthBelowSurface, maxBuoyancy);
+    }
+
+    private static double restoringVelocity(double currentVerticalVelocity, double error, double ceiling)
+    {
         double target = error * VehiclePhysicsConstants.DRAFT_RESTORING_STIFFNESS;
         target = Math.max(-ceiling, Math.min(ceiling, target));
 

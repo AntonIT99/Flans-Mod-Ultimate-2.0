@@ -6,6 +6,7 @@ import com.flansmodultimate.api.equipment.WeaponKind;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.sim.NpcServerRules;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.NpcAPI;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -233,7 +234,8 @@ class NpcDualMeleeTest
         try (var events = mockStatic(EventHooks.class);
             var api = mockStatic(NpcAPI.class);
             var enchantments = mockStatic(EnchantmentHelper.class, CALLS_REAL_METHODS);
-            var platform = mockStatic(NpcPlatform.class, CALLS_REAL_METHODS))
+            var platform = mockStatic(NpcPlatform.class, CALLS_REAL_METHODS);
+            var rules = mockStatic(NpcServerRules.class))
         {
             api.when(NpcAPI::Instance).thenReturn(npcApi);
             events.when(() -> EventHooks.onNPCAttacksMelee(eq(npc), any())).thenReturn(false);
@@ -241,6 +243,7 @@ class NpcDualMeleeTest
             enchantments.when(() -> EnchantmentHelper.modifyKnockback(any(), any(), any(), any(), anyFloat())).thenAnswer(call -> call.<Float>getArgument(4) + (call.getArgument(1) == axe ? 1F : 2F));
             enchantments.when(() -> EnchantmentHelper.doPostAttackEffectsWithItemSource(any(), any(), any(), any())).thenAnswer(call -> null);
             platform.when(() -> NpcPlatform.fireAspectLevel(any(), any())).thenAnswer(call -> call.getArgument(1) == axe ? 2 : 0);
+            rules.when(() -> NpcServerRules.meleeDurability(npc)).thenReturn(true);
             assertTrue(NpcItemAttacks.melee(npc, target));
             enchantments.verify(() -> EnchantmentHelper.doPostAttackEffectsWithItemSource(any(), same(target), any(), same(axe)));
         }
@@ -250,6 +253,31 @@ class NpcDualMeleeTest
         verify(npc).setItemSlot(EquipmentSlot.OFFHAND, axe);
         verify(npc, never()).setItemSlot(eq(EquipmentSlot.MAINHAND), any());
         assertEquals(2, axe.getDamageValue());
+        assertEquals(0, sword.getDamageValue());
+    }
+
+    @Test
+    void meleeWeaponsDoNotWearUnlessTheServerTurnsDurabilityOn()
+    {
+        EntityNPCInterface npc = npc(sword, axe);
+        LivingEntity target = mock(LivingEntity.class);
+        when(target.isAlive()).thenReturn(true);
+        when(target.hurt(any(), anyFloat())).thenReturn(true);
+        NpcAPI npcApi = mock(NpcAPI.class);
+        try (var events = mockStatic(EventHooks.class);
+            var api = mockStatic(NpcAPI.class);
+            var enchantments = mockStatic(EnchantmentHelper.class, CALLS_REAL_METHODS);
+            var platform = mockStatic(NpcPlatform.class, CALLS_REAL_METHODS))
+        {
+            api.when(NpcAPI::Instance).thenReturn(npcApi);
+            events.when(() -> EventHooks.onNPCAttacksMelee(eq(npc), any())).thenReturn(false);
+            enchantments.when(() -> EnchantmentHelper.modifyDamage(any(), any(), any(), any(), anyFloat())).thenAnswer(call -> call.<Float>getArgument(4));
+            enchantments.when(() -> EnchantmentHelper.modifyKnockback(any(), any(), any(), any(), anyFloat())).thenAnswer(call -> call.<Float>getArgument(4));
+            enchantments.when(() -> EnchantmentHelper.doPostAttackEffectsWithItemSource(any(), any(), any(), any())).thenAnswer(call -> null);
+            platform.when(() -> NpcPlatform.fireAspectLevel(any(), any())).thenReturn(0);
+            assertTrue(NpcItemAttacks.melee(npc, target));
+        }
+        verify(target).hurt(any(DamageSource.class), anyFloat());
         assertEquals(0, sword.getDamageValue());
     }
 

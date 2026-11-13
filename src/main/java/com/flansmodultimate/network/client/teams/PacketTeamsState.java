@@ -3,6 +3,7 @@ package com.flansmodultimate.network.client.teams;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.teams.*;
+import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.IClientPacket;
@@ -45,11 +46,18 @@ public final class PacketTeamsState implements IClientPacket
      * use it at once, or {@link #UNLIMITED_CLASS} for a class without a limit, and {@code used} how
      * many of those slots other players have taken.
      */
-    public record ClassChoice(String id, String name, int unlockLevel, int requiredPrestige, int used, int capacity, List<ItemStack> loadout, Component displayName)
+    /** {@code eraBlocked} names the class's equipment an era window blocks for the viewer, empty when it has none. */
+    @SuppressWarnings("java:S107") // One field per column of the class menu, decoded in wire order.
+    public record ClassChoice(String id, String name, int unlockLevel, int requiredPrestige, int used, int capacity, List<ItemStack> loadout, Component displayName, Component eraBlocked)
     {
         public boolean isFull()
         {
             return capacity != UNLIMITED_CLASS && used >= capacity;
+        }
+
+        public boolean isEraBlocked()
+        {
+            return !eraBlocked.getString().isEmpty();
         }
     }
     public record PlayerScore(String name, int score, int kills, int deaths, int zombieScore, String playerClass, Component displayName, Component classDisplayName)
@@ -206,9 +214,10 @@ public final class PacketTeamsState implements IClientPacket
     private static ClassChoice classChoice(TeamsManager manager, ServerPlayer viewer, Team team, PlayerClass playerClass)
     {
         int capacity = manager.getClassCapacity(team, playerClass);
+        List<InfoType> blocked = TeamsEraScope.blockedTypes(viewer, playerClass);
         return new ClassChoice(playerClass.getShortName(), playerClass.getName(), playerClass.getUnlockLevel(), playerClass.getRequiredPrestigeLevel(),
             manager.countPlayersUsingClass(team, playerClass, viewer), capacity == ClassLimits.UNLIMITED ? UNLIMITED_CLASS : capacity, playerClass.createStartingItemPreviews(),
-            playerClass.getNameComponent());
+            playerClass.getNameComponent(), blocked.isEmpty() ? Component.empty() : TeamsEraScope.names(blocked));
     }
 
     /** Adds what the objective HUD and the deployment map need to know about a round fought over capture points. */
@@ -336,6 +345,7 @@ public final class PacketTeamsState implements IClientPacket
             data.writeVarInt(choice.capacity() + 1);
             PacketIO.writeItems(data, choice.loadout());
             PacketIO.writeComponent(data, choice.displayName());
+            PacketIO.writeComponent(data, choice.eraBlocked());
         }
         data.writeVarInt(teamScores.size());
         for (TeamScore team : teamScores)
@@ -438,7 +448,7 @@ public final class PacketTeamsState implements IClientPacket
         classChoices = new ArrayList<>(classCount);
         for (int i = 0; i < classCount; i++)
             classChoices.add(new ClassChoice(data.readUtf(), data.readUtf(), data.readVarInt(), data.readVarInt(), data.readVarInt(), data.readVarInt() - 1, PacketIO.readItems(data),
-                PacketIO.readComponent(data)));
+                PacketIO.readComponent(data), PacketIO.readComponent(data)));
         int scoreCount = data.readVarInt();
         teamScores = new ArrayList<>(scoreCount);
         for (int i = 0; i < scoreCount; i++)

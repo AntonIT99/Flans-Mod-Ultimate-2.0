@@ -173,6 +173,7 @@ public record CommonConfigSnapshot(
     int driveableWreckLifetime,
     double driveableMeleeDamageThreshold,
     boolean forceUncensoredContent,
+    boolean uncensoredContentByDefault,
     boolean showBotKillsInKillFeed,
     double explosionParticleRange,
     double airBrakeEffectiveness,
@@ -378,6 +379,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.driveableWreckLifetime);
         buf.writeDouble(s.driveableMeleeDamageThreshold);
         buf.writeBoolean(s.forceUncensoredContent);
+        buf.writeBoolean(s.uncensoredContentByDefault);
         buf.writeBoolean(s.showBotKillsInKillFeed);
         buf.writeDouble(s.explosionParticleRange);
         buf.writeDouble(s.airBrakeEffectiveness);
@@ -571,6 +573,7 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readVarInt(),
             buf.readDouble(),
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readDouble(),

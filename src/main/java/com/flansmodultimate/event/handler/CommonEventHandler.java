@@ -12,10 +12,12 @@ import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.driveables.collision.DriveableCollisionBypass;
 import com.flansmodultimate.common.entity.*;
+import com.flansmodultimate.common.eras.EraRestrictions;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.HeldItemPresentation;
+import com.flansmodultimate.common.guns.MeleeBlocking;
 import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.teams.TeamsCombatants;
@@ -34,6 +36,8 @@ import com.flansmodultimate.network.client.teams.PacketKillMessage;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.world.LootTablePlatform;
+import com.flansmodultimate.common.eras.EraEnforcement;
+import com.flansmodultimate.common.eras.EraEntities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -112,6 +116,8 @@ public final class CommonEventHandler
     {
         if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob)
             AmbientMobArmor.equipIfPending(mob);
+        if (!event.getLevel().isClientSide)
+            EraEntities.checkJoined(event.getEntity());
     }
 
     @SubscribeEvent
@@ -129,7 +135,9 @@ public final class CommonEventHandler
         ShootPointDebugCommand.register(event.getDispatcher());
         HitboxDebugCommand.register(event.getDispatcher());
         TeamsCommand.register(event.getDispatcher());
+        EraCommand.register(event.getDispatcher());
         ThrownGunDespawnCommand.register(event.getDispatcher());
+        ArmorBreakingCommand.register(event.getDispatcher());
         TryClassCommand.register(event.getDispatcher());
         TryTeamCommand.register(event.getDispatcher());
         VehicleCollisionDebugCommand.register(event.getDispatcher());
@@ -143,7 +151,7 @@ public final class CommonEventHandler
     public static void onAnvilUpdate(AnvilUpdateEvent event)
     {
         ItemStack left = event.getLeft();
-        if (left.getItem() instanceof CustomArmorItem armor && armor.getEnchantmentValue() == 0 && !event.getRight().isEmpty())
+        if (left.getItem() instanceof CustomArmorItem armor && armor.refusesAnvilInput(left, event.getRight()))
             event.setCanceled(true);
     }
 
@@ -213,6 +221,7 @@ public final class CommonEventHandler
             return;
 
         FlansMod.teamsManager.tick();
+        MeleeBlocking.tickNonPlayers();
         CraterCarver.tick();
         DistantSync.tick(server, ticker);
 
@@ -284,6 +293,7 @@ public final class CommonEventHandler
             HitboxDebugCommand.syncOnLogin(sp);
             com.flansmodultimate.common.teams.editor.TeamEditorService.get().sync(sp, "", "", "");
             FlansMod.teamsManager.playerLoggedIn(sp);
+            EraRestrictions.sync(sp);
             applyMaxHealth(sp);
         }
     }
@@ -307,7 +317,11 @@ public final class CommonEventHandler
     public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event)
     {
         if (event.getEntity() instanceof ServerPlayer player)
+        {
             ProneSupport.reset(player);
+            // A dimension can carry its own era restriction.
+            EraRestrictions.sync(player);
+        }
     }
 
     /** A player coming into view brings how they hold their guns and whether they lie prone, which only change when they change them. */
@@ -340,6 +354,7 @@ public final class CommonEventHandler
         EntityTrackingPins.unpin(event.getEntity().getUUID());
         regenTimers.remove(event.getEntity().getUUID());
         ProneSupport.forget(event.getEntity());
+        EraRestrictions.loggedOut(event.getEntity());
         if (event.getEntity() instanceof ServerPlayer player)
             FlansMod.teamsManager.playerLoggedOut(player);
     }
@@ -384,6 +399,9 @@ public final class CommonEventHandler
      */
     public static boolean canPickUp(ServerPlayer player, ItemEntity item)
     {
+        InfoType pickedType = EraEnforcement.typeOf(item.getItem());
+        if (pickedType != null && EraEnforcement.refuses(player, pickedType))
+            return false;
         TeamsManager manager = FlansMod.teamsManager;
         if (!manager.isEnabled() || manager.getCurrentRound().isEmpty())
             return true;
@@ -429,6 +447,8 @@ public final class CommonEventHandler
 
         if (living instanceof Player || living instanceof Mob)
         {
+            CustomArmorItem.removeEraBlockedArmor(living);
+            EraEntities.dismountBlocked(living);
             CustomArmorItem.handleSpecialEffects(living);
             CustomArmorItem.handleMobEffects(living);
         }
@@ -452,6 +472,9 @@ public final class CommonEventHandler
     public static boolean shouldCancelIncomingDamage(LivingEntity entity, DamageSource source, float amount)
     {
         if (!entity.level().isClientSide && (isRejectedByTeams(entity, source) || FriendlyFireRules.sparesDamage(entity, source)))
+            return true;
+        // A raised melee block keeps its holder from striking at all, vanilla swings included
+        if (!entity.level().isClientSide && isMeleeDamage(source) && source.getEntity() instanceof LivingEntity attacker && source.getDirectEntity() == attacker && MeleeBlocking.isBlocking(attacker))
             return true;
         if (!entity.level().isClientSide)
         {
@@ -495,7 +518,12 @@ public final class CommonEventHandler
         float blockChance = 0F;
         for (InteractionHand hand : InteractionHand.values())
         {
-            if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield() && hitStrength <= gunItem.getConfigType().getShieldMaxBlockableMeleeDamage())
+            if (!(player.getItemInHand(hand).getItem() instanceof GunItem gunItem) || hitStrength > gunItem.getConfigType().getShieldMaxBlockableMeleeDamage())
+                continue;
+            // A raised CanBlock melee block always stops what it can hold, as in the Labjac Edition
+            if (MeleeBlocking.isBlocking(player, hand))
+                blockChance = 1F;
+            else if (MeleeBlocking.isShieldUp(player, hand))
                 blockChance = Math.max(blockChance, gunItem.getConfigType().getShieldBlockChance());
         }
 
@@ -588,10 +616,13 @@ public final class CommonEventHandler
             if (FlanDamageSources.isShootableDamage(source) && CustomArmorItem.tryApplyIgnoreArmorShot(damage, entity, source))
                 return;
 
+            float beforeArmor = damage.amount();
             CustomArmorItem.applyOldArmorRatioSystem(damage, entity);
 
             if (FlanDamageSources.isShootableDamage(source))
                 CustomArmorItem.applyArmorBulletDefense(damage, entity);
+
+            CustomArmorItem.wearArmor(entity, source, beforeArmor, damage.amount() <= 0F);
         }
     }
 
@@ -601,7 +632,7 @@ public final class CommonEventHandler
         for (InteractionHand hand : InteractionHand.values())
         {
             ItemStack stack = player.getItemInHand(hand);
-            if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield())
+            if (stack.getItem() instanceof GunItem gunItem && MeleeBlocking.isShieldUp(player, hand))
             {
                 absorption = Math.max(absorption, gunItem.getConfigType().getShieldDamageAbsorption());
             }

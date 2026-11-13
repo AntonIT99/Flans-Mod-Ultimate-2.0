@@ -6,6 +6,7 @@ import com.flansmodultimate.client.damage.DriveableDamageEffects;
 import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
+import com.flansmodultimate.client.eras.EraClientState;
 import com.flansmodultimate.client.gui.TeamsDeployScreen;
 import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
@@ -37,6 +38,7 @@ import com.flansmodultimate.network.server.driveable.PacketRequestDismount;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.client.ContentMismatchScreens;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.client.eras.EraClientViews;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
@@ -51,6 +53,7 @@ import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.Util;
@@ -570,6 +573,13 @@ public final class ClientEventHandler
         CommonConfigMirror.request();
     }
 
+    /** Every Flan's item tells its service dates, and why it is blocked when an era restriction blocks it. */
+    @SubscribeEvent
+    public static void onItemTooltip(ItemTooltipEvent event)
+    {
+        EraClientViews.appendTooltip(event.getItemStack(), event.getToolTip());
+    }
+
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
@@ -588,12 +598,13 @@ public final class ClientEventHandler
         GpuModelCache.clear();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
         TeamsClientState.clear();
+        EraClientState.clear();
         com.flansmodultimate.client.teams.EditorClientState.clear();
         PlayerSkinOverrides.clear();
         TeamFlagTextures.clear();
         KillMessageFeed.clear();
         CommonConfigMirror.clear();
-        ModClientConfig.setServerForcesUncensoredContent(false);
+        ModClientConfig.applyServerUncensoredContent(false, false);
     }
 
     @SubscribeEvent

@@ -19,6 +19,7 @@
   "gui.flansmod.teams.capture_point.title": "占领点",
   "gui.flansmod.teams.choose_class": "选择职业",
   "gui.flansmod.teams.choose_team": "选择队伍",
+  "gui.flansmod.teams.class_era_blocked": "不在允许的时期内：%s",
   "gui.flansmod.teams.class_slots": "已占名额：%1$s/%2$s",
   "gui.flansmod.teams.deaths": "死亡",
   "gui.flansmod.teams.defeat": "失败",

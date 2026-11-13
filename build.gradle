@@ -256,7 +256,6 @@ configureModSourceSet(sourceSets.tapcompat, mod_id)
  */
 ext.fmuModuleJars = []
 ext.fmuModulePublishing = [:]
-ext.fmuModuleChangelogs = []
 ext.registerFmuModule = { Map module ->
     def missing = ['sourceSet', 'modId', 'jarTask', 'displayName', 'archiveVersion'].findAll { !module[it]?.toString()?.trim() }
     if (missing)
@@ -267,12 +266,14 @@ ext.registerFmuModule = { Map module ->
     String moduleVersion = module.archiveVersion.toString()
     if (module.curseforge != null && !(module.curseforge instanceof Map))
         throw new GradleException("FMU module '${name}' curseforge settings must be a map")
-    fmuModulePublishing[module.jarTask.toString()] = new LinkedHashMap(module.curseforge ?: [:])
+    Map publishing = new LinkedHashMap(module.curseforge ?: [:])
+    // A module with its own changelog folder must have notes for its version; others share the main mod's.
+    if (!publishing.containsKey('changelog') && file("changelogs/${modId}").isDirectory())
+        publishing.changelog = "changelogs/${modId}/${moduleVersion}.md".toString()
+    fmuModulePublishing[module.jarTask.toString()] = publishing
     File directory = file("src/${module.directory ?: name}")
     if (!directory.isDirectory())
         throw new GradleException("FMU module directory does not exist: ${directory}")
-    if (new File(directory, 'CHANGELOG.md').isFile())
-        fmuModuleChangelogs << [name: name.capitalize(), modId: modId, version: moduleVersion, file: "src/${module.directory ?: name}/CHANGELOG.md".toString()]
     if (name in sourceSets.names)
         throw new GradleException("FMU module source set '${name}' is already registered")
 
@@ -617,7 +618,6 @@ tasks.withType(PublishToMavenRepository).configureEach { PublishToMavenRepositor
 // Each checkout publishes only its own Minecraft version and loader.
 ext.curseforgeModLoader = 'NeoForge'
 apply from: 'gradle/curseforge.gradle'
-apply from: 'gradle/changelog.gradle'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

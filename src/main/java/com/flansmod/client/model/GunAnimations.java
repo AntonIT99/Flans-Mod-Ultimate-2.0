@@ -4,6 +4,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.render.effects.FirstPersonGunEffects;
 import com.flansmodultimate.client.render.effects.GunSmokePuff;
+import com.flansmodultimate.common.guns.EnumMeleeDirection;
 import com.flansmodultimate.common.types.GunType;
 import lombok.*;
 
@@ -17,6 +18,8 @@ import java.util.Random;
 public class GunAnimations
 {
     public static final Random random = new Random();
+    /** The guard stance rises or falls over this fraction per tick */
+    private static final float MELEE_BLOCK_RAISE_STEP = 0.34F;
 
     /** (Purely aesthetic) gun animation variables */
     protected boolean isGunEmpty;
@@ -96,6 +99,12 @@ public class GunAnimations
     /** Melee animations */
     protected int meleeAnimationProgress;
     protected int meleeAnimationLength;
+    protected EnumMeleeDirection meleeAnimationDirection = EnumMeleeDirection.FORWARD;
+
+    /** Melee block guard stance: ticks left of the raised block, and how far the guard is raised, 0 to 1 */
+    protected int meleeBlockTicks;
+    protected float meleeBlockProgress;
+    protected float lastMeleeBlockProgress;
 
     /** Switch animations */
     @Setter
@@ -300,6 +309,8 @@ public class GunAnimations
         minigunBarrelRotation += minigunBarrelRotationSpeed;
         minigunBarrelRotationSpeed *= 0.9F;
 
+        updateMeleeBlock();
+
         if (meleeAnimationLength > 0)
         {
             meleeAnimationProgress++;
@@ -460,8 +471,18 @@ public class GunAnimations
         reloadAnimationTime = 0;
     }
 
-    public void doMelee(int meleeTime)
+    private void updateMeleeBlock()
     {
+        lastMeleeBlockProgress = meleeBlockProgress;
+        if (meleeBlockTicks > 0)
+            meleeBlockTicks--;
+        meleeBlockProgress = meleeBlockTicks > 0 ? Math.min(1F, meleeBlockProgress + MELEE_BLOCK_RAISE_STEP) : Math.max(0F, meleeBlockProgress - MELEE_BLOCK_RAISE_STEP);
+    }
+
+    public void doMelee(int meleeTime, EnumMeleeDirection direction)
+    {
+        meleeAnimationProgress = 0;
         meleeAnimationLength = meleeTime;
+        meleeAnimationDirection = direction;
     }
 }

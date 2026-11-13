@@ -146,7 +146,12 @@ public final class NpcWeaponOptions
          * A vehicle with no weapon of its own follows the Transport tactic rather than Custom NPCs' own AI, which would drive
          * it at the enemy. Off, it drives as Custom NPCs says; the Transport tactic can still be chosen for it by hand.
          */
-        TRANSPORT_TACTIC(true);
+        TRANSPORT_TACTIC(true),
+        /**
+         * Holds where it was placed, firing from there, until it carries the start signal's entity tag, and fights by its
+         * tactic from then on. Teams bots follow their squad's orders instead.
+         */
+        WAIT_FOR_SIGNAL(false);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

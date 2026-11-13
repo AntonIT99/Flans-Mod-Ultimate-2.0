@@ -135,7 +135,7 @@ def booleanSetting = { String name ->
     }
 }
 def dryRunSetting = booleanSetting('curseforgeDryRun')
-def commonChangelog = setting('curseforgeChangelog', 'CHANGELOG.md')
+def commonChangelog = setting('curseforgeChangelog', "changelogs/${mod_id}/${mod_version}.md".toString())
 def mainId = setting('curseforgeModProjectId', '').map { it.trim() }
 def mainUrl = setting('curseforgeModProjectUrl', '').map { it.trim() }
 def mainSlug = providers.gradleProperty('curseforgeModSlug').orElse(mainUrl.map {

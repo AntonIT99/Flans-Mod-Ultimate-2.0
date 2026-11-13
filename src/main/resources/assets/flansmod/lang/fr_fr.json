@@ -19,6 +19,7 @@
   "gui.flansmod.teams.capture_point.title": "Point de capture",
   "gui.flansmod.teams.choose_class": "Choisir une classe",
   "gui.flansmod.teams.choose_team": "Choisir une équipe",
+  "gui.flansmod.teams.class_era_blocked": "Hors de la période autorisée : %s",
   "gui.flansmod.teams.class_slots": "Places prises : %1$s/%2$s",
   "gui.flansmod.teams.deaths": "Morts",
   "gui.flansmod.teams.defeat": "Défaite",

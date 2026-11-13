@@ -2,6 +2,8 @@
 
     "2 cm Flakvierling 38 (Alternating Fire)": {
         "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "1945-05",
             "RoundsPerMin": 800.0,
             "Dispersion": 0.35,
             "RealMassKg": 1518.0,
@@ -17,6 +19,8 @@
 
     "2 cm Flakvierling 38 (Simultaneous Fire)": {
         "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "1945-05",
             "RoundsPerMin": 200.0,
             "Dispersion": 0.35,
             "RealMassKg": 1518.0,
@@ -31,6 +35,8 @@
 
     "8.8 cm FlaK 18/36": {
         "properties": {
+            "IssueDate": "~1937",
+            "RetirementDate": "1945-05",
             "RoundsPerMin": 20.0,
             "Dispersion": 0.03,
             "RealMassKg": 4980.0,
@@ -61,6 +67,8 @@
 
     "460mm Type 94 Triple Mount": {
         "properties": {
+            "IssueDate": "1941-12",
+            "RetirementDate": "1945-04",
             "RoundsPerMin": 5.142857,
             "ReloadTime": 234,
             "Dispersion": 0.2,
@@ -99,6 +107,8 @@
 
     "Bofors 40mm L/60 Towed AA Gun": {
         "properties": {
+            "IssueDate": "~1936",
+            "RetirementDate": "1991",
             "RoundsPerMin": 120.0,
             "Dispersion": 0.35,
             "RealMassKg": 1981.0,
@@ -111,6 +121,7 @@
 
     "Imperial Throne (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "RoundsPerMin": 120.0,
             "Dispersion": 0.1,
             "RealMassKg": 400,
@@ -123,6 +134,7 @@
 
     "Oerlikon Skyshield 35/1000 Revolver Gun": {
         "properties": {
+            "IssueDate": "~2014",
             "RoundsPerMin": 1000.0,
             "Dispersion": 0.10,
             "RealMassKg": 3200.0,
@@ -136,6 +148,8 @@
 
     "Type 96 25mm Triple Mount": {
         "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "1945",
             "RoundsPerMin": 660,
             "Dispersion": 0.3,
             "RealMassKg": 1800,
@@ -149,6 +163,7 @@
 
     "XX-9 Turbolaser Turret (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "Damage": 1,
             "RoundsPerMin": 120.0,
             "Dispersion": 0.1,

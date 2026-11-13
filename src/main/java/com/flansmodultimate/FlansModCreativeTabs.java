@@ -8,6 +8,7 @@ import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.google.common.base.Suppliers;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -145,6 +146,9 @@ public final class FlansModCreativeTabs
 
                 if (item instanceof BulletItem bi && (onlyGunAmmo && !EnumWeaponType.TAB_GUNS_TYPES.contains(bi.getConfigType().getWeaponType())
                     || onlyVehicleAmmo && !EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(bi.getConfigType().getWeaponType())))
+                    continue;
+                // An era restriction on the viewing player hides what they could not use anyway.
+                if (item instanceof IFlanItem<?> flanItem && ClientHooks.ERA.isHidden(flanItem.getConfigType()))
                     continue;
 
                 output.accept(createCreativeStack(new ItemStack(item), parameters));

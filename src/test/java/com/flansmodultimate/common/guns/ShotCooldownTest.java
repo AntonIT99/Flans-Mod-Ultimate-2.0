@@ -100,4 +100,23 @@ class ShotCooldownTest
         assertEquals(1, ShotCooldown.displayTicks(0.25F));
         assertEquals(2, ShotCooldown.displayTicks(1.5F));
     }
+
+    @Test
+    void hudReloadIgnoresAShortDelayBetweenShots()
+    {
+        // An autocannon between shots reads as ready, not as a flickering reload.
+        assertEquals(0, ShotCooldown.hudReloadTicks(0F, 9.5F, 10F));
+        assertEquals(40, ShotCooldown.hudReloadTicks(40F, 9.5F, 10F));
+    }
+
+    @Test
+    void hudReloadCountsALongDelayBetweenShots()
+    {
+        // A battleship gun loading its next round counts the wait down.
+        assertEquals(500, ShotCooldown.hudReloadTicks(0F, 499.5F, 520F));
+        assertEquals(20, ShotCooldown.hudReloadTicks(0F, 20F, ShotCooldown.HUD_RELOAD_MIN_DELAY));
+        // A magazine reload longer than the shot cooldown still wins.
+        assertEquals(380, ShotCooldown.hudReloadTicks(380F, 100F, 520F));
+        assertEquals(0, ShotCooldown.hudReloadTicks(0F, -0.5F, 520F));
+    }
 }

@@ -7,10 +7,13 @@ import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.teams.*;
+import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.common.eras.EraEnforcement;
+import com.flansmodultimate.common.eras.EraRestrictions;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -182,6 +185,9 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         for (int index = 0; index < spawner.templates.size(); index++)
         {
             ItemStack template = spawner.templates.get(index);
+            InfoType templateType = EraEnforcement.typeOf(template);
+            if (templateType != null && !EraRestrictions.isAllowedAt(serverLevel, templateType))
+                continue;
             if (spawner.mode == Mode.VEHICLE)
             {
                 Entity spawned = spawner.spawnVehicle(serverLevel, pos, template);

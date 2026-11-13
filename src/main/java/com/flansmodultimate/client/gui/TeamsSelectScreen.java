@@ -10,6 +10,7 @@ import com.flansmodultimate.network.server.teams.PacketTeamsAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -75,7 +76,7 @@ public final class TeamsSelectScreen extends Screen
             {
                 PacketTeamsState.ClassChoice choice = classChoices.get(firstRow + i);
                 Button button = Button.builder(choice.displayName().copy(), ignored -> chooseClass(choice.id())).bounds(left + 9, top + 24 + 24 * i, 73, 20).build();
-                button.active = state.getPlayerRank() >= choice.unlockLevel() && state.getPlayerPrestige() >= choice.requiredPrestige() && !choice.isFull();
+                button.active = state.getPlayerRank() >= choice.unlockLevel() && state.getPlayerPrestige() >= choice.requiredPrestige() && !choice.isFull() && !choice.isEraBlocked();
                 addRenderableWidget(button);
             }
         }
@@ -185,6 +186,8 @@ public final class TeamsSelectScreen extends Screen
             lines.add(Component.translatable("gui.flansmod.teams.required_prestige", choice.requiredPrestige()));
         if (choice.capacity() != PacketTeamsState.UNLIMITED_CLASS)
             lines.add(Component.translatable("gui.flansmod.teams.class_slots", choice.used(), choice.capacity()));
+        if (choice.isEraBlocked())
+            lines.add(Component.translatable("gui.flansmod.teams.class_era_blocked", choice.eraBlocked()).withStyle(ChatFormatting.RED));
         return lines;
     }
 

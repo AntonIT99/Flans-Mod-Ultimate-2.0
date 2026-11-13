@@ -599,6 +599,9 @@ public class Mecha extends Driveable implements MechaVisual
     private boolean fireHandGun(EnumMechaSlotType slot, boolean left, boolean rising, EnumFireMode mode, GunItem gunItem, GunType gunType, ItemStack gunStack, int index)
     {
         LoadedHandAmmo loaded = findLoadedHandAmmo(gunItem, gunType, gunStack);
+        // A gun-sword summons its strike instead of loading ammo, which a mecha hand cannot do, as in the Labjac Edition
+        if (loaded == null && gunType.isShootMelee())
+            return false;
         if (loaded == null)
         {
             float reloadTime = gunItem.getActualReloadTime(gunStack, level().registryAccess(), oppositeHandStack(left));

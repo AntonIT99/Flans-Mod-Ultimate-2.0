@@ -808,18 +808,25 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /**
-     * Ticks of <em>reload</em> a bank still owes, which is not the whole wait
-     * before it may fire: the ordinary delay between shots is excluded, so a crew
-     * is told it is reloading only when it actually is.
+     * Ticks of <em>reload</em> a bank still owes. A short delay between shots is
+     * excluded, so an autocannon is not shown flickering between reloading and
+     * ready; a delay long enough to count as loading the next round is included,
+     * see {@link ShotCooldown#hudReloadTicks}.
      */
     public int getSecondaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : ShotCooldown.displayTicks(bankReloadTicks[1]);
+        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : bankHudReloadTicks(true);
     }
 
     public int getPrimaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : ShotCooldown.displayTicks(bankReloadTicks[0]);
+        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : bankHudReloadTicks(false);
+    }
+
+    private int bankHudReloadTicks(boolean secondary)
+    {
+        int index = secondary ? 1 : 0;
+        return ShotCooldown.hudReloadTicks(bankReloadTicks[index], secondary ? secondaryShootDelay : primaryShootDelay, getConfiguredShootDelay(secondary));
     }
 
     /** Rounds a bank has left before its next reload; zero when it has nothing loaded. */
@@ -2290,8 +2297,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** Publishes what the driver's HUD reports about each bank. Server side; only changes go out. */
     private void publishBankState()
     {
-        setIfChanged(DATA_PRIMARY_RELOAD_TICKS, ShotCooldown.displayTicks(bankReloadTicks[0]));
-        setIfChanged(DATA_SECONDARY_RELOAD_TICKS, ShotCooldown.displayTicks(bankReloadTicks[1]));
+        setIfChanged(DATA_PRIMARY_RELOAD_TICKS, bankHudReloadTicks(false));
+        setIfChanged(DATA_SECONDARY_RELOAD_TICKS, bankHudReloadTicks(true));
         publishMagazine(false, DATA_PRIMARY_MAGAZINE_LEFT, DATA_PRIMARY_MAGAZINE_SIZE);
         publishMagazine(true, DATA_SECONDARY_MAGAZINE_LEFT, DATA_SECONDARY_MAGAZINE_SIZE);
     }
@@ -3568,7 +3575,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // watch the belt run down as a survival one does, which is how the
         // driver's gun banks already report.
         int magazineLeft = Math.max(0, passengerMagazineCapacity[index] - passengerRoundsFired[index]);
-        seat.setGunState(Math.min(rounds, magazineLeft), passengerMagazineCapacity[index], ShotCooldown.displayTicks(passengerReloadTicks[index]),
+        int reloadTicks = ShotCooldown.hudReloadTicks(passengerReloadTicks[index], passengerShootDelay[index], gun.getShootDelay(null));
+        seat.setGunState(Math.min(rounds, magazineLeft), passengerMagazineCapacity[index], reloadTicks,
             ammo.isEmpty() ? Component.empty() : ammo.getHoverName());
     }
 
@@ -6721,7 +6729,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return blast;
     }
 
-    protected void dropContents()
+    public void dropContents()
     {
         if (driveableData == null)
             return;
@@ -7030,6 +7038,13 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                     return applyEpicShipFlotation(new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag));
                 }
             }
+            double waterlineDepth = legacyWaterlineDepth();
+            if (Double.isFinite(waterlineDepth))
+            {
+                double corrected = MarineDraftPhysics.waterlineVelocity(velocity.y, waterlineDepth, ceiling);
+                double drag = ModPhysics.dragRetention(0.92D, level());
+                return applyEpicShipFlotation(new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag));
+            }
             double lift = this instanceof Plane ? ceiling * Math.max(1, submergedFlotationWheels()) : ceiling;
             Vec3 floating = velocity.add(0D, lift, 0D).multiply(ModPhysics.dragRetention(0.92D, level()), ModPhysics.dragRetention(0.8D, level()), ModPhysics.dragRetention(0.92D, level()));
             return applyEpicShipFlotation(floating);
@@ -7050,7 +7065,35 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 return true;
         }
         boolean bodyContact = configType.getWheelPositions().isEmpty() || (configType.isEpicShip() && epicShipDamage().sinking());
-        return submergedFlotationWheels() > 0 || (bodyContact && isInWater());
+        return submergedFlotationWheels() > 0 || (bodyContact && isInWater()) || Double.isFinite(legacyWaterlineDepth());
+    }
+
+    /**
+     * How far the point a hull without a draft floats on is below the water surface: the lowest intact wheel
+     * anchor, or the box bottom of a hull without wheels. Negative just above the surface, and NaN once clear of
+     * it or where the legacy lift still applies, namely forced legacy movement or a definition with no buoyancy.
+     */
+    private double legacyWaterlineDepth()
+    {
+        ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
+        if (configType.getBuoyancy() <= 0F || ModCommonConfig.forceLegacyMovement(physics.category()))
+            return Double.NaN;
+        Vec3 waterline = configType.getWheelPositions().isEmpty() ? new Vec3(getX(), getBoundingBox().minY, getZ()) : null;
+        for (int index = 0; index < configType.getWheelPositions().size(); index++)
+        {
+            DriveablePosition wheel = configType.getWheelPosition(index);
+            if (wheel == null || !isPartIntact(wheel.getPart()))
+                continue;
+            Vec3 anchor = getWheelWorldPosition(index);
+            if (this instanceof Vehicle)
+                anchor = anchor.add(0D, -configType.getFloatOffset(), 0D);
+            if (waterline == null || anchor.y < waterline.y)
+                waterline = anchor;
+        }
+        if (waterline == null)
+            return Double.NaN;
+        Vec3 probe = waterline.add(0D, -VehiclePhysicsConstants.LEGACY_WATERLINE_BAND_BLOCKS, 0D);
+        return flotationPointInWater(probe) ? findWaterSurfaceY(probe) - waterline.y : Double.NaN;
     }
 
     public boolean isEpicShipAtSea()

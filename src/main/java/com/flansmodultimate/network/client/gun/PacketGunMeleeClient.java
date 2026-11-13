@@ -1,5 +1,6 @@
 package com.flansmodultimate.network.client.gun;
 
+import com.flansmodultimate.common.guns.EnumMeleeDirection;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
@@ -18,11 +19,13 @@ public class PacketGunMeleeClient implements IClientPacket
 {
     private UUID playerUUID;
     private InteractionHand hand;
+    private EnumMeleeDirection direction = EnumMeleeDirection.FORWARD;
 
-    public PacketGunMeleeClient(UUID playerUUID, InteractionHand hand)
+    public PacketGunMeleeClient(UUID playerUUID, InteractionHand hand, EnumMeleeDirection direction)
     {
         this.playerUUID = playerUUID;
         this.hand = hand;
+        this.direction = direction;
     }
 
     @Override
@@ -30,6 +33,7 @@ public class PacketGunMeleeClient implements IClientPacket
     {
         data.writeUUID(playerUUID);
         data.writeEnum(hand);
+        data.writeVarInt(direction.ordinal());
     }
 
     @Override
@@ -37,6 +41,7 @@ public class PacketGunMeleeClient implements IClientPacket
     {
         playerUUID = data.readUUID();
         hand = data.readEnum(InteractionHand.class);
+        direction = EnumMeleeDirection.byOrdinal(data.readVarInt());
     }
 
     @Override
@@ -45,7 +50,7 @@ public class PacketGunMeleeClient implements IClientPacket
         Player meleePlayer = level.getPlayerByUUID(playerUUID);
         if (meleePlayer != null && meleePlayer.getItemInHand(hand).getItem() instanceof GunItem gunItem)
         {
-            ClientHooks.GUN.meleeGunItem(gunItem, meleePlayer, hand);
+            ClientHooks.GUN.meleeGunItem(gunItem, meleePlayer, hand, direction);
         }
     }
 }

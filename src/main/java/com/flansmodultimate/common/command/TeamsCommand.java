@@ -95,8 +95,7 @@ public final class TeamsCommand
         }));
         root.then(Commands.literal("restart").requires(source -> source.hasPermission(2)).executes(context ->
         {
-            manager().stopRound();
-            return manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND);
+            return manager().restartRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND);
         }));
         root = addRuleCommands(root)
             .then(Commands.literal("start").requires(source -> source.hasPermission(2))
@@ -173,9 +172,9 @@ public final class TeamsCommand
                 manager().setRoundsGenerator(enabled);
                 return success(context, "Rounds generator " + (enabled ? ENABLED : DISABLED));
             })))
-            .then(Commands.literal("start").executes(context -> manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_NO_VALID_ROUND))
-                .then(Commands.argument(INDEX, IntegerArgumentType.integer(0))
-                    .executes(context -> manager().startRound(IntegerArgumentType.getInteger(context, INDEX)) ? success(context, MSG_ROUND_STARTED) : failure(context, MSG_INVALID_ROUND_INDEX))))
+            .then(Commands.literal("start").executes(context -> manager().startNextRound() ? success(context, MSG_ROUND_STARTED) : failure(context, startFailure(MSG_NO_VALID_ROUND)))
+                .then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(context -> startRound(context, false))
+                    .then(Commands.literal("force").executes(context -> startRound(context, true)))))
             .then(Commands.literal("next").executes(context -> manager().startNextRound() ? success(context, "Advanced to the next round") : failure(context, MSG_NO_VALID_ROUND)))
             .then(Commands.literal("setnext").then(Commands.argument(INDEX, IntegerArgumentType.integer(0)).executes(TeamsCommand::queueRound)))
             .then(Commands.literal("ping").executes(TeamsCommand::listPings))
@@ -466,7 +465,7 @@ public final class TeamsCommand
         {
             context.getSource().sendSuccess(() -> Component.translatable("message.flansmodultimate.centre.help"), false);
             context.getSource().sendSuccess(() -> Component.literal(
-                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|bloodEffects|parachutesCanBeHit|canBreakGuns|canBreakAAGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns|corpses> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection|playerRegenSeconds|botRegenSeconds|corpseLife|bloodLife> <seconds>"),
+                "Rules: /teams <explosions|restoreBlocks|bodyPartDamageModifiers|forceAdventure|fuelNeeded|vehiclesCanZoom|regeneration|overrideHunger|bombs|shells|bullets|bloodEffects|parachutesCanBeHit|canBreakGuns|canBreakAAGuns|canBreakGlass|survivalCanBreakVehicles|survivalCanPlaceVehicles|armourDrops|keepBrokenArmor|vehiclesBreakBlocks|useRotation|autobalance|alliedSpawns|corpses> <true|false>, /teams weaponDrops <on|off|smart>, /teams <playerHealth|botHealth> <HP; 0 = default>, /teams <mgLife|planeLife|vehicleLife|mechaLife|aaLife|spawnProtection|playerRegenSeconds|botRegenSeconds|corpseLife|bloodLife> <seconds>"),
                 false);
             context.getSource()
                 .sendSuccess(() -> Component.literal("Rounds and server: /teams setRound <index>, /teams goToMap <index>, /teams ping, /teams bltss [<min> <divisor>], /teams motd <text>"), false);
@@ -513,6 +512,7 @@ public final class TeamsCommand
             .then(rule("survivalCanPlaceVehicles", TeamsManager::setSurvivalCanPlaceVehicles, enabled -> "Survival players can " + (enabled ? "now" : NO_LONGER) + " place vehicles"))
             .then(rule("armourDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : NO_LONGER) + " be dropped"))
             .then(rule("armorDrops", TeamsManager::setArmourDrops, enabled -> "Armour will " + (enabled ? "now" : NO_LONGER) + " be dropped"))
+            .then(rule("keepBrokenArmor", TeamsManager::setKeepBrokenArmor, enabled -> "Armor that runs out of durability during a round will " + (enabled ? "now stay on without protection" : "now break")))
             .then(rule("vehiclesBreakBlocks", TeamsManager::setDriveablesBreakBlocks, enabled -> "Vehicles will " + (enabled ? "now" : NO_LONGER) + " break blocks"))
             .then(rule("alliedSpawns", TeamsManager::setAlliedSpawnSharing, enabled -> "Allied teams will " + (enabled ? "now" : NO_LONGER) + " spawn at each other's bases"))
             .then(Commands.literal("weaponDrops").requires(source -> source.hasPermission(2))
@@ -1040,6 +1040,21 @@ public final class TeamsCommand
     {
         context.getSource().sendSuccess(() -> message, true);
         return 1;
+    }
+
+    /** Starts the round of the command's index; {@code force} starts it although an era window leaves a team without a class. */
+    private static int startRound(CommandContext<CommandSourceStack> context, boolean force)
+    {
+        if (manager().startRound(IntegerArgumentType.getInteger(context, INDEX), force))
+            return success(context, MSG_ROUND_STARTED);
+        return failure(context, startFailure(MSG_INVALID_ROUND_INDEX));
+    }
+
+    /** The era problem that stopped the last start, with a hint at forcing it, or the general message. */
+    private static String startFailure(String fallback)
+    {
+        String problem = manager().getLastStartProblem();
+        return problem == null ? fallback : problem + ". An operator can start it anyway with /teams admin start <index> force.";
     }
 
     private static int failure(CommandContext<CommandSourceStack> context, String message)

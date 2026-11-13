@@ -3,6 +3,9 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.common.eras.IssueDates;
+import com.flansmodultimate.common.eras.ServicePeriod;
+import com.flansmodultimate.common.eras.ServicePeriodReader;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.content.*;
@@ -124,6 +127,13 @@ public abstract class InfoType implements IContentType
      */
     @Getter
     protected boolean disableFrustumCulling;
+    /**
+     * When this type entered and left service, from its {@code IssueDate} and {@code RetirementDate}; {@code null} when
+     * undated. A server override can replace it, so gameplay reads {@link IssueDates#periodOf} instead.
+     */
+    @Getter
+    @Nullable
+    protected ServicePeriod servicePeriod;
 
     public record RenderOptions(boolean translucentRendering, boolean additiveBlending, boolean disableCulling)
     {}
@@ -251,6 +261,10 @@ public abstract class InfoType implements IContentType
         readIntValues("Color", file, 3).ifPresent(c -> colour = (c[0] << 16) + (c[1] << 8) + c[2]);
 
         readRecipeDefinitions(file);
+
+        ServicePeriodReader.Result serviceDates = ServicePeriodReader.read(file, IssueDates.eras());
+        serviceDates.warnings().forEach(warning -> logError(warning, file));
+        servicePeriod = serviceDates.period();
     }
 
     /** Whether {@link #readLine} is to be called for every line; a type overriding it answers {@code true}. */

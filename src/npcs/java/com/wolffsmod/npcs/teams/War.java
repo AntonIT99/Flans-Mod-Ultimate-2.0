@@ -38,6 +38,7 @@ final class War
     private static final String NBT_INFANTRY = "infantry";
     private static final String NBT_RESPAWN = "respawn_seconds";
     private static final String NBT_TICKETS = "tickets";
+    private static final String NBT_ERA_WINDOW = "era_window";
     private static final String NBT_RANGE = "range";
     private static final String NBT_ENGAGEMENTS = "engagements";
     private static final String NBT_MOST = "most_engagements";
@@ -107,6 +108,8 @@ final class War
     private int respawnSeconds = 30;
     /** Tickets each side of an engagement may spend; 0 for no limit. */
     private int tickets;
+    /** The era restriction its engagements are fought under, in its one-line form; empty for none. */
+    private String eraWindow = "";
     /** Blocks from a border within which players wake an engagement there. */
     private int range = 128;
     /** Engagements fought at once at most. */
@@ -174,6 +177,7 @@ final class War
         tag.putInt(NBT_INFANTRY, infantry);
         tag.putInt(NBT_RESPAWN, respawnSeconds);
         tag.putInt(NBT_TICKETS, tickets);
+        tag.putString(NBT_ERA_WINDOW, eraWindow);
         tag.putInt(NBT_RANGE, range);
         tag.putInt(NBT_MOST, mostEngagements);
         tag.putInt(NBT_FLIP, flipSeconds);
@@ -233,6 +237,7 @@ final class War
         war.infantry = Math.max(0, tag.getInt(NBT_INFANTRY));
         war.respawnSeconds = Math.max(0, tag.getInt(NBT_RESPAWN));
         war.tickets = Math.max(0, tag.getInt(NBT_TICKETS));
+        war.eraWindow = tag.getString(NBT_ERA_WINDOW);
         war.range = Math.max(16, tag.getInt(NBT_RANGE));
         war.mostEngagements = Math.max(1, tag.getInt(NBT_MOST));
         war.flipSeconds = Math.max(5, tag.getInt(NBT_FLIP));

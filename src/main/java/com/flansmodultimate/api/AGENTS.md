@@ -61,8 +61,9 @@ outlives the implementation behind it.
   NeoForge), `apiSourcesJar` and `apiJavadocJar`, and published by
   the `api` Maven publication. Run `apiJavadoc` after API changes: it fails on broken javadoc
   references and malformed HTML.
-- Bump `api_version` in `gradle.properties` with every released API change: the minor version for
-  additions, the major version for breaking changes. It is independent of `mod_version`.
+- Keep `api_version` in `gradle.properties` equal to the `2.X` line of `mod_version`, for example
+  `2.2` for main mod `2.2.2`. Any change to the API contract or classes moves both to the next `2.X`
+  line, following "Changelogs" in the root `AGENTS.md`.
 
 - When adding to the API, update the wiki too (an API page, created if missing).
 - Port API changes to the maintained version branches with the rest of the feature.
@@ -83,7 +84,7 @@ One-time setup, done by the user:
 
 Each release, per Minecraft branch:
 
-1. Bump `api_version` if the API changed since its last release. Published versions are
+1. Check that `api_version` matches the `2.X` line of `mod_version`. Published versions are
    immutable; publishing an existing one fails.
 2. Make sure `gradlew test apiJavadoc` passes.
 3. Run `Publish API` on the branch, from the Actions tab.

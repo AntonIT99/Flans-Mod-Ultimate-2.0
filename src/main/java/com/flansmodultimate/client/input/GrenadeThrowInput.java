@@ -4,6 +4,7 @@ import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.item.GrenadeItem;
 import com.flansmodultimate.common.types.GrenadeType;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.gun.PacketGrenadeThrow;
 import lombok.AccessLevel;
@@ -15,7 +16,7 @@ import net.minecraft.world.entity.player.Player;
 
 /**
  * Client side of the Labjac Edition's hold-to-throw grenades. Holding attack and releasing it throws
- * overhand, holding use and releasing it tosses underhand. A quick click throws at full speed; holding
+ * overhand, holding use and releasing it tosses underhand; the invertGrenadeThrowButtons client setting swaps the two. A quick click throws at full speed; holding
  * longer charges the throw from no speed up to full speed, like a bow, and the HUD shows the charge.
  * The release is sent to the server, which validates and throws. The button pressed first decides the
  * throw. Switching items, opening a screen or getting into a vehicle while holding puts the grenade away
@@ -44,25 +45,28 @@ public final class GrenadeThrowInput
             return;
         }
 
-        boolean attackDown = mc.options.keyAttack.isDown();
-        boolean useDown = mc.options.keyUse.isDown();
+        ModClientConfig config = ModClientConfig.get();
+        boolean inverted = config != null && config.invertGrenadeThrowButtons;
+        // Overhand and underhand buttons, swapped by the invertGrenadeThrowButtons setting
+        boolean overhandDown = (inverted ? mc.options.keyUse : mc.options.keyAttack).isDown();
+        boolean underhandDown = (inverted ? mc.options.keyAttack : mc.options.keyUse).isDown();
         switch (hold)
         {
             case NONE -> {
                 heldTicks = 0;
-                if (attackDown)
+                if (overhandDown)
                     hold = Hold.OVERHAND;
-                else if (useDown)
+                else if (underhandDown)
                     hold = Hold.UNDERHAND;
             }
             case OVERHAND -> {
-                if (attackDown)
+                if (overhandDown)
                     heldTicks++;
                 else
                     release(heldGrenade(player), false);
             }
             case UNDERHAND -> {
-                if (useDown)
+                if (underhandDown)
                     heldTicks++;
                 else
                     release(heldGrenade(player), true);

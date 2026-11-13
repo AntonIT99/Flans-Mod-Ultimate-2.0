@@ -1,5 +1,221 @@
 {
 
+    "1P29 Tyulpan sight service period": {
+        "properties": {
+            "IssueDate": "~1988"
+        },
+        "items": [
+            "1p29"
+        ]
+    },
+
+    "1P63 Obzor Collimator Service Period": {
+        "properties": {
+            "IssueDate": "~2015"
+        },
+        "items": [
+            "1p63"
+        ]
+    },
+
+    "1P78 Kashtan Telescope Service Period": {
+        "properties": {
+            "IssueDate": "~2014"
+        },
+        "items": [
+            "1p78"
+        ]
+    },
+
+    "1P87 Valday sight service period": {
+        "properties": {
+            "IssueDate": "~2015"
+        },
+        "items": [
+            "1p87"
+        ]
+    },
+
+    "ELCAN Specter DR 1-4x service period": {
+        "properties": {
+            "IssueDate": "2006"
+        },
+        "items": [
+            "elcan"
+        ]
+    },
+
+    "EOTech EXPS3-0 service period": {
+        "properties": {
+            "IssueDate": "~2010"
+        },
+        "items": [
+            "exps3"
+        ]
+    },
+
+    "French Modele 1886 Lebel Bayonet service period": {
+        "properties": {
+            "IssueDate": "~1887",
+            "RetirementDate": "1940"
+        },
+        "items": [
+            "lebelbayonet"
+        ]
+    },
+
+    "Goerz Gewehr 98 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "~1915"
+        },
+        "items": [
+            "goerze"
+        ]
+    },
+
+    "GP-25 underbarrel grenade launcher service period": {
+        "properties": {
+            "IssueDate": "1978"
+        },
+        "items": [
+            "gp25"
+        ]
+    },
+
+    "Greek Mannlicher-Schoenauer M1903 bayonet service period": {
+        "properties": {
+            "IssueDate": "~1907",
+            "RetirementDate": "~1950"
+        },
+        "items": [
+            "mannlichery1903bayonet"
+        ]
+    },
+
+    "Hensoldt G3 4x24 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "~1967"
+        },
+        "items": [
+            "zf24"
+        ]
+    },
+
+    "KAC Vertical Foregrip Service Period": {
+        "properties": {
+            "IssueDate": "1997"
+        },
+        "items": [
+            "kacgrip"
+        ]
+    },
+
+    "M68 Close Combat Optic service period": {
+        "properties": {
+            "IssueDate": "2000"
+        },
+        "items": [
+            "m68cco"
+        ]
+    },
+
+    "M150 Rifle Combat Optic service period": {
+        "properties": {
+            "IssueDate": "2008"
+        },
+        "items": [
+            "acog"
+        ]
+    },
+
+    "Mannlicher M1895 bayonet service period": {
+        "properties": {
+            "IssueDate": "~1895",
+            "RetirementDate": "~1945"
+        },
+        "items": [
+            "m95bayonet"
+        ]
+    },
+
+    "No. 32 Mk II Telescope service period": {
+        "properties": {
+            "IssueDate": "1943-04",
+            "RetirementDate": "~1970"
+        },
+        "items": [
+            "44_no32mkiiscope"
+        ]
+    },
+
+    "Pattern 1907 Bayonet service period": {
+        "properties": {
+            "IssueDate": "1908",
+            "RetirementDate": "~1959"
+        },
+        "items": [
+            "leebayonet"
+        ]
+    },
+
+    "PGO-7V3 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "1988"
+        },
+        "items": [
+            "pgo72"
+        ]
+    },
+
+    "PSO-1 Telescope service period": {
+        "properties": {
+            "IssueDate": "1963"
+        },
+        "items": [
+            "pso1"
+        ]
+    },
+
+    "PU Telescope service period": {
+        "properties": {
+            "IssueDate": "~1941",
+            "RetirementDate": "~1963"
+        },
+        "items": [
+            "44_puscope"
+        ]
+    },
+
+    "Reichert Mannlicher M95 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "WW1",
+            "RetirementDate": "~1918"
+        },
+        "items": [
+            "reichert"
+        ]
+    },
+
+    "Schiessbecher rifle grenade launcher service period": {
+        "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "schiessbecher"
+        ]
+    },
+
+    "Seitengewehr 98/05 Bayonet service period": {
+        "properties": {
+            "IssueDate": "1905",
+            "RetirementDate": "~1935"
+        },
+        "items": [
+            "seitengewehr98"
+        ]
+    },
+
     "TPR foregrips": {
         "properties": {},
         "items": [
@@ -75,7 +291,9 @@
     },
 
     "TPR SMAW spotting rifle": {
-        "properties": {},
+        "properties": {
+            "IssueDate": "1984"
+        },
         "items": [
             "smawspottingrifle"
         ]
@@ -86,6 +304,65 @@
         "items": [
             "gp25",
             "schiessbecher"
+        ]
+    },
+
+    "Type 97 Rifle Telescope service period": {
+        "properties": {
+            "IssueDate": "~1939",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "44_type97scope"
+        ]
+    },
+
+    "Unertl 8X USMC Telescope service period": {
+        "properties": {
+            "IssueDate": "~1943",
+            "RetirementDate": "~1966"
+        },
+        "items": [
+            "44_unertl8xscope"
+        ]
+    },
+
+    "Y/MA 95-002 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "~2015"
+        },
+        "items": [
+            "qbzscope"
+        ]
+    },
+
+    "ZF 4 Telescope service period": {
+        "properties": {
+            "IssueDate": "~1944",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "44_zf4scope"
+        ]
+    },
+
+    "ZF 39 Telescope service period": {
+        "properties": {
+            "IssueDate": "~1940",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "44_zf39scope"
+        ]
+    },
+
+    "ZF 41 Telescope service period": {
+        "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "1945-05"
+        },
+        "items": [
+            "44_zf41scope"
         ]
     }
 }

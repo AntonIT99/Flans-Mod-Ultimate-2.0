@@ -12,6 +12,9 @@ RotateWheels True
 AddDye 8 green
 ModelScale 1
 
+// Paintjobs
+AdvPaintJob Turkey Chaffee chaffee_turkey green 8
+
 // Recipe
 AddRecipeParts turret 1 lightTankBody 1 vehicleSeat
 AddRecipeParts core 1 lightTankBody

@@ -96,7 +96,16 @@ public abstract class GameType
         TeamsManager manager = TeamsManager.getInstance();
         Team victimTeam = manager.getPlayerTeam(victim);
         Team attackerTeam = manager.getPlayerTeam(attacker);
-        return victimTeam != Team.SPECTATORS && attackerTeam != null && victimTeam != null && (!manager.areAllied(victimTeam, attackerTeam) || isFriendlyFireEnabled());
+        return mayFight(victimTeam, attackerTeam) && (!manager.areAllied(victimTeam, attackerTeam) || isFriendlyFireEnabled());
+    }
+
+    /**
+     * Whether members of these teams fight in the round at all: both are on a team and neither watches. A spectator
+     * takes no damage, so one who kept a weapon, as outside forced adventure mode, must not deal any either.
+     */
+    static boolean mayFight(@Nullable Team victimTeam, @Nullable Team attackerTeam)
+    {
+        return victimTeam != null && attackerTeam != null && victimTeam != Team.SPECTATORS && attackerTeam != Team.SPECTATORS;
     }
 
     /**
@@ -109,7 +118,7 @@ public abstract class GameType
             return canPlayerBeAttacked(victimPlayer, attackerPlayer);
         Team victimTeam = TeamsCombatants.getTeam(victim);
         Team attackerTeam = TeamsCombatants.getTeam(attacker);
-        return victimTeam != Team.SPECTATORS && attackerTeam != null && victimTeam != null && (!TeamsManager.getInstance().areAllied(victimTeam, attackerTeam) || isFriendlyFireEnabled());
+        return mayFight(victimTeam, attackerTeam) && (!TeamsManager.getInstance().areAllied(victimTeam, attackerTeam) || isFriendlyFireEnabled());
     }
 
     public boolean playerAttacked(ServerPlayer player, DamageSource source)

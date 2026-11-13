@@ -57,6 +57,10 @@ public final class CommandCentreScreen extends Screen
     private static final int WIDE_FRAME = 450;
     private static final int ENTRY_HEIGHT = 20;
     private static final int PADDING = 6;
+    /** Height of the strip of page tabs above a page that shares its side bar entry, gap below it included. */
+    private static final int TAB_STRIP = 18;
+    private static final int TAB_HEIGHT = 14;
+    private static final int TAB_PADDING = 8;
     private static final int FIELD_LENGTH = 256;
     private static final int REFRESH_TICKS = 60;
     private static final int STATUS_TICKS = 240;
@@ -82,6 +86,8 @@ public final class CommandCentreScreen extends Screen
     private List<ICommandCentrePage> shown = List.of();
     @Nullable
     private ICommandCentrePage page;
+    /** The pages shown as tabs with the page, the side bar's first; empty when the page has its side bar entry alone. */
+    private List<ICommandCentrePage> tabs = List.of();
     @Nullable
     private Status status;
     /** The page that ran the command whose output is awaited. */
@@ -114,8 +120,13 @@ public final class CommandCentreScreen extends Screen
         sidebarWidth = frameWidth >= WIDE_FRAME ? SIDEBAR_WIDE : SIDEBAR_NARROW;
         shown = CommandCentreClient.pages().stream().filter(this::available).toList();
         page = shown.stream().filter(candidate -> candidate.getId().equals(CommandCentreClient.shownPage())).findFirst().orElse(shown.isEmpty() ? null : shown.get(0));
-        for (int i = 0; i < shown.size(); i++)
-            addRenderableWidget(new SidebarEntry(frameLeft, frameTop + HEADER + 4 + i * ENTRY_HEIGHT, sidebarWidth, shown.get(i)));
+        tabs = page == null ? List.of() : tabsOf(page);
+        List<ICommandCentrePage> entries = shown.stream().filter(candidate -> tabsOf(candidate).indexOf(candidate) <= 0).toList();
+        for (int i = 0; i < entries.size(); i++)
+            addRenderableWidget(new SidebarEntry(frameLeft, frameTop + HEADER + 4 + i * ENTRY_HEIGHT, sidebarWidth, entries.get(i)));
+        int tabX = frameLeft + sidebarWidth + PADDING;
+        for (ICommandCentrePage tab : tabs)
+            tabX += addRenderableWidget(new PageTab(tabX, frameTop + HEADER + PADDING, tab)).getWidth() + 2;
         Button close = addRenderableWidget(Button.builder(Component.literal("✕"), button -> onClose()).bounds(frameLeft + frameWidth - 19, frameTop + 3, 16, 16).build());
         close.setTooltip(Tooltip.create(Component.translatable(KEY + "close")));
         laidOutFrom = layoutState();
@@ -130,6 +141,17 @@ public final class CommandCentreScreen extends Screen
             FlansLog.log.error("Teams command centre page {} failed to lay out", page.getId(), e);
             view.showMessage(Component.translatable(KEY + "page_failed"), true);
         }
+    }
+
+    /**
+     * The shown pages that share a side bar entry with the given one, as tabs in group order; empty when fewer than two of
+     * them are shown, so a page whose group is otherwise missing keeps an entry of its own.
+     */
+    private List<ICommandCentrePage> tabsOf(ICommandCentrePage candidate)
+    {
+        List<String> group = CommandCentreClient.tabGroup(candidate.getId());
+        List<ICommandCentrePage> grouped = group.stream().flatMap(id -> shown.stream().filter(member -> member.getId().equals(id))).toList();
+        return grouped.size() < 2 ? List.of() : grouped;
     }
 
     private boolean available(ICommandCentrePage candidate)
@@ -235,6 +257,11 @@ public final class CommandCentreScreen extends Screen
         graphics.fill(frameLeft, frameTop, frameLeft + frameWidth, frameTop + frameHeight, CentreStyle.FRAME);
         renderHeader(graphics);
         graphics.fill(frameLeft, frameTop + HEADER, frameLeft + sidebarWidth, frameTop + frameHeight, CentreStyle.SIDEBAR);
+        if (!tabs.isEmpty())
+        {
+            int lineY = frameTop + HEADER + PADDING + TAB_HEIGHT;
+            graphics.fill(frameLeft + sidebarWidth + PADDING, lineY, frameLeft + frameWidth - PADDING, lineY + 1, CentreStyle.PANEL_BORDER);
+        }
         if (page != null)
         {
             try
@@ -348,7 +375,7 @@ public final class CommandCentreScreen extends Screen
         @Override
         protected void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
         {
-            boolean selected = target == page;
+            boolean selected = target == page || !tabs.isEmpty() && tabs.get(0) == target;
             if (selected)
                 graphics.fill(getX(), getY(), getX() + width, getY() + height, CentreStyle.SIDEBAR_SELECTED);
             else if (isHoveredOrFocused())
@@ -358,6 +385,47 @@ public final class CommandCentreScreen extends Screen
             graphics.renderItem(icon, getX() + 5, getY() + 2);
             if (wide)
                 CentreStyle.drawText(graphics, font, getMessage(), getX() + 25, getY() + 6, width - 28, selected ? CentreStyle.TEXT : CentreStyle.DIM);
+        }
+
+        @Override
+        protected void updateWidgetNarration(@NotNull NarrationElementOutput output)
+        {
+            defaultButtonNarrationText(output);
+        }
+    }
+
+    /** A tab above a page that shares its side bar entry with others: the page's name, underlined while it is shown. */
+    private final class PageTab extends AbstractButton
+    {
+        private final ICommandCentrePage target;
+
+        PageTab(int x, int y, ICommandCentrePage target)
+        {
+            super(x, y, font.width(target.getTitle()) + TAB_PADDING * 2, TAB_HEIGHT, target.getTitle());
+            this.target = target;
+            Component description = target.getDescription();
+            if (!description.getString().isEmpty())
+                setTooltip(Tooltip.create(description.copy().withStyle(ChatFormatting.GRAY)));
+        }
+
+        @Override
+        public void onPress()
+        {
+            if (target != page)
+                view.showPage(target.getId());
+        }
+
+        @Override
+        protected void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+        {
+            boolean selected = target == page;
+            if (selected)
+                graphics.fill(getX(), getY(), getX() + width, getY() + height, CentreStyle.SIDEBAR_SELECTED);
+            else if (isHoveredOrFocused())
+                graphics.fill(getX(), getY(), getX() + width, getY() + height, CentreStyle.SIDEBAR_HOVER);
+            if (selected)
+                graphics.fill(getX(), getY() + height - 2, getX() + width, getY() + height, CentreStyle.ACCENT);
+            graphics.drawString(font, getMessage(), getX() + TAB_PADDING, getY() + 3, selected ? CentreStyle.TEXT : CentreStyle.DIM);
         }
 
         @Override
@@ -379,7 +447,7 @@ public final class CommandCentreScreen extends Screen
         @Override
         public int getTop()
         {
-            return frameTop + HEADER + PADDING;
+            return frameTop + HEADER + PADDING + (tabs.isEmpty() ? 0 : TAB_STRIP);
         }
 
         @Override

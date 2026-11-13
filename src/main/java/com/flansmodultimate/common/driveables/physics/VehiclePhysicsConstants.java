@@ -263,8 +263,17 @@ public final class VehiclePhysicsConstants
      * settles onto its draft over roughly a second instead of snapping.
      */
     public static final double DRAFT_RESTORING_STIFFNESS = 0.08D;
-    /** Maximum blocks a draft probe will search upward for the water surface. */
-    public static final int DRAFT_SURFACE_PROBE_BLOCKS = 8;
+    /**
+     * Maximum blocks a draft probe will search upward for the water surface. It
+     * must exceed the deepest authored draft: a probe that stops short reads the
+     * top of its own range as the surface and the hull sinks chasing it.
+     */
+    public static final int DRAFT_SURFACE_PROBE_BLOCKS = 16;
+    /**
+     * Height above the surface at which a legacy waterline point still counts as
+     * afloat, so a hull at rest is not handed to gravity as it crosses the surface.
+     */
+    public static final double LEGACY_WATERLINE_BAND_BLOCKS = 0.25D;
     /**
      * Slowest rise, in blocks per tick, a hull with a declared draft may settle
      * at. The legacy {@code Buoyancy} key caps the restoring response, and a

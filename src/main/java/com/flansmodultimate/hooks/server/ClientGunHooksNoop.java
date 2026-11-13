@@ -3,6 +3,7 @@ package com.flansmodultimate.hooks.server;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
+import com.flansmodultimate.common.guns.EnumMeleeDirection;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.hooks.IClientGunHooks;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +24,7 @@ public class ClientGunHooksNoop implements IClientGunHooks
     }
 
     @Override
-    public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand)
+    public void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand, EnumMeleeDirection direction)
     {
         /* no-op */
     }
@@ -44,6 +45,12 @@ public class ClientGunHooksNoop implements IClientGunHooks
     public void animateRemoteReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
     {
         /* no-op */
+    }
+
+    @Override
+    public void animateMeleeBlock(LivingEntity holder, InteractionHand hand, int ticks)
+    {
+        /* Client animation only. */
     }
 
     @Override

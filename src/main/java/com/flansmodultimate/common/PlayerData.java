@@ -1,7 +1,10 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.common.entity.Grenade;
+import com.flansmodultimate.common.guns.EnumMeleeDirection;
 import com.flansmodultimate.common.guns.GunSoundPermissions;
+import com.flansmodultimate.common.guns.MeleeBlocking;
+import com.flansmodultimate.common.guns.MeleeSwing;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.guns.reload.PendingReload;
@@ -140,6 +143,12 @@ public class PlayerData
     private Boolean preferOffhandAmmoOnReloadPreference;
     @Getter
     private Vector3f[] lastMeleePositions;
+    /** The custom melee swing in progress, if any */
+    @Getter
+    private MeleeSwing currentMeleeSwing;
+    /** The directional swing the player's movement keys select for the next custom melee attack */
+    @Getter @Setter
+    private EnumMeleeDirection requestedMeleeDirection = EnumMeleeDirection.FORWARD;
 
     // Teams related fields
     /** Gametype variables */
@@ -413,6 +422,7 @@ public class PlayerData
         if (!player.level().isClientSide)
         {
             tickIdleSounds((ServerPlayer) player);
+            MeleeBlocking.tick(player);
             tickRespawnReload((ServerPlayer) player);
             if (spawnProtectionTicks > 0)
                 spawnProtectionTicks--;
@@ -571,17 +581,21 @@ public class PlayerData
         setBurstRoundsRemaining(hand, 0);
     }
 
-    public void doMelee(Player player, int meleeTime, GunType type)
+    public void doMelee(Player player, MeleeSwing swing)
     {
-        meleeLength = meleeTime;
-        lastMeleePositions = new Vector3f[type.getMeleePath().size()];
+        currentMeleeSwing = swing;
+        meleeProgress = 0;
+        meleeLength = swing.time();
+        lastMeleePositions = new Vector3f[swing.damagePoints().size()];
+        if (!swing.hasPath())
+            return;
 
-        for (int k = 0; k < type.getMeleeDamagePoints().size(); k++)
+        for (int k = 0; k < swing.damagePoints().size(); k++)
         {
-            Vector3f meleeDamagePoint = JomlUtils.fromFlansVector(type.getMeleeDamagePoints().get(k));
+            Vector3f meleeDamagePoint = JomlUtils.fromFlansVector(swing.damagePoints().get(k));
             // Do a raytrace from the prev pos to the current pos and attack anything in the way
-            Vector3f nextPos = JomlUtils.fromFlansVector(type.getMeleePath().get(0));
-            Vector3f nextAngles = JomlUtils.fromFlansVector(type.getMeleePathAngles().get(0));
+            Vector3f nextPos = JomlUtils.fromFlansVector(swing.path().get(0));
+            Vector3f nextAngles = JomlUtils.fromFlansVector(swing.pathAngles().get(0));
             RotatedAxes nextAxes = new RotatedAxes(-nextAngles.y, -nextAngles.z, nextAngles.x);
 
             Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F).findLocalVectorGlobally(nextAxes.findLocalVectorGlobally(meleeDamagePoint));

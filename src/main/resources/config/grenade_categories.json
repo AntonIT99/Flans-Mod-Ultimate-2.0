@@ -180,6 +180,15 @@
         ]
     },
 
+    "Composition C-4 service period": {
+        "properties": {
+            "IssueDate": "~1956"
+        },
+        "items": [
+            "c4"
+        ]
+    },
+
     "Creeper Charge (Fictional)": {
         "properties": {
             "ThrowSpeedMs": 12,
@@ -194,6 +203,7 @@
 
     "Cryogenic Concussion Grenade (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -208,6 +218,7 @@
 
     "Dynamite Stick": {
         "properties": {
+            "IssueDate": "~1867",
             "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -238,6 +249,25 @@
         ]
     },
 
+    "F1 Fragmentation Grenade (French Mle 1915 service period)": {
+        "properties": {
+            "IssueDate": "1915",
+            "RetirementDate": "~1946"
+        },
+        "items": [
+            "44_f1frag"
+        ]
+    },
+
+    "F1 Fragmentation Grenade (Soviet service period)": {
+        "properties": {
+            "IssueDate": "~1928"
+        },
+        "items": [
+            "f1soviet"
+        ]
+    },
+
     "Field Utility Container (Generic)": {
         "properties": {
         },
@@ -249,6 +279,7 @@
 
     "Frag Grenade, Imperial (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -278,6 +309,7 @@
 
     "GBU-43/B MOAB": {
         "properties": {
+            "IssueDate": "2003-04",
             "ThrowSpeedMs": 6,
             "Mass": 9800000,
             "ExplosiveMassTNTKg": 11021,
@@ -291,6 +323,8 @@
 
     "Geballte Ladung 3kg": {
         "properties": {
+            "IssueDate": "Interwar",
+            "RetirementDate": "1945-05",
             "ThrowSpeedMs": 0,
             "Mass": 3000,
             "ExplosiveMassTNTKg": "3",
@@ -356,6 +390,7 @@
 
     "Krak Grenade (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "ThrowSpeedMs": 18,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -372,6 +407,8 @@
 
     "Kugelrohrhandgranate": {
         "properties": {
+            "IssueDate": "WW1",
+            "RetirementDate": "WW1",
             "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -401,6 +438,7 @@
 
     "Launched Impact Grenade (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "ThrowSpeedMs": 12,
             "Mass": 230,
             "ExplosiveMassTNTg": "32",
@@ -413,6 +451,8 @@
 
     "M8 HC Smoke Grenade": {
         "properties": {
+            "IssueDate": "~1942",
+            "RetirementDate": "~2000",
             "ThrowSpeedMs": 23,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -430,6 +470,7 @@
 
     "M18 Coloured Smoke Grenade": {
         "properties": {
+            "IssueDate": "1943-11",
             "ThrowSpeedMs": 23,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -447,6 +488,7 @@
 
     "M18A1 Claymore Mine": {
         "properties": {
+            "IssueDate": "~1960",
             "ThrowSpeedMs": 0,
             "Mass": 1600,
             "ExplosiveMassTNTg": "934",
@@ -462,6 +504,8 @@
 
     "M26 Fragmentation Grenade": {
         "properties": {
+            "IssueDate": "~1953",
+            "RetirementDate": "~1970",
             "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -478,6 +522,7 @@
 
     "M67 Fragmentation Hand Grenade": {
         "properties": {
+            "IssueDate": "~1970",
             "ThrowSpeedMs": 26,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -495,6 +540,8 @@
 
     "M1914 Fragmentation Grenade (TNT Loading)": {
         "properties": {
+            "IssueDate": "1930",
+            "RetirementDate": "1945",
             "ThrowSpeedMs": 22,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -541,6 +588,8 @@
 
     "Mk 2 Pineapple Grenade": {
         "properties": {
+            "IssueDate": "1918",
+            "RetirementDate": "~1969",
             "ThrowSpeedMs": 23,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -574,6 +623,8 @@
 
     "Nebelhandgranate 39": {
         "properties": {
+            "IssueDate": "1939",
+            "RetirementDate": "~1943",
             "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -591,6 +642,8 @@
 
     "No.27 White Phosphorus Grenade": {
         "properties": {
+            "IssueDate": "1916",
+            "RetirementDate": "~1923",
             "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -607,6 +660,8 @@
 
     "No. 73 Mk I Anti-Tank Grenade": {
         "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "1941",
             "ThrowSpeedMs": 13,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -665,6 +720,7 @@
 
     "RDG-2 Smoke Grenade": {
         "properties": {
+            "IssueDate": "1943",
             "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -695,6 +751,7 @@
 
     "RGD-5 Fragmentation Grenade": {
         "properties": {
+            "IssueDate": "1954",
             "ThrowSpeedMs": 26,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -711,6 +768,8 @@
 
     "RGD-33 Grenade": {
         "properties": {
+            "IssueDate": "1933",
+            "RetirementDate": "1945",
             "ThrowSpeedMs": 26,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -728,6 +787,7 @@
 
     "RGO Defensive Fragmentation Grenade": {
         "properties": {
+            "IssueDate": "1981",
             "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -744,6 +804,8 @@
 
     "RKG-3 Anti-Tank Grenade": {
         "properties": {
+            "IssueDate": "1950",
+            "RetirementDate": "~1972",
             "ThrowSpeedMs": 20,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -759,6 +821,8 @@
 
     "S-Mine 35": {
         "properties": {
+            "IssueDate": "1938-08",
+            "RetirementDate": "1945-05",
             "Mass": 4000,
             "ExplosiveMassTNTg": "182",
             "FragType": "PREFORMED",
@@ -775,6 +839,8 @@
 
     "Satchel": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "ThrowSpeedMs": 8,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -835,6 +901,8 @@
 
     "Stielhandgranate 24": {
         "properties": {
+            "IssueDate": "1924",
+            "RetirementDate": "1945",
             "ThrowSpeedMs": 27,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -854,6 +922,8 @@
 
     "Stielhandgranate 43": {
         "properties": {
+            "IssueDate": "~1944",
+            "RetirementDate": "1945",
             "ThrowSpeedMs": 27,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -870,6 +940,8 @@
 
     "Stielhandgranate Geballte Ladung": {
         "properties": {
+            "IssueDate": "~1940",
+            "RetirementDate": "1945-05",
             "ThrowSpeedMs": 14,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -903,6 +975,7 @@
 
     "Thermal Detonator (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "ThrowSpeedMs": 24,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -921,6 +994,7 @@
 
     "Thermal Detonator Class A (Fictional)": {
         "properties": {
+            "IssueDate": "Future",
             "ThrowSpeedMs": 16,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -949,6 +1023,8 @@
 
     "Trip Mine (Generic)": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "ThrowSpeedMs": 6,
             "Mass": 1000,
             "ExplosiveMassTNTg": 180,
@@ -961,6 +1037,8 @@
 
     "Type 97 Grenade": {
         "properties": {
+            "IssueDate": "~1937",
+            "RetirementDate": "1945",
             "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -983,6 +1061,26 @@
         },
         "items": [
             "bombdetonator"
+        ]
+    },
+
+    "WW2 Anti-Tank Mine (Official Pack Service Period)": {
+        "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2"
+        },
+        "items": [
+            "ww2mine"
+        ]
+    },
+
+    "WW2 Land Mine (Warfare 44 Service Period)": {
+        "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2"
+        },
+        "items": [
+            "44_landmine"
         ]
     }
 }

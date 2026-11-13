@@ -1,6 +1,7 @@
 package com.flansmodultimate.network.server.gun;
 
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.guns.EnumMeleeDirection;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
@@ -16,12 +17,20 @@ public class PacketGunInput implements IServerPacket
     private boolean shootKeyPressed;
     private boolean secondaryFunctionKeyPressed;
     private InteractionHand hand;
+    /** The directional melee swing selected by the movement keys held */
+    private EnumMeleeDirection meleeDirection = EnumMeleeDirection.FORWARD;
 
     public PacketGunInput(boolean shootKeyPressed, boolean secondaryFunctionKeyPressed, InteractionHand hand)
+    {
+        this(shootKeyPressed, secondaryFunctionKeyPressed, hand, EnumMeleeDirection.FORWARD);
+    }
+
+    public PacketGunInput(boolean shootKeyPressed, boolean secondaryFunctionKeyPressed, InteractionHand hand, EnumMeleeDirection meleeDirection)
     {
         this.shootKeyPressed = shootKeyPressed;
         this.secondaryFunctionKeyPressed = secondaryFunctionKeyPressed;
         this.hand = hand;
+        this.meleeDirection = meleeDirection;
     }
 
     @Override
@@ -30,6 +39,7 @@ public class PacketGunInput implements IServerPacket
         data.writeBoolean(shootKeyPressed);
         data.writeBoolean(secondaryFunctionKeyPressed);
         data.writeEnum(hand);
+        data.writeVarInt(meleeDirection.ordinal());
     }
 
     @Override
@@ -38,6 +48,7 @@ public class PacketGunInput implements IServerPacket
         shootKeyPressed = data.readBoolean();
         secondaryFunctionKeyPressed = data.readBoolean();
         hand = data.readEnum(InteractionHand.class);
+        meleeDirection = EnumMeleeDirection.byOrdinal(data.readVarInt());
     }
 
     @Override
@@ -46,5 +57,6 @@ public class PacketGunInput implements IServerPacket
         PlayerData data = PlayerData.getInstance(player);
         data.receiveGunInput(hand, shootKeyPressed);
         data.setSecondaryFunctionKeyPressed(secondaryFunctionKeyPressed);
+        data.setRequestedMeleeDirection(meleeDirection);
     }
 }
