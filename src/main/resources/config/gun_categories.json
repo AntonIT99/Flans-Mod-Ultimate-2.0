@@ -91,6 +91,8 @@
 
     "2-pdr QF Mk VIII": {
         "properties": {
+            "IssueDate": "1930",
+            "RetirementDate": "~1950",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -133,6 +135,8 @@
 
     "3-inch/50 Mark 10 AA Gun": {
         "properties": {
+            "IssueDate": "1915",
+            "RetirementDate": "~1945",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -160,6 +164,8 @@
 
     "3-inch/50 Rapid-Fire Gun Mark 22": {
         "properties": {
+            "IssueDate": "1948",
+            "RetirementDate": "~1994",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -187,6 +193,7 @@
 
     "3-inch/62 Mark 75 Naval Gun": {
         "properties": {
+            "IssueDate": "1977",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -366,6 +373,8 @@
 
     "4-inch/50 Mark 9 Single Mount": {
         "properties": {
+            "IssueDate": "1914",
+            "RetirementDate": "~1945",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -416,6 +425,7 @@
 
     "4.5-inch Mark 8 Mod 0 Naval Gun": {
         "properties": {
+            "IssueDate": "1971",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -471,6 +481,8 @@
 
     "4.7-inch QF Mark XII Twin Mount": {
         "properties": {
+            "IssueDate": "1938",
+            "RetirementDate": "~1955",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -498,6 +510,7 @@
 
     "5-inch/25 Mark 17": {
         "properties": {
+            "IssueDate": "1944",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -525,6 +538,8 @@
 
     "5-inch/38 Mark 12": {
         "properties": {
+            "IssueDate": "1939-02",
+            "RetirementDate": "~1975",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -1278,6 +1293,8 @@
 
     "8-inch/45 Mark 6 Naval Gun": {
         "properties": {
+            "IssueDate": "1906",
+            "RetirementDate": "1923-03",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -1305,6 +1322,7 @@
 
     "8-inch/55 Mark 9 Naval Gun": {
         "properties": {
+            "IssueDate": "1927",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -1709,6 +1727,8 @@
 
     "12-inch/45 Mark 5": {
         "properties": {
+            "IssueDate": "1906",
+            "RetirementDate": "1931",
             "Recoil": 1,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.08,
@@ -2959,6 +2979,7 @@
 
     "20mm Rheinmetall Rh 202": {
         "properties": {
+            "IssueDate": "1971-05",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -3350,6 +3371,8 @@
 
     "25mm GAU-12/U Equalizer": {
         "properties": {
+            "IssueDate": "1985-01",
+            "RetirementDate": "2026-06",
             "Recoil": 1.2,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.096,
@@ -4111,6 +4134,7 @@
 
     "30mm Mauser MK30-2/ABM (IFV Controlled Rate)": {
         "properties": {
+            "IssueDate": "2015-06",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -4302,6 +4326,7 @@
 
     "30mm Shipunov 2A42": {
         "properties": {
+            "IssueDate": "1980",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -4330,6 +4355,7 @@
 
     "30mm Shipunov 2A72": {
         "properties": {
+            "IssueDate": "1987",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -5714,6 +5740,8 @@
 
     "105mm M102 Howitzer": {
         "properties": {
+            "IssueDate": "1966",
+            "RetirementDate": "~2010",
             "Recoil": 0.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.056,
@@ -8104,6 +8132,8 @@
 
     "AVT-40": {
         "properties": {
+            "IssueDate": "1942-07",
+            "RetirementDate": "~1945",
             "Recoil": 3.8,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.38,
@@ -8658,6 +8688,8 @@
 
     "Berdan II": {
         "properties": {
+            "IssueDate": "1870",
+            "RetirementDate": "~1895",
             "Recoil": 5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.5,
@@ -8712,6 +8744,8 @@
 
     "Beretta BM59": {
         "properties": {
+            "IssueDate": "1962",
+            "RetirementDate": "~1993",
             "Recoil": 4.2,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.42,
@@ -8826,6 +8860,7 @@
 
     "Beretta M1938A": {
         "properties": {
+            "IssueDate": "~1939",
             "Recoil": 1.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.14,
@@ -9759,6 +9794,8 @@
 
     "Chauchat CSRG M1915": {
         "properties": {
+            "IssueDate": "1916",
+            "RetirementDate": "~1929",
             "Recoil": 2.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.27,
@@ -10519,6 +10556,7 @@
 
     "Danuvia 39M": {
         "properties": {
+            "IssueDate": "~1942",
             "Recoil": 1.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.14,
@@ -10546,6 +10584,7 @@
 
     "Danuvia 43M": {
         "properties": {
+            "IssueDate": "~1944",
             "Recoil": 1.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.14,
@@ -11380,6 +11419,7 @@
 
     "ERYX Launcher": {
         "properties": {
+            "IssueDate": "1994",
             "Recoil": 0.3,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.03,
@@ -11493,6 +11533,8 @@
 
     "Fedorov Avtomat (6.5mm Arisaka)": {
         "properties": {
+            "IssueDate": "~1920",
+            "RetirementDate": "1928",
             "Recoil": 3.5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.35,
@@ -11617,6 +11659,7 @@
 
     "FGM-148 Javelin": {
         "properties": {
+            "IssueDate": "1996-06",
             "Recoil": 0.3,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.03,
@@ -11849,6 +11892,8 @@
 
     "FM MAC 1924/29": {
         "properties": {
+            "IssueDate": "~1929",
+            "RetirementDate": "1965",
             "Recoil": 2.6,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.26,
@@ -12341,6 +12386,8 @@
 
     "Fusil Gras Mle 1874": {
         "properties": {
+            "IssueDate": "~1875",
+            "RetirementDate": "~1888",
             "Recoil": 5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.5,
@@ -12369,6 +12416,8 @@
 
     "Fusil Lebel Mle 1886": {
         "properties": {
+            "IssueDate": "1887",
+            "RetirementDate": "~1945",
             "Recoil": 5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.5,
@@ -12736,6 +12785,7 @@
 
     "GAU-8/A Avenger": {
         "properties": {
+            "IssueDate": "1977",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -12878,6 +12928,8 @@
 
     "Gewehr 98": {
         "properties": {
+            "IssueDate": "1901",
+            "RetirementDate": "~1935",
             "Recoil": 5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.5,
@@ -13022,6 +13074,7 @@
 
     "Gryazev-Shipunov GSh-30-1": {
         "properties": {
+            "IssueDate": "1983",
             "Recoil": 0.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.032,
@@ -16688,6 +16741,8 @@
 
     "M20 Super Bazooka": {
         "properties": {
+            "IssueDate": "1950-07",
+            "RetirementDate": "~1965",
             "Recoil": 0.3,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.03,
@@ -17215,6 +17270,8 @@
 
     "M1917 Revolver": {
         "properties": {
+            "IssueDate": "1917",
+            "RetirementDate": "~1945",
             "Recoil": 2.7,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.405,
@@ -17666,6 +17723,8 @@
 
     "Martini-Henry Mk II": {
         "properties": {
+            "IssueDate": "1877",
+            "RetirementDate": "~1889",
             "Recoil": 5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.5,
@@ -17694,6 +17753,8 @@
 
     "MAS 38": {
         "properties": {
+            "IssueDate": "1940-05",
+            "RetirementDate": "~1950",
             "Recoil": 1.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.14,
@@ -17721,6 +17782,8 @@
 
     "MAS-36": {
         "properties": {
+            "IssueDate": "~1938",
+            "RetirementDate": "~1960",
             "Recoil": 5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.5,
@@ -17915,6 +17978,8 @@
 
     "Mauser Gewehr 71": {
         "properties": {
+            "IssueDate": "~1872",
+            "RetirementDate": "~1888",
             "Recoil": 5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.5,
@@ -18697,6 +18762,7 @@
 
     "Mk 153 SMAW Launcher": {
         "properties": {
+            "IssueDate": "1984",
             "Recoil": 0.3,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.03,
@@ -19519,6 +19585,8 @@
 
     "Nagant M1895 Revolver": {
         "properties": {
+            "IssueDate": "~1895",
+            "RetirementDate": "~1951",
             "Recoil": 1.4,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.21,
@@ -20484,6 +20552,8 @@
 
     "Pattern 1853 Enfield": {
         "properties": {
+            "IssueDate": "~1855",
+            "RetirementDate": "~1867",
             "Recoil": 4.8,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.48,
@@ -20651,6 +20721,8 @@
 
     "PIAT": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1950",
             "Recoil": 3,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.3,
@@ -22070,6 +22142,7 @@
 
     "RIM-116 RAM Launcher": {
         "properties": {
+            "IssueDate": "1992-11",
             "Recoil": 0,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.0,
@@ -23586,6 +23659,8 @@
 
     "Springfield Model 1842": {
         "properties": {
+            "IssueDate": "~1844",
+            "RetirementDate": "~1862",
             "Recoil": 4.8,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.48,
@@ -23613,6 +23688,8 @@
 
     "Springfield Model 1855 Rifle-Musket (.58 Caliber Service Ball)": {
         "properties": {
+            "IssueDate": "~1857",
+            "RetirementDate": "~1867",
             "Recoil": 4.8,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.48,
@@ -23641,6 +23718,8 @@
 
     "Springfield Model 1861": {
         "properties": {
+            "IssueDate": "~1861",
+            "RetirementDate": "~1867",
             "Recoil": 4.8,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.48,
@@ -25669,6 +25748,7 @@
 
     "Winchester Model 1895 (Russian Contract)": {
         "properties": {
+            "IssueDate": "1915",
             "Recoil": 5,
             "RecoilYaw": 0,
             "RandomRecoilRange": 0.5,

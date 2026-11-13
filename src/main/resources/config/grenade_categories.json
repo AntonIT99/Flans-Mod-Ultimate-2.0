@@ -218,6 +218,7 @@
 
     "Dynamite Stick": {
         "properties": {
+            "IssueDate": "~1867",
             "ThrowSpeedMs": 25,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -838,6 +839,8 @@
 
     "Satchel": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "ThrowSpeedMs": 8,
             "HoldToThrow": "true",
             "OverhandThrowSpeedMultiplier": 1.0,
@@ -1020,6 +1023,8 @@
 
     "Trip Mine (Generic)": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "ThrowSpeedMs": 6,
             "Mass": 1000,
             "ExplosiveMassTNTg": 180,
@@ -1056,6 +1061,26 @@
         },
         "items": [
             "bombdetonator"
+        ]
+    },
+
+    "WW2 Anti-Tank Mine (Official Pack Service Period)": {
+        "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2"
+        },
+        "items": [
+            "ww2mine"
+        ]
+    },
+
+    "WW2 Land Mine (Warfare 44 Service Period)": {
+        "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2"
+        },
+        "items": [
+            "44_landmine"
         ]
     }
 }

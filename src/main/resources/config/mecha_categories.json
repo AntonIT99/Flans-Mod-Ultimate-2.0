@@ -72,6 +72,16 @@
         ]
     },
 
+    "Byzantine Macedonian Cataphract Horse Service Period": {
+        "properties": {
+            "IssueDate": "10C",
+            "RetirementDate": "11C"
+        },
+        "items": [
+            "byzanhorse"
+        ]
+    },
+
     "Camel weapon-platform operational mass estimate (Generic)": {
         "properties": {
             "RealMassKg": 750,
@@ -80,6 +90,16 @@
         "items": [
             "cannoncamel",
             "gatlingcamel"
+        ]
+    },
+
+    "Carthaginian Punic War Elephant Service Period": {
+        "properties": {
+            "IssueDate": "~262BC",
+            "RetirementDate": "201BC"
+        },
+        "items": [
+            "delandephant"
         ]
     },
 
@@ -173,6 +193,16 @@
         },
         "items": [
             "hbm"
+        ]
+    },
+
+    "Hellenistic Cataphract Horse Service Period": {
+        "properties": {
+            "IssueDate": "3CBC",
+            "RetirementDate": "1CBC"
+        },
+        "items": [
+            "hellenichorse"
         ]
     },
 
@@ -336,6 +366,26 @@
             "cannoncamel",
             "gatlingcamel",
             "hellenichorse",
+            "sassyhorse"
+        ]
+    },
+
+    "Roman Republican War Elephant Service Period": {
+        "properties": {
+            "IssueDate": "~200BC",
+            "RetirementDate": "46BC"
+        },
+        "items": [
+            "romaphant"
+        ]
+    },
+
+    "Sasanian Frontally Armoured Cataphract Horse Service Period": {
+        "properties": {
+            "IssueDate": "6C",
+            "RetirementDate": "7C"
+        },
+        "items": [
             "sassyhorse"
         ]
     },

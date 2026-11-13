@@ -88,6 +88,16 @@
         ]
     },
 
+    "French Army F2 Daguet Uniform Service Period": {
+        "properties": {
+            "IssueDate": "~1990",
+            "RetirementDate": "~2025"
+        },
+        "items": [
+            "francemodernd"
+        ]
+    },
+
     "Germany - modern": {
         "properties": {
             "VictoryFlagTexture": "flag_team_germany"

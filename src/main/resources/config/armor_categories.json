@@ -1,5 +1,45 @@
 {
 
+    "ACH with Three-Color Desert Cover Service Period": {
+        "properties": {
+            "IssueDate": "~2003",
+            "RetirementDate": "~2008"
+        },
+        "items": [
+            "ushelmetachdcu"
+        ]
+    },
+
+    "Achaemenid Bronze and Scale Helmet Service Period": {
+        "properties": {
+            "IssueDate": "5CBC",
+            "RetirementDate": "4CBC"
+        },
+        "items": [
+            "achaemenidhelmet"
+        ]
+    },
+
+    "Achaemenid Bronze Scale Armour Service Period": {
+        "properties": {
+            "IssueDate": "5CBC",
+            "RetirementDate": "4CBC"
+        },
+        "items": [
+            "achaemenidscale"
+        ]
+    },
+
+    "Adrian M1915 French Steel Helmet (WW1 Armor Pack Service Period)": {
+        "properties": {
+            "IssueDate": "1915",
+            "RetirementDate": "~1940"
+        },
+        "items": [
+            "french1915helmet"
+        ]
+    },
+
     "Adrian M1915 Italian Steel Helmet Service Period": {
         "properties": {
             "IssueDate": "1915-10",
@@ -10,9 +50,30 @@
         ]
     },
 
+    "Adrian M1915 Romanian Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1917-01",
+            "RetirementDate": "~1939"
+        },
+        "items": [
+            "1917romanianhelmet"
+        ]
+    },
+
+    "Adrian M1915 Russian Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1916",
+            "RetirementDate": "~1922"
+        },
+        "items": [
+            "1917russianhelmet",
+            "adrianovich"
+        ]
+    },
+
     "Adrian M1915 Steel Helmet Service Period": {
         "properties": {
-            "IssueDate": "1915-09",
+            "IssueDate": "1915",
             "RetirementDate": "~1940"
         },
         "items": [
@@ -37,6 +98,35 @@
         },
         "items": [
             "m26adrian"
+        ]
+    },
+
+    "Afrika Korps Tropical Equipment Service Period": {
+        "properties": {
+            "IssueDate": "1941-02",
+            "RetirementDate": "1943-05"
+        },
+        "items": [
+            "pp_afrikakorpsboots",
+            "pp_afrikakorpscap",
+            "pp_afrikakorpschest",
+            "pp_afrikakorpshelmet",
+            "pp_afrikakorpsofficercap",
+            "pp_afrikakorpsofficerchest",
+            "pp_afrikakorpspants",
+            "pp_afrikakorpstankcommanderhat",
+            "pp_afrikakorpstankdrivercap",
+            "pp_afrikakorpstrenchcoat"
+        ]
+    },
+
+    "American M1938 Tank Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "~1961"
+        },
+        "items": [
+            "muricatankhelmet"
         ]
     },
 
@@ -442,6 +532,34 @@
         ]
     },
 
+    "Austro-Hungarian Early WW1 Infantry Uniform Service Period": {
+        "properties": {
+            "IssueDate": "~1908",
+            "RetirementDate": "~1916"
+        },
+        "items": [
+            "1914kuksoldier",
+            "1914kukcap",
+            "1914kukofficer",
+            "1914kukofficerhat",
+            "1914kuksoldiercapwinter",
+            "1914kuktrenchcoat"
+        ]
+    },
+
+    "Austro-Hungarian Late WW1 Infantry Uniform Service Period": {
+        "properties": {
+            "IssueDate": "~1916",
+            "RetirementDate": "1918-11"
+        },
+        "items": [
+            "1916kuksoldier",
+            "1916kukofficer",
+            "1916kukcap",
+            "1916kukassaultsoldier"
+        ]
+    },
+
     "British Mk II steel helmet service period": {
         "properties": {
             "IssueDate": "1938",
@@ -450,6 +568,33 @@
         "items": [
             "broadiemk2",
             "broadiemk2desert"
+        ]
+    },
+
+    "British North African Campaign Equipment Service Period": {
+        "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "1943-05"
+        },
+        "items": [
+            "pp_britishhelmet",
+            "pp_britishofficerboots",
+            "pp_britishofficerchest",
+            "pp_britishofficerhat",
+            "pp_britishofficerpants",
+            "pp_britishuniformboots",
+            "pp_britishuniformchest",
+            "pp_britishuniformpants"
+        ]
+    },
+
+    "British Pattern 1940 Battledress Service Period": {
+        "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "~1949"
+        },
+        "items": [
+            "britww2"
         ]
     },
 
@@ -470,6 +615,37 @@
         },
         "items": [
             "broadiepoortugal"
+        ]
+    },
+
+    "Byzantine Macedonian Cataphract Protection Service Period": {
+        "properties": {
+            "IssueDate": "10C",
+            "RetirementDate": "11C"
+        },
+        "items": [
+            "byzantinecataphract",
+            "byzantinecataphracthelmet",
+            "byzantinearmor"
+        ]
+    },
+
+    "Corinthian Bronze Helmet Service Period": {
+        "properties": {
+            "IssueDate": "8CBC",
+            "RetirementDate": "4CBC"
+        },
+        "items": [
+            "corinthian"
+        ]
+    },
+
+    "Dendra Panoply Service Period": {
+        "properties": {
+            "IssueDate": "15CBC"
+        },
+        "items": [
+            "dendrapanoply"
         ]
     },
 
@@ -2216,6 +2392,17 @@
         ]
     },
 
+    "German 1910 Pattern Field Uniform Service Period": {
+        "properties": {
+            "IssueDate": "~1910",
+            "RetirementDate": "~1916"
+        },
+        "items": [
+            "1910infanterieofficer",
+            "1910infanteriesoldier"
+        ]
+    },
+
     "German GM-15 gas mask service period": {
         "properties": {
             "IssueDate": "1915",
@@ -2223,6 +2410,17 @@
         },
         "items": [
             "gm15"
+        ]
+    },
+
+    "German Late WW1 Field Uniform Service Period": {
+        "properties": {
+            "IssueDate": "~1916",
+            "RetirementDate": "1918-11"
+        },
+        "items": [
+            "1916infanterieofficer",
+            "1916infanteriesoldier"
         ]
     },
 
@@ -2258,6 +2456,36 @@
         ]
     },
 
+    "German M1915 Detachable-Spike Pickelhaube Service Period": {
+        "properties": {
+            "IssueDate": "1915",
+            "RetirementDate": "~1916"
+        },
+        "items": [
+            "1915infanteriehelmet"
+        ]
+    },
+
+    "German M1916 Stahlhelm (Austro-Hungarian Issue Service Period)": {
+        "properties": {
+            "IssueDate": "~1917",
+            "RetirementDate": "~1918"
+        },
+        "items": [
+            "1916kukhelmet"
+        ]
+    },
+
+    "German M1916 Stahlhelm (Plume WW1 Service Period)": {
+        "properties": {
+            "IssueDate": "1916",
+            "RetirementDate": "~1936"
+        },
+        "items": [
+            "1916infanteriehelmet"
+        ]
+    },
+
     "German M1916 Stahlhelm service period": {
         "properties": {
             "IssueDate": "1916",
@@ -2278,6 +2506,18 @@
         ]
     },
 
+    "German WW1 Pickelhaube (Early War Service Period)": {
+        "properties": {
+            "IssueDate": "WW1",
+            "RetirementDate": "~1916"
+        },
+        "items": [
+            "1914infanteriehelmet",
+            "1914infanteriehelmetartillery",
+            "1914infanteriehelmetuncovered"
+        ]
+    },
+
     "GK80 Steel Helmet Service Period": {
         "properties": {
             "IssueDate": "1980-02",
@@ -2285,6 +2525,18 @@
         },
         "items": [
             "gk80"
+        ]
+    },
+
+    "Greek Macedonian Front Equipment Service Period": {
+        "properties": {
+            "IssueDate": "~1916",
+            "RetirementDate": "1918"
+        },
+        "items": [
+            "1916greeksoldier",
+            "1916greeksoldiercap",
+            "1916greeksoldierwebbing"
         ]
     },
 
@@ -2394,6 +2646,31 @@
         ]
     },
 
+    "Late Roman Infantry and Cavalry Ridge Helmet Service Period": {
+        "properties": {
+            "IssueDate": "4C",
+            "RetirementDate": "5C"
+        },
+        "items": [
+            "burghcastle",
+            "ridgehelm"
+        ]
+    },
+
+    "Latvian Riflemen Imperial Russian Equipment Service Period": {
+        "properties": {
+            "IssueDate": "1915",
+            "RetirementDate": "~1917"
+        },
+        "items": [
+            "1914latviannco",
+            "1914latvianncocap",
+            "1914latviansoldier",
+            "1914latviansoldiercap",
+            "1914latvianwebbing"
+        ]
+    },
+
     "Leather Flight And Armoured-Crew Helmet": {
         "properties": {
             "Defence": "0.02",
@@ -2423,6 +2700,16 @@
         ]
     },
 
+    "M1 Helmet with Marine Corps Frogskin Cover Service Period": {
+        "properties": {
+            "IssueDate": "~1943",
+            "RetirementDate": "~1962"
+        },
+        "items": [
+            "m1potfrog"
+        ]
+    },
+
     "M33 Italian Steel Helmet Service Period": {
         "properties": {
             "IssueDate": "~1934",
@@ -2430,6 +2717,26 @@
         },
         "items": [
             "m33helmet"
+        ]
+    },
+
+    "M35 Stahlhelm (Nationalist Chinese Service Period)": {
+        "properties": {
+            "IssueDate": "~1937",
+            "RetirementDate": "~1949"
+        },
+        "items": [
+            "m35stahlhelmchina"
+        ]
+    },
+
+    "M35 Stahlhelm (Spanish Service Period)": {
+        "properties": {
+            "IssueDate": "~1937",
+            "RetirementDate": "~1945"
+        },
+        "items": [
+            "m35stahlhelmspain"
         ]
     },
 
@@ -2470,6 +2777,17 @@
         },
         "items": [
             "hellenichelmetww2"
+        ]
+    },
+
+    "Macedonian Phrygian Helmet Service Period": {
+        "properties": {
+            "IssueDate": "4CBC",
+            "RetirementDate": "2CBC"
+        },
+        "items": [
+            "phrygian",
+            "phrygianbeard"
         ]
     },
 
@@ -2806,6 +3124,16 @@
         ]
     },
 
+    "Neo-Assyrian Iron Helmet Service Period": {
+        "properties": {
+            "IssueDate": "9CBC",
+            "RetirementDate": "7CBC"
+        },
+        "items": [
+            "assyriahelm"
+        ]
+    },
+
     "Nerf Foam Padding (Chest)": {
         "properties": {
             "Defence": "0.03",
@@ -2849,6 +3177,18 @@
         },
         "items": [
             "pnv-57"
+        ]
+    },
+
+    "Palmyrene Royal Guard Equipment Service Period": {
+        "properties": {
+            "IssueDate": "~270",
+            "RetirementDate": "272"
+        },
+        "items": [
+            "palmyraguard",
+            "palmyrahelm",
+            "palmyramail"
         ]
     },
 
@@ -2923,6 +3263,46 @@
         "items": [
             "hazmatclassc",
             "hazmatclasscwhite"
+        ]
+    },
+
+    "Roman Coolus Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1CBC",
+            "RetirementDate": "1C"
+        },
+        "items": [
+            "coolus"
+        ]
+    },
+
+    "Roman Lorica Segmentata Service Period": {
+        "properties": {
+            "IssueDate": "1CBC",
+            "RetirementDate": "3C"
+        },
+        "items": [
+            "loricasegmentata"
+        ]
+    },
+
+    "Roman Montefortino Helmet Service Period": {
+        "properties": {
+            "IssueDate": "3CBC",
+            "RetirementDate": "1CBC"
+        },
+        "items": [
+            "montefortino"
+        ]
+    },
+
+    "Roman Niederbieber Helmet Service Period": {
+        "properties": {
+            "IssueDate": "2C",
+            "RetirementDate": "3C"
+        },
+        "items": [
+            "niderbieberhelm"
         ]
     },
 
@@ -3380,6 +3760,16 @@
         ]
     },
 
+    "Type 90 Steel Helmet (Japanese SNLF Service Period)": {
+        "properties": {
+            "IssueDate": "~1937",
+            "RetirementDate": "1945-09"
+        },
+        "items": [
+            "type90snlf"
+        ]
+    },
+
     "U.S. Advanced Combat Helmet service period": {
         "properties": {
             "IssueDate": "2003"
@@ -3525,6 +3915,29 @@
         },
         "items": [
             "pasgtvest"
+        ]
+    },
+
+    "Viet Cong National Liberation Front Equipment Service Period": {
+        "properties": {
+            "IssueDate": "~1960",
+            "RetirementDate": "1975-04"
+        },
+        "items": [
+            "nlfvccapnco",
+            "vcheavy",
+            "vcnlfclotheslong",
+            "vcnlfclotheslong2",
+            "vcnlfclotheslong3",
+            "vcnlfclotheslong4",
+            "vcnlfclotheslong5",
+            "vcnlfclothesshort",
+            "vcnlfclothesshort2",
+            "vcnlfclothesshort3",
+            "vcnlfclothesshort4",
+            "vcnlfclothesshort5",
+            "vcrifleman",
+            "vcscout"
         ]
     },
 
@@ -3965,6 +4378,21 @@
         ]
     },
 
+    "WW1 National Helmet Representations Service Period": {
+        "properties": {
+            "IssueDate": "WW1",
+            "RetirementDate": "WW1"
+        },
+        "items": [
+            "americanww1helmet",
+            "austrianww1helmet",
+            "britishww1helmet",
+            "french1914helmet",
+            "germanww1helmet",
+            "russianww1helmet"
+        ]
+    },
+
     "WW2 Flak Vest": {
         "properties": {
             "Defence": "0.11",
@@ -3976,6 +4404,28 @@
         },
         "items": [
             "flakjacket"
+        ]
+    },
+
+    "WW2 National Helmet Representations Service Period": {
+        "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2"
+        },
+        "items": [
+            "belgianhelmet",
+            "chinesehelmet",
+            "dutchhelmet",
+            "finnishhelmet",
+            "finnishsnowhelmet",
+            "frenchhelmet",
+            "hungarianhelmet",
+            "italianhelmet",
+            "japanese64phelmet",
+            "polishhelmet",
+            "russianforesthelmet",
+            "russiansnowhelmet",
+            "yugoslavianhelmet"
         ]
     }
 }

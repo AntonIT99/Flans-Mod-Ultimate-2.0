@@ -23,6 +23,7 @@
 
     "1K17 Szhatie (2S19 chassis, laser balance estimate)": {
         "properties": {
+            "IssueDate": "~1990",
             "RealMassKg": 41500,
             "RealEnginePowerHp": 840,
             "RealMaxSpeedKmh": 60.0,
@@ -78,6 +79,8 @@
 
     "2 cm Flakvierling 38": {
         "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "1945-05",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1514,
             "RoundsPerMinPrimary": 1400,
@@ -100,6 +103,7 @@
 
     "2K12 Kub 2P25 launcher": {
         "properties": {
+            "IssueDate": "~1967",
             "RealMassKg": 20000,
             "RealEnginePowerHp": 280,
             "RealMaxSpeedKmh": 44.0,
@@ -149,6 +153,7 @@
 
     "2S6 Tunguska": {
         "properties": {
+            "IssueDate": "~1984",
             "RealMassKg": 34700,
             "RealEnginePowerHp": 710,
             "RealMaxSpeedKmh": 65.0,
@@ -230,6 +235,7 @@
 
     "2S25 Sprut-SD": {
         "properties": {
+            "IssueDate": "~2006",
             "RealMassKg": 18000,
             "RealMaxSpeedKmh": 70.0,
             "RealMaxReverseSpeedKmh": 70.0,
@@ -261,6 +267,8 @@
 
     "3 inch Gun Motor Carriage M10": {
         "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "~1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 29600,
@@ -314,6 +322,8 @@
 
     "3.7 cm FlaK 36/37": {
         "properties": {
+            "IssueDate": "1936",
+            "RetirementDate": "1945-05",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1544,
             "RoundsPerMinPrimary": 160,
@@ -335,6 +345,8 @@
 
     "3.7 cm Pak 36": {
         "properties": {
+            "IssueDate": "1934",
+            "RetirementDate": "~1945",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 328,
             "RealEnginePowerHp": 2,
@@ -391,6 +403,8 @@
 
     "7.5 cm PaK 40": {
         "properties": {
+            "IssueDate": "~1942",
+            "RetirementDate": "1945-05",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1425,
             "ShootDelayPrimarySeconds": 5,
@@ -527,6 +541,8 @@
 
     "8.8 cm Pak 43/41": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-05",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 4380,
             "RealEnginePowerHp": 6,
@@ -550,6 +566,7 @@
 
     "9A34 Strela-10": {
         "properties": {
+            "IssueDate": "1976",
             "RealMassKg": 12300,
             "RealEnginePowerHp": 240,
             "RealMaxSpeedKmh": 61.0,
@@ -576,6 +593,7 @@
 
     "9A52-2 Smerch": {
         "properties": {
+            "IssueDate": "1989",
             "RealMassKg": 43700,
             "RealEnginePowerHp": 518,
             "RealMaxSpeedKmh": 60,
@@ -745,6 +763,8 @@
 
     "12.8 cm Flakzwilling 40/2": {
         "properties": {
+            "IssueDate": "1942-08",
+            "RetirementDate": "1945-05",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 27000,
             "RealEnginePowerHp": 4,
@@ -806,6 +826,8 @@
 
     "15 cm Panzerwerfer 42": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 26,
             "RealMassKg": 8500,
@@ -868,6 +890,8 @@
 
     "17-pdr SP Achilles": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "~1955",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 29600,
@@ -913,6 +937,8 @@
 
     "21 cm Nebelwerfer 42": {
         "properties": {
+            "IssueDate": "~1942",
+            "RetirementDate": "1945-05",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1100,
             "RealEnginePowerHp": 4,
@@ -971,6 +997,8 @@
 
     "39M Csaba": {
         "properties": {
+            "IssueDate": "1940-01",
+            "RetirementDate": "1945-05",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 172.42,
             "RealMassKg": 5950,
@@ -1055,6 +1083,7 @@
 
     "43M Turan III": {
         "properties": {
+            "IssueDate": "~1944",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 23000,
@@ -1082,6 +1111,7 @@
 
     "44M Zrinyi I": {
         "properties": {
+            "IssueDate": "~1944",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 21600,
@@ -1213,6 +1243,8 @@
 
     "75mm Gun Motor Carriage M3": {
         "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "~1945",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 9070,
@@ -1442,6 +1474,8 @@
 
     "105mm Howitzer Motor Carriage M7 Priest": {
         "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "~1954",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 20,
             "RealMassKg": 22970,
@@ -1644,6 +1678,8 @@
 
     "A22D Churchill 3 inch Gun Carrier": {
         "properties": {
+            "IssueDate": "~1942",
+            "RetirementDate": "~1943",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 39600,
@@ -1688,6 +1724,7 @@
 
     "A39 Tortoise Heavy Assault Tank": {
         "properties": {
+            "IssueDate": "~1947",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 8,
             "RealMassKg": 79250,
@@ -1961,6 +1998,8 @@
 
     "AMX-13-75": {
         "properties": {
+            "IssueDate": "1952",
+            "RetirementDate": "~1985",
             "RealMassKg": 13700,
             "RealEnginePowerHp": 250,
             "RealMaxSpeedKmh": 60.0,
@@ -2053,6 +2092,8 @@
 
     "AMX-30B2": {
         "properties": {
+            "IssueDate": "1982-01",
+            "RetirementDate": "~2011",
             "RealMassKg": 37000,
             "RealEnginePowerHp": 680,
             "RealMaxSpeedKmh": 65.0,
@@ -2289,6 +2330,8 @@
 
     "AS-90": {
         "properties": {
+            "IssueDate": "1993",
+            "RetirementDate": "2025",
             "RealMassKg": 45300,
             "RealEnginePowerHp": 660,
             "RealMaxSpeedKmh": 55.0,
@@ -2342,6 +2385,8 @@
 
     "Assault Tank M4A3E2 Jumbo": {
         "properties": {
+            "IssueDate": "1944-10",
+            "RetirementDate": "~1957",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 18,
             "RealMassKg": 38000,
@@ -2732,6 +2777,7 @@
 
     "BMD-1": {
         "properties": {
+            "IssueDate": "1969",
             "RealMassKg": 8300,
             "RealEnginePowerHp": 241,
             "RealMaxSpeedKmh": 80,
@@ -2759,6 +2805,7 @@
 
     "BMD-2 (BMD-1 chassis estimate)": {
         "properties": {
+            "IssueDate": "1985",
             "RealMassKg": 8300,
             "RealEnginePowerHp": 241,
             "RealMaxSpeedKmh": 80,
@@ -2788,6 +2835,7 @@
 
     "BMD-3": {
         "properties": {
+            "IssueDate": "1990",
             "RealMassKg": 12900,
             "RealEnginePowerHp": 450,
             "RealMaxSpeedKmh": 70,
@@ -2814,6 +2862,7 @@
 
     "BMD-4": {
         "properties": {
+            "IssueDate": "2005",
             "RealMassKg": 13600,
             "RealMaxSpeedKmh": 70.0,
             "RealMaxReverseSpeedKmh": 70.0,
@@ -2845,6 +2894,7 @@
 
     "BMP-1": {
         "properties": {
+            "IssueDate": "1966",
             "RealMassKg": 13500,
             "RealEnginePowerHp": 300,
             "RealMaxSpeedKmh": 65.0,
@@ -2877,6 +2927,7 @@
 
     "BMP-2": {
         "properties": {
+            "IssueDate": "1980",
             "RealMassKg": 14300,
             "RealEnginePowerHp": 300,
             "RealMaxSpeedKmh": 65.0,
@@ -2907,6 +2958,7 @@
 
     "BMP-2M Berezhok": {
         "properties": {
+            "IssueDate": "~2009",
             "RealMassKg": 14500,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 65.0,
@@ -3274,6 +3326,7 @@
 
     "BTR-4": {
         "properties": {
+            "IssueDate": "2011",
             "RealMassKg": 21900,
             "RealEnginePowerHp": 500,
             "RealMaxSpeedKmh": 110.0,
@@ -3299,6 +3352,7 @@
 
     "BTR-60PB": {
         "properties": {
+            "IssueDate": "~1966",
             "RealMassKg": 10200,
             "RealEnginePowerHp": 180,
             "RealMaxSpeedKmh": 80,
@@ -3324,6 +3378,7 @@
 
     "BTR-70": {
         "properties": {
+            "IssueDate": "~1976",
             "RealMassKg": 11500,
             "RealEnginePowerHp": 240,
             "RealMaxSpeedKmh": 80.0,
@@ -3349,6 +3404,7 @@
 
     "BTR-80": {
         "properties": {
+            "IssueDate": "~1986",
             "RealMassKg": 13600,
             "RealEnginePowerHp": 260,
             "RealMaxSpeedKmh": 80.0,
@@ -3375,6 +3431,7 @@
 
     "BTR-80A (30mm armed configuration)": {
         "properties": {
+            "IssueDate": "1994",
             "RealMassKg": 14600,
             "RealEnginePowerHp": 260,
             "RealMaxSpeedKmh": 80,
@@ -3404,6 +3461,7 @@
 
     "BTR-82A (30mm armed configuration)": {
         "properties": {
+            "IssueDate": "2011",
             "RealMassKg": 16000,
             "RealEnginePowerHp": 300,
             "RealMaxSpeedKmh": 80.0,
@@ -3853,6 +3911,8 @@
 
     "Centurion Mk 5 AVRE": {
         "properties": {
+            "IssueDate": "1962",
+            "RetirementDate": "~1992",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 54100,
@@ -4308,6 +4368,8 @@
 
     "Churchill Mk III AVRE": {
         "properties": {
+            "IssueDate": "1944-06",
+            "RetirementDate": "~1955",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 14,
             "RealMassKg": 40000,
@@ -6070,6 +6132,8 @@
 
     "GAZ-67": {
         "properties": {
+            "IssueDate": "~1943",
+            "RetirementDate": "~1955",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1320,
@@ -6179,6 +6243,8 @@
 
     "GMC CCKW 353": {
         "properties": {
+            "IssueDate": "~1941",
+            "RetirementDate": "~1965",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 190.99,
             "RealMassKg": 5420,
@@ -8849,6 +8915,7 @@
 
     "K2 Black Panther": {
         "properties": {
+            "IssueDate": "2014",
             "RealMassKg": 56000,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 70.0,
@@ -9582,6 +9649,7 @@
 
     "LAV-25A2": {
         "properties": {
+            "IssueDate": "2007",
             "RealMassKg": 14200,
             "RealEnginePowerHp": 275,
             "RealMaxSpeedKmh": 100.0,
@@ -9611,6 +9679,8 @@
 
     "LAV-AD": {
         "properties": {
+            "IssueDate": "1997",
+            "RetirementDate": "~2004",
             "RealMassKg": 17463,
             "RealEnginePowerHp": 275,
             "RealMaxSpeedKmh": 100.0,
@@ -9637,6 +9707,7 @@
 
     "LAV-AG 105mm demonstrator": {
         "properties": {
+            "IssueDate": "~1995",
             "RealMassKg": 16000,
             "RealEnginePowerHp": 275,
             "RealMaxSpeedKmh": 100.0,
@@ -19771,6 +19842,8 @@
 
     "Type 1 47mm Anti-Tank Gun": {
         "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "1945-09",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 754,
             "ShootDelayPrimarySeconds": 5,
@@ -20244,6 +20317,7 @@
 
     "Type 16 Maneuver Combat Vehicle": {
         "properties": {
+            "IssueDate": "2017",
             "RealMassKg": 26000,
             "RealMaxSpeedKmh": 100.0,
             "RealMaxReverseSpeedKmh": 36.0,
@@ -20663,6 +20737,7 @@
 
     "Type 93 short-range SAM carrier": {
         "properties": {
+            "IssueDate": "~1996",
             "RealMassKg": 3800,
             "RealEnginePowerHp": 170,
             "RealMaxSpeedKmh": 125,
@@ -20685,6 +20760,8 @@
 
     "Type 94 37mm Anti-Tank Gun": {
         "properties": {
+            "IssueDate": "1936",
+            "RetirementDate": "1945-09",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 324,
             "RealEnginePowerHp": 2,
@@ -20786,6 +20863,8 @@
 
     "Type 95 Kurogane": {
         "properties": {
+            "IssueDate": "~1936",
+            "RetirementDate": "1945-09",
             "SquashMobs": "true",
             "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1100,
@@ -20852,6 +20931,7 @@
 
     "Type 96 multipurpose missile system carrier": {
         "properties": {
+            "IssueDate": "~1996",
             "RealMassKg": 4100,
             "RealEnginePowerHp": 170,
             "RealMaxSpeedKmh": 125,

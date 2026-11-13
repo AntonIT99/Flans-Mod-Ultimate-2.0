@@ -9,6 +9,24 @@
         ]
     },
 
+    "1P63 Obzor Collimator Service Period": {
+        "properties": {
+            "IssueDate": "~2015"
+        },
+        "items": [
+            "1p63"
+        ]
+    },
+
+    "1P78 Kashtan Telescope Service Period": {
+        "properties": {
+            "IssueDate": "~2014"
+        },
+        "items": [
+            "1p78"
+        ]
+    },
+
     "1P87 Valday sight service period": {
         "properties": {
             "IssueDate": "~2015"
@@ -306,6 +324,15 @@
         },
         "items": [
             "44_unertl8xscope"
+        ]
+    },
+
+    "Y/MA 95-002 Telescope Service Period": {
+        "properties": {
+            "IssueDate": "~2015"
+        },
+        "items": [
+            "qbzscope"
         ]
     },
 
