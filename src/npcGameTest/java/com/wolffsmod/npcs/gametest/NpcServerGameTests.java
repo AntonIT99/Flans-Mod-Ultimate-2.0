@@ -2,6 +2,9 @@ package com.wolffsmod.npcs.gametest;
 
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.model.FlanModelEntities;
+import com.wolffsmod.npcs.model.FlanModelEntityType;
+import com.wolffsmod.npcs.sim.NpcVehicleState;
 import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.tactics.*;
 import com.wolffsmod.npcs.teams.NpcDuties;
@@ -14,9 +17,11 @@ import noppes.npcs.controllers.FactionController;
 import noppes.npcs.entity.EntityCustomNpc;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.LevelResource;
 
@@ -124,6 +129,36 @@ public class NpcServerGameTests
         helper.assertTrue(NpcWeaponRange.aggro(npc) == npc.stats.aggroRange, "Without a weapon range the NPC's own aggro range applies");
         selector.isEntityApplicable(other);
         helper.succeed();
+    }
+
+    @GameTest(template = "npc_empty", batch = "npc_vehicle_turret", timeoutTicks = 200)
+    public static void vehicleNpcTurnsItsTurretOntoATargetBesideIt(GameTestHelper helper)
+    {
+        for (int x = -4; x <= 16; x++)
+            for (int z = -4; z <= 6; z++)
+                helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        FlanModelEntityType tank = FlanModelEntities.getEntityTypes().stream().filter(type -> type.getShortName().equalsIgnoreCase("44_PanzerIVF1")).findFirst().orElse(null);
+        helper.assertTrue(tank != null, "The Warfare 44 Panzer IV F1 must be registered as an NPC model");
+        var npc = helper.spawn(CustomEntities.entityCustomNpc, 1, 1, 1);
+        var enemy = helper.spawn(CustomEntities.entityCustomNpc, 14, 1, 1);
+        enemy.setNoAi(true);
+        npc.ais.onAttack = 0;
+        npc.ais.returnToStart = false;
+        ((EntityCustomNpc) npc).modelData.setEntity(BuiltInRegistries.ENTITY_TYPE.getKey(tank));
+        npc.setYRot(0F);
+        npc.setYBodyRot(0F);
+        // The target stands off the tank's side, so only a turning turret brings the gun onto it.
+        helper.succeedWhen(() ->
+        {
+            npc.setTarget(enemy);
+            NpcVehicleState state = NpcVehicleState.of(npc);
+            helper.assertTrue(state.isActive(), "The NPC must take on the vehicle model's state");
+            float yaw = state.turretAim().yaw();
+            helper.assertTrue(Math.abs(yaw) > 30F, "The turret must turn toward a target beside the hull, but its yaw is " + yaw + " with target " + npc.getTarget());
+            // Clients draw the turret's traverse from the head yaw, which Minecraft keeps in step with them.
+            float published = Mth.wrapDegrees(npc.getYHeadRot() - state.getHullYaw() - yaw);
+            helper.assertTrue(Math.abs(published) < 0.01F, "The head yaw must carry the turret's traverse, but is " + published + " degrees off");
+        });
     }
 
     @GameTest(template = "npc_empty")

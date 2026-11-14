@@ -68,6 +68,11 @@ NPC tests live in `src/npcGameTest/java`; their templates live in
 for the CustomNPCs save-directory seam and the singular `structure` directory
 on 1.21.1. Do not assume another module already has this test wiring.
 
+Through `scripts/run-validation.ps1 Gradle runGameTestServer`, leave out `--console=plain`: the
+coordinator passes it on in a form Gradle rejects. Content-pack source sets load as mods in this
+server, so a test can put an NPC in a real pack model with `modelData.setEntity` and the id of the
+matching `FlanModelEntities` type.
+
 Assert the real behavior over sufficient ticks with a timeout. For example,
 starting a retreat goal is different from reaching a safer position while
 retaining the target. Control random inputs and starting geometry where the

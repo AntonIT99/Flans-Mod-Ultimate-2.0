@@ -384,7 +384,7 @@ public final class NpcVehicleState
         if (!held)
             hullYaw = npc.yBodyRot;
         if (npc.level().isClientSide)
-            clientTick(held);
+            clientTick(npc, held);
         else
         {
             updateAirDefenseTarget(npc, current);
@@ -483,6 +483,15 @@ public final class NpcVehicleState
         return created;
     }
 
+    /**
+     * Whether the turret's traverse is carried as the NPC's head yaw, which Minecraft keeps in step on every client: a turreted
+     * model whose hull the model holds, so that the body never turns after the head. Its elevation stays in the vehicle state.
+     */
+    private boolean turretFollowsHead(boolean held)
+    {
+        return held && layout != null && layout.turreted();
+    }
+
     /** A vehicle's or ship's hull follows its travel and an AA gun's base stays put; other models turn like any NPC. */
     private static boolean holdsHull(Layout layout, NpcWeaponOptions options)
     {
@@ -560,6 +569,9 @@ public final class NpcVehicleState
         aimSeats(npc, current, options, engaged ? target : null);
         // A hull the terrain under its wheels no longer carries goes over the edge, whatever its mob box is standing on.
         NpcWheelSupport.topple(npc, wheelSupport, hullYaw);
+        // Minecraft sends every client the head yaw of a mob it tracks, so the turret's traverse travels with it.
+        if (turretFollowsHead(held))
+            npc.setYHeadRot(hullYaw + turretYaw);
         sync(npc, held);
     }
 
@@ -1493,18 +1505,24 @@ public final class NpcVehicleState
         return Mth.lerp(partialTick, previousAttitudeLift, attitudeLift);
     }
 
-    private void clientTick(boolean held)
+    private void clientTick(EntityNPCInterface npc, boolean held)
     {
         previousAttitudePitch = attitudePitch;
         previousAttitudeBank = attitudeBank;
         previousAttitudeLift = attitudeLift;
+        boolean headTurret = turretFollowsHead(held);
         if (!received)
+        {
+            if (headTurret)
+                turretYaw = Mth.wrapDegrees(npc.getYHeadRot() - hullYaw);
             return;
+        }
         // States arrive every few ticks and unevenly, so easing onto each one in turn would turn the hull and turret in fits
         // and starts, which whoever stands on them feels as a juddering view. They follow at the rate the server turns them.
         if (held)
             hullYaw = Mth.wrapDegrees(follow(hullYaw, targetHullYaw, hullYawRate));
-        turretYaw = follow(turretYaw, targetTurretYaw, turretYawRate);
+        // The head yaw arrives smoothly and every tick, from the entity tracker rather than this module's state.
+        turretYaw = headTurret ? Mth.wrapDegrees(npc.getYHeadRot() - hullYaw) : follow(turretYaw, targetTurretYaw, turretYawRate);
         if (lerpSteps <= 0)
             return;
         attitudePitch += (targetAttitudePitch - attitudePitch) / lerpSteps;
