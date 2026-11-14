@@ -52,10 +52,24 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
      * with the shadow map's, which says nothing about on-screen size, so that pass reuses the view's own scale.
      */
     private static float viewProjectionPixels;
+    /**
+     * Pixels the slim player model hangs its arms below the classic one. Armour sleeves are shaped around the classic arm, as
+     * every content pack and 1.7.10 knew it, so they keep the classic shoulder instead of sinking into the chest piece.
+     */
+    private static final float SLIM_ARM_DROP = 0.5F;
+
+    /** Whether the parent is the slim-armed player model, whose arms hang lower than the ones the sleeves are shaped for. */
+    private final boolean slimArms;
 
     public CustomArmorLayer(RenderLayerParent<T, M> parent)
     {
+        this(parent, false);
+    }
+
+    public CustomArmorLayer(RenderLayerParent<T, M> parent, boolean slimArms)
+    {
         super(parent);
+        this.slimArms = slimArms;
     }
 
     @Override
@@ -140,6 +154,11 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
             ArmorType armorType = armorItem.getConfigType();
             ResourceLocation texture = armorType.getTexture();
             getParentModel().copyPropertiesTo((HumanoidModel<T>) model);
+            if (slimArms)
+            {
+                model.rightArm.y -= SLIM_ARM_DROP;
+                model.leftArm.y -= SLIM_ARM_DROP;
+            }
             if (entity instanceof IEquipmentPolicy policy && !policy.flansArmorAnimations())
                 EquipmentAnimationSupport.restArmor(model);
             EquipmentAnimationSupport.armorPoseSteps(model, entity);

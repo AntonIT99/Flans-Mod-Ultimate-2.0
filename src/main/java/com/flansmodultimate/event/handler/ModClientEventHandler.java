@@ -42,6 +42,7 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -135,7 +136,7 @@ public final class ModClientEventHandler
             var renderer = event.getSkin(skin);
             if (renderer instanceof PlayerRenderer playerRenderer)
             {
-                playerRenderer.addLayer(new CustomArmorLayer<>(playerRenderer));
+                playerRenderer.addLayer(new CustomArmorLayer<>(playerRenderer, skin == PlayerSkin.Model.SLIM));
                 playerRenderer.addLayer(new ArmorCapeLayer<>(playerRenderer));
             }
         }
