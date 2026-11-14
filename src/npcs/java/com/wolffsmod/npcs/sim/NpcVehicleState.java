@@ -159,6 +159,9 @@ public final class NpcVehicleState
     /** How steady its guns are as it moves, which a vehicle NPC and an NPC at the wheel of a real driveable both go by. */
     @Getter
     private final NpcGunSteadiness gunnery = new NpcGunSteadiness();
+    /** When each weapon group of the model fires next, shared by the main attack and the guns beside it. */
+    @Getter
+    private final NpcBankCadence bankCadence = new NpcBankCadence();
     /** The part hitboxes of the model, on either side. */
     @Getter
     private final NpcParts parts = new NpcParts();

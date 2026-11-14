@@ -303,6 +303,12 @@ public final class NpcTypeProperties
         return lastType;
     }
 
+    /** @return whether the model's secondary weapon group is the one the NPC inherits from */
+    public boolean secondary()
+    {
+        return lastSecondary;
+    }
+
     public boolean nativeTiming()
     {
         return lastNative && type != null && type.shootDelay().isPresent();

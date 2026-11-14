@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.driveables.ReloadCycle;
+import com.wolffsmod.npcs.combat.NpcBankCadence;
 import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
@@ -42,7 +43,8 @@ import java.util.Optional;
  * <li>A vehicle with ammunition consumption disabled starts its ranged attack using default ammunition even with an empty inventory.</li>
  * <li>It retains its targeting and movement while letting native inherited banks fire at their authored cadence.</li>
  * <li>With a reload cycle, an inherited bank fires its magazine, reloads for the model's reload time and plays the model's
- * reload and chambering sounds. Losing the target does not cut a reload short.</li>
+ * reload and chambering sounds. Losing the target does not cut a reload short, nor does handing the group to the guns beside
+ * the main attack and back, which fire it with the same cadence.</li>
  * <li>When a Custom NPCs burst ends, Flan guns the NPC merely holds play their reload sound and animation.</li>
  * <li>The trigger waits, without spending its cooldown or its burst, until a model's gun is on target and until nothing the NPC
  * must not fire through is in the way; meanwhile the NPC keeps closing in.</li>
@@ -71,12 +73,9 @@ public abstract class EntityAIRangedAttackMixin
     private boolean wolffsmodnpcsWasInherited;
     @Unique
     private double wolffsmodnpcsLastInterval = -1D;
-    /** Triggers fired from the current magazine. */
+    /** The weapon group the countdown was last taken from; another one, handed over by a change of targets, has its own. */
     @Unique
-    private int wolffsmodnpcsVolleys;
-    /** Game time at which the running reload ends, so a new engagement cannot skip it. */
-    @Unique
-    private long wolffsmodnpcsReloadedAt;
+    private NpcBankCadence.Group wolffsmodnpcsLastGroup;
 
     // Equipment authority
 
@@ -149,13 +148,16 @@ public abstract class EntityAIRangedAttackMixin
         NpcTypeProperties properties = NpcTypeProperties.of(npc);
         boolean inherited = properties.nativeTiming();
         double interval = properties.shotDelay();
-        if (inherited != wolffsmodnpcsWasInherited || inherited && interval != wolffsmodnpcsLastInterval)
+        NpcBankCadence.Group group = wolffsmodnpcsGroup(properties);
+        if (inherited != wolffsmodnpcsWasInherited || inherited && (interval != wolffsmodnpcsLastInterval || group != wolffsmodnpcsLastGroup))
         {
             wolffsmodnpcsCadence.reset();
             burstCount = inherited ? 1 : 0;
-            rangedAttackTime = inherited ? (int) Math.max(0L, Math.min(Integer.MAX_VALUE, wolffsmodnpcsReloadedAt - npc.level().getGameTime())) : 0;
+            // Whatever the group still waits, from its last shot or reload under either attack, a new engagement cannot skip.
+            rangedAttackTime = inherited ? (int) Math.min(Integer.MAX_VALUE, Math.ceil(group.remaining(npc.level().getGameTime()))) : 0;
             wolffsmodnpcsWasInherited = inherited;
             wolffsmodnpcsLastInterval = interval;
+            wolffsmodnpcsLastGroup = group;
         }
         if (!inherited)
             return;
@@ -200,18 +202,30 @@ public abstract class EntityAIRangedAttackMixin
         hasFired = true;
         NpcNativeRhythm rhythm = NpcNativeRhythm.of(properties.shotDelay(), properties.reloadCycle().orElse(null), wolffsmodnpcsOwn(NpcTypeProperty.BURST_DELAY, ranged.getBurstDelay()),
             wolffsmodnpcsOwn(NpcTypeProperty.BURST, ranged.getBurst()), wolffsmodnpcsOwnDelay(ranged));
+        NpcBankCadence.Group group = wolffsmodnpcsGroup(properties);
+        long now = npc.level().getGameTime();
         // This trigger fires right after the interval is read, so the burst's last round still leaves the barrel.
-        if (++wolffsmodnpcsVolleys < rhythm.volleys())
-            return wolffsmodnpcsCadence.next(rhythm.shotDelay());
-        wolffsmodnpcsVolleys = 0;
-        int pause = wolffsmodnpcsCadence.next(rhythm.pause());
-        if (rhythm.reloads())
+        group.setFired(group.getFired() + 1);
+        if (group.getFired() < rhythm.volleys())
         {
-            wolffsmodnpcsReloadedAt = npc.level().getGameTime() + pause;
-            NpcReloadFeedback.modelReload(npc);
+            int delay = wolffsmodnpcsCadence.next(rhythm.shotDelay());
+            group.holdFor(now, delay);
+            return delay;
         }
-        NpcTacticState.of(npc).reloading(npc.level().getGameTime(), pause);
+        group.setFired(0);
+        int pause = wolffsmodnpcsCadence.next(rhythm.pause());
+        group.holdFor(now, pause);
+        if (rhythm.reloads())
+            NpcReloadFeedback.modelReload(npc);
+        NpcTacticState.of(npc).reloading(now, pause);
         return pause;
+    }
+
+    /** @return the state of the weapon group the main attack fires, which the guns beside it fire with when it changes hands */
+    @Unique
+    private NpcBankCadence.Group wolffsmodnpcsGroup(NpcTypeProperties properties)
+    {
+        return NpcVehicleState.of(npc).getBankCadence().group(properties.model(), properties.secondary());
     }
 
     @Unique

@@ -60,8 +60,10 @@ public final class NpcDriverGuns
      *
      * @param weapon
      *            the gun, or the model itself for the group's own muzzles
+     * @param secondary
+     *            the weapon group the mount belongs to; false for a driver's seat gun, which belongs to neither
      */
-    private record Mount(IContentType weapon, int seat)
+    private record Mount(IContentType weapon, int seat, boolean secondary)
     {
         /** @return whether the muzzle is one of this mount's: one of its gun's, or, for the group's own, one without a gun */
         boolean fires(WeaponMuzzle muzzle)
@@ -81,24 +83,29 @@ public final class NpcDriverGuns
 
     private static final class Gun
     {
-        private double cooldown;
-        private int fired;
+        /** When it fires next and how far into its magazine it is: the group's own, shared with the main attack, for its muzzles. */
+        private final NpcBankCadence.Group cadence;
         private int sequence;
         /** Rounds let off since the last pause, while the gun fires in bursts, and the game time of the last of them. */
         private int burst;
         private long lastShot = Long.MIN_VALUE;
 
+        private Gun(NpcBankCadence.Group cadence)
+        {
+            this.cadence = cadence;
+        }
+
         private void afterShot(Timing timing, boolean reload, Burst discipline, long now)
         {
             sequence = sequence >= Integer.MAX_VALUE / 2 ? 0 : sequence + 1;
-            fired++;
-            if (reload && fired >= Math.max(1, timing.magazine()))
+            cadence.setFired(cadence.getFired() + 1);
+            if (reload && cadence.getFired() >= Math.max(1, timing.magazine()))
             {
-                fired = 0;
-                cooldown += Math.max(timing.shotDelay(), timing.reloadTime());
+                cadence.setFired(0);
+                cadence.delay(now, Math.max(timing.shotDelay(), timing.reloadTime()));
             }
             else
-                cooldown += Math.max(1D / MAX_SHOTS_PER_TICK, timing.shotDelay());
+                cadence.delay(now, Math.max(1D / MAX_SHOTS_PER_TICK, timing.shotDelay()));
             if (!discipline.bursts())
                 return;
             // A gun that has been quiet long enough, such as one between passes, opens a fresh burst.
@@ -107,7 +114,7 @@ public final class NpcDriverGuns
             if (burst >= discipline.rounds())
             {
                 burst = 0;
-                cooldown += discipline.pause();
+                cadence.delay(now, discipline.pause());
             }
         }
     }
@@ -173,7 +180,6 @@ public final class NpcDriverGuns
             guns.clear();
             return;
         }
-        guns.values().forEach(gun -> gun.cooldown = Math.max(0D, gun.cooldown - 1D));
         FlanModelEntity model = NpcModels.flan(npc);
         IContentType current = model == null ? null : model.getInfoType();
         boolean bank = !NpcEquipment.secondaryBank(npc, current);
@@ -192,7 +198,7 @@ public final class NpcDriverGuns
         List<WeaponMuzzle> selected = FlansProjectiles.getMuzzles(current, secondary, 0, false, aim);
         for (WeaponMuzzle muzzle : selected)
         {
-            Mount mount = muzzle.weapon().map(weapon -> new Mount(weapon, BANK_GUN)).orElseGet(() -> new Mount(current, PLATFORM));
+            Mount mount = muzzle.weapon().map(weapon -> new Mount(weapon, BANK_GUN, secondary)).orElseGet(() -> new Mount(current, PLATFORM, secondary));
             muzzles.computeIfAbsent(mount, key -> new ArrayList<>()).add(muzzle);
         }
         Context context = new Context(npc, target, model, state, options, aim, fixedMuzzles(current, state, selected));
@@ -202,7 +208,7 @@ public final class NpcDriverGuns
         {
             boolean inBank = FlansProjectiles.getMuzzles(current, !secondary, 0, false, aim).contains(muzzle) || muzzles.values().stream().anyMatch(points -> points.contains(muzzle));
             if (!inBank)
-                fire(context, new Mount(muzzle.weapon().orElseThrow(), 0), List.of(muzzle));
+                fire(context, new Mount(muzzle.weapon().orElseThrow(), 0, false), List.of(muzzle));
         });
     }
 
@@ -233,8 +239,10 @@ public final class NpcDriverGuns
         EntityNPCInterface npc = context.npc();
         NpcWeaponOptions options = context.options();
         IContentType weapon = mount.weapon();
-        Gun gun = guns.computeIfAbsent(mount, key -> new Gun());
-        if (gun.cooldown >= 1D)
+        // The group's own muzzles keep the state the main attack fires them with, which a change of targets may hand them back to.
+        Gun gun = guns.computeIfAbsent(mount, key -> new Gun(key.seat() == PLATFORM ? context.state().getBankCadence().group(definition, key.secondary()) : new NpcBankCadence.Group()));
+        long now = npc.level().getGameTime();
+        if (gun.cadence.remaining(now) >= 1D)
             return;
         ItemStack ammo = ammunition(npc, mount);
         Timing timing = ammo.isEmpty() ? null : timing(mount, ammo).orElse(null);
@@ -243,19 +251,19 @@ public final class NpcDriverGuns
         // A mount loaded with something explosive waits until the target is out of its own blast.
         if (NpcBlastSafety.tooClose(npc, context.target(), NpcBlastSafety.reach(ammo)))
             return;
-        for (int trigger = 0; trigger < MAX_SHOTS_PER_TICK && gun.cooldown < 1D; trigger++)
+        for (int trigger = 0; trigger < MAX_SHOTS_PER_TICK && gun.cadence.remaining(now) < 1D; trigger++)
         {
             List<WeaponMuzzle> selected = selectedMuzzles(context, mount, gun, points);
             boolean fired = false;
             // One error for the whole trigger pull, so that the rounds of a volley stay together as a player's pellets do.
             NpcSkill.AimError error = NpcSkill.aimError(npc, context.target()).plus(NpcGunSteadiness.spread(npc, context.state(), options));
             for (WeaponMuzzle muzzle : selected)
-                fired = launch(context, muzzle, ammo, gun.fired, error) || fired;
+                fired = launch(context, muzzle, ammo, gun.cadence.getFired(), error) || fired;
             if (!fired)
                 return;
             if (trigger == 0 && options.enabled(Feature.FIRE_SOUNDS))
                 FlansProjectiles.playShootSound(npc, weapon, ItemStack.EMPTY, secondary);
-            gun.afterShot(timing, options.enabled(Feature.RELOAD_CYCLE), burstDiscipline(NpcAirCombat.active(npc), timing.shotDelay()), npc.level().getGameTime());
+            gun.afterShot(timing, options.enabled(Feature.RELOAD_CYCLE), burstDiscipline(NpcAirCombat.active(npc), timing.shotDelay()), now);
         }
     }
 
