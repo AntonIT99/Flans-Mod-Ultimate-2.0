@@ -57,6 +57,7 @@ class NpcDriverGunsTest
         private final List<Vec3> directions = new ArrayList<>();
         private final ProjectileShot shot;
         private int tick;
+        private final NpcBankCadence cadence = new NpcBankCadence();
 
         private Battle()
         {
@@ -66,6 +67,7 @@ class NpcDriverGunsTest
             ServerLevel level = mock(ServerLevel.class);
             MinecraftServer server = mock(MinecraftServer.class);
             when(level.getServer()).thenReturn(server);
+            when(level.getGameTime()).thenAnswer(call -> (long) tick);
             when(server.isSameThread()).thenReturn(true);
             when(npc.level()).thenReturn(level);
             when(npc.isAlive()).thenReturn(true);
@@ -93,6 +95,7 @@ class NpcDriverGunsTest
             models.when(() -> NpcModels.flan(npc)).thenReturn(model);
             models.when(() -> NpcModels.world(eq(npc), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
             states.when(() -> NpcVehicleState.of(npc)).thenReturn(state);
+            when(state.getBankCadence()).thenReturn(cadence);
             when(state.isGunAligned()).thenReturn(true);
             when(state.isHullAligned()).thenReturn(true);
             when(state.turretAim()).thenReturn(MountAim.REST);
@@ -205,6 +208,28 @@ class NpcDriverGunsTest
             battle.advance(14);
             // Two rounds three ticks apart, then the ten-tick reload.
             assertEquals(List.of(0, 3, 13), battle.fired);
+        }
+    }
+
+    @Test
+    void shellsHandedOverByTheMainAttackWaitOutItsIntervalAndKeepItsMagazine()
+    {
+        try (Battle battle = new Battle(); MockedStatic<FlansEntityTypes> types = mockStatic(FlansEntityTypes.class))
+        {
+            WeaponMuzzle bore = new WeaponMuzzle(Vec3.ZERO, Optional.empty(), List.of());
+            battle.projectiles.when(() -> FlansProjectiles.getMuzzles(battle.definition, true, 0, false, MountAim.REST)).thenReturn(List.of(bore));
+            ItemStack shells = new ItemStack(Items.GOLD_NUGGET);
+            battle.ammunition.when(() -> NpcAmmunition.bankTemplate(battle.npc, battle.definition, true)).thenReturn(shells);
+            types.when(() -> FlansEntityTypes.getReloadCycle(battle.definition, true, shells)).thenReturn(Optional.of(new ReloadCycle(2, 3D, 10D, OptionalInt.empty())));
+            battle.projectiles.when(() -> FlansProjectiles.prepare(eq(battle.npc), eq(shells), eq(ItemStack.EMPTY), isNull(), eq(battle.definition), eq(true), any()))
+                .thenReturn(Optional.of(battle.shot));
+            // The main attack has just fired the first round of the magazine, and the group now waits its interval.
+            NpcBankCadence.Group group = battle.cadence.group(battle.definition, true);
+            group.setFired(1);
+            group.holdFor(0L, 3D);
+            battle.advance(14);
+            // The magazine's last round once the interval is over, then the reload, rather than a fresh magazine at once.
+            assertEquals(List.of(3, 13), battle.fired);
         }
     }
 
