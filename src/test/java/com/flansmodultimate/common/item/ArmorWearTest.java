@@ -176,6 +176,22 @@ class ArmorWearTest
     }
 
     @Test
+    void armorThatDoesNotWearIsNeitherWornNorBrokenNorShownAsDamaged()
+    {
+        // Minecraft 1.21 wears and breaks a stack by its components, whatever isDamageable says.
+        ItemStack stack = stackWith(40);
+        CustomArmorItem armor = mock(CustomArmorItem.class);
+        when(armor.isDamageable(stack)).thenReturn(false);
+        when(armor.damageItem(any(), anyInt(), any(), any())).thenCallRealMethod();
+        when(armor.getMaxDamage(stack)).thenCallRealMethod();
+        when(armor.isDamaged(stack)).thenCallRealMethod();
+
+        assertEquals(0, armor.damageItem(stack, 5, mock(Player.class), item -> fail("broken")));
+        assertTrue(armor.getMaxDamage(stack) > stack.getDamageValue());
+        assertFalse(armor.isDamaged(stack));
+    }
+
+    @Test
     void anvilsRepairUnenchantableArmorButStillRefuseAnythingElse()
     {
         CustomArmorItem armor = mock(CustomArmorItem.class);

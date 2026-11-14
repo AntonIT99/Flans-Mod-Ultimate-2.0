@@ -73,7 +73,10 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     public CustomArmorItem(ArmorType configType)
     {
-        super(CustomArmorMaterial.create(configType), configType.getArmorItemType(), new Properties().durability(configType.getDurability()));
+        // Minecraft 1.21 only wears a stack whose item declares a maximum damage, and breaks it once its damage reaches that
+        // maximum, so armor without durability would break on its first hit. Every piece declares one; whether it wears, and
+        // how far, is decided by isDamageable and getMaxDamage under the server's armor breaking rule.
+        super(CustomArmorMaterial.create(configType), configType.getArmorItemType(), new Properties().durability(Math.max(1, configType.getDurability())));
         this.configType = configType;
         shortname = configType.getShortName();
     }
@@ -109,14 +112,24 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         };
     }
 
+    /** Armor that does not wear never reaches its maximum damage, which is what breaks a stack in Minecraft 1.21. */
     @Override
     public int getMaxDamage(ItemStack stack)
     {
+        if (!isDamageable(stack))
+            return Integer.MAX_VALUE;
         if (ModCommonConfig.breakableArmor() == EnumBreakableArmor.ALL_BREAKABLE)
         {
             return ModCommonConfig.get().defaultArmorDurability();
         }
         return super.getMaxDamage(stack);
+    }
+
+    /** Hides the durability bar and tooltip of armor that does not wear, which may still carry damage from before. */
+    @Override
+    public boolean isDamaged(ItemStack stack)
+    {
+        return isDamageable(stack) && super.isDamaged(stack);
     }
 
     /**
@@ -131,7 +144,8 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     @Override
     public <T extends LivingEntity> int damageItem(@NotNull ItemStack stack, int amount, @Nullable T entity, @NotNull Consumer<Item> onBroken)
     {
-        if (entity != null && wornThisHit(stack, entity))
+        // Minecraft 1.21 wears a stack by its components alone, without asking isDamageable.
+        if (!isDamageable(stack) || entity != null && wornThisHit(stack, entity))
             return 0;
         return wear(stack, amount, FlansMod.teamsManager.keepsBrokenArmor());
     }
