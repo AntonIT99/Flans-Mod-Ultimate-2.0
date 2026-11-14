@@ -66,13 +66,69 @@ Gradle uses `--no-daemon` for process containment, sacrificing warm daemon reuse
 and retain incremental outputs. Do not re-enable a shared daemon as a shortcut around cancellation;
 a reusable supervised daemon needs a separate measured design.
 
-## Model work and follow-ups
+## Choosing Gradle tasks
 
-Successful checks need no reviewing agent. Read compact summaries before full logs. An economical
-analysis agent may investigate findings with explicit files and concise context. Extra high-end model
-reviews or escalations require user approval; continuing the already-selected primary session does not.
+Choose validation from the changed behaviour and its consumers rather than running `build` at the end
+of every task. `build` assembles and reobfuscates every module, including content packs. Use the Gradle
+wrapper; common tasks are `test`, `build`, `runData`, `packsManagerJar` and `officialPacksJar`. Use
+`--stacktrace` only to diagnose a failed build. Keep `gradlew` executable.
 
-Fix introduced findings and only the existing issues necessary for the task. Rerun affected checks after
-a fix, rather than every analyzer or the full suite. Do not automatically retry broken infrastructure.
-The shared Claude configuration has no automatic IntelliJ Stop hook. Live Minecraft testing remains
-subject to its separate skill and is never implied by a validation profile.
+- Ordinary Java logic, AI or UI changes: compile the affected source sets and run focused tests. For
+  NPC-only changes use `compileNpcsJava` and `test --tests '<relevant class or package>'`. Changing
+  existing entity behaviour alone does not require assembling every pack.
+- Registration, networking, resource loading or packaging changes: include the relevant artifact tasks
+  (`jar`, `npcsJar`, `packsManagerJar` or the affected pack's jar task). Build packs when their inputs,
+  packaging or a shared API they consume change; an unchanged pack is not rebuilt because another module changed.
+- Full `build`: branch-wide ports, loader setup, shared build/source-set changes, release verification,
+  or cross-module effects that scoped checks cannot cover. Include affected pack consumers when shared
+  signatures, model classes or content contracts change.
+- Keep Gradle's required task dependencies. Test filters do not prune compilation dependencies, and some
+  analysis tasks need outputs of other source sets. Use `--dry-run` if the task graph is unexpectedly
+  broad; do not add blanket `-x compile...` exclusions.
+- Let Gradle reuse up-to-date outputs; do not routinely clean, rebuild, change build directories or
+  disable caching. After comment, formatting, suppression or documentation-only follow-ups, rerun only
+  the affected checks. A commit-only request does not repeat completed checks.
+
+## Parallel tasks and shared build outputs
+
+- Prefer a separate Git worktree per concurrent implementation task. Each task owns its source edits,
+  `.gradle`, `build`, generated resources, inspection results and temporary logs. Do not redirect
+  different worktrees to the same build or project-cache directory. The shared Gradle user home and
+  dependency cache stay shared; do not create separate dependency caches by default.
+- Within one checkout, run builds and inspections through `scripts/run-validation.ps1 Gradle ...` or
+  `scripts/run-validation.ps1 Qodana ...`. The coordinator holds a checkout-specific mutex for the whole
+  invocation; different worktrees have independent queues. Gradle's parallelism inside one invocation
+  stays enabled. `-WaitSeconds`, `-TimeoutSeconds`, `-StatusSeconds` and `-Task` precede the tool name.
+  Each invocation runs in a Windows job whose descendants are stopped before the queue is released.
+  Check coordinator changes with `scripts/test-validation-coordinator.ps1`; its tests use fake tools.
+- Direct `gradlew` and internal `qodana-inspect.ps1` launches, IDE auto-builds and source edits bypass the
+  queue. `idea-inspect.ps1` and the coordinator's `Idea` tool are compatibility aliases for queued Qodana
+  scans. Do not edit, format, clean or regenerate a checkout while another task validates it; a queued
+  command sees the files present when it starts.
+- Never delete another task's outputs or caches, remove Gradle lock files, run global `gradlew --stop`,
+  or terminate processes by name. When cancelling a coordinator, make sure its own children have stopped
+  before another validation starts. Do not cancel another task's work.
+- Use unique task-specific temporary files and log names. On machines running several worktrees, reduce
+  workers for a heavy invocation (for example `--max-workers=2`) instead of changing project-wide parallelism.
+
+## Analysis findings
+
+Successful checks need no reviewing agent. Read compact summaries before full logs, group duplicate
+findings and separate introduced issues from pre-existing ones before editing. Fix introduced findings
+and only the existing issues the task needs. Do not turn validation into unrelated warning cleanup.
+
+- Up to three simple, mechanical SonarLint or IntelliJ findings in task-owned files may be fixed directly
+  by the primary agent.
+- Otherwise delegate interpretation, fixes and affected reruns to one Terra, Luna, Sonnet or Haiku
+  subagent: Terra with medium reasoning for Java findings, Luna or Haiku for mechanical ones, raising
+  reasoning within these families for harder findings. Give it fresh context with explicit paths, source
+  sets and scope, not the parent conversation. Do not edit the delegated files concurrently. It returns
+  changed paths, a concise finding summary, validation results and blockers.
+- If no eligible subagent is available, report the analysis as incomplete rather than silently falling
+  back to Opus, Sol or Astra. Additional high-end model reviews require user approval; continuing the
+  already-selected primary session does not. Do not delegate mere command launching or log reading.
+
+Rerun affected checks after a fix, rather than every analyzer or the full suite. Do not automatically
+retry broken infrastructure: report the failure, diagnose a concrete cause, and retry once only if it was
+corrected. The shared Claude configuration has no automatic IntelliJ Stop hook. Live Minecraft testing
+remains subject to its separate skill and is never implied by a validation profile.

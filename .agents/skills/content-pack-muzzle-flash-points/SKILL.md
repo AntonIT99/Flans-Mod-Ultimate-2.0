@@ -1,6 +1,6 @@
 ---
 name: content-pack-muzzle-flash-points
-description: Audit and author plausible muzzleFlashPoint coordinates in existing Java ModelGun sources for eligible guns in one tracked Flan content pack, using rendered-geometry reports and source inspection. Use for model-point coverage, not flash assets, definition effects, driveable shoot points, parser changes, or new models.
+description: Author plausible muzzleFlashPoint coordinates in existing Java gun models of one Flan content pack; not flash assets, driveables or new models.
 ---
 
 # Content Pack Muzzle Flash Points

@@ -1,6 +1,6 @@
 ---
 name: flans-master-merge-port
-description: Merge master into a specified Flan's Mod Ultimate version branch, inspect the full change set, adapt Forge/NeoForge and Minecraft API differences, and document the port. Use for branch-wide master synchronization, not a single-feature port or a legacy-source comparison.
+description: Merge master into a version branch and adapt Forge/NeoForge and Minecraft API differences; not single-feature ports.
 ---
 
 # Master Merge Port

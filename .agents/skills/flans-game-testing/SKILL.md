@@ -1,6 +1,6 @@
 ---
 name: flans-game-testing
-description: Run user-requested Minecraft game testing across this repository using real clients, headless GameTests, Mineflayer multiplayer, or spark profiling. Maintain reusable testing lessons and tooling guides. Use when game testing is explicitly requested; ordinary implementation work does not trigger game runs.
+description: Run explicitly requested Minecraft game tests (real client, GameTests, Mineflayer, spark) and maintain testing guides; never for ordinary implementation.
 ---
 
 # Flans Game Testing

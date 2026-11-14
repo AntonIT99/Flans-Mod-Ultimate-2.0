@@ -1,6 +1,6 @@
 ---
 name: content-pack-visual-effects-expansion
-description: Audit and expand the visual effects of one tracked Flan content pack, including muzzle-flash coverage for eligible small arms when hand-held, deployed, or mounted in driveables, layered muzzle-blast particles for vehicle cannons, AA-gun barrel and ammunition visuals, plus emitters, projectile and explosion effects, and grenade and attachment visuals. Takes the pack as its argument. Use for pack presentation work, not parser changes, balance, or new content.
+description: Audit and expand visual effects (muzzle flashes, blasts, emitters, trails, explosions) of one Flan content pack given as argument; not parser, balance or new content.
 ---
 
 # Content Pack Visual Effects Expansion

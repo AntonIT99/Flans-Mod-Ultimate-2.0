@@ -1,6 +1,6 @@
 ---
 name: flans-version-porting
-description: Port or implement version-dependent Flan's Mod Ultimate changes across maintained Forge and NeoForge branches or from legacy 1.7.10/1.12.2 sources. Use for loader migrations, behavioral archaeology, cross-branch ports, and changes involving version-specific APIs, metadata, rendering, registration, events, persistence, or networking.
+description: Port or implement version-dependent changes across maintained Forge/NeoForge branches or from legacy 1.7.10/1.12.2 sources.
 ---
 
 # Flans Version Porting

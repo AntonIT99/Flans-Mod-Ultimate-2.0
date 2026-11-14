@@ -1,6 +1,6 @@
 ---
 name: content-pack-ammunition-expansion
-description: Audit, repair, and historically expand ammunition in a selected Flan content pack, including ground-vehicle ammo references, shell and mixed-belt definitions, category ammo groups, localization, reused icons, harmonized statistics and effects, and pack validation. Use for pack data work, not parser implementation or general category coverage.
+description: Audit, repair and historically expand ammunition (shells, belts, ammo groups, icons, stats) in one Flan content pack; pack data only, not parser work.
 ---
 
 # Content Pack Ammunition Expansion

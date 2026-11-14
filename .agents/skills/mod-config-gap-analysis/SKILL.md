@@ -1,6 +1,6 @@
 ---
 name: mod-config-gap-analysis
-description: Compare the runtime mod configuration exposed by a reference Minecraft mod with a target port, reporting only reference config parameters that have no semantic target equivalent. Use for focused .minecraft/config compatibility audits, not general feature comparison or implementation.
+description: Report runtime config parameters of a reference mod that have no equivalent in the target port; analysis only.
 ---
 
 # Mod Config Gap Analysis
