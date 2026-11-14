@@ -174,6 +174,32 @@ public class NpcServerGameTests
         });
     }
 
+    @GameTest(template = "npc_empty", batch = "npc_vehicle_idle_turret", timeoutTicks = 200)
+    public static void idleVehicleNpcTurnsItsTurretWhereItLooks(GameTestHelper helper)
+    {
+        for (int x = -4; x <= 16; x++)
+            for (int z = -4; z <= 6; z++)
+                helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        FlanModelEntityType tank = FlanModelEntities.getEntityTypes().stream().filter(type -> type.getShortName().equalsIgnoreCase("44_PanzerIVF1")).findFirst().orElse(null);
+        helper.assertTrue(tank != null, "The Warfare 44 Panzer IV F1 must be registered as an NPC model");
+        var npc = helper.spawn(CustomEntities.entityCustomNpc, 1, 1, 1);
+        var watched = helper.spawn(CustomEntities.entityCustomNpc, 14, 1, 1);
+        watched.setNoAi(true);
+        ((EntityCustomNpc) npc).modelData.setEntity(BuiltInRegistries.ENTITY_TYPE.getKey(tank));
+        npc.setYRot(0F);
+        npc.setYBodyRot(0F);
+        // Without a target, an idle look goal such as watching a nearby player turns the turret instead of leaving it at rest.
+        helper.succeedWhen(() ->
+        {
+            npc.setTarget(null);
+            npc.getLookControl().setLookAt(watched);
+            NpcVehicleState state = NpcVehicleState.of(npc);
+            helper.assertTrue(state.isActive(), "The NPC must take on the vehicle model's state");
+            float yaw = state.turretAim().yaw();
+            helper.assertTrue(Math.abs(yaw) > 30F, "An idle turret must turn toward what the NPC looks at, but its yaw is " + yaw);
+        });
+    }
+
     @GameTest(template = "npc_empty")
     public static void npcTicksAndSaves(GameTestHelper helper)
     {

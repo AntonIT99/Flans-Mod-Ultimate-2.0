@@ -562,7 +562,7 @@ public final class NpcVehicleState
             // Turning a tilted hull changes both relative traverse and elevation.
             wanted = NpcModels.relative(npc, aim, hullYaw);
         }
-        aimTurret(current, options, tuning, wanted, tolerance);
+        aimTurret(npc, current, options, tuning, wanted, tolerance);
         reachablePitch = wanted != null && !bombing && current.kind() == FlanModelKind.VEHICLE ? reachablePitch(current.driver(), current.turreted(), wanted, tolerance) : Float.NaN;
         gunAligned = aligned;
         planBombing(npc, current, engaged ? target : null, options);
@@ -667,13 +667,13 @@ public final class NpcVehicleState
      * hull, which point where the hull and a plane's nose do, and a mecha's, which rise and fall with its arms. Rounds leave
      * along the barrels, so a gun waits until it points where they have to go, within the tolerance.
      */
-    private void aimTurret(Layout current, NpcWeaponOptions options, NpcTuning tuning, @Nullable MountAim wanted, float tolerance)
+    private void aimTurret(EntityNPCInterface npc, Layout current, NpcWeaponOptions options, NpcTuning tuning, @Nullable MountAim wanted, float tolerance)
     {
         if (current.turreted())
         {
             // A turret that has been shot off no longer turns.
             if (!options.enabled(Feature.TURRET_LOCKED) && !parts.effects().gunDisabled())
-                turnTurret(current.driver(), tuning, wanted, options.enabled(Feature.GRADUAL_AIM));
+                turnTurret(current.driver(), tuning, wanted != null ? wanted : idleLook(npc, current, options), options.enabled(Feature.GRADUAL_AIM));
         }
         else
         {
@@ -684,6 +684,25 @@ public final class NpcVehicleState
         float firing = firingTolerance(tolerance, current.kind(), current.turreted());
         aligned = !check || MountMotion.error(turretAim(), wanted) <= firing;
         hullAligned = !check || MountMotion.error(MountAim.REST, wanted) <= firing;
+    }
+
+    /**
+     * Without a target, the turret follows what the NPC's idle look goals turn its head toward, such as a player standing
+     * nearby, at its own traverse and elevation speeds and within its limits, as a crew watching its surroundings would.
+     *
+     * @return where the turret looks, relative to the hull; null to bring it back to rest once the NPC looks at nothing
+     */
+    @Nullable
+    private MountAim idleLook(EntityNPCInterface npc, Layout current, NpcWeaponOptions options)
+    {
+        var look = npc.getLookControl();
+        if (!look.isLookingAtTarget())
+            return null;
+        Vec3 direction = new Vec3(look.getWantedX(), look.getWantedY(), look.getWantedZ()).subtract(fireOrigin(npc, current, options));
+        if (direction.lengthSqr() < 1.0E-6D)
+            return null;
+        MountAim aim = NpcModels.relative(npc, direction, hullYaw);
+        return current.driver() == null ? aim : current.driver().clamp(aim);
     }
 
     /**
