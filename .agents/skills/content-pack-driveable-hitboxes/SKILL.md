@@ -1,6 +1,6 @@
 ---
 name: content-pack-driveable-hitboxes
-description: Audit and refine damageable driveable hitboxes and part HP weights for one tracked Flan content pack, with geometry and hull/turret armor alignment. Use for vehicles, planes, mechas, or all three; not parser changes, collision-mesh authoring, or general armor research.
+description: Audit and refine driveable part hitboxes and HP weights in one Flan content pack; not parser changes, collision meshes or armor research.
 ---
 
 # Content Pack Driveable Hitboxes

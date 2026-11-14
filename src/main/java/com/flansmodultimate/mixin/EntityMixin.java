@@ -1,5 +1,7 @@
 package com.flansmodultimate.mixin;
 
+import com.flansmodultimate.common.driveables.SeatRiderEntity;
+import com.flansmodultimate.common.driveables.SeatRiders;
 import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.driveables.parts.PartBodies;
 import com.flansmodultimate.common.driveables.parts.PartBody;
@@ -8,6 +10,7 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.phys.*;
 
@@ -29,15 +32,22 @@ import net.minecraft.world.phys.*;
  * </p>
  *
  * <p>
+ * Saves an entity riding a driveable seat as an entity of its own, with the seat to return to. Seats are never saved,
+ * and vanilla saves a passenger only inside its vehicle, so the rider would otherwise be dropped from the save.
+ * </p>
+ *
+ * <p>
  * The owning Flan NPC is culled before its detached Flan model renderer is called.
  * </p>
  */
 @Mixin(Entity.class)
 @SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
-public abstract class EntityMixin implements HullCarriedEntity
+public abstract class EntityMixin implements HullCarriedEntity, SeatRiderEntity
 {
     @Unique
     private HullCarry flansmodultimateHullCarry;
+    @Unique
+    private SeatRiders.SavedSeat flansmodultimateSavedSeat;
 
     // Hull collision
 
@@ -74,6 +84,44 @@ public abstract class EntityMixin implements HullCarriedEntity
     {
         if (flansmodultimateHullCarry != null)
             flansmodultimateHullCarry.startTick((Entity) (Object) this);
+    }
+
+    // Riders of driveable seats
+
+    @Override
+    public SeatRiders.SavedSeat flansmodultimateSavedSeat()
+    {
+        return flansmodultimateSavedSeat;
+    }
+
+    @Override
+    public void flansmodultimateSetSavedSeat(SeatRiders.SavedSeat seat)
+    {
+        flansmodultimateSavedSeat = seat;
+    }
+
+    @Inject(method = "shouldBeSaved", at = @At("HEAD"), cancellable = true)
+    private void flansmodultimateSaveSeatRider(CallbackInfoReturnable<Boolean> callback)
+    {
+        Entity entity = (Entity) (Object) this;
+        Entity.RemovalReason removal = entity.getRemovalReason();
+        if ((removal == null || removal.shouldSave()) && SeatRiders.savesAlone(entity))
+            callback.setReturnValue(true);
+    }
+
+    @Inject(method = "save(Lnet/minecraft/nbt/CompoundTag;)Z", at = @At("HEAD"), cancellable = true)
+    private void flansmodultimateSaveSeatRiderAlone(CompoundTag tag, CallbackInfoReturnable<Boolean> callback)
+    {
+        Entity entity = (Entity) (Object) this;
+        if (SeatRiders.savesAlone(entity))
+            callback.setReturnValue(SeatRiders.save(entity, tag));
+    }
+
+    @Inject(method = "load(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("TAIL"))
+    private void flansmodultimateLoadSavedSeat(CompoundTag tag, CallbackInfo callback)
+    {
+        Entity entity = (Entity) (Object) this;
+        flansmodultimateSavedSeat = entity.level().isClientSide ? null : SeatRiders.SavedSeat.load(tag, entity.level().getGameTime());
     }
 
     // Rendering

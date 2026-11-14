@@ -1,6 +1,6 @@
 ---
 name: mod-class-decompilation
-description: Decompile compiled Minecraft mod or content-pack classes (directories, .jar or .zip) into this repository's gitignored decompiled/ cache with Vineflower, CFR fallback and MCP searge renaming, and keep decompiled/INVENTORY.txt current. Use when a reference model, type or mod class exists only as bytecode; not for editing reference projects or shipping decompiled code.
+description: Decompile bytecode-only mod or pack classes into the gitignored decompiled/ cache and keep its inventory current.
 ---
 
 # Mod Class Decompilation

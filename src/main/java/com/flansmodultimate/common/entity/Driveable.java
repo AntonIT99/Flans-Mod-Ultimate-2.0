@@ -385,6 +385,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected int ticksSinceUsed;
     protected int markerTicks;
     protected int proxyCheckTicker;
+    /** Counts down after loading while the riders saved in the seats are called back to them. Server side. */
+    private int riderRecallTicks;
     /** Counts down while the start sound plays, holding the engine loop back until it has finished. */
     protected int startSoundTicks;
     protected int engineStartTicks;
@@ -1274,6 +1276,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         setFlag(FLAG_IT1_RELOADING, type.isIt1() && tag.getBoolean(NBT_IT1_RELOADING));
         // Loading an existing entity (including client spawn data) must not replay placement effects.
         placementEffectsPending = false;
+        // Riders are saved by themselves, at their seats, and come back to them once the seats exist again.
+        if (!level().isClientSide)
+            riderRecallTicks = SeatRiders.RECALL_TICKS;
         resizeProxyArrays();
         savedSeatAims = tag.contains(NBT_SEAT_AIMS, Tag.TAG_INT_ARRAY) ? decodeSeatAims(tag.getIntArray(NBT_SEAT_AIMS)) : new float[0];
     }
@@ -1551,6 +1556,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 tickWreck();
             return;
         }
+
+        if (riderRecallTicks > 0 && --riderRecallTicks % SeatRiders.RECALL_INTERVAL == 0)
+            SeatRiders.recall(this, seats);
 
         weaponHeat.tick(type.getOverheatLimit(), type.getCoolingBonus());
         publishWeaponHeat();

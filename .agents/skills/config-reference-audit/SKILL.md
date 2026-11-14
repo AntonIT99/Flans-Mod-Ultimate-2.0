@@ -1,6 +1,6 @@
 ---
 name: config-reference-audit
-description: Audit and update the Flan's Mod Ultimate wiki ConfigReference against the current legacy content-pack parser code, correcting missing, stale, and inaccurate parameter documentation while reporting uncertainty. Use for documentation maintenance, not parser implementation, installed-pack compatibility, or runtime TOML/properties config.
+description: Audit and update the wiki ConfigReference against the current legacy content-pack parsers; documentation only, not parser or runtime-config work.
 ---
 
 # Config Reference Audit

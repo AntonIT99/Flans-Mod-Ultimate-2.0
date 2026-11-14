@@ -5,6 +5,8 @@ import com.flansmodultimate.api.teams.*;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.entity.*;
+import com.flansmodultimate.common.eras.EraEnforcement;
+import com.flansmodultimate.common.eras.EraRestrictions;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.types.*;
@@ -16,8 +18,6 @@ import com.flansmodultimate.platform.world.ChunkTicketPlatform;
 import com.flansmodultimate.platform.world.SavedDataPlatform;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
-import com.flansmodultimate.common.eras.EraEnforcement;
-import com.flansmodultimate.common.eras.EraRestrictions;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -42,6 +42,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Authoritative Teams runtime. All mutation occurs on the logical server thread;
@@ -1048,6 +1049,7 @@ public final class TeamsManager
                 selectTeam(player, Team.SPECTATORS, true);
             respawnPlayer(player, false);
         }
+        forgetAbsentSelections(savedData.getStats(), getServer().getPlayerList().getPlayers().stream().map(ServerPlayer::getUUID).collect(Collectors.toSet()));
         next.getGametype().roundStarted(this);
         getLiveRound().ifPresent(TeamsListeners::roundStarted);
         broadcast(Component.literal("Starting " + next.getGametype().getName() + " on " + getMap(next.getMapId()).orElseThrow().getName()));
@@ -1062,6 +1064,20 @@ public final class TeamsManager
         // The round's era window now covers its participants.
         EraRestrictions.restrictionsChanged(getServer());
         return true;
+    }
+
+    /**
+     * Makes everyone who is away choose their team again when they come back. Only those present are placed for the new
+     * round, so a player returning on the team saved for them would stand where they left, on another map perhaps, with
+     * the kit of a round that is over.
+     */
+    static void forgetAbsentSelections(Collection<PlayerStats> stats, Set<UUID> present)
+    {
+        for (PlayerStats absent : stats)
+        {
+            if (!present.contains(absent.getPlayerId()))
+                absent.setSelection("", "");
+        }
     }
 
     @Nullable
@@ -1935,6 +1951,9 @@ public final class TeamsManager
         PlayerStats stats = getStats(player);
         // A selection saved by someone offline when Teams play stopped must not bring its class and skin back.
         Team team = roundRunning || intermissionPhase != IntermissionPhase.NONE ? Team.getTeam(stats.getSelectedTeam()) : null;
+        // Nor one for a team the round being played does not field, after its teams were changed.
+        if (team != null && team != Team.SPECTATORS && getCurrentRound().isPresent() && getRoundTeamIndex(team) < 0)
+            team = null;
         PlayerClass playerClass = PlayerClass.getPlayerClass(stats.getSelectedClass());
         PlayerData data = PlayerData.getInstance(player);
         data.setTeam(team == null ? Team.SPECTATORS : team);

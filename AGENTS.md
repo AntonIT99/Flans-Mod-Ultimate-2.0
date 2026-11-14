@@ -40,13 +40,20 @@ bots do not replace real-client rendering, GUI or modded-physics checks.
 
 ## Reading and investigation
 
-- Use `rg` to locate relevant symbols or headings, then read matching sections and enough
-  surrounding code to understand callers and invariants. Expand when evidence requires it;
-  avoid dumping whole large files or reference repositories by default.
-- Read applicable skills once and follow only references relevant to the selected workflow.
-  For long guides, locate and read relevant sections rather than every section.
-- Reuse instructions, excerpts and findings already in the current context; reread when files
-  change, context is missing or correctness needs confirmation.
+- Use `rg -n` to locate relevant symbols or headings, then read matching sections and enough
+  surrounding code to understand callers and invariants. Expand when evidence requires it.
+- Never read `*_categories.json`, bulk content-pack `.txt` definitions, lang files, generated output,
+  logs or reference repositories whole: query them with `rg` and small context or `jq`. Read files
+  over about 500 lines by line range.
+- Do not re-read a file just to verify your own edit. Reuse instructions, excerpts and findings already
+  in context; reread when files change, context is missing or correctness needs confirmation.
+- Read applicable skills once and follow only the references relevant to the selected workflow.
+  For long guides, read the relevant sections rather than every section.
+
+## Reporting
+
+- Keep final reports short, at most about ten lines: changed paths, validation profile and outcome,
+  open gaps or decisions. Do not restate the task, recap the diff or list heavier checks the profile excludes.
 
 ## Task-specific workflows
 
@@ -78,6 +85,8 @@ bots do not replace real-client rendering, GUI or modded-physics checks.
 - For auditing and updating the wiki `ConfigReference.md` so it exhaustively and
   accurately documents the current legacy content-pack parsers, read
   `.agents/skills/config-reference-audit/SKILL.md` before auditing.
+- Before writing a changelog or bumping `mod_version`, `archiveVersion` or `api_version`,
+  read `docs/changelogs.md`.
 
 ## Repository Rules
 
@@ -102,19 +111,16 @@ bots do not replace real-client rendering, GUI or modded-physics checks.
   developers by explaining a new mechanic or a fundamental change. Routine content
   additions, such as textures, paintjobs, or new items, do not warrant documentation
   on their own. Do not create wiki pages, audit reports, or other documentation merely
-  to record that work was done, unless explicitly requested.
+  to record that work was done, unless explicitly requested. Changelogs are the exception:
+  keep them current (`docs/changelogs.md`).
 - In a mixed worktree, preserve unrelated changes and stage explicit paths only.
-- Some source sets under `src/` (for example `src/wolff*pack/`) are independent git
-  repositories with their own `.git` directory and remote. They are excluded from this
-  repository through `.git/info/exclude`, not because they are local-only or scratch
-  content: they are real, versioned, published work. Treat edits there as seriously as
-  edits to the main repository. Check `git status`/`git diff` *inside* that directory
-  (for example `git -C src/wolffromepack status`), and commit there, not in the root
-  repository. A clean root `git status` does not mean such a pack is unchanged.
-  Before assuming a `src/` directory is untracked or disposable, check for a nested
-  `.git`.
+- Some source sets under `src/` (for example `src/wolff*pack/`) are independent, published git
+  repositories with their own `.git`, excluded through `.git/info/exclude`. Treat edits there as
+  seriously as the main repository: check `git -C <dir> status`/`diff` and commit inside that
+  directory. A clean root `git status` does not mean such a pack is unchanged. Before assuming a
+  `src/` directory is untracked or disposable, check for a nested `.git`.
 
-## Commit messages
+## Commits
 
 - Never add AI attribution to commit messages or pull request descriptions. No
   `Co-Authored-By: Claude ...` (or any other assistant) trailer, no "Generated with
@@ -123,77 +129,14 @@ bots do not replace real-client rendering, GUI or modded-physics checks.
   explicitly in the subagent's instructions.
 - A local `commit-msg` hook strips such trailers as a safety net; do not rely on it and
   do not remove it.
-
-## Delegated commits
-
-When the user requests a commit in a worktree containing unrelated changes:
-
-- The main agent identifies the intended repository, files and exact hunks, describes what
-  belongs in the commit, and supplies the commit message. Do not delegate ownership decisions
-  based only on a fresh subagent's interpretation of the working diff.
-- Delegate staging and committing to an available Terra, Luna, Sonnet or Haiku subagent with
-  low reasoning for mechanical staging or medium reasoning for mixed hunks, where supported.
-  Give it fresh context with the explicit scope, exact hunks or patch, commit message and
-  completed validation results. Do not edit the affected files or index concurrently.
-- The subagent stages only the specified changes, inspects the complete staged diff, runs
-  `git diff --cached --check`, and commits only the intended changes. Preserve unrelated working
-  and staged changes. Stop and return to the main agent on ambiguous hunks or pre-existing
-  staged changes whose ownership is unclear; never reset or unstage them to simplify the commit.
-- Return the commit hash, included paths and any blockers in a concise summary. Reuse successful
-  validation; a commit-only request does not trigger new builds or inspections. If no eligible
-  subagent is available, report the limitation before substituting another model or workflow.
-
-## Changelogs
-
-Release notes live in `changelogs/<mod id>/<version>.md`, one file per version, for example
-`changelogs/flansmodultimate/2.2.2.md` and `changelogs/wolffsmodnpcs/2.2.1.md`. The file matching the
-current `mod_version` or the module's `archiveVersion` holds the next release's notes. The release
-tasks upload it whole (see `docs/curseforge-releases.md`); content-pack modules without a changelog
-folder of their own upload the main mod's. These are the one exception to the documentation rule
-above: keep them current.
-
-Before writing to a changelog, determine the file to write to:
-
-1. Find the last released version of the main mod and the NPC module for this branch's
-   `minecraft_version`, after `git fetch --tags` where a remote is reachable:
-   `git tag -l '<mod id>-<minecraft version>-*' --sort=-v:refname`, taking the first result. Mod ids
-   are `flansmodultimate` and `wolffsmodnpcs`. Tags without a mod id are older and are ignored.
-2. Compare it with the current `mod_version` (`gradle.properties`) or `archiveVersion`
-   (`src/npcs/fmu-module.gradle`) of each module the change touches, and classify the change. It
-   affects the API when it changes the contract or classes of `com.flansmodultimate.api`.
-3. Bump only when needed, leaving versions unchanged when the change does not touch that module:
-   - API change: each module still on the `2.X` line of its last release moves to the next `2.X` line;
-     a module already on a newer line keeps its version. The main mod becomes `2.X` without a trailing `.0`, for example `2.2.2` to
-     `2.3`; the NPC module becomes `2.X.0`, for example `2.2.1` to `2.3.0`. Also update the main-mod
-     `versionRange` in `src/npcs/resources/META-INF/mods.toml`, for example to `[2.3,2.4)`, and
-     set `api_version` to the new `2.X`.
-   - Other change: if the module's current version equals its last release, increment `Y` of that
-     module only, for example main mod `2.2` to `2.2.1` or `2.2.1` to `2.2.2`, NPC `2.2.1` to `2.2.2`.
-     The NPC module always has three numbers.
-   - An unreleased version is bumped again only to go from a `Y` bump to a `2.X` bump, when an API
-     change arrives on top of it. Otherwise keep it and write to that version's changelog file; never
-     increment `Y` or `2.X` twice between releases, so further API changes on an unreleased `2.X`
-     line do not move it again.
-4. For each bumped module, create `changelogs/<mod id>/<new version>.md` in the same change, starting
-   with the new version's heading in the same form as the module's previous file. If an unreleased
-   version moves again, rename its file and update the heading rather than leaving a stale file.
-
-- Keep release notes selective: include major features, meaningful gameplay or usability changes,
-  notable fixes of released behaviour, and compatibility or migration requirements. A change being
-  visible to users does not by itself warrant an entry. Skip minor content corrections, individual
-  asset or translation changes, small UI tweaks, refactoring, tests, tooling and internal cleanups.
-- In the same change, update the relevant feature summary when the change meets that threshold.
-  Group related improvements and fixes into one concise, general bullet describing their practical
-  benefit; do not enumerate every affected item, parameter, setting, implementation detail or edge case.
-- Write for users, in English, with one short sentence per bullet where possible and a few clear
-  topic sections. Keep essential command names, opt-in controls and breaking changes in backticks;
-  leave configuration syntax and exhaustive details to the appropriate reference documentation.
-- Fold changes to something not yet released into its existing bullet instead of adding a fix line.
-  Avoid repeating highlights in topic sections or appending unrelated details to an ever-growing
-  bullet. Review the surrounding entries for overlap before adding one; prioritize a short, readable
-  overview of the release over a complete record of the work.
-- Keep each heading's version equal to `mod_version` (main mod) or the module's `archiveVersion`.
-- Never edit the notes of a released version except to fix an error in them.
+- Commit directly when every changed file in the commit belongs entirely to the task: stage explicit
+  paths, inspect the staged diff and run `git diff --cached --check`.
+- Delegate staging only when task hunks share files with unrelated changes. The main agent decides
+  ownership, supplies the exact hunks or patch and the commit message; one Terra, Luna, Sonnet or Haiku
+  subagent (low reasoning, medium for mixed hunks) stages only those hunks, checks the staged diff and
+  commits. It stops on ambiguous hunks or pre-existing staged changes of unclear ownership and never
+  resets or unstages them. It returns the hash, paths and blockers.
+- A commit-only request reuses completed validation and starts no new builds or inspections.
 
 ## Mixins
 
@@ -229,55 +172,28 @@ checking. They are read-only references: never edit them unless explicitly asked
   then `net.minecraft`, then `javax`/`java`, then static imports last.
 - Declare all class and instance fields before methods; do not place methods between
   field declarations.
-- Prefer Lombok annotations such as `@Getter`, `@Setter`, and `@NoArgsConstructor`
-  (and other suitable Lombok annotations) to replace boilerplate code. Use them in
-  line with the class's intended access, mutability, and constructor behavior.
-- The sources of truth are `config/spotless/eclipse-java-formatter.xml` (Spotless),
-  and `.idea/codeStyles/Project.xml` (IntelliJ). Do not edit
-  them unless asked.
-- Spotless is ratcheted from `origin/master`, so it only touches changed files. After
-  editing Java or build configuration, run scoped `spotlessApply` and `spotlessCheck` together through
-  the selected validation profile. The Data profile handles Markdown, `.gitignore`, JSON and PowerShell
-  syntax without starting Gradle; it preserves legacy text-definition and binary layouts. Use `// spotless:off` /
-  `// spotless:on` only for deliberately hand-aligned code. Never reformat files you
-  did not otherwise change.
-- SonarLint runs through Gradle with one task per source set (`sonarlintMain`,
-  `sonarlintTest`, `sonarlintPacksmanager`, ...). They are on demand only, not part of
-  `check`/`build`, and analyse only files changed against `origin/master` (including
-  uncommitted and nested pack repository changes); add `-PsonarlintAll` for a full scan.
-  `staticAnalysis` runs every source set. Run scoped analysis only when the chosen validation profile requires it. Introduce no new issues in touched code and fix existing ones only when
-  they are in scope. Notable rules: no `volatile` on non-primitive fields (S3077; use
-  `AtomicReference` or similar instead).
+- Prefer suitable Lombok annotations (`@Getter`, `@Setter`, `@NoArgsConstructor`, ...) over
+  boilerplate, in line with the class's intended access, mutability and constructor behaviour.
+- The sources of truth are `config/spotless/eclipse-java-formatter.xml` (Spotless)
+  and `.idea/codeStyles/Project.xml` (IntelliJ). Do not edit them unless asked.
+- Spotless is ratcheted from `origin/master`. Format Java or build-configuration edits with scoped
+  `spotlessApply`/`spotlessCheck` through the validation profile. Use `// spotless:off` / `// spotless:on`
+  only for deliberately hand-aligned code. Never reformat files you did not otherwise change.
+- SonarLint runs on demand through per-source-set Gradle tasks (`sonarlintMain`, `sonarlintTest`, ...;
+  `staticAnalysis` runs all) on files changed against `origin/master`; `-PsonarlintAll` scans everything.
+  Run it only when the profile requires it. Introduce no new issues in touched code. Notable rule: no
+  `volatile` on non-primitive fields (S3077; use `AtomicReference` or similar).
 - When code is required but a SonarLint or IntelliJ check flags it, keep the code and add a
   narrowly scoped `@SuppressWarnings` with a short reason, so the code is visibly intentional.
-- Run deterministic validation commands directly; successful checks do not need an additional reviewing agent.
-  When SonarLint or IntelliJ findings need interpretation or fixes, delegate that work and affected reruns to one
-  available Terra, Luna, Sonnet or Haiku subagent. Prefer Terra with medium reasoning for Java findings;
-  use Luna or Haiku for simple, mechanical findings, or Sonnet when available. Select a comparable thinking
-  level where supported, raising it within these model families for harder findings. Opus, Sol
-  and Astra must only coordinate this work and consume a concise result, not analyse or fix the
-  SonarLint or IntelliJ findings themselves. Start the subagent with fresh context, explicit affected paths,
-  source sets and task scope rather than the full parent conversation. Use the validation
-  coordinator and do not edit the delegated files concurrently. Preserve behaviour and unrelated
-  changes; return changed paths, a concise finding summary, validation results and unresolved blockers. If no eligible model
-  or model-selectable subagent tool is available, report the affected analysis as incomplete rather than
-  silently falling back to Opus, Sol or Astra. This delegation does not make either analysis mandatory
-  for changes exempted below. Do not launch additional high-end models or increase delegated work to a high-end
-  model without the user's explicit approval. This does not require approval to continue the primary session
-  using the model the user already selected. Do not delegate mere command launching, waiting, or successful-log reading.
-
-## Qodana Inspections
-
-When running or maintaining Qodana's IntelliJ-based inspections, read `docs/intellij-inspections.md`
-for scope, cache, timeout and process-safety instructions. Use the delegated analysis
-workflow above. The Build and Validation section below determines when inspections apply.
+- For interpreting or fixing analysis findings, follow the delegation rules in `docs/validation.md`
+  ("Analysis findings"). For Qodana scans, read `docs/intellij-inspections.md`.
 
 ## Build and Validation
 
 Choose one profile at the start and briefly state its scope and reason. Use
 `powershell -NoProfile -File scripts/validate.ps1 -Profile <profile> -Task '<user task>' -Files '<path1;path2>'`.
 Pass only task-owned files, including deletions; never select the whole dirty worktree automatically.
-`-Plan` prints the deterministic plan without starting validation. `-Apply` formats the selected files.
+`-Plan` prints the plan without starting validation. `-Apply` formats the selected files.
 
 | Profile | When | Checks |
 | --- | --- | --- |
@@ -287,88 +203,16 @@ Pass only task-owned files, including deletions; never select the whole dirty wo
 | Deep | Large Java refactor, or requested inspections | Analysis plus one Gradle-managed Qodana scan for selected Java/Kotlin files |
 | Release | Branch ports, build setup, shared contracts with broad effects, release verification | Full build and explicitly selected additional artifact tasks |
 
-`-Tests '<class/package pattern>'` selects tests. Focused, Analysis and Deep require tests or an explicit
-`-NoTestsReason`; it is not permission to omit useful tests. `-SourceSets` overrides source-set inference,
-and `-Artifacts` adds the affected jar tasks. Small shared-contract changes may still require consumer builds.
-Do not run a full build or static analysis merely because Java changed. Automatic inspection Stop hooks are disabled by
-default; both Codex and Claude Code use the same explicit profiles. See `docs/validation.md` for examples.
+- `-Tests` selects tests; Focused, Analysis and Deep require tests or an explicit `-NoTestsReason`, which
+  is not permission to omit useful tests. `-SourceSets` overrides inference; `-Artifacts` adds jar tasks.
+- Do not run a full build or static analysis merely because Java changed. Task selection per change type
+  is in `docs/validation.md` ("Choosing Gradle tasks").
+- Run Gradle and Qodana only through `scripts/validate.ps1` or `scripts/run-validation.ps1`, never competing
+  direct `gradlew` calls in the same checkout. Never delete another task's outputs, remove lock files, run
+  global `gradlew --stop` or kill processes by name. Concurrency details: `docs/validation.md`.
+- Finish related edits, then batch checks once. Reuse successful validation while its inputs are unchanged;
+  after a fix, rerun only the affected check. Read the compact result first and open only the relevant
+  log excerpt on failure. Do not poll tools or reread guides to fill waiting time.
 
-Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
-`officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Keep `gradlew` executable.
-
-Choose validation from the changed behaviour and its consumers, rather than running `build`
-at the end of every task. `build` assembles and reobfuscates every module, including content packs.
-
-- For ordinary Java logic, AI, or UI changes, compile the affected source sets and run focused
-  tests first. For NPC-only changes, use `compileNpcsJava` and `test --tests '<relevant class or package>'`,
-  plus the required formatting and scoped static analysis. Changing existing entity behaviour alone
-  does not require assembling every pack.
-- For changes to registration, networking, resource loading or an artifact's packaging, include
-  the relevant checks and artifact tasks (`jar`, `npcsJar`, `packsManagerJar`, or the affected pack's
-  jar task). Build packs when their inputs, packaging, or a shared API they consume change; an unchanged
-  pack does not need its jar rebuilt merely because another module changed.
-- Use full `build` for branch-wide ports, loader setup, shared build/source-set changes, release
-  verification, or changes whose effects span modules and cannot be covered confidently by scoped
-  checks. Include affected pack consumers when shared signatures, model classes, or content contracts
-  change, even when the pack files themselves are unchanged.
-- Keep Gradle's required task dependencies. Test filters select tests to execute; they do not prune
-  compilation dependencies. Some analysis tasks also need outputs of other source sets. Use
-  `--dry-run` if the task graph is unexpectedly broad; do not add blanket `-x compile...` exclusions.
-- Batch related Gradle checks into one invocation where practical. Queue Gradle and Qodana through
-  the validation coordinator below instead of starting competing invocations for the same checkout.
-  In a mixed worktree, scope formatting and analysis to this task's files or validate an isolated
-  checkout when unrelated changes prevent checks; preserve unrelated edits and staged content.
-- Reuse successful validation while its relevant inputs remain unchanged. After comment, formatting,
-  warning-suppression, or documentation-only follow-ups, rerun only the checks affected by that edit;
-  do not repeat a full test suite or rebuild all artifacts automatically. A commit-only request does
-  not require repeating previously completed checks.
-
-- Let Gradle reuse up-to-date outputs; do not routinely clean, rebuild, change build directories, or disable caching.
-  Finish related edits, then batch checks once. After a finding fix, rerun the affected check and its necessary
-  dependencies rather than restarting the whole profile. Do not automatically retry failed infrastructure;
-  report the failure, diagnose a concrete cause, and retry once only if that cause was corrected.
-- Read the compact result first. Full logs and reports stay on disk; open only the relevant diagnostic excerpt
-  on failure. Group duplicate findings and distinguish introduced issues from pre-existing ones before editing.
-  Do not turn validation into unrelated warning cleanup. Do not repeatedly poll tools or reread guides to fill
-  waiting time. Use bounded waits and meaningful progress updates.
-
-Before completion, review the scoped diff and complete the chosen profile's relevant checks. Report the profile,
-outcome and material validation gaps concisely. Do not list every heavier check intentionally excluded by that profile.
-
-### Parallel tasks and shared build outputs
-
-- Prefer a separate Git worktree per concurrent implementation task. Each task owns its source edits,
-  `.gradle`, `build`, generated resources, inspection results and temporary logs. Do not redirect
-  different worktrees to the same build or project-cache directory. The normal shared Gradle user home
-  and dependency cache can remain shared; do not create separate dependency caches by default.
-- Within one checkout, run agent build and inspection commands through
-  `powershell -NoProfile -File scripts/run-validation.ps1 Gradle <tasks and options>` or
-  `powershell -NoProfile -File scripts/run-validation.ps1 Qodana <inspection options>`.
-  The coordinator holds a checkout-specific mutex for the entire invocation. Different worktrees have
-  independent queues. Gradle's parallelism inside one invocation remains enabled.
-  `-WaitSeconds` limits queue waiting (default 600 seconds); `-TimeoutSeconds` limits execution
-  (default 1800 seconds for Gradle and Qodana). Both options precede the tool name.
-  Status on stderr identifies the owner and reports progress every 30 seconds (`-StatusSeconds` overrides it).
-  Use `-Task '<user task>'` to label low-level commands. Output defaults to Compact: full logs and a structured
-  `result.json` stay on disk; `-OutputMode Json` returns a run envelope and `-OutputMode Full` streams raw logs.
-  `scripts/run-validation.ps1 Status` shows the current task, last observed Gradle task and output age.
-  `scripts/run-validation.ps1 -RunId <id from Status> Cancel` requests cancellation of that exact invocation.
-  Quiet output is a liveness observation, not proof of progress or a hang. Keep periodic waiting output out of
-  model reasoning; the scripts supervise processes without an agent loop.
-  The coordinator contains each invocation in a Windows job and stops its descendants before releasing the
-  queue. Gradle runs with `--no-daemon` so timeout cancellation cannot leave work in a shared daemon;
-  batch related checks to amortize startup. Logs remain under `.gradle/validation-runs/`.
-  Check coordinator changes with `powershell -NoProfile -File scripts/test-validation-coordinator.ps1`;
-  its process tests use fake tools and launch neither Minecraft nor IntelliJ.
-- Direct `gradlew` and internal `qodana-inspect.ps1` launches, IDE auto-builds, and source edits bypass the queue.
-  `idea-inspect.ps1` and the coordinator's `Idea` tool are compatibility aliases for queued Qodana scans.
-  Coordinate those explicitly or use another worktree. Do not edit, format, clean, or regenerate a
-  checkout while another task validates it. A queued command sees the files present when it starts;
-  it does not capture or freeze a source snapshot.
-- Never delete another task's outputs/caches, remove Gradle lock files, run global `gradlew --stop`,
-  or terminate processes by name to resolve contention. If cancelling a coordinator, identify its
-  own child processes as well and ensure they have stopped before another validation starts;
-  an orphaned child can outlive the shell that held the mutex. Do not cancel another task's work.
-- Use unique task-specific temporary files and log names. On machines running several worktrees,
-  reduce workers for a heavy invocation if needed (for example `--max-workers=2`) rather than
-  changing project-wide parallelism or stopping other tasks' daemons.
+Before completion, review the scoped diff and complete the profile's relevant checks. Report the profile,
+outcome and material validation gaps concisely.

@@ -1,6 +1,6 @@
 ---
 name: infotype-parameter-gap-analysis
-description: Audit Minecraft mod InfoType subclasses and text-definition parsers for accepted, ignored, and ghost parameters, optionally comparing reference keys with a target case-insensitively. Use for focused legacy type-definition compatibility analysis, not implementation.
+description: Audit InfoType parsers for accepted, ignored and ghost parameters, optionally against a reference; analysis only.
 ---
 
 # Infotype Parameter Gap Analysis

@@ -1,6 +1,6 @@
 ---
 name: mod-feature-gap-analysis
-description: Perform a one-way semantic feature-gap analysis from a user-supplied reference Minecraft mod to a target port, reporting only missing, partial, or uncertain reference functionality. Use for comparing mod codebases without implementing changes.
+description: One-way feature-gap analysis from a reference mod to a target port, reporting missing or partial functionality; analysis only.
 ---
 
 # Mod Feature Gap Analysis

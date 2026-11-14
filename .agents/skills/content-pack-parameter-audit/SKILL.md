@@ -1,6 +1,6 @@
 ---
 name: content-pack-parameter-audit
-description: Audit the legacy Flan content-pack .txt parameters present in this repository's run/flan and src/main inputs, reporting only keys that the current implementation does not parse or parses without an effective feature. Use for a focused installed-pack compatibility audit, not reference-project comparison or implementation.
+description: Report legacy content-pack .txt keys in run/flan and src/main that the current implementation ignores; audit only, no implementation.
 ---
 
 # Content Pack Parameter Audit

@@ -1,6 +1,6 @@
 ---
 name: content-pack-definition-sync
-description: Reorganize tracked Flan content-pack .txt definitions under src/*/resources/flans_content and synchronize them with built-in category values while preserving legacy fallbacks. Use for source-definition cleanup or category-to-definition synchronization, not category research, runtime packs, or parser implementation.
+description: Reorganize source content-pack .txt definitions and sync them with built-in category values, keeping legacy fallbacks; not category research or parser work.
 ---
 
 # Content Pack Definition Sync
