@@ -130,7 +130,7 @@ public final class ModClientEventHandler
             var renderer = event.getSkin(skin);
             if (renderer instanceof PlayerRenderer playerRenderer)
             {
-                playerRenderer.addLayer(new CustomArmorLayer<>(playerRenderer));
+                playerRenderer.addLayer(new CustomArmorLayer<>(playerRenderer, "slim".equals(skin)));
                 playerRenderer.addLayer(new ArmorCapeLayer<>(playerRenderer));
             }
         }
