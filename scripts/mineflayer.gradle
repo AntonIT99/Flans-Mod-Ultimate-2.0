@@ -9,10 +9,10 @@ def prepareMineflayer = tasks.register('prepareMineflayerServer', Exec) {
 
 if (project.hasProperty('withMineflayer'))
 {
-    minecraft.runs.named('server') {
-        workingDirectory mineflayerDirectory.absolutePath
-        property 'terminal.jline', 'false'
-        property 'terminal.ansi', 'false'
+    legacyForge.runs.named('server') {
+        gameDirectory = mineflayerDirectory
+        systemProperty 'terminal.jline', 'false'
+        systemProperty 'terminal.ansi', 'false'
     }
     tasks.matching { it.name == 'runServer' }.configureEach {
         dependsOn prepareMineflayer

@@ -119,8 +119,9 @@ Configure additional dependencies for modules such as NPC Vehicles & Soldiers
 (Custom NPCs) and packs that require Classic Packs.
 
 Artifact filenames, display names, and versions come from their existing JAR
-tasks. Module versions remain independent of `mod_version`. Forge uploads wait
-for their `reobf` tasks; NeoForge uploads use the compiled JAR directly. The Packs
+tasks. Module versions remain independent of `mod_version`. Forge uploads use the
+output of their `reobf` tasks in `build/libs` (the unmapped development JARs land in
+`build/devlibs`); NeoForge uploads use the compiled JAR directly. The Packs
 Manager retains its existing packaging and does not require reobfuscation.
 
 ## Preview and upload one module

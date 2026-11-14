@@ -30,8 +30,7 @@ The setup installs the bridge with `npm ci`, downloads the mod to the ignored
 Codex configuration. Run setup in each checkout. Once the verified jar is prepared,
 `runClientMcp` launches the client with MCP and its mapped companion; `runClient`
 launches without them. Both use the normal `run` directory and the same worlds.
-Refresh the Gradle project or run `gradlew genIntellijRuns` to update IntelliJ
-launches. `-PwithMinecraftMcp` remains supported for enabling MCP on the other
+Refresh the Gradle project to update IntelliJ launches. `-PwithMinecraftMcp` remains supported for enabling MCP on the other
 client variants, including `runClient2`; `-PwithoutMinecraftMcp` suppresses MCP
 entirely. An explicit request fails if setup is missing. Servers do not inherit
 the client tool.
@@ -52,7 +51,8 @@ register that command in your agent's MCP settings.
 | 1.21.1 | NeoForge | `minecraft_1_21_1` | 9875 | 9873 |
 
 On Forge 1.20.1, setup must prepare the jar before launching with MCP.
-ForgeGradle remaps that verified jar through `fg.deobf`; adding the production
+ModDevGradle Legacy remaps that verified jar through a `mod*` remapping
+configuration attached only to the MCP client runs; adding the production
 jar directly to the development classpath causes SRG-method startup errors.
 NeoForge uses the downloaded jar through `localRuntime`.
 

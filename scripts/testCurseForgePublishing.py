@@ -85,13 +85,17 @@ tasks.matching { it.name.startsWith('publishCurseForge') && it.name != 'publishC
 }
 """
             reobf = """
+// Mirrors ModDevGradle: the dev jar lands in build/devlibs, its reobfuscated copy in build/libs.
 ['jar', 'officialPacksJar', 'privatePackJar'].each { name ->
-    def artifact = tasks.named(name, Jar).get().archiveFile
-    def reobf = tasks.register("reobf${name.capitalize()}") {
-        dependsOn(name)
-        doLast { artifact.get().asFile.append('REOBF') }
+    def devJar = tasks.named(name, Jar)
+    devJar.configure { destinationDirectory = layout.buildDirectory.dir('devlibs') }
+    def reobf = tasks.register("reobf${name.capitalize()}", Jar) {
+        archiveFileName = devJar.flatMap { it.archiveFileName }
+        destinationDirectory = layout.buildDirectory.dir('libs')
+        from(devJar)
+        doLast { Jar task -> task.archiveFile.get().asFile.append('REOBF') }
     }
-    tasks.named(name) { finalizedBy(reobf) }
+    devJar.configure { finalizedBy(reobf) }
 }
 """ if loader == "Forge" else ""
             for key, value in {"LOADER": loader, "MC": minecraft, "REOBF": reobf,

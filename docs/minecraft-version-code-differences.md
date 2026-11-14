@@ -27,7 +27,7 @@ combined byte discriminator and NeoForge separate VarInt envelopes by direction.
 
 Both versions use `scripts/spark.gradle` and `tools/spark/target.json` to pin and
 verify spark in default development runs (`-PwithoutSpark` opts out). Forge 1.20.1
-remaps the pinned Modrinth Maven artifact through `fg.deobf` and verifies the raw
+remaps the pinned Modrinth Maven artifact through `modRuntimeOnly` and verifies the raw
 artifact before each run; NeoForge 1.21.1 uses a task-backed verified `localRuntime`
 file. Preserve that distinction
 when porting the script. The Node analysis bridge and profiling workflow are shared;
@@ -271,13 +271,11 @@ ARGB tint to the API's float components. The main mod's `platform/render/WorldMo
 owns the matching version-specific vertex collection, so bounds and LOD policy stay shared.
 
 Forge packages the module's own mixin configuration and generated refmap through
-`npcsJar`, with dev-run mixin arguments in `src/npcs/fmu-module.gradle`. Append
-the NPC `--mixin.config` argument after MixinGradle's `afterEvaluate` run setup;
-earlier arguments are overwritten and generated IntelliJ runs silently omit the
-NPC hooks. Regenerate IntelliJ launch configurations with `genIntellijRuns` after
-changing this setup. NeoForge
+`npcsJar`, registering the config for dev runs through ModDevGradle Legacy's
+`mixin.config` in `src/npcs/fmu-module.gradle`. Every refmap's SRG mappings feed
+every reobfuscation there, so all `reobf*` tasks depend on `compileNpcsJava`. NeoForge
 registers `wolffsmodnpcs.mixins.json` in the NPC module's authored `neoforge.mods.toml`,
-uses Java 21 compatibility and omits the Forge refmap and MixinGradle wiring. Preserve
+uses Java 21 compatibility and omits the Forge refmap and mixin wiring. Preserve
 these module packaging differences when merging master later.
 
 ### Build, metadata, and registration
@@ -285,7 +283,7 @@ these module packaging differences when merging master later.
 | Class or location | Source API and destination adaptation |
 | --- | --- |
 | `gradle/curseforge.gradle` | Both branches share separate, opt-in CurseForge upload tasks for the main mod, Packs Manager, and all registered modules. `build.gradle` supplies the loader tag explicitly: `Forge` for 1.20.1, `NeoForge` for 1.21.1. Forge uploads depend on the matching `reobf` task (except Packs Manager); NeoForge uploads use the compiled artifact directly. Module `curseforge` maps in `fmu-module.gradle` supply destination defaults; Gradle properties override them. URLs enable destinations, IDs and changelogs remain configurable, and the author token is read during task execution to preserve NeoForge configuration-cache compatibility. |
-| `build.gradle`, `settings.gradle`, `src/*/fmu-module.gradle` | The ForgeGradle / Java 17 build becomes ModDevGradle / Java 21. Both scripts keep the same section order and share `configureModSourceSet`, `registerFmuModule`, and `EncryptOptionalContent` verbatim; only the loader block, Minecraft classpath wiring (`neoForge.addModdingDependenciesTo` instead of Forge's `implementation`), dev-run mod binding, metadata expansion, dev-only mod configuration (`localRuntime` instead of `runtimeOnly fg.deobf`), publishing (`artifact jar` for the reobfuscated Forge jar), Forge-only mixin refmap and `reobfJar` handling, and 1.21.1's `-Xlint` compiler flags differ. 1.20.1 disables the Gradle configuration cache because ForgeGradle 6 and MixinGradle do not support it. A source merge must not replace the NeoForge setup with Forge build logic. |
+| `build.gradle`, `settings.gradle`, `src/*/fmu-module.gradle` | The ModDevGradle Legacy / Java 17 build becomes ModDevGradle / Java 21. Both scripts keep the same section order and share `configureModSourceSet`, `registerFmuModule`, and `EncryptOptionalContent` verbatim; only the loader block, Minecraft classpath wiring (`neoForge.addModdingDependenciesTo` instead of Forge's `implementation`), dev-run mod binding, metadata expansion, dev-only mod configuration (`localRuntime` instead of `modRuntimeOnly`), Forge-only mixin refmap, log4j constraint and `obfuscation.reobfuscate` handling (reobfuscated jars in `build/libs`, development jars in `build/devlibs`), and 1.21.1's `-Xlint` compiler flags differ. Both branches enable the Gradle configuration cache. A source merge must not replace the NeoForge setup with Forge build logic. |
 | `src/main/templates/META-INF/neoforge.mods.toml`, `src/*/resources/META-INF/neoforge.mods.toml` | NeoForge metadata replaces Forge `META-INF/mods.toml`. The main mod, bundled packs, official packs, and optional modules remain separate artifacts with their own metadata. |
 | `src/main/java/com/flansmodultimate/platform/PlatformPaths.java`; `src/packsmanager/java/com/flansmodultimate/packsmanager/platform/PlatformPaths.java` | Main-mod and standalone Packs Manager callers use small path APIs for the game, config, and (in the main mod) mods directories. Each source set keeps its loader-specific `FMLPaths` import; the helpers return raw paths so callers retain their own normalization and resolution rules. |
 | `src/main/java/com/flansmodultimate/platform/PlatformEnvironment.java`; `src/packsmanager/java/com/flansmodultimate/packsmanager/platform/PlatformEnvironment.java` | Runtime side and production checks use a small API in each independent source set. Forge and NeoForge retain their own `FMLEnvironment` imports there; annotation values and Forge's client packet `DistExecutor` call still use their required loader APIs. In the main mod, `isModLoaded` and `currentServer()` also wrap `ModList` and `ServerLifecycleHooks`. |

@@ -1,5 +1,4 @@
 import name.remal.gradle_plugins.sonarlint.SonarLint
-import net.minecraftforge.gradle.common.util.RunConfig
 import org.codehaus.groovy.runtime.GStringImpl
 
 import javax.crypto.Cipher
@@ -20,9 +19,7 @@ buildscript {
 plugins {
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'net.neoforged.moddev.legacyforge' version '2.0.143'
     id 'name.remal.sonarlint'
     id 'com.diffplug.spotless'
 }
@@ -128,76 +125,84 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 // Forge metadata file expanded in every mod source set.
 def modsTomlPath = 'META-INF/mods.toml'
 
-// Typed values for the run blocks, where 'project' and properties resolve against RunConfig.
+// Typed values for the run blocks, where 'project' and properties resolve against RunModel.
 String mainModId = mod_id
-SourceSet mainSourceSet = sourceSets.main
-String runDirectoryPath = file('run').absolutePath
-String secondClientRunDirectoryPath = file('run/second-client').absolutePath
-String dataRunDirectoryPath = file('run-data').absolutePath
+File dataRunDirectory = file('run-data')
+File secondClientRunDirectory = file('run/second-client')
 // runData output is only for inspection; it is not packaged.
 String dataOutputPath = layout.buildDirectory.dir('datagen').get().asFile.absolutePath
 String mainResourcesPath = file('src/main/resources/').absolutePath
 
-minecraft {
-    mappings channel: mapping_channel, version: mapping_version
-    copyIdeResources = true
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+
+    parchment {
+        mappingsVersion = parchment_mappings_version
+        minecraftVersion = minecraft_version
+    }
 
     runs {
         configureEach {
-            workingDirectory runDirectoryPath
-            ideaModule "${project.name.replace('.', '_')}.main"
-            // The main module does not depend on the optional mods, but the launch loads all of them.
-            buildAllProjects true
-
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'info'
+            systemProperty 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            logLevel = org.slf4j.event.Level.INFO
             // Force colored log levels, also in IDE consoles.
-            property 'terminal.ansi', 'true'
-            property 'terminal.jline', 'true'
-            property 'terminal.keepMinecraftFormatting', 'true'
-
-            mods.maybeCreate(mainModId).source(mainSourceSet)
+            systemProperty 'terminal.ansi', 'true'
+            systemProperty 'terminal.jline', 'true'
+            systemProperty 'terminal.keepMinecraftFormatting', 'true'
+            systemProperty 'mixin.debug.verbose', 'true'
+            systemProperty 'mixin.debug.export', 'true'
         }
 
         client {
-            token 'dev_username', 'Player1'
-            args '--username', '{dev_username}'
-            property 'forge.enabledGameTestNamespaces', mainModId
+            client()
+            programArguments.addAll('--username', 'Player1')
+            systemProperty 'forge.enabledGameTestNamespaces', mainModId
         }
 
-        // Inherit the client launch arguments, resolving its username token for the second identity.
+        // A separate identity and game directory let this run alongside the primary client.
         client2 {
-            parent((RunConfig) minecraft.runs.getByName('client'))
-            workingDirectory secondClientRunDirectoryPath
-            token 'dev_username', 'Player2'
+            client()
+            gameDirectory = secondClientRunDirectory
+            programArguments.addAll('--username', 'Player2')
+            systemProperty 'forge.enabledGameTestNamespaces', mainModId
         }
 
         clientDebug {
-            parent((RunConfig) minecraft.runs.getByName('client'))
-            property 'forge.logging.console.level', 'debug'
+            client()
+            systemProperty 'forge.enabledGameTestNamespaces', mainModId
+            logLevel = org.slf4j.event.Level.DEBUG
         }
 
         // Debug timings plus a Flight Recorder profile of the first three minutes, saved as startup.jfr in the run directory.
         clientProfile {
-            parent((RunConfig) minecraft.runs.getByName('clientDebug'))
-            jvmArg '-XX:StartFlightRecording=duration=180s,settings=profile,filename=startup.jfr'
+            client()
+            systemProperty 'forge.enabledGameTestNamespaces', mainModId
+            logLevel = org.slf4j.event.Level.DEBUG
+            jvmArgument '-XX:StartFlightRecording=duration=180s,settings=profile,filename=startup.jfr'
         }
 
         server {
-            property 'forge.enabledGameTestNamespaces', mainModId
-            args '--nogui'
+            server()
+            systemProperty 'forge.enabledGameTestNamespaces', mainModId
+            programArgument '--nogui'
         }
 
         gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mainModId
+            type = 'gameTestServer'
+            systemProperty 'forge.enabledGameTestNamespaces', mainModId
         }
 
         data {
-            workingDirectory dataRunDirectoryPath
-            args('--mod', mainModId, '--all', '--output', dataOutputPath, '--existing', mainResourcesPath)
+            data()
+            gameDirectory = dataRunDirectory
+            programArguments.addAll('--mod', mainModId, '--all', '--output', dataOutputPath, '--existing', mainResourcesPath)
         }
     }
+
+    mods.maybeCreate(mainModId).sourceSet(sourceSets.main)
 }
+// Unit tests compile against Minecraft classes like the main source set.
+legacyForge.addModdingDependenciesTo(sourceSets.test)
 
 sourceSets {
     // flan/ was the old copy target of run/flan; packsManagerJar now bundles run/flan directly.
@@ -224,7 +229,8 @@ def configureModSourceSet = { SourceSet sourceSet, String modId ->
     // Lombok is on every compile classpath, so its annotations must also be processed everywhere.
     dependencies.add(sourceSet.annotationProcessorConfigurationName, lombokDependency)
     dependencies.add(sourceSet.implementationConfigurationName, sourceSets.main.output)
-    minecraft.runs.configureEach { mods.maybeCreate(modId).source(sourceSet) }
+    legacyForge.addModdingDependenciesTo(sourceSet)
+    legacyForge.mods.maybeCreate(modId).sourceSet(sourceSet)
 }
 
 configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
@@ -305,12 +311,16 @@ ext.registerFmuModule = { Map module ->
 
     // Pack classes may call Minecraft code directly, so ship every module in SRG names like the mod jar.
     String jarTaskName = module.jarTask.toString()
-    reobf.create(jarTaskName) {
-        libraries.from(source.compileClasspath)
+    // ModDevGradle publishes reobfuscated jars as variants of the source set's outgoing configurations,
+    // which only the main source set has; modules are never published, so skipped empty ones suffice.
+    [source.runtimeElementsConfigurationName, source.apiElementsConfigurationName].each { String elements ->
+        def configuration = configurations.maybeCreate(elements)
+        configuration.canBeConsumed = true
+        configuration.canBeResolved = false
+        components.java.addVariantsFromConfiguration(configuration) { skip() }
     }
-    tasks.named(jarTaskName) { finalizedBy "reobf${jarTaskName.capitalize()}" }
-    // MixinGradle would otherwise stamp the main mod's MixinConfigs onto every reobfuscated jar.
-    tasks.matching { it.name == "addMixinsTo${jarTaskName.capitalize()}" }.configureEach { enabled = false }
+    def reobfTask = obfuscation.reobfuscate(tasks.named(jarTaskName, Jar), source)
+    tasks.named(jarTaskName) { finalizedBy reobfTask }
 
     if (module.javaCompileJvmArgs) {
         tasks.named(source.compileJavaTaskName, JavaCompile) {
@@ -351,7 +361,7 @@ repositories {
             includeGroup 'net.mezzdev.config'
         }
     }
-    // Distant Horizons publishes its API and mod jars on Modrinth only. Not exclusive: ForgeGradle serves
+    // Distant Horizons publishes its API and mod jars on Modrinth only. Not exclusive: ModDevGradle serves
     // the remapped mod jar of -PwithDistantHorizons from its own repository under the same group.
     maven {
         url = 'https://api.modrinth.com/maven'
@@ -360,7 +370,12 @@ repositories {
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // Forge 1.20.1 launches with log4j 2.19, but its POM only prefers that version, so ModDevGradle would
+    // otherwise resolve terminalconsoleappender's 2.8.1, which lacks the appender builder API ModLogFile uses.
+    constraints {
+        implementation('org.apache.logging.log4j:log4j-core:2.19.0')
+        implementation('org.apache.logging.log4j:log4j-api:2.19.0')
+    }
 
     annotationProcessor "org.spongepowered:mixin:$version_mixin:processor"
     annotationProcessor lombokDependency
@@ -369,11 +384,11 @@ dependencies {
     compileOnly lombokDependency
 
     // JEI discovers the client plugin only when installed; the API never ships in our jar.
-    compileOnly fg.deobf('mezz.jei:jei-1.20.1-common-api:15.20.0.135')
-    compileOnly fg.deobf('mezz.jei:jei-1.20.1-forge-api:15.20.0.135')
+    modCompileOnly('mezz.jei:jei-1.20.1-common-api:15.20.0.135')
+    modCompileOnly('mezz.jei:jei-1.20.1-forge-api:15.20.0.135')
     // Keep the dev runtime compatible with the JEI hooks in the pinned Custom NPCs mod.
     if (project.hasProperty('withJei'))
-        runtimeOnly fg.deobf('mezz.jei:jei-1.20.1-forge:15.20.0.135')
+        modRuntimeOnly('mezz.jei:jei-1.20.1-forge:15.20.0.135')
 
     testImplementation platform("org.junit:junit-bom:$version_junit")
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -384,20 +399,15 @@ dependencies {
     compileOnly "maven.modrinth:distanthorizonsapi:$version_distant_horizons_api"
 
     // Optional mods loaded only in development runs.
-    runtimeOnly fg.deobf(customNpcsDependency)
+    modRuntimeOnly(customNpcsDependency)
     if (project.hasProperty('withDistantHorizons'))
-        runtimeOnly fg.deobf("maven.modrinth:distanthorizons:$version_distant_horizons")
+        modRuntimeOnly("maven.modrinth:distanthorizons:$version_distant_horizons")
 }
 
 mixin {
     add sourceSets.main, "${mod_id}.refmap.json"
     config "${mod_id}.mixins.json"
-    debug.verbose = true
-    debug.export = true
 }
-
-// The refmap is written outside the task's cached outputs, so a cache hit would ship a jar without it.
-tasks.named('compileJava') { outputs.cacheIf('the mixin refmap is not a cached output') { false } }
 
 tasks.named('test', Test) {
     useJUnitPlatform()
@@ -461,19 +471,6 @@ tasks.named('processResources', ProcessResources) {
     filesMatching([modsTomlPath, 'pack.mcmeta']) { expand replaceProperties }
 }
 
-// ForgeGradle copies every resource into the IDE output before each launch, which restamps them
-// all and so invalidates the content caches keyed on those stamps. Files copied as they are, and
-// already there unchanged, are left alone; the expanded ones are always written.
-tasks.matching { it.name == 'copyIntellijResources' }.configureEach { Copy task ->
-    task.eachFile { FileCopyDetails details ->
-        if (details.sourcePath == modsTomlPath || details.sourceName == 'pack.mcmeta')
-            return
-        File target = new File(task.destinationDir, details.relativePath.pathString)
-        if (target.isFile() && target.length() == details.file.length() && target.lastModified() >= details.file.lastModified())
-            details.exclude()
-    }
-}
-
 tasks.named('jar', Jar) {
     // The API package is MIT licensed and ships inside this jar, so its notice must too.
     from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
@@ -517,13 +514,7 @@ def apiJarTask = tasks.register('apiJar', Jar) { Jar jar ->
     jar.finalizedBy 'reobfApiJar'
 }
 
-reobf {
-    apiJar {
-        libraries.from(sourceSets.main.compileClasspath)
-    }
-}
-// MixinGradle would otherwise stamp the main mod's MixinConfigs onto the API jars.
-tasks.matching { it.name in ['addMixinsToApiJar', 'addMixinsToApiSourcesJar', 'addMixinsToApiJavadocJar'] }.configureEach { enabled = false }
+obfuscation.reobfuscate(apiJarTask, sourceSets.main)
 
 def apiSourcesJarTask = tasks.register('apiSourcesJar', Jar) { Jar jar ->
     jar.group = 'flans mod ultimate'

@@ -212,13 +212,13 @@ releases.each { Map<String, Object> release ->
         configureRelease(task)
         task.description = "Builds and uploads ${name} for this branch's Minecraft version (or previews with -PcurseforgeDryRun=true)."
         task.upload.set(true)
+        // Forge jars ship reobfuscated; ModDevGradle writes them apart from the dev jar. NeoForge jars ship as built.
+        boolean reobfuscated = loader == 'Forge' && jarName != 'packsManagerJar'
         if (enabled) {
-            task.artifactFile.set(jarTask.flatMap { it.archiveFile })
+            TaskProvider<Jar> uploadedJar = reobfuscated ? tasks.named("reobf${jarName.capitalize()}", Jar.class) : jarTask
+            task.artifactFile.set(uploadedJar.flatMap { it.archiveFile })
             task.dependsOn(validation)
         }
-        // Forge jars must be reobfuscated before the upload; NeoForge jars ship as built.
-        if (enabled && loader == 'Forge' && jarName != 'packsManagerJar')
-            task.dependsOn("reobf${jarName.capitalize()}")
         // Finish every selected validation and artifact before the first upload.
         task.mustRunAfter(validations, artifacts, reobfuscations)
     }

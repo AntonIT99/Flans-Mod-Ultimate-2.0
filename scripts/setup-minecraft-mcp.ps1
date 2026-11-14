@@ -25,5 +25,5 @@ if ($RegisterCodex) {
 }
 
 Write-Host "Ready: Minecraft $($target.version) / $($target.loader), port $($target.port)."
-Write-Host 'Refresh the Gradle project or run ./gradlew.bat genIntellijRuns to update IDE launches.'
+Write-Host 'Refresh the Gradle project to update IDE launches.'
 Write-Host 'Launch: ./gradlew.bat runClientMcp with MCP, or ./gradlew.bat runClient without it. Both use the normal run directory.'

@@ -43,8 +43,8 @@ def prepareSpark = tasks.register('prepareSpark') {
 
 if (!project.hasProperty('withoutSpark'))
 {
-    // ForgeGradle remaps the production artifact's SRG names for development runs.
-    dependencies.add('runtimeOnly', fg.deobf(sparkDependency))
+    // ModDevGradle remaps the production artifact's SRG names for development runs.
+    dependencies.add('modRuntimeOnly', sparkDependency)
     tasks.matching { it.name.startsWith('run') || it.name.startsWith('prepareRun') }.configureEach {
         dependsOn prepareSpark
     }
