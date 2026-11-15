@@ -30,6 +30,9 @@ public final class RepairDriveableCommand
                 .then(Commands.literal("all").executes(context -> repairAll(context.getSource())))
                 .then(Commands.literal("start").then(Commands.argument(TARGET, EntityArgument.entity()).executes(context -> start(context.getSource(), EntityArgument.getEntity(context, TARGET)))))
                 .then(Commands.argument(TARGET, EntityArgument.entity()).executes(context -> repair(context.getSource(), EntityArgument.getEntity(context, TARGET))))));
+        // Short /repair alias; Brigadier follows a redirect only when more input follows, so keep the no-argument action too.
+        var repairNode = dispatcher.getRoot().getChild("flansmodultimate").getChild("repair");
+        dispatcher.register(Commands.literal("repair").requires(repairNode.getRequirement()).executes(repairNode.getCommand()).redirect(repairNode));
         dispatcher.register(Commands.literal("flansmodultimate")
             .then(Commands.literal("rebuild").then(Commands.argument(TARGET, EntityArgument.entity()).then(Commands.argument(PART, StringArgumentType.word()).executes(context ->
             {
