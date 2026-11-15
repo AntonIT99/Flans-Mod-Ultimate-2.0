@@ -58,9 +58,8 @@ ModeSecondary FullAuto
 ReadWeaponsFromGunTypes true
 
 // Health and armour
-SetupPart tail 1000 -83 15 -9 19 39 22
 SetupPart core 2000 -26 0 -24 64 37 48
-SetupPart tail 1000 -64 22 -5 38 13 11
+SetupPart tail 1000 -83 16 -10 57 38 23
 SetupPart blades 1000 -54 37 -61 122 6 122
 BulletDetection 8
 UseRealisticVehicleHealth true

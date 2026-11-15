@@ -75,11 +75,11 @@ ReadWeaponsFromGunTypes true
 
 // Health and armour
 BulletDetection 10
-SetupPart leftWing 5000 -39 21 7 81 5 106
-SetupPart rightWing 5000 -40 22 -112 82 5 105
-SetupPart nose 6000 28 18 -10 56 24 20
-SetupPart core 7000 -5 19 -11 33 23 21
-SetupPart tail 5000 -94 18 -46 89 55 94
+SetupPart leftWing 2000 -154 18 -571 451 82 541
+SetupPart rightWing 2000 -154 18 30 451 82 541
+SetupPart nose 300 447 29 -27 38 54 54
+SetupPart core 4700 -172 14 -30 619 89 60
+SetupPart tail 1000 -462 14 -30 290 241 60
 UseRealisticVehicleHealth true
 
 // Seats and geometry
