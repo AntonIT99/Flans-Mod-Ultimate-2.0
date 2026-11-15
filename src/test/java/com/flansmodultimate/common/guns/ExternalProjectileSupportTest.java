@@ -105,6 +105,20 @@ class ExternalProjectileSupportTest
     }
 
     @Test
+    void aNumberedTurretBankAimsWhileItsMuzzlesStayOnTheHull()
+    {
+        TestVehicle type = new TestVehicle(new Vector3f());
+        type.numberedTurret(new Vector3f(1F, 1.5F, 0F), new Vector3f(4F, 2F, 0.5F));
+        Vec3 rest = ExternalProjectileSupport.getMuzzles(type, false, 0, true).get(0).offset();
+        assertVector(rest, ExternalProjectileSupport.getMuzzles(type, false, 0, true, new MountAim(90F, -12F)).get(0).offset());
+        assertTrue(ExternalProjectileSupport.aimsWithTurret(type, false));
+        // The secondary bank sits on the hull and fires along it.
+        assertFalse(ExternalProjectileSupport.aimsWithTurret(type, true));
+        type.turret(new Vector3f(1F, 1.5F, 0F), new Vector3f(4F, 2F, 0.5F));
+        assertTrue(ExternalProjectileSupport.aimsWithTurret(type, false));
+    }
+
+    @Test
     void anAaGunCarriesItsBarrelsRoundAndUpWithItsAim()
     {
         TestAA type = new TestAA();
@@ -241,6 +255,14 @@ class ExternalProjectileSupportTest
             turretOrigin = origin;
             shootPointsPrimary.clear();
             shootPointsPrimary.add(new ShootPoint(new DriveablePosition(muzzle, EnumDriveablePart.TURRET), new Vector3f()));
+        }
+
+        /** Replaces the primary point by one on a numbered ship turret. */
+        private void numberedTurret(Vector3f origin, Vector3f muzzle)
+        {
+            turretOrigin = origin;
+            shootPointsPrimary.clear();
+            shootPointsPrimary.add(new ShootPoint(new DriveablePosition(muzzle, EnumDriveablePart.TURRET_3), new Vector3f()));
         }
     }
 

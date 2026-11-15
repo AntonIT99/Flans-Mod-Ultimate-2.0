@@ -247,7 +247,8 @@ public final class NpcVehicleState
             WeaponMount driver = mounts.stream().filter(WeaponMount::driver).findFirst().orElse(null);
             List<WeaponMuzzle> rest = FlansProjectiles.getMuzzles(model, secondary, 0, false);
             List<WeaponMuzzle> turned = FlansProjectiles.getMuzzles(model, secondary, 0, false, new MountAim(90F, 0F));
-            boolean turreted = kind == FlanModelKind.AA_GUN;
+            // A gun on a numbered ship turret aims though its muzzles stay put as the turret turns.
+            boolean turreted = kind == FlanModelKind.AA_GUN || FlansProjectiles.aimsWithTurret(model, secondary);
             for (int index = 0; index < rest.size() && index < turned.size() && !turreted; index++)
                 turreted = rest.get(index).offset().distanceToSqr(turned.get(index).offset()) > 1.0E-6D;
             Optional<AABB> bounds = model instanceof IDriveableType driveable ? driveable.getBounds() : Optional.empty();

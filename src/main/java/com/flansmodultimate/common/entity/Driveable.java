@@ -3237,7 +3237,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             }
             return modelLocalDirectionToWorld(localDirection).normalize();
         }
-        if (isTurretMountedPart(part))
+        // A gun on a numbered turret stays where it is on the hull but fires where the driver aims, as in the legacy mod.
+        if (EnumDriveablePart.isTurretPart(part))
             return aimedDirection(getTurretYaw(), getTurretPitch());
         return modelLocalDirectionToWorld(configuredModelLocal(new Vec3(1D, 0D, 0D))).normalize();
     }
@@ -3453,7 +3454,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             for (DriveableType.ShootParticle particle : particles)
             {
                 Vec3 localDirection = configuredModelLocal(new Vec3(particle.x(), particle.y(), particle.z()));
-                if (isTurretMountedPart(part))
+                if (EnumDriveablePart.isTurretPart(part))
                     localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
                 Vec3 direction = modelLocalDirectionToWorld(localDirection);
                 ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, 1F);
@@ -4741,7 +4742,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public boolean isDriverWeaponHullFixed(boolean secondary)
     {
         List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
-        return !points.isEmpty() && !isTurretMountedPart(points.get(0).getRootPos().getPart());
+        return !points.isEmpty() && !EnumDriveablePart.isTurretPart(points.get(0).getRootPos().getPart());
     }
 
     /** @return the round the bank of the driver's trigger would fire now, or null with none loaded. Server side. */

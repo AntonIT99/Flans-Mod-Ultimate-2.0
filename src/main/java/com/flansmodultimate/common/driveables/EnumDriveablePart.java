@@ -293,7 +293,10 @@ public enum EnumDriveablePart
         return part != null && part.name().matches("TURRET_\\d+");
     }
 
-    /** A turret or part of one, turning with the main turret or not: it takes turret armour defaults and is damaged as a turret. */
+    /**
+     * A turret or part of one, turning with the main turret or not: it takes turret armour defaults, is damaged as a turret,
+     * and the driver's guns on it fire where the driver aims.
+     */
     public static boolean isTurretPart(@Nullable EnumDriveablePart part)
     {
         return isTurretMounted(part) || isNumberedTurret(part);
