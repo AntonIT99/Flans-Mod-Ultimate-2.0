@@ -29,6 +29,7 @@ DeployedModel None
 Model NFS.MAC31
 Texture Skin_Gun_MAC31
 ModelScale 1
+animAimOffset 0 3.6 -1.5
 
 NumGenericAttachmentSlots 1
 EmptyClickSound emptyclick

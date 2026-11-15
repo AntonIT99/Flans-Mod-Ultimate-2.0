@@ -27,6 +27,7 @@ DeployedModel None
 Model NewAge.BerthierM1916
 Texture Skin_Gun_Berthier
 ModelScale 1
+animAimOffset 0 -0.8 0
 AllowAttachments 44_OpticalSight 44_No32MkIIScope 44_LensSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
 AllowBarrelAttachments true
 AllowScopeAttachments true
