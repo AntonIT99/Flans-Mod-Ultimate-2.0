@@ -56,9 +56,9 @@ AllowGripAttachments false
 NumGenericAttachmentSlots 0
 
 // Sounds
-WarmupSound EMP4Warmup
-SpinSound EMP4Spin
-CooldownSound EMP4Cooldown
+WarmupSound MinigunWarmup
+SpinSound MinigunSpin
+CooldownSound MinigunCooldown
 WarmupSoundLength 10
 SpinSoundLength 10
 ShootSound EMP4Shoot

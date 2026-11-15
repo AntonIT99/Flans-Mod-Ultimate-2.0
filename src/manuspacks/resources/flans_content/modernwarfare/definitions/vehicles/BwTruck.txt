@@ -72,7 +72,7 @@ WheelPosition 3 4 -8 -19
 
 // Sounds
 StartEngineSound ural4320start
-StartEngineSound 53
+StartEngineSound lkw_start
 EngineSound kamazenginerun
 EngineSoundLength 64
 ShootSound bullet

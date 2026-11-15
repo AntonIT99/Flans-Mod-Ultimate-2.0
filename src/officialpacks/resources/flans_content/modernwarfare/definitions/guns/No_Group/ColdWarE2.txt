@@ -52,9 +52,9 @@ AllowGripAttachments false
 NumGenericAttachmentSlots 1
 
 // Sounds
-WarmupSound ColdWarE2Warmup
-SpinSound ColdWarE2Spin
-CooldownSound ColdWarE2Cooldown
+WarmupSound MinigunWarmup
+SpinSound MinigunSpin
+CooldownSound MinigunCooldown
 WarmupSoundLength 10
 SpinSoundLength 10
 ShootSound ColdWarE2Shoot
