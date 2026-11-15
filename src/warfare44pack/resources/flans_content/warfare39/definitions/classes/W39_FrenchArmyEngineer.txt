@@ -1,0 +1,14 @@
+// Identity
+Name Sapper
+ShortName W39_FrenchArmyEngineer
+Description Combat engineer with a Berthier rifle, a demolition charge and a wrench.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Berthier
+AddItem 44_BerthierAmmo 4
+AddItem 44_Wrench
+AddItem 44_SatchelCharge
+AddItem 44_Bandage

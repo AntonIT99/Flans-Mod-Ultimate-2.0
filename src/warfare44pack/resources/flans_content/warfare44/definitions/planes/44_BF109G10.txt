@@ -23,6 +23,7 @@ FuelTankSize 6000
 advpaintjob BlackAce BF109G10_AceDark BF109G10_AceDark black 8 yellow 2
 advpaintjob Trop BF109G10_Trop BF109G10_Trop yellow 8 silver 2
 advpaintjob ErichHartmann BF109G10_ErichHartmann BF109G10_ErichHartmann green 8 black 2
+advpaintjob G6 44_BF109G10 bf109g10_g6 gray 8
 AddDye 5 gray
 AddDye 3 green
 

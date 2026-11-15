@@ -1,0 +1,64 @@
+Name MAS-38
+ShortName 44_MAS38
+//The ammo this gun uses (shortName)
+Ammo 44_MAS38Ammo
+Icon 44_MAS38
+//Colour in Red, Green, Blue, each going up to 255.
+Colour 255 255 255
+//Reload time in ticks, 1/20ths of a second
+ReloadTime 80
+//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Mp40Sniper = 20
+//Damage in half hearts
+Damage 1
+//The higher this value, the more the bullets spread
+Accuracy 5
+//Time in ticks between rounds
+RoundsPerMin 500
+ShootSound Mp40Shoot
+ReloadSound Mp40Reload
+Mode FullAuto
+EmptyClickSound emptyclick
+
+//Bullet speed, default 3.0
+BulletSpeed 12.0
+Scope None
+Deployable False
+DeployedModel None
+Model NewAge.MAS38
+Texture Skin_Gun_MAS38
+ModelScale 0.8
+AllowAttachments 44_ZF41Scope 44_OpticalSight 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+
+NumGenericAttachmentSlots 1
+EmptyClickSound emptyclick
+
+//Recoil
+Recoil 0.3
+RandomRecoilYawRange 0.1
+RandomRecoilYawRange 0.1
+DecreaseRecoil 1
+DecreaseRecoilYaw 0.75
+
+Description French Sub Machine Gun
+
+ShowAccuracy true
+ShowReloadTime true
+DistortSound False
+ReloadSoundRange 5
+GunSoundRange 400
+
+//Server Stuff
+GunCategory 2
+
+//Bullet Casing
+CasingModel NewAge.casing1
+CasingTexture Skin_Gun_casing1
+
+//Muzzle Flashes
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1

@@ -1,0 +1,26 @@
+// Identity
+Name German Army (1939-1940)
+ShortName W39_GermanArmy
+
+// Appearance
+VictoryFlagTexture flag_team_germany_ww2
+TextColour Gray
+TeamColour 140 150 145
+Hat 44_GermanM42FeldgrauStahlhelm
+Chest 44_GermanPzGrenadierFeldgrauChest
+Legs 44_GermanFeldgrauPants
+Shoes 44_GermanBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Early-war Warfare 44 classes: no late-war rifles, machine guns or anti-tank launchers
+AddClass W44_GermanArmyRifleman
+AddClass W44_GermanArmyAssault
+AddClass W44_GermanArmyMachineGunnerMG34
+AddClass W44_GermanArmyMachineGunnerMG26t
+AddClass W44_GermanArmyEngineer
+AddClass W44_GermanArmyMedic
+AddClass W44_GermanArmySquadLeader
+AddClass W44_GermanArmyOfficer
+AddClass W44_GermanArmyTankCrew

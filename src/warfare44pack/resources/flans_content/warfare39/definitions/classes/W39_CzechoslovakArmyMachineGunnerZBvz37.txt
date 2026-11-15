@@ -1,0 +1,15 @@
+// Identity
+Name Heavy Machine Gunner (ZB vz. 37)
+ShortName W39_CzechoslovakArmyMachineGunnerZBvz37
+Description Heavy machine gunner with the belt-fed ZB vz. 37 of the border fortifications.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 15
+
+// Items
+AddItem 44_ZBvz37
+AddItem 44_ZBvz37Ammo 6
+AddItem 44_AmmoBag
+AddItem 44_Bandage

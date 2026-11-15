@@ -76,6 +76,11 @@
       "size": 13765,
       "ticks": 15
     },
+    "bullet.ogg": {
+      "key": "bullet",
+      "size": 11025,
+      "ticks": 13
+    },
     "c96reload.ogg": {
       "key": "c96reload",
       "size": 51196,

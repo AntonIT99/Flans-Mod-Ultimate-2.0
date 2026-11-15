@@ -1,0 +1,8 @@
+Name M26 Adrian Helmet 
+ShortName 44_FrenchAdrianHelmet
+Icon 44_FrenchAdrianHelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.2
+Model NFS.44_FrenchAdrianHelmet
+ArmourTexture 44_FrenchUniform

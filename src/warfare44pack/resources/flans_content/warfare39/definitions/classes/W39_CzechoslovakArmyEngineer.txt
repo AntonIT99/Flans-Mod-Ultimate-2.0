@@ -1,0 +1,14 @@
+// Identity
+Name Sapper
+ShortName W39_CzechoslovakArmyEngineer
+Description Combat engineer with a Mauser rifle, a demolition charge and a wrench.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Kar98k
+AddItem 44_Kar98kAmmo 4
+AddItem 44_Wrench
+AddItem 44_SatchelCharge
+AddItem 44_Bandage

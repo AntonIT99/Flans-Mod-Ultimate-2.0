@@ -1,0 +1,15 @@
+// Identity
+Name Ammunition Bearer
+ShortName W39_FrenchArmyAmmoBearer
+Description Rifleman carrying spare Chauchat magazines and an ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Berthier
+AddItem 44_BerthierAmmo 4
+AddItem 44_ChauchatAmmo 3
+AddItem 44_AmmoBag
+AddItem 44_Bandage

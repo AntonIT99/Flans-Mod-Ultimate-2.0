@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman
+ShortName W39_FrenchArmyRifleman
+Description Line infantryman with a Berthier rifle, plentiful clips and two grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Berthier
+AddItem 44_BerthierAmmo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage
