@@ -264,6 +264,13 @@ public final class VehiclePhysicsConstants
      */
     public static final double DRAFT_RESTORING_STIFFNESS = 0.08D;
     /**
+     * Largest share of its scaled core box height a hull may ride below the
+     * surface. Researched drafts are real metres, while many legacy naval packs
+     * model at a fraction of real size: Rainfire5's 4.7 m destroyer draft is
+     * deeper than its whole 2.8 block hull. Models drawn to scale keep their draft.
+     */
+    public static final double MAX_DRAFT_HULL_FRACTION = 0.6D;
+    /**
      * Maximum blocks a draft probe will search upward for the water surface. It
      * must exceed the deepest authored draft: a probe that stops short reads the
      * top of its own range as the surface and the hull sinks chasing it.

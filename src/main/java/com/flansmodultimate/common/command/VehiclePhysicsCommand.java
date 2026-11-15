@@ -109,7 +109,7 @@ public final class VehiclePhysicsCommand
                 ? format(resolved.reverseSpeedBlocksPerTick(speedScale)) + " blocks/tick"
                 : "none (legacy MaxNegativeThrottle " + format(type.getMaxNegativeThrottle()) + ")"));
         send(context, ChatFormatting.GRAY, "  uphillResponse = " + (resolved.hasGroundPropulsion() ? "derived from powerToWeight and driveType" : "legacy"));
-        send(context, ChatFormatting.GRAY, "  draft = " + (resolved.hasDraft() ? format(resolved.draftM()) + " m" : "none (legacy Buoyancy " + format(type.getBuoyancy()) + ")"));
+        send(context, ChatFormatting.GRAY, "  draft = " + (resolved.hasDraft() ? format(resolved.draftM()) + " m, model " + format(type.getModelDraftM()) + " blocks" :"none (legacy Buoyancy " + format(type.getBuoyancy()) + ")"));
         send(context, ChatFormatting.GRAY,
             "  movementClamp = " + format(resolved.movementClampBlocksPerTick()) + " blocks/tick, wheelProbe = " + format(resolved.wheelPredictionBlocks(speedScale)) + " blocks");
 

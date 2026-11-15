@@ -73,6 +73,12 @@ coordinator passes it on in a form Gradle rejects. Content-pack source sets load
 server, so a test can put an NPC in a real pack model with `modelData.setEntity` and the id of the
 matching `FlanModelEntities` type.
 
+The same server suits server-side driveable physics such as flotation: place the driveable through
+its item's `spawnDriveable` on blocks the test sets, as `ShipFlotationGameTests` does. A pack that is
+not a source set loads when its archive is copied into the run's `run/gametest/flan`; a test that needs
+one fails with a message naming it. Reach protected physics stages through reflection only while
+diagnosing, and assert the settled outcome in the kept test.
+
 Assert the real behavior over sufficient ticks with a timeout. For example,
 starting a retreat goal is different from reaching a safer position while
 retaining the target. Control random inputs and starting geometry where the

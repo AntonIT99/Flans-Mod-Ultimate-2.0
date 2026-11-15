@@ -7026,11 +7026,21 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected Vec3 applyGravityAndBuoyancy(@NotNull Vec3 velocity, double gravity)
     {
+        return applyGravityAndBuoyancy(velocity, gravity, 0D);
+    }
+
+    /**
+     * As above, for a caller whose own motion step already applied {@code carriedWeight} of gravity this tick. The
+     * restoring responses carry that weight while the hull floats; the legacy constant lift was authored against it.
+     */
+    protected Vec3 applyGravityAndBuoyancy(@NotNull Vec3 velocity, double gravity, double carriedWeight)
+    {
         if (isFloatingOnWater())
         {
             double ceiling = Mth.clamp(configType.getBuoyancy(), 0F, 0.25F);
+            double carried = MarineDraftPhysics.carriedVelocity(velocity.y, carriedWeight);
             ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
-            Float draft = physics.draftM();
+            Float draft = configType.getModelDraftM();
             if (draft != null && !ModCommonConfig.forceLegacyMovement(physics.category()))
             {
                 // A declared draft turns flotation into a restoring response that
@@ -7041,7 +7051,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 double surface = Double.isFinite(bottom) ? findWaterSurfaceY(new Vec3(getX(), bottom, getZ())) : Double.NaN;
                 if (Double.isFinite(surface))
                 {
-                    double corrected = MarineDraftPhysics.verticalVelocity(velocity.y, bottom, surface, draft, ceiling);
+                    double corrected = MarineDraftPhysics.verticalVelocity(carried, bottom, surface, draft, ceiling);
                     double drag = ModPhysics.dragRetention(0.92D, level());
                     return applyEpicShipFlotation(new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag));
                 }
@@ -7049,7 +7059,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             double waterlineDepth = legacyWaterlineDepth();
             if (Double.isFinite(waterlineDepth))
             {
-                double corrected = MarineDraftPhysics.waterlineVelocity(velocity.y, waterlineDepth, ceiling);
+                double corrected = MarineDraftPhysics.waterlineVelocity(carried, waterlineDepth, ceiling);
                 double drag = ModPhysics.dragRetention(0.92D, level());
                 return applyEpicShipFlotation(new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag));
             }
@@ -7150,7 +7160,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         double anchor = configType.getLowestWheelAnchor();
         if (Double.isFinite(anchor))
             waterline += anchor - (this instanceof Vehicle ? configType.getFloatOffset() : 0D);
-        Float draft = configType.getResolvedPhysics().draftM();
+        Float draft = configType.getModelDraftM();
         double bottom = flotationHullBottomY();
         if (draft != null && Double.isFinite(bottom) && !ModCommonConfig.forceLegacyMovement(configType.getResolvedPhysics().category()))
             waterline = bottom + draft;

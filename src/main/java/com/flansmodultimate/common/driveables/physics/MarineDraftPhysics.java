@@ -90,6 +90,40 @@ public final class MarineDraftPhysics
         return restoringVelocity(currentVerticalVelocity, depthBelowSurface, maxBuoyancy);
     }
 
+    /**
+     * The draft a model can carry: the authored draft, capped to a share of the hull it floats.
+     *
+     * @param draftM
+     *            authored draft in metres, which are blocks
+     * @param hullHeight
+     *            height of the scaled core box in blocks, or a non-positive value when unknown
+     * @return the draft flotation settles the hull at
+     */
+    public static double modelDraft(double draftM, double hullHeight)
+    {
+        if (!Double.isFinite(hullHeight) || hullHeight <= 0D)
+            return draftM;
+        return Math.min(draftM, hullHeight * VehiclePhysicsConstants.MAX_DRAFT_HULL_FRACTION);
+    }
+
+    /**
+     * Vertical velocity with the weight a flight model already took off this
+     * tick handed back, because the water carries it while a restoring
+     * response holds the hull. The response settles a velocity rather than
+     * adding lift, so weight left in would hold the hull below its waterline at
+     * a sink rate the capped response can never cancel.
+     *
+     * @param verticalVelocity
+     *            vertical velocity in blocks per tick, after this tick's weight
+     * @param carriedWeight
+     *            downward velocity, in blocks per tick, that weight added this tick
+     * @return the velocity the restoring response should start from
+     */
+    public static double carriedVelocity(double verticalVelocity, double carriedWeight)
+    {
+        return Double.isFinite(carriedWeight) && carriedWeight > 0D ? verticalVelocity + carriedWeight : verticalVelocity;
+    }
+
     private static double restoringVelocity(double currentVerticalVelocity, double error, double ceiling)
     {
         double target = error * VehiclePhysicsConstants.DRAFT_RESTORING_STIFFNESS;
