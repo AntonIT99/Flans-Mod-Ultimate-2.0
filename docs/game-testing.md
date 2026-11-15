@@ -87,6 +87,12 @@ than inventing Gradle filters or mixing JUnit `--tests` with GameTest discovery.
 Check both the process result and test summary; inspect failures in the active
 profile's log. Keep development-only fixtures out of published artifacts.
 
+Batches run one after another at the same test position, and only the template's bounds are
+reset between them. Blocks a test sets beyond `npc_empty` (the flotation tests' water pool) remain
+for later batches, so a test that needs dry ground clears its area first. A config value a test
+changes through `ForgeConfigSpec` is saved to `run/gametest/config` and outlives the run: restore it
+on every path, failures included, and check that file when results change between identical runs.
+
 ## Evidence and recovery
 
 Prefer structured state for navigation and waiting. Save and open an image when

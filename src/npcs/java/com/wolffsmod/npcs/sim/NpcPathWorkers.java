@@ -55,6 +55,16 @@ public final class NpcPathWorkers
     private static final AtomicLong sequence = new AtomicLong();
     private static final AtomicReference<ThreadPoolExecutor> workers = new AtomicReference<>();
 
+    /** A navigator whose worker search can be taken up without the path being asked for again. */
+    public interface Navigator
+    {
+        /**
+         * Starts following the path of a finished worker search that a move order is waiting for. A goal that asks for a path
+         * once, as Custom NPCs' wandering does, would otherwise never get it. Server thread, once a tick.
+         */
+        void wolffsmodnpcsTakeUpPathSearch();
+    }
+
     /** An unsupported search runs synchronously; overload waits instead of moving work back onto the server thread. */
     public record Submission(@Nullable Search search, boolean deferred)
     {

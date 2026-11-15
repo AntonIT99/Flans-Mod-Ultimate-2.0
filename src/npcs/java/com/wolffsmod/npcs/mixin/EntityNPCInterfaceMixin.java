@@ -1162,6 +1162,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             if (!ItemStack.matches(sword, getEntityData().get(WOLFFSMODNPCS_MECHA_TOOL)))
                 getEntityData().set(WOLFFSMODNPCS_MECHA_TOOL, sword.copy());
             NpcTypeProperties.of(npc).refresh(npc);
+            // Vanilla's flying navigator does not run the base navigator's tick, so the NPC takes up its path searches itself.
+            if (npc.getNavigation() instanceof NpcPathWorkers.Navigator navigator)
+                navigator.wolffsmodnpcsTakeUpPathSearch();
         }
     }
 
