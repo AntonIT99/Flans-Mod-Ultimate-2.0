@@ -698,7 +698,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     public InteractionResult interact(@NotNull Player player, @NotNull InteractionHand hand)
     {
         AAGunType type = getConfigType();
-        if (type == null || isWreck() || ToolItem.isRepairTool(player.getItemInHand(hand)))
+        if (type == null || isWreck() || ToolItem.isHoldingRepairTool(player))
             return InteractionResult.PASS;
 
         Level level = level();

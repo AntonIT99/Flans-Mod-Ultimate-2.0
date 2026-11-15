@@ -13,6 +13,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 
 /** Operator repair of a ridden driveable or an explicitly selected entity. */
@@ -26,6 +27,7 @@ public final class RepairDriveableCommand
     {
         dispatcher.register(Commands.literal("flansmodultimate")
             .then(Commands.literal("repair").requires(source -> source.hasPermission(2)).executes(context -> repairRidden(context.getSource()))
+                .then(Commands.literal("all").executes(context -> repairAll(context.getSource())))
                 .then(Commands.literal("start").then(Commands.argument(TARGET, EntityArgument.entity()).executes(context -> start(context.getSource(), EntityArgument.getEntity(context, TARGET)))))
                 .then(Commands.argument(TARGET, EntityArgument.entity()).executes(context -> repair(context.getSource(), EntityArgument.getEntity(context, TARGET))))));
         dispatcher.register(Commands.literal("flansmodultimate")
@@ -61,6 +63,23 @@ public final class RepairDriveableCommand
         Entity repairedTarget = target;
         source.sendSuccess(() -> Component.literal("Repaired all parts of ").append(repairedTarget.getDisplayName()).append(" to 100%"), true);
         return 1;
+    }
+
+    /** Fully repairs every surviving driveable loaded in any dimension. */
+    private static int repairAll(CommandSourceStack source)
+    {
+        int count = 0;
+        for (ServerLevel level : source.getServer().getAllLevels())
+        {
+            for (Entity entity : level.getAllEntities())
+            {
+                if (entity instanceof Driveable driveable && driveable.isAlive() && driveable.repairAllParts())
+                    count++;
+            }
+        }
+        int repaired = count;
+        source.sendSuccess(() -> Component.literal("Repaired " + repaired + " loaded driveable(s) to 100%"), true);
+        return repaired;
     }
 
     private static int start(CommandSourceStack source, Entity target)
