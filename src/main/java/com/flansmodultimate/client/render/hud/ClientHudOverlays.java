@@ -108,6 +108,10 @@ public final class ClientHudOverlays
     /** Fraction of a flashbang's duration spent fading back out. */
     private static final float FLASH_FADE_FRACTION = 0.4F;
     private static final double[] BAR_X_OFFSETS = {2.0, 19.0, 36.0, 53.0, 70.0, 87.0, 104.0};
+    /** Entity id of the seat, AA gun or deployed gun the right readout block was last measured for. */
+    private static int rightBlockOwner = -1;
+    /** Widest the right readout block has been for {@link #rightBlockOwner}, in unscaled GUI pixels. */
+    private static int rightBlockWidth;
 
     public static void register(HudOverlayPlatform.Registrar registrar)
     {
@@ -226,7 +230,7 @@ public final class ClientHudOverlays
         Component reloadText = readiness.get(0).text();
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
 
-        beginVehicleHudBlock(g, vehicleHudRightX(sw, maxWidth(font, yawText, pitchText, reloadText, ammoHeading, currentAmmoName), scale), vehicleHudRightY(), scale);
+        beginVehicleHudBlock(g, vehicleHudRightX(sw, stableRightBlockWidth(aaGun.getId(), maxWidth(font, yawText, pitchText, reloadText, ammoHeading, currentAmmoName)), scale), vehicleHudRightY(), scale);
         int rightX = 0;
         int rightY = 0;
 
@@ -264,6 +268,27 @@ public final class ClientHudOverlays
     private static int vehicleHudRightX(int sw, int blockWidth, float scale)
     {
         return Math.max(0, sw - ModClientConfig.vehicleHudOffset(ModClientConfig.VEHICLE_HUD_RIGHT_X) - Mth.ceil(blockWidth * scale));
+    }
+
+    /**
+     * The right block's width, held at the widest it has been while the player stays at the same
+     * seat or gun. Ammunition names differ in length, so measuring each frame alone would slide the
+     * right-anchored block sideways every time the ammunition is switched.
+     *
+     * @param owner
+     *            entity id of the seat or gun the player works
+     * @param width
+     *            unscaled width of this frame's longest line
+     */
+    private static int stableRightBlockWidth(int owner, int width)
+    {
+        if (owner != rightBlockOwner)
+        {
+            rightBlockOwner = owner;
+            rightBlockWidth = 0;
+        }
+        rightBlockWidth = Math.max(rightBlockWidth, width);
+        return rightBlockWidth;
     }
 
     /**
@@ -306,7 +331,7 @@ public final class ClientHudOverlays
 
         List<OrdnanceLine> lines = new ArrayList<>();
         addGunAmmoLines(lines, ModUtils.getDisplayName(type), gun.getRoundsLeft(), gun.getMagazineSize(), gun.getHudReloadTicks());
-        beginVehicleHudBlock(g, vehicleHudRightX(sw, maxLineWidth(font, lines), scale), vehicleHudRightY(), scale);
+        beginVehicleHudBlock(g, vehicleHudRightX(sw, stableRightBlockWidth(gun.getId(), maxLineWidth(font, lines)), scale), vehicleHudRightY(), scale);
         int line = 0;
         for (OrdnanceLine ordnance : lines)
             g.drawString(font, ordnance.text(), 0, LEGACY_HUD_LINE_HEIGHT * line++, ordnance.color(), false);
@@ -1353,7 +1378,7 @@ public final class ClientHudOverlays
             rightWidth = Math.max(rightWidth, font.width(line.text()));
         for (Component ammoName : ammoNames)
             rightWidth = Math.max(rightWidth, font.width(ammoName));
-        beginVehicleHudBlock(g, vehicleHudRightX(sw, rightWidth, scale), vehicleHudRightY(), scale);
+        beginVehicleHudBlock(g, vehicleHudRightX(sw, stableRightBlockWidth(ridden != null ? ridden.getId() : driveable.getId(), rightWidth), scale), vehicleHudRightY(), scale);
         int hudRightX = 0;
         int rightY = 0;
         int rightLine = 0;
