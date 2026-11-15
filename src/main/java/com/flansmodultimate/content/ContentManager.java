@@ -72,6 +72,8 @@ public class ContentManager
     private static final List<IContentProvider> contentPacks = new ArrayList<>();
     private static final Map<IContentProvider, ArrayList<InfoType>> configs = new HashMap<>();
     private static final Map<IContentProvider, String> generationInputs = new HashMap<>();
+    /** Digest of each pack's full definitions, category stats included, for caches of measured values. */
+    private static final Map<IContentProvider, String> definitionInputs = new HashMap<>();
     private static Set<Path> excludedFlanArchives = Set.of();
 
     // Keep track of registered items and loaded textures
@@ -570,7 +572,7 @@ public class ContentManager
             types.addAll(configs.getOrDefault(provider, new ArrayList<>()));
 
         boolean overrideConfiguredShootPoints = ContentLoadingConfig.isOverrideConfiguredShootPoints();
-        ModelMuzzleMeasurement.measure(types, contentPacks, Collections.unmodifiableMap(generationInputs), overrideConfiguredShootPoints);
+        ModelMuzzleMeasurement.measure(types, contentPacks, Collections.unmodifiableMap(definitionInputs), overrideConfiguredShootPoints);
         if (!overrideConfiguredShootPoints)
             FlansLog.log.info("Keeping the shoot points and AA gun barrels configured in the flan folder packs because overrideConfiguredShootPoints is disabled.");
     }
@@ -680,6 +682,7 @@ public class ContentManager
         // Fed file by file rather than concatenated first: the hash is the same, without holding
         // a copy of the whole pack's text.
         MessageDigest generationInput = ContentFileCache.newDigest();
+        MessageDigest definitionInput = ContentFileCache.newDigest();
 
         for (TypeFile typeFile : typeFiles)
         {
@@ -690,6 +693,7 @@ public class ContentManager
                 ContentFingerprint.record(typeFile);
                 CategoryManager.applyCategoriesToFile(typeFile);
                 generationInput.update((typeFile.getGenerationInput() + '\n').getBytes(StandardCharsets.UTF_8));
+                definitionInput.update((typeFile.getDefinitionInput() + '\n').getBytes(StandardCharsets.UTF_8));
                 EnumType type = typeFile.getType();
                 Constructor<? extends InfoType> constructor = typeConstructors.get(type);
                 if (constructor == null)
@@ -732,8 +736,11 @@ public class ContentManager
                 LogUtils.logErrorWithoutStacktrace(e);
             }
         }
-        generationInput.update(new java.util.TreeMap<>(DynamicReference.getAliasMapping(shortnameReferences.get(contentPack))).toString().getBytes(StandardCharsets.UTF_8));
+        byte[] aliasMapping = new java.util.TreeMap<>(DynamicReference.getAliasMapping(shortnameReferences.get(contentPack))).toString().getBytes(StandardCharsets.UTF_8);
+        generationInput.update(aliasMapping);
+        definitionInput.update(aliasMapping);
         generationInputs.put(contentPack, HexFormat.of().formatHex(generationInput.digest()));
+        definitionInputs.put(contentPack, HexFormat.of().formatHex(definitionInput.digest()));
     }
 
     private static void addConfig(IContentProvider contentPack, InfoType config)

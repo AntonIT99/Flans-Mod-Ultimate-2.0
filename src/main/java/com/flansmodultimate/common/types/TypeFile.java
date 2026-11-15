@@ -10,11 +10,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 public class TypeFile
 {
     private static final Pattern CONFIG_LINE_SEPARATOR = Pattern.compile("\\s+");
+    /**
+     * Lower-case keys whose values reach generated assets or data: item models and icons (Icon, Texture,
+     * Model, paintjobs), localization (Name, ShortName) and recipes. Recipe patterns are read from the raw
+     * lines, which are hashed whole anyway. Add a key here whenever a generator starts reading a value it feeds.
+     */
+    static final Set<String> GENERATION_KEYS = Set.of("shortname", "name", "icon", "texture", "armourtexture", "armortexture", "model", "paintjob", "advpaintjob", "recipe",
+        "shapelessrecipe", "recipeoutput", "smeltablefrom");
 
     @Getter
     private final String name;
@@ -90,10 +99,26 @@ public class TypeFile
         return type.getConfigFolderName() + "/" + getName() + " [" + contentPack.getName() + "]";
     }
 
-    /** Text and category-resolved values that can affect generated resources. */
+    /** Pack text plus every category-resolved value: the whole definition as the types read it. */
+    public String getDefinitionInput()
+    {
+        return type + "/" + name + ":" + lines + ":" + new TreeMap<>(configMap);
+    }
+
+    /**
+     * Pack text plus the category-resolved values of {@link #GENERATION_KEYS} only. The pack's own text
+     * already covers every key it writes, so a category change to a stat alone leaves generated resources current.
+     */
     public String getGenerationInput()
     {
-        return type + "/" + name + ":" + lines + ":" + new java.util.TreeMap<>(configMap);
+        Map<String, List<String>> generationValues = new TreeMap<>();
+        for (String key : GENERATION_KEYS)
+        {
+            List<String> values = configMap.get(key);
+            if (values != null)
+                generationValues.put(key, values);
+        }
+        return type + "/" + name + ":" + lines + ":" + generationValues;
     }
 
     public static String getContentPackName(String toStringValue)

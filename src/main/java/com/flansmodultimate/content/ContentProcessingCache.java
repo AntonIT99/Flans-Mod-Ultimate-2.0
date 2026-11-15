@@ -10,7 +10,8 @@ import java.util.List;
 final class ContentProcessingCache
 {
     // 3: generated recipes also need hidden recipe-book unlock advancements.
-    private static final int VERSION = 3;
+    // 4: definitions digest keeps only category values that generators read.
+    private static final int VERSION = 4;
     private record Entry(String source, int version, String files, String definitions, boolean assets, boolean data)
     {}
     private final IContentProvider provider;
