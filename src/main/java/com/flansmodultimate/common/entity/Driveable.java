@@ -5739,16 +5739,17 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if ((this instanceof Vehicle || this instanceof Plane) && !isEngineActive())
             return;
         boolean burning = isAfterburnerBurning();
-        // Legacy packs author afterburn exhaust as plain throttle emitters; with a simulated afterburner it follows the switch instead.
-        boolean suppressAfterburnExhaust = !burning && hasAfterburner();
+        // Legacy packs author afterburn exhaust as plain throttle emitters; with a simulated afterburner the switch and its throttle detent decide instead.
+        boolean afterburnerGoverned = hasAfterburner();
         (burning ? java.util.stream.Stream.concat(configType.getEmitters().stream(), configType.getAfterburnEmitters().stream()) : configType.getEmitters().stream()).forEach(emitter ->
         {
             if (tickCount % emitter.getEmitRate() != 0 || !isPartIntact(emitter.getPart()))
                 return;
-            if (suppressAfterburnExhaust && FlanParticles.FM_AFTERBURN.equals(emitter.getParticleType()))
+            boolean governedExhaust = afterburnerGoverned && FlanParticles.FM_AFTERBURN.equals(emitter.getParticleType());
+            if (governedExhaust && !burning)
                 return;
             float throttle = getThrottle();
-            if (throttle < emitter.getMinThrottle() || throttle > emitter.getMaxThrottle())
+            if (!governedExhaust && (throttle < emitter.getMinThrottle() || throttle > emitter.getMaxThrottle()))
                 return;
 
             DriveablePart partState = driveableData == null ? null : driveableData.getPart(emitter.getPart());
