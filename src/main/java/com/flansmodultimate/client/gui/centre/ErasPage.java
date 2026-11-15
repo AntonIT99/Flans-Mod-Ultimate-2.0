@@ -2,12 +2,14 @@ package com.flansmodultimate.client.gui.centre;
 
 import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 import com.flansmodultimate.client.eras.EraClientState;
+import com.flansmodultimate.common.eras.Era;
 import com.flansmodultimate.common.eras.EraCatalog;
 import com.flansmodultimate.common.eras.EraRestriction;
 import com.flansmodultimate.common.eras.EraRestriction.BoundaryMode;
 import com.flansmodultimate.common.eras.EraRestriction.MatchMode;
 import com.flansmodultimate.common.eras.EraRestriction.RetirementPolicy;
 import com.flansmodultimate.common.eras.EraVerdicts;
+import com.flansmodultimate.common.eras.ServiceDate;
 import com.flansmodultimate.common.eras.ServicePeriod;
 import com.flansmodultimate.common.types.InfoType;
 import org.jetbrains.annotations.Nullable;
@@ -99,6 +101,20 @@ final class ErasPage extends TeamsPage
         lower.setEditable(mode != null && mode != BoundaryMode.UNTIL);
         upper.setEditable(mode == BoundaryMode.BETWEEN || mode == BoundaryMode.UNTIL);
         y += ROW;
+        List<String> names = eraNames();
+        String lowerEra = matchingEra(names, lower.getValue());
+        String upperEra = matchingEra(names, upper.getValue());
+        choice(view, tr("eras.from_era"), names, lowerEra, name -> Component.literal(name.isEmpty() ? NONE : name), left, y, half, name ->
+        {
+            view.setField(LOWER + target.id(), name);
+            view.rebuild();
+        }).active = mode != null && mode != BoundaryMode.UNTIL;
+        choice(view, tr("eras.until_era"), names, upperEra, name -> Component.literal(name.isEmpty() ? NONE : name), left + half + GAP, y, half, name ->
+        {
+            view.setField(UPPER + target.id(), name);
+            view.rebuild();
+        }).active = mode == BoundaryMode.BETWEEN || mode == BoundaryMode.UNTIL;
+        y += ROW;
         choice(view, tr("eras.match"), List.of(MatchMode.values()), match, value -> Component.literal(value.getKey()), left, y, half, value ->
         {
             match = value;
@@ -158,13 +174,45 @@ final class ErasPage extends TeamsPage
             label(view, graphics, problem, left, y, width, CentreStyle.BAD);
             y += 12;
         }
-        for (var line : view.getFont().split(tr("eras.help"), width))
+        for (var line : view.getFont().split(tr("eras.known", knownEras()).append(" ").append(tr("eras.help")), width))
         {
             if (y + view.getFont().lineHeight > view.getTop() + view.getHeight())
                 break;
             graphics.drawString(view.getFont(), line, left, y, CentreStyle.MUTED, false);
             y += view.getFont().lineHeight;
         }
+    }
+
+    /** Picker values: none, then each era of the catalog in order, then the built-in future. */
+    private static List<String> eraNames()
+    {
+        List<String> names = new ArrayList<>();
+        names.add("");
+        EraClientState.state().eras().getEras().forEach(era -> names.add(era.id()));
+        names.add(Era.FUTURE_ID);
+        return names;
+    }
+
+    /** The picker value naming the era typed in a field, or none when the field holds something else. */
+    private static String matchingEra(List<String> names, String field)
+    {
+        String typed = Era.normalize(field.strip());
+        return names.stream().filter(name -> !name.isEmpty() && Era.normalize(name).equals(typed)).findFirst().orElse("");
+    }
+
+    /** Each known era with its span, such as WW2 (1939-09 – 1945-09). */
+    private static String knownEras()
+    {
+        StringBuilder text = new StringBuilder();
+        for (Era era : EraClientState.state().eras().getEras())
+        {
+            if (!text.isEmpty())
+                text.append(", ");
+            String from = era.first() == ServiceDate.OPEN_LOW ? "" : ServiceDate.formatMonth(era.first());
+            String to = era.last() == ServiceDate.OPEN_HIGH ? "" : ServiceDate.formatMonth(era.last());
+            text.append(era.id()).append(" (").append(from).append(" – ").append(to).append(')');
+        }
+        return text.append(", ").append(Era.FUTURE_ID).toString();
     }
 
     /** Takes the target's window into the editor, replacing a draft that no longer matches what the server holds. */
