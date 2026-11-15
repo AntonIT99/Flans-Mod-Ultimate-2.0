@@ -689,7 +689,7 @@ public final class ModCommonConfig
             .defineInRange("afterburnerJetDryThrustRatio", 0.62D, 0.05D, 1D);
         AFTERBURNER_PISTON_DRY_POWER_RATIO = builder.comment("Share of a propeller engine's power available without war emergency power, when neither RealDryPowerHp nor a cruise speed is defined.")
             .defineInRange("afterburnerPistonDryPowerRatio", 0.87D, 0.05D, 1D);
-        AFTERBURNER_THROTTLE_DETENT = builder.comment("Throttle from which an armed afterburner lights, from 0 to 1.").defineInRange("afterburnerThrottleDetent", 0.95D, 0D, 1D);
+        AFTERBURNER_THROTTLE_DETENT = builder.comment("Throttle from which an armed afterburner lights, from 0 to 1.").defineInRange("afterburnerThrottleDetent", 0.5D, 0D, 1D);
         AFTERBURNER_SPOOL_SECONDS = builder.comment("Seconds an afterburner takes to reach and to lose its full extra thrust.").defineInRange("afterburnerSpoolSeconds", 2D, 0D, 30D);
         AFTERBURNER_FUEL_MULTIPLIER = builder.comment("Multiplier on each aircraft's AfterBurnFuelPenalty.").defineInRange("afterburnerFuelMultiplier", 1D, 0D, 10D);
         REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = builder.comment("Scale applied to the wing-loading-derived reference airspeed of real-world fixed-wing aircraft.",
@@ -1051,7 +1051,7 @@ public final class ModCommonConfig
     public static double afterburnerThrottleDetent()
     {
         var config = get();
-        return config == null ? 0.95D : config.afterburnerThrottleDetent();
+        return config == null ? 0.5D : config.afterburnerThrottleDetent();
     }
 
     public static double afterburnerSpoolSeconds()
