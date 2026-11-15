@@ -47,6 +47,29 @@ public final class ExplosionScaling
      * distance follows Hopkinson-Cranz, so this is the textbook cube root.
      */
     public static final double BLAST_DAMAGE_EXPONENT = 1D / 3D;
+
+    /**
+     * Growth of the blast push with the charge. The impulse a blast delivers at a fixed scaled distance
+     * follows Hopkinson-Cranz like its overpressure, so this is the cube root too.
+     */
+    public static final double KNOCKBACK_EXPONENT = 1D / 3D;
+    /**
+     * Strongest push multiplier, reached at about 27 kg TNT. Beyond it the push would fling a body out of
+     * the area it could still be hurt in, so heavier charges reach further but no longer shove harder.
+     */
+    public static final double MAX_KNOCKBACK_MULTIPLIER = 3D;
+
+    /**
+     * Push multiplier for a charge in kg TNT equivalent, 1 at 1 kg. Without a known charge the multiplier stays 1,
+     * the flat push every explosion had before it scaled.
+     */
+    public static double knockbackMultiplier(float massKg)
+    {
+        if (!Float.isFinite(massKg) || massKg <= 0F)
+            return 1D;
+        return Math.min(MAX_KNOCKBACK_MULTIPLIER, Math.pow(massKg, KNOCKBACK_EXPONENT));
+    }
+
     /** Peak blast damage for a charge in kg TNT equivalent; {@code reference} is that of 1 kg. */
     public static float blastDamage(double reference, float massKg)
     {

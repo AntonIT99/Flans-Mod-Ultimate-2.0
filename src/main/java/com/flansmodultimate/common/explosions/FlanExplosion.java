@@ -521,9 +521,7 @@ public class FlanExplosion extends Explosion
         // A legacy explosive declares no explosive mass, so the pressure model has no charge to
         // work from and the vehicle would take nothing at all. Recover an equivalent charge from
         // the legacy crater radius and power so those definitions still threaten armour.
-        float charge = stats.explosiveMassKg() > 0F
-            ? stats.explosiveMassKg()
-            : ExplosionVehicleDamageResolver.legacyTntEquivalentKg(stats.explosionRadius(), stats.explosionPower(), ModCommonConfig.get().newDamageSystemExplosiveRadiusReference());
+        float charge = chargeKg();
         Float explosiveMass = charge > 0F ? charge : null;
         // A HEAT warhead that has just penetrated a part already did its damage there through the jet.
         EnumDriveablePart penetratedByJet = blasted.penetratedByJet(center);
@@ -711,6 +709,14 @@ public class FlanExplosion extends Explosion
             PacketHandler.sendTo(new PacketHitMarker(false, 1.0F, true), sp);
     }
 
+    /** The charge in kg TNT equivalent: the authored explosive mass, else the one implied by a legacy radius and power. */
+    protected float chargeKg()
+    {
+        return stats.explosiveMassKg() > 0F
+            ? stats.explosiveMassKg()
+            : ExplosionVehicleDamageResolver.legacyTntEquivalentKg(stats.explosionRadius(), stats.explosionPower(), ModCommonConfig.get().newDamageSystemExplosiveRadiusReference());
+    }
+
     protected void applyKnockback(Entity e, double seen, double falloff)
     {
         if (seen < 0.001 || falloff < 0.001)
@@ -719,8 +725,8 @@ public class FlanExplosion extends Explosion
         // normalized direction (for knockback)
         Vec3 direction = e.getEyePosition().subtract(center).normalize();
 
-        // Knockback: also scaled-distance based
-        double kb = falloff * seen * KNOCKBACK_MULTIPLAYER;
+        // Knockback: scaled-distance based, and stronger the heavier the charge
+        double kb = falloff * seen * KNOCKBACK_MULTIPLAYER * ExplosionScaling.knockbackMultiplier(chargeKg());
         if (e instanceof LivingEntity living)
             kb = EntityPlatform.explosionKnockback(living, kb);
 

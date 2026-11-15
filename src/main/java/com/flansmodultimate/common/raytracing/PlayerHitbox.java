@@ -242,14 +242,7 @@ public class PlayerHitbox
                 if (type == EnumHitboxType.LEGS)
                     entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 0, true, false));
 
-                // Handle knockback by finding entity motion before and after, and reapplying to negate effect of vanilla code.
-                Vec3 motAfter = entity.getDeltaMovement();
-                Vec3 deltaV = motAfter.subtract(motBefore).scale(1 - bulletType.getKnockbackModifier());
-
-                if (bulletType.getKnockbackModifier() > 2F)
-                    deltaV = new Vec3(deltaV.x, Math.sqrt(deltaV.y), deltaV.z);
-
-                entity.setDeltaMovement(entity.getDeltaMovement().subtract(deltaV));
+                ShootingHelper.applyKnockbackModifier(entity, motBefore, bulletType.getKnockbackModifier());
 
                 if (ModCommonConfig.get().useNewPenetrationSystem())
                     penetratingPower -= totalPenetrationResistance;
