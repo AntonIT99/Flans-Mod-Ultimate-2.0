@@ -879,6 +879,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "HUD dos veículos: Y esquerdo",
   "options.flansmodultimate.vehicleHudRightX": "HUD dos veículos: X direito",
   "options.flansmodultimate.vehicleHudRightY": "HUD dos veículos: Y direito",
+  "options.flansmodultimate.vehicleHudScale": "HUD dos veículos: escala",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "Massa de referência da repulsão dos veículos (kg)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "Alcance do som de travamento dos veículos",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "Alcance do som de alerta de travamento",

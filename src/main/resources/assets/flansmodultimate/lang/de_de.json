@@ -1200,6 +1200,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "Fahrzeug-HUD links Y",
   "options.flansmodultimate.vehicleHudRightX": "Fahrzeug-HUD rechts X",
   "options.flansmodultimate.vehicleHudRightY": "Fahrzeug-HUD rechts Y",
+  "options.flansmodultimate.vehicleHudScale": "Fahrzeug-HUD-Größe",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "Referenzmasse Fahrzeugrückstoß (kg)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "Reichweite Zielaufschaltgeräusch Fahrzeuge",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "Reichweite Warngeräusch aufgeschaltet",

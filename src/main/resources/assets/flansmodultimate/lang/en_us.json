@@ -1200,6 +1200,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "Vehicle HUD Left Y",
   "options.flansmodultimate.vehicleHudRightX": "Vehicle HUD Right X",
   "options.flansmodultimate.vehicleHudRightY": "Vehicle HUD Right Y",
+  "options.flansmodultimate.vehicleHudScale": "Vehicle HUD Scale",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "Vehicle Knockback Reference Mass Kg",
   "options.flansmodultimate.vehicleLockOnSoundRange": "Vehicle Lock-On Sound Range",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "Vehicle Incoming Lock Sound Range",

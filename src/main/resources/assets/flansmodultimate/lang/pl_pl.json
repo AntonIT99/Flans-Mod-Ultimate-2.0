@@ -1200,6 +1200,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "HUD pojazdu: lewy Y",
   "options.flansmodultimate.vehicleHudRightX": "HUD pojazdu: prawy X",
   "options.flansmodultimate.vehicleHudRightY": "HUD pojazdu: prawy Y",
+  "options.flansmodultimate.vehicleHudScale": "HUD pojazdu: skala",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "Masa odniesienia odrzucania pojazdów (kg)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "Zasięg dźwięku namierzania pojazdu",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "Zasięg ostrzeżenia o namierzeniu pojazdu",

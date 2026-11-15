@@ -879,6 +879,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "载具HUD左侧Y坐标",
   "options.flansmodultimate.vehicleHudRightX": "载具HUD右侧X坐标",
   "options.flansmodultimate.vehicleHudRightY": "载具HUD右侧Y坐标",
+  "options.flansmodultimate.vehicleHudScale": "载具HUD缩放",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "载具击退参考质量 (kg)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "载具锁定音效范围",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "载具被锁定警告音效范围",

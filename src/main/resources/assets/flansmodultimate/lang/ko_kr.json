@@ -879,6 +879,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "차량 HUD 왼쪽 Y 좌표",
   "options.flansmodultimate.vehicleHudRightX": "차량 HUD 오른쪽 X 좌표",
   "options.flansmodultimate.vehicleHudRightY": "차량 HUD 오른쪽 Y 좌표",
+  "options.flansmodultimate.vehicleHudScale": "차량 HUD 크기",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "차량 밀치기 기준 질량 (kg)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "차량 표적 고정음 범위",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "차량 피표적 고정 경고음 범위",

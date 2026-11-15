@@ -879,6 +879,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "HUD de vehículos: Y izquierda",
   "options.flansmodultimate.vehicleHudRightX": "HUD de vehículos: X derecha",
   "options.flansmodultimate.vehicleHudRightY": "HUD de vehículos: Y derecha",
+  "options.flansmodultimate.vehicleHudScale": "HUD de vehículos: escala",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "Masa de referencia del empuje de vehículos (kg)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "Alcance del sonido de fijación de vehículos",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "Alcance del sonido de alerta de fijación",

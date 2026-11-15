@@ -879,6 +879,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "Интерфейс техники: Y слева",
   "options.flansmodultimate.vehicleHudRightX": "Интерфейс техники: X справа",
   "options.flansmodultimate.vehicleHudRightY": "Интерфейс техники: Y справа",
+  "options.flansmodultimate.vehicleHudScale": "Интерфейс техники: масштаб",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "Опорная масса отбрасывания техники (кг)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "Дальность звука захвата цели техникой",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "Дальность звука предупреждения о захвате техники",

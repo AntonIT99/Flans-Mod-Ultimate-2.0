@@ -879,6 +879,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "HUD veicoli: Y sinistra",
   "options.flansmodultimate.vehicleHudRightX": "HUD veicoli: X destra",
   "options.flansmodultimate.vehicleHudRightY": "HUD veicoli: Y destra",
+  "options.flansmodultimate.vehicleHudScale": "HUD veicoli: scala",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "Massa di riferimento del contraccolpo dei veicoli (kg)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "Portata del suono di aggancio dei veicoli",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "Portata del suono di allarme di aggancio",

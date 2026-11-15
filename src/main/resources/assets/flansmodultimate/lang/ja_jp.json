@@ -879,6 +879,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "車両HUD左側のY座標",
   "options.flansmodultimate.vehicleHudRightX": "車両HUD右側のX座標",
   "options.flansmodultimate.vehicleHudRightY": "車両HUD右側のY座標",
+  "options.flansmodultimate.vehicleHudScale": "車両HUDの表示倍率",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "車両ノックバックの基準質量 (kg)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "車両のロックオン音の範囲",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "車両の被ロックオン警告音の範囲",

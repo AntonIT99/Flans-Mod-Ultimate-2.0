@@ -879,6 +879,7 @@
   "options.flansmodultimate.vehicleHudLeftY": "Interface des véhicules : Y gauche",
   "options.flansmodultimate.vehicleHudRightX": "Interface des véhicules : X droite",
   "options.flansmodultimate.vehicleHudRightY": "Interface des véhicules : Y droite",
+  "options.flansmodultimate.vehicleHudScale": "Interface des véhicules : échelle",
   "options.flansmodultimate.vehicleKnockbackReferenceMassKg": "Masse de référence du recul des véhicules (kg)",
   "options.flansmodultimate.vehicleLockOnSoundRange": "Portée du son de verrouillage des véhicules",
   "options.flansmodultimate.vehicleLockedOnSoundRange": "Portée du son d’alerte de verrouillage",

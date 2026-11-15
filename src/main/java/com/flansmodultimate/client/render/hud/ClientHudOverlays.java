@@ -201,12 +201,13 @@ public final class ClientHudOverlays
             return;
 
         Font font = mc.font;
-        int leftX = vehicleHudLeftX();
-        int leftY = vehicleHudLeftY();
-        g.drawString(font, ModUtils.getDisplayName(type), leftX, leftY, HUD_WHITE, false);
+        float scale = ModClientConfig.vehicleHudScale();
+        beginVehicleHudBlock(g, vehicleHudLeftX(), vehicleHudLeftY(), scale);
+        g.drawString(font, ModUtils.getDisplayName(type), 0, 0, HUD_WHITE, false);
         int healthPercent = type.getHealth() <= 0 ? 0 : Mth.clamp(Math.round(aaGun.getHealth() * 100F / type.getHealth()), 0, 100);
         Component health = Component.translatable("hud.flansmodultimate.aa_gun.health", healthPercent, aaGun.getHealth(), type.getHealth());
-        g.drawString(font, health, leftX, leftY + LEGACY_HUD_LINE_HEIGHT, healthColor(healthPercent), false);
+        g.drawString(font, health, 0, LEGACY_HUD_LINE_HEIGHT, healthColor(healthPercent), false);
+        g.pose().popPose();
 
         float yaw = Mth.rotLerp(partialTick, aaGun.getPrevGunYaw(), aaGun.getGunYaw());
         float pitch = Mth.lerp(partialTick, aaGun.getPrevGunPitch(), aaGun.getGunPitch());
@@ -225,8 +226,9 @@ public final class ClientHudOverlays
         Component reloadText = readiness.get(0).text();
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
 
-        int rightX = vehicleHudRightX(sw, maxWidth(font, yawText, pitchText, reloadText, ammoHeading, currentAmmoName));
-        int rightY = vehicleHudRightY();
+        beginVehicleHudBlock(g, vehicleHudRightX(sw, maxWidth(font, yawText, pitchText, reloadText, ammoHeading, currentAmmoName), scale), vehicleHudRightY(), scale);
+        int rightX = 0;
+        int rightY = 0;
 
         g.drawString(font, yawText, rightX, rightY, HUD_WHITE, false);
         g.drawString(font, pitchText, rightX, rightY + LEGACY_HUD_LINE_HEIGHT, HUD_WHITE, false);
@@ -237,6 +239,7 @@ public final class ClientHudOverlays
             g.drawString(font, ammoHeading, rightX, rightY + LEGACY_HUD_LINE_HEIGHT * 3, HUD_WHITE, false);
             g.drawString(font, currentAmmoName, rightX, rightY + LEGACY_HUD_LINE_HEIGHT * 4, HUD_AMMO_GREEN, false);
         }
+        g.pose().popPose();
     }
 
     /** Left edge of the left block of the vehicle, AA gun and deployed gun readouts. */
@@ -254,10 +257,25 @@ public final class ClientHudOverlays
      * Left edge of the right block, which is anchored by its right edge so the
      * configured margin holds however wide the longest line is. It never runs off
      * the left of the screen.
+     *
+     * @param blockWidth
+     *            unscaled width of the block's longest line
      */
-    private static int vehicleHudRightX(int sw, int blockWidth)
+    private static int vehicleHudRightX(int sw, int blockWidth, float scale)
     {
-        return Math.max(0, sw - ModClientConfig.vehicleHudOffset(ModClientConfig.VEHICLE_HUD_RIGHT_X) - blockWidth);
+        return Math.max(0, sw - ModClientConfig.vehicleHudOffset(ModClientConfig.VEHICLE_HUD_RIGHT_X) - Mth.ceil(blockWidth * scale));
+    }
+
+    /**
+     * Starts a vehicle, AA gun or deployed gun readout block whose top-left corner sits at the given
+     * screen position, drawn at the configured HUD scale. Lines are then drawn at block-local
+     * coordinates until the caller pops the pose.
+     */
+    private static void beginVehicleHudBlock(GuiGraphics g, int x, int y, float scale)
+    {
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0F);
+        g.pose().scale(scale, scale, 1F);
     }
 
     private static int vehicleHudRightY()
@@ -281,15 +299,18 @@ public final class ClientHudOverlays
             return;
 
         Font font = mc.font;
-        g.drawString(font, ModUtils.getDisplayName(type), vehicleHudLeftX(), vehicleHudLeftY(), HUD_WHITE, false);
+        float scale = ModClientConfig.vehicleHudScale();
+        beginVehicleHudBlock(g, vehicleHudLeftX(), vehicleHudLeftY(), scale);
+        g.drawString(font, ModUtils.getDisplayName(type), 0, 0, HUD_WHITE, false);
+        g.pose().popPose();
 
         List<OrdnanceLine> lines = new ArrayList<>();
         addGunAmmoLines(lines, ModUtils.getDisplayName(type), gun.getRoundsLeft(), gun.getMagazineSize(), gun.getHudReloadTicks());
-        int rightX = vehicleHudRightX(sw, maxLineWidth(font, lines));
-        int rightY = vehicleHudRightY();
+        beginVehicleHudBlock(g, vehicleHudRightX(sw, maxLineWidth(font, lines), scale), vehicleHudRightY(), scale);
         int line = 0;
         for (OrdnanceLine ordnance : lines)
-            g.drawString(font, ordnance.text(), rightX, rightY + LEGACY_HUD_LINE_HEIGHT * line++, ordnance.color(), false);
+            g.drawString(font, ordnance.text(), 0, LEGACY_HUD_LINE_HEIGHT * line++, ordnance.color(), false);
+        g.pose().popPose();
     }
 
     /**
@@ -1186,8 +1207,10 @@ public final class ClientHudOverlays
             return;
 
         Font font = mc.font;
-        int leftX = vehicleHudLeftX();
-        int y = vehicleHudLeftY();
+        float scale = ModClientConfig.vehicleHudScale();
+        beginVehicleHudBlock(g, vehicleHudLeftX(), vehicleHudLeftY(), scale);
+        int leftX = 0;
+        int y = 0;
         g.drawString(font, ModUtils.getDisplayName(driveable.getConfigType()), leftX, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
 
@@ -1267,6 +1290,7 @@ public final class ClientHudOverlays
                 leftX, y, plane.isAfterburnerBurning() ? HUD_GOLD : HUD_WHITE, false);
         }
         AircraftCockpit.renderWarnings(driveable, g, font, leftX, y + LEGACY_HUD_LINE_HEIGHT, LEGACY_HUD_LINE_HEIGHT);
+        g.pose().popPose();
 
         boolean isVehicle = driveable instanceof Vehicle;
         boolean isPlane = driveable instanceof Plane;
@@ -1329,8 +1353,9 @@ public final class ClientHudOverlays
             rightWidth = Math.max(rightWidth, font.width(line.text()));
         for (Component ammoName : ammoNames)
             rightWidth = Math.max(rightWidth, font.width(ammoName));
-        int hudRightX = vehicleHudRightX(sw, rightWidth);
-        int rightY = vehicleHudRightY();
+        beginVehicleHudBlock(g, vehicleHudRightX(sw, rightWidth, scale), vehicleHudRightY(), scale);
+        int hudRightX = 0;
+        int rightY = 0;
         int rightLine = 0;
         g.drawString(font, yawText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
         g.drawString(font, pitchText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
@@ -1358,6 +1383,7 @@ public final class ClientHudOverlays
             g.drawString(font, nextAmmoText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_GOLD, false);
         if (canSwitchAmmo)
             g.drawString(font, switchAmmoText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine, HUD_WHITE, false);
+        g.pose().popPose();
 
         if (!ModClient.isDebug())
             return;
