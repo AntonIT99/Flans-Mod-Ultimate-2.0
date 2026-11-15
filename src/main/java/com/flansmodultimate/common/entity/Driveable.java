@@ -5787,7 +5787,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 direction = direction.add(movement);
             }
 
-            ClientHooks.RENDER.spawnParticle(emitter.getParticleType(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, 1F);
+            // Afterburner exhaust grows with the lever, full size at full throttle.
+            float scale = governedExhaust || configType.getAfterburnEmitters().contains(emitter) ? Mth.clamp(throttle, 0F, 1F) : 1F;
+            ClientHooks.RENDER.spawnParticle(emitter.getParticleType(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, scale);
         });
     }
 
