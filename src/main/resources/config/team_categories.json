@@ -71,6 +71,18 @@
         ]
     },
 
+    "Czechoslovakia": {
+        "properties": {
+            "VictoryFlagTexture": "flag_team_czechoslovakia"
+        },
+        "propertyModes": {
+            "VictoryFlagTexture": "replace"
+        },
+        "items": [
+            "w39_czechoslovakarmy"
+        ]
+    },
+
     "France": {
         "properties": {
             "VictoryFlagTexture": "flag_team_france"
