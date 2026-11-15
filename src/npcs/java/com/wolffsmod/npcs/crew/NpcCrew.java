@@ -658,6 +658,25 @@ public final class NpcCrew
         }
     }
 
+    /** Kills everyone seated on the turret of a vehicle whose turret has just been destroyed, the driver included. */
+    public static void turretDestroyed(EntityNPCInterface vehicle)
+    {
+        if (vehicle.level().isClientSide)
+            return;
+        List<Entity> inTurret = seating(vehicle).entrySet().stream().filter(entry -> entry.getValue().onTurret()).map(Map.Entry::getKey).toList();
+        for (Entity rider : inTurret)
+        {
+            // Crew may be shielded by their vehicle, which only a kill gets past.
+            if (rider instanceof EntityNPCInterface member && seat(member) >= 0)
+                member.kill();
+            else
+            {
+                rider.stopRiding();
+                rider.hurt(rider.damageSources().generic(), Float.MAX_VALUE);
+            }
+        }
+    }
+
     /** Takes the crew of a vehicle that is deleted, rather than killed, with it. */
     public static void deleted(EntityNPCInterface vehicle)
     {

@@ -9,6 +9,7 @@ import com.flansmodultimate.api.parts.PartBodyPose;
 import com.flansmodultimate.api.parts.PartState;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.network.NpcNetwork;
@@ -40,6 +41,7 @@ public final class NpcParts
 {
     public static final String NBT_KEY = "WolffsModPartState";
     private static final String CORE = "core";
+    private static final String TURRET = "turret";
     private static final int SYNC_INTERVAL = 5;
 
     @Nullable
@@ -60,6 +62,7 @@ public final class NpcParts
     private String struck;
     private float healthBefore = Float.NaN;
     private boolean wasKilled;
+    private boolean turretWasDestroyed;
     private NpcPartEffects effects = NpcPartEffects.NONE;
     private final NpcRepairs repairs = new NpcRepairs();
     private int sentSignature;
@@ -181,6 +184,11 @@ public final class NpcParts
         }
         else if (!killed && npc.getHealth() > 0F)
             tickHealth(npc, current, share, options, kind);
+        // Those seated inside the turret die as it is destroyed.
+        boolean turretDestroyed = !killed && current.getPart(TURRET).filter(PartState::enabled).map(PartState::destroyed).orElse(false);
+        if (turretDestroyed && !turretWasDestroyed)
+            NpcCrew.turretDestroyed(npc);
+        turretWasDestroyed = turretDestroyed;
         sync(npc, current);
     }
 

@@ -4166,6 +4166,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // A wreck has already given up its parts and its blast.
         if (destroyed)
             return;
+        killTurretCrew(part);
         dropDestroyedPartRecipe(part);
         if (configType != null)
         {
@@ -4190,6 +4191,23 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
         if (part == EnumDriveablePart.CORE)
             destroyDriveable();
+    }
+
+    /** Those seated inside a turret, the driver included, die with it rather than being thrown clear. */
+    protected void killTurretCrew(EnumDriveablePart turret)
+    {
+        if (level().isClientSide)
+            return;
+        for (Seat seat : seats)
+        {
+            if (seat == null || seat.getSeatInfo() == null || !EnumDriveablePart.isSeatInTurret(seat.getSeatInfo().getPart(), turret))
+                continue;
+            for (Entity passenger : List.copyOf(seat.getPassengers()))
+            {
+                passenger.stopRiding();
+                passenger.hurt(level().damageSources().generic(), Float.MAX_VALUE);
+            }
+        }
     }
 
     protected void dropDestroyedPartRecipe(EnumDriveablePart partType)

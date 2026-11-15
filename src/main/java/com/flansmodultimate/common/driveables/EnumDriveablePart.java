@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.driveables;
 
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -278,6 +279,23 @@ public enum EnumDriveablePart
     public static boolean isTurretMounted(EnumDriveablePart part)
     {
         return part == TURRET || part == BARREL || part == MORE_TURRET_ARMOR || part != null && part.name().startsWith("TURRET_");
+    }
+
+    /** One of a ship's numbered turrets, which turn on their own rather than with the main turret. */
+    public static boolean isNumberedTurret(@Nullable EnumDriveablePart part)
+    {
+        return part != null && part.name().matches("TURRET_\\d+");
+    }
+
+    /**
+     * @return whether a seat on {@code seatPart} sits inside {@code turret}, so that its occupant dies when that turret is
+     *         destroyed: the main turret holds every seat mounted on it, a numbered turret only the seats on itself
+     */
+    public static boolean isSeatInTurret(@Nullable EnumDriveablePart seatPart, @Nullable EnumDriveablePart turret)
+    {
+        if (turret == TURRET)
+            return isTurretMounted(seatPart) && !isNumberedTurret(seatPart);
+        return isNumberedTurret(turret) && seatPart == turret;
     }
 
     public static boolean isWheel(EnumDriveablePart part)
