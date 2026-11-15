@@ -126,7 +126,7 @@ public final class EntityTypePropertySupport
         float maximumYaw = left ? -seat.getMinYaw() : seat.getMaxYaw();
         return new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(minimumYaw, -seat.getMaxPitch()), new MountAim(maximumYaw, -seat.getMinPitch()), yawSpeed, pitchSpeed, position,
             onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType()), turretOffset,
-            Optional.ofNullable(seat.getGunPivot()).map(LegacyDriveableCoordinates::toLocal));
+            Optional.ofNullable(seat.getGunPivot()).map(LegacyDriveableCoordinates::toLocal), seat.getPart() == null ? null : seat.getPart().getShortName());
     }
 
     public static Optional<EngineSound> engineSound(IContentType type)

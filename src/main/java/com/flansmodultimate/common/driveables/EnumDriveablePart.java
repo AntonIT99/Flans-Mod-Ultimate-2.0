@@ -281,7 +281,7 @@ public enum EnumDriveablePart
         return part == TURRET || part == BARREL || part == MORE_TURRET_ARMOR || part != null && part.name().startsWith("TURRET_");
     }
 
-    /** One of a ship's numbered turrets, which turn on their own rather than with the main turret. */
+    /** One of a ship's numbered turrets, separate parts that are destroyed apart from the main turret though they turn with it. */
     public static boolean isNumberedTurret(@Nullable EnumDriveablePart part)
     {
         return part != null && part.name().matches("TURRET_\\d+");

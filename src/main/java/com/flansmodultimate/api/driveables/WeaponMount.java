@@ -45,11 +45,24 @@ import java.util.Optional;
  * @param gunPivot
  *            the point the seat's gun model turns round as it aims, in the same frame as {@code position} with the
  *            turret at rest, when the model was measured; the gunner is carried round it as the gun traverses
+ * @param part
+ *            short name of the part the seat sits in, such as {@code core}, {@code turret} or {@code turret3}: the
+ *            occupant is thrown out while it is destroyed and dies with it if it is a turret
  */
 @ApiStatus.Experimental
 public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun,
-    Vec3 turretOffset, Optional<Vec3> gunPivot)
+    Vec3 turretOffset, Optional<Vec3> gunPivot, String part)
 {
+    /** Part a mount sits in when it names none: the main turret for one that turns with it, else the hull. */
+    private static final String HULL = "core";
+    private static final String MAIN_TURRET = "turret";
+
+    public WeaponMount
+    {
+        if (part == null || part.isBlank())
+            part = onTurret ? MAIN_TURRET : HULL;
+    }
+
     public WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun)
     {
         this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, Vec3.ZERO);
@@ -59,6 +72,12 @@ public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim m
         Vec3 turretOffset)
     {
         this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, turretOffset, Optional.empty());
+    }
+
+    public WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun,
+        Vec3 turretOffset, Optional<Vec3> gunPivot)
+    {
+        this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, turretOffset, gunPivot, null);
     }
 
     /**

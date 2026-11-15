@@ -3,8 +3,11 @@ package com.wolffsmod.npcs.crew;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.parts.IPartBody;
+import com.flansmodultimate.api.parts.PartState;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.drivers.NpcDrivers;
+import com.wolffsmod.npcs.sim.NpcParts;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -271,10 +274,40 @@ class NpcCrewPassengerTest
     private static MockedStatic<NpcVehicleState> vehicleWith(EntityNPCInterface vehicle, WeaponMount... mounts)
     {
         NpcVehicleState state = mock(NpcVehicleState.class);
+        when(state.getParts()).thenReturn(new NpcParts());
         when(state.crewSeats(vehicle)).thenReturn(List.of(mounts));
         var states = mockStatic(NpcVehicleState.class);
         states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
         return states;
+    }
+
+    @Test
+    void aRiderSkipsTheSeatsOfADestroyedTurret()
+    {
+        EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
+        Player player = mock(Player.class);
+        when(vehicle.getPassengers()).thenReturn(List.of(player));
+        when(player.getVehicle()).thenReturn(vehicle);
+        WeaponMount turretGunner = new WeaponMount(1, false, true, MountAim.REST, MountAim.REST, 1F, 1F, Vec3.ZERO, Vec3.ZERO, Optional.of(mock(IContentType.class)), Vec3.ZERO,
+            Optional.empty(), "turret");
+        PartState turret = mock(PartState.class);
+        when(turret.enabled()).thenReturn(true);
+        when(turret.destroyed()).thenReturn(true);
+        IPartBody body = mock(IPartBody.class);
+        when(body.getPart("turret")).thenReturn(Optional.of(turret));
+        NpcParts parts = mock(NpcParts.class);
+        when(parts.body()).thenReturn(Optional.of(body));
+        NpcVehicleState state = mock(NpcVehicleState.class);
+        when(state.crewSeats(vehicle)).thenReturn(List.of(DRIVER, turretGunner, FIRST_PASSENGER));
+        when(state.getParts()).thenReturn(parts);
+        try (var states = mockStatic(NpcVehicleState.class))
+        {
+            states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
+            assertTrue(NpcCrew.seatDestroyed(vehicle, turretGunner));
+            assertFalse(NpcCrew.seatDestroyed(vehicle, FIRST_PASSENGER));
+            // The player would take the gunner's seat first, but it sits in the destroyed turret.
+            assertEquals(Optional.of(FIRST_PASSENGER), NpcCrew.seatOf(vehicle, player));
+        }
     }
 
     private static WeaponMount mount(int seat, boolean driver, @Nullable IContentType gun)

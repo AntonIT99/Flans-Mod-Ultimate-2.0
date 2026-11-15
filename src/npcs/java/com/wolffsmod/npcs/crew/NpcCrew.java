@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.crew;
 
+import com.flansmodultimate.api.driveables.FlansDriveables;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.FlansMelee;
@@ -135,7 +136,7 @@ public final class NpcCrew
                 claimed.putIfAbsent(held[index], passengers.get(index));
         }
         Map<Entity, WeaponMount> seating = new HashMap<>();
-        List<WeaponMount> free = new ArrayList<>(mounts.stream().filter(mount -> !claimed.containsKey(mount.seat())).toList());
+        List<WeaponMount> free = new ArrayList<>(mounts.stream().filter(mount -> !claimed.containsKey(mount.seat()) && !seatDestroyed(vehicle, mount)).toList());
         for (int index = 0; index < passengers.size(); index++)
         {
             Entity passenger = passengers.get(index);
@@ -201,7 +202,7 @@ public final class NpcCrew
     {
         if (member.getVehicle() != vehicle || !(member instanceof NpcCrewHolder holder))
             return false;
-        WeaponMount replacement = NpcVehicleState.of(vehicle).crewSeats(vehicle).stream().filter(mount -> !occupied(vehicle, mount.seat()))
+        WeaponMount replacement = NpcVehicleState.of(vehicle).crewSeats(vehicle).stream().filter(mount -> !occupied(vehicle, mount.seat()) && !seatDestroyed(vehicle, mount))
             .min(Comparator.comparingInt(mount -> CrewPost.of(mount) == CrewPost.PASSENGER ? 0 : 1)).orElse(null);
         if (replacement == null)
             bailOut(vehicle, member);
@@ -212,12 +213,16 @@ public final class NpcCrew
 
     private static boolean availableTo(EntityNPCInterface vehicle, Player player, int seat)
     {
+        if (!seatOpen(vehicle, seat))
+            return false;
         Entity occupant = seating(vehicle).entrySet().stream().filter(entry -> entry.getValue().seat() == seat).map(Map.Entry::getKey).findFirst().orElse(null);
         return occupant == null || occupant == player || occupant instanceof EntityNPCInterface npc && NpcSeatPriority.mayYield(npc, player, false);
     }
 
     private static boolean makeRoom(EntityNPCInterface vehicle, Player player, int seat)
     {
+        if (!seatOpen(vehicle, seat))
+            return false;
         Entity occupant = seating(vehicle).entrySet().stream().filter(entry -> entry.getValue().seat() == seat).map(Map.Entry::getKey).findFirst().orElse(null);
         return occupant == null || occupant == player || occupant instanceof EntityNPCInterface npc && NpcSeatPriority.giveWay(npc, player, false);
     }
@@ -480,7 +485,7 @@ public final class NpcCrew
         int boarded = 0;
         for (Seat seat : seats(vehicle))
         {
-            EntityNPCInterface recruit = occupied(vehicle, seat.index()) ? null : recruiter.recruit(level, vehicle, seat).orElse(null);
+            EntityNPCInterface recruit = occupied(vehicle, seat.index()) || !seatOpen(vehicle, seat.index()) ? null : recruiter.recruit(level, vehicle, seat).orElse(null);
             if (recruit != null && board(vehicle, recruit, seat.index()))
                 boarded++;
             else if (recruit != null)
@@ -508,6 +513,8 @@ public final class NpcCrew
     /** Seats an NPC that is already in the level as crew in a seat of the vehicle. */
     public static boolean board(EntityNPCInterface vehicle, EntityNPCInterface crew, int seat)
     {
+        if (!seatOpen(vehicle, seat))
+            return false;
         NpcCrewHolder holder = (NpcCrewHolder) crew;
         holder.wolffsmodnpcsCrewSeat(seat);
         crew.moveTo(vehicle.getX(), vehicle.getY(), vehicle.getZ(), vehicle.getYRot(), 0F);
@@ -658,13 +665,16 @@ public final class NpcCrew
         }
     }
 
-    /** Kills everyone seated on the turret of a vehicle whose turret has just been destroyed, the driver included. */
-    public static void turretDestroyed(EntityNPCInterface vehicle)
+    /**
+     * Kills everyone seated inside a part of the vehicle that has just been destroyed, the driver included: those in a
+     * turret die with it, as in a Flan's driveable.
+     */
+    public static void partDestroyed(EntityNPCInterface vehicle, String part)
     {
         if (vehicle.level().isClientSide)
             return;
-        List<Entity> inTurret = seating(vehicle).entrySet().stream().filter(entry -> entry.getValue().onTurret()).map(Map.Entry::getKey).toList();
-        for (Entity rider : inTurret)
+        List<Entity> inside = seating(vehicle).entrySet().stream().filter(entry -> FlansDriveables.diesWithPart(entry.getValue(), part)).map(Map.Entry::getKey).toList();
+        for (Entity rider : inside)
         {
             // Crew may be shielded by their vehicle, which only a kill gets past.
             if (rider instanceof EntityNPCInterface member && seat(member) >= 0)
@@ -675,6 +685,50 @@ public final class NpcCrew
                 rider.hurt(rider.damageSources().generic(), Float.MAX_VALUE);
             }
         }
+    }
+
+    /**
+     * Gets riders out of seats whose part is destroyed, as a Flan's driveable throws them out: crew bail out, anyone else
+     * just gets off. A gunner keeps a passenger gun when the server lets guns in destroyed parts work.
+     */
+    public static void leaveDestroyedSeats(EntityNPCInterface vehicle)
+    {
+        if (vehicle.level().isClientSide)
+            return;
+        List<Entity> leaving = seating(vehicle).entrySet().stream().filter(entry -> seatDestroyed(vehicle, entry.getValue()) && !keepsGun(entry.getValue())).map(Map.Entry::getKey)
+            .toList();
+        for (Entity rider : leaving)
+        {
+            if (rider instanceof EntityNPCInterface member && seat(member) >= 0)
+                bailOut(vehicle, member);
+            else
+                rider.stopRiding();
+        }
+    }
+
+    /** @return whether the part the seat sits in is destroyed, so that nobody may take the seat; either side */
+    public static boolean seatDestroyed(EntityNPCInterface vehicle, WeaponMount mount)
+    {
+        return NpcVehicleState.of(vehicle).getParts().body().flatMap(body -> body.getPart(mount.part())).map(part -> part.enabled() && part.destroyed()).orElse(false);
+    }
+
+    /** @return whether the one sitting behind the seat's gun may use it: its part stands, or the server lets guns in destroyed parts work */
+    public static boolean gunUsable(EntityNPCInterface vehicle, WeaponMount mount)
+    {
+        return !seatDestroyed(vehicle, mount) || keepsGun(mount);
+    }
+
+    /** Whether an occupant stays behind the seat's passenger gun though the seat's part is destroyed. */
+    private static boolean keepsGun(WeaponMount mount)
+    {
+        return !mount.driver() && mount.gun().isPresent() && FlansDriveables.gunsInDestroyedPartsWork();
+    }
+
+    /** @return whether a seat may be newly taken: it exists and its part is not destroyed */
+    private static boolean seatOpen(EntityNPCInterface vehicle, int seat)
+    {
+        WeaponMount mount = mount(NpcVehicleState.of(vehicle).crewSeats(vehicle), seat);
+        return mount != null && !seatDestroyed(vehicle, mount);
     }
 
     /** Takes the crew of a vehicle that is deleted, rather than killed, with it. */

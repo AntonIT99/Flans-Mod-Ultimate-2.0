@@ -22,8 +22,10 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * The part hitboxes of an NPC drawn as a driveable: the body Flan rounds and explosions hit it by, posed where its
@@ -41,7 +43,6 @@ public final class NpcParts
 {
     public static final String NBT_KEY = "WolffsModPartState";
     private static final String CORE = "core";
-    private static final String TURRET = "turret";
     private static final int SYNC_INTERVAL = 5;
 
     @Nullable
@@ -62,7 +63,8 @@ public final class NpcParts
     private String struck;
     private float healthBefore = Float.NaN;
     private boolean wasKilled;
-    private boolean turretWasDestroyed;
+    /** Parts that stood destroyed after the last server tick, so that each one's loss is dealt with once. */
+    private final Set<String> destroyedParts = new HashSet<>();
     private NpcPartEffects effects = NpcPartEffects.NONE;
     private final NpcRepairs repairs = new NpcRepairs();
     private int sentSignature;
@@ -184,12 +186,28 @@ public final class NpcParts
         }
         else if (!killed && npc.getHealth() > 0F)
             tickHealth(npc, current, share, options, kind);
-        // Those seated inside the turret die as it is destroyed.
-        boolean turretDestroyed = !killed && current.getPart(TURRET).filter(PartState::enabled).map(PartState::destroyed).orElse(false);
-        if (turretDestroyed && !turretWasDestroyed)
-            NpcCrew.turretDestroyed(npc);
-        turretWasDestroyed = turretDestroyed;
+        if (killed)
+            destroyedParts.clear();
+        else
+            tickSeats(npc, current);
         sync(npc, current);
+    }
+
+    /** Kills those seated inside a turret as it is destroyed, then gets riders out of the seats of destroyed parts. */
+    private void tickSeats(EntityNPCInterface npc, IPartBody current)
+    {
+        boolean anyDestroyed = false;
+        for (PartState part : current.getParts())
+        {
+            boolean destroyed = part.enabled() && part.destroyed();
+            anyDestroyed |= destroyed;
+            if (!destroyed)
+                destroyedParts.remove(part.name());
+            else if (destroyedParts.add(part.name()))
+                NpcCrew.partDestroyed(npc, part.name());
+        }
+        if (anyDestroyed && !npc.getPassengers().isEmpty())
+            NpcCrew.leaveDestroyedSeats(npc);
     }
 
     /** Burns what is alight, follows health the NPC gained or lost by itself, and works out what its broken parts cost it. */
