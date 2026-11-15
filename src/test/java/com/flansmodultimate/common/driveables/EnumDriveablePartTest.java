@@ -64,6 +64,19 @@ class EnumDriveablePartTest
     }
 
     @Test
+    void numberedTurretsStayOnTheHullButRemainTurretParts()
+    {
+        assertFalse(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET_3));
+        assertFalse(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET_16));
+        assertTrue(EnumDriveablePart.isTurretPart(EnumDriveablePart.TURRET_3));
+        assertTrue(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET));
+        assertTrue(EnumDriveablePart.isTurretMounted(EnumDriveablePart.BARREL));
+        assertTrue(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET_ARMOR));
+        assertTrue(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET_WEAK_2));
+        assertFalse(EnumDriveablePart.isTurretPart(EnumDriveablePart.CORE));
+    }
+
+    @Test
     void mainTurretHoldsEverySeatMountedOnIt()
     {
         assertTrue(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.TURRET, EnumDriveablePart.TURRET));

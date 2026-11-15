@@ -61,7 +61,7 @@ public enum PartDamageKind
         String name = part.name();
         if (name.startsWith("TURRET_ARMOR") || name.equals("MORE_TURRET_ARMOR") || name.equals("TURRET_SKIRT") || name.equals("TURRET_SIDE"))
             return ARMOR;
-        if (EnumDriveablePart.isTurretMounted(part))
+        if (EnumDriveablePart.isTurretPart(part))
             return TURRET;
         return switch (part)
         {

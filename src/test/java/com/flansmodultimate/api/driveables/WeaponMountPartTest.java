@@ -30,9 +30,9 @@ class WeaponMountPartTest
     {
         assertTrue(FlansDriveables.diesWithPart(mount(true, "turret"), "turret"));
         assertTrue(FlansDriveables.diesWithPart(mount(true, "barrel"), "turret"));
-        assertTrue(FlansDriveables.diesWithPart(mount(true, "turret3"), "turret3"));
-        assertFalse(FlansDriveables.diesWithPart(mount(true, "turret3"), "turret"));
-        assertFalse(FlansDriveables.diesWithPart(mount(true, "turret4"), "turret3"));
+        assertTrue(FlansDriveables.diesWithPart(mount(false, "turret3"), "turret3"));
+        assertFalse(FlansDriveables.diesWithPart(mount(false, "turret3"), "turret"));
+        assertFalse(FlansDriveables.diesWithPart(mount(false, "turret4"), "turret3"));
         assertFalse(FlansDriveables.diesWithPart(mount(false, "core"), "turret"));
         assertFalse(FlansDriveables.diesWithPart(mount(false, "leftWing"), "leftWing"));
     }
