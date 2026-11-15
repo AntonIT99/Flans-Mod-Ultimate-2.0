@@ -240,15 +240,15 @@ AddEmitter largesmoke 1 [-58.5,15.5,22.5] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
 AddEmitter flame 1 [-58.5,15.5,19.5] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
 
 //3rd gear
-AddEmitter explode 1 ] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter explode 1 [-58.5,15.5,22.5] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
 AddEmitter largesmoke 3 [-58.5,15.5,22.5] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
 
 AddEmitter explode 1 [-58.5,15.5,19.5] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
 AddEmitter largesmoke 3 [-58.5,15.5,19.5] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
 
 //4th gear change
-AddEmitter largesmoke 1 [-58.5,15.5,22.5 [1,1,1] [0,5,0] 0.7 0.75 0 1 core
-AddEmitter flame 1 [-58.5,15.5,22.5 [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+AddEmitter largesmoke 1 [-58.5,15.5,22.5] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+AddEmitter flame 1 [-58.5,15.5,22.5] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
 
 AddEmitter largesmoke 1 [-58.5,15.5,19.5] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
 AddEmitter flame 1 [-58.5,15.5,19.5] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
