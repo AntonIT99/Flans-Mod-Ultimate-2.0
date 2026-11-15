@@ -1085,6 +1085,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         setFlag(FLAG_AFTERBURNER, value);
     }
 
+    /** Whether an afterburner is simulated, so its switch decides when afterburn exhaust shows. Only aircraft carry one. */
+    public boolean hasAfterburner()
+    {
+        return false;
+    }
+
     /** Whether an afterburner is actually lit. Only aircraft carry one. */
     public boolean isAfterburnerBurning()
     {
@@ -5732,9 +5738,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return;
         if ((this instanceof Vehicle || this instanceof Plane) && !isEngineActive())
             return;
-        (isAfterburnerBurning() ? java.util.stream.Stream.concat(configType.getEmitters().stream(), configType.getAfterburnEmitters().stream()) : configType.getEmitters().stream()).forEach(emitter ->
+        boolean burning = isAfterburnerBurning();
+        // Legacy packs author afterburn exhaust as plain throttle emitters; with a simulated afterburner it follows the switch instead.
+        boolean suppressAfterburnExhaust = !burning && hasAfterburner();
+        (burning ? java.util.stream.Stream.concat(configType.getEmitters().stream(), configType.getAfterburnEmitters().stream()) : configType.getEmitters().stream()).forEach(emitter ->
         {
             if (tickCount % emitter.getEmitRate() != 0 || !isPartIntact(emitter.getPart()))
+                return;
+            if (suppressAfterburnExhaust && FlanParticles.FM_AFTERBURN.equals(emitter.getParticleType()))
                 return;
             float throttle = getThrottle();
             if (throttle < emitter.getMinThrottle() || throttle > emitter.getMaxThrottle())

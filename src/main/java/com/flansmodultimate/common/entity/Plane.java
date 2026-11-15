@@ -293,6 +293,12 @@ public class Plane extends Driveable implements PlaneVisual
         return type != null && type.isHasAfterBurner() && ModCommonConfig.enableAfterburners();
     }
 
+    @Override
+    public boolean hasAfterburner()
+    {
+        return simulatesAfterburner(getPlaneType());
+    }
+
     /** Lit once armed and at the top of the throttle range. Pilots that are not players have no switch to arm. */
     @Override
     public boolean isAfterburnerBurning()
