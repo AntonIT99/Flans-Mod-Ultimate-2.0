@@ -90,11 +90,11 @@ AddRecipeParts leftTrack 1 44_Tank_Track
 AddRecipeParts rightTrack 1 44_Tank_Track
 //Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
 AddDye 3 green
-advpaintjob Beutepanzer 44_AMC35 skin_vehicle_amc35_beutepanzer gray 8
-advpaintjob Beutepanzer25 44_AMC35 skin_vehicle_amc35_25_beutepanzer gray 8
+advpaintjob Beutepanzer 44_amc35_beutepanzer skin_vehicle_amc35_beutepanzer gray 8
 
 //Health and collision
-SetupPart core 1500 -40 -6 -17 81 34 36
+SetupPart core 1180 -40 -6 -17 81 23 36
+SetupPart turret 320 -13 17 -16.5 30 14.5 28
 SetupPart leftTrack 300 -39 -8 17 83 17 5
 SetupPart rightTrack 300 -39 -8 -19 83 17 5
 
@@ -278,5 +278,10 @@ LeftLinkPoint [28,9,-16.5]
 BulletSpeed 9
 BulletSpread 4
 IsExplosionWhenDestroyed true
+
+FlashModel DefaultFlash
+hasScope true
+Gunsight warfare44_2pdr
+gunsightZoom 3
 
 

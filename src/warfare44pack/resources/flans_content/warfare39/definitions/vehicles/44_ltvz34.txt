@@ -91,7 +91,8 @@ AddRecipeParts rightTrack 1 44_Tank_Track
 AddDye 3 gray
 
 //Health and collision
-SetupPart core 1000 -43 0 -14 82 28 28
+SetupPart core 820 -43 0 -14 82 18.5 28
+SetupPart turret 180 -17.5 18.5 -14 35 17 28
 SetupPart leftTrack 240 -43 -7 -19 82 15 5
 SetupPart rightTrack 240 -43 -7 15 82 15 5
 
@@ -285,5 +286,10 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+FlashModel DefaultFlash
+hasScope true
+Gunsight warfare44_panzer38t2
+gunsightZoom 3.5
 
 

@@ -51,9 +51,9 @@ Driver 0 27 0 -360 360 -10 22
 RotatedDriverOffset -2 0 0
 Passengers 2
 Passenger 1 33 10 7 core -85 110 -5 12 44_Mg34 Front-Turret
-GunOrigin 1 32 -22 7
+GunOrigin 1 48.2 -0.1 8.8
 Passenger 2 -18 10 -8 core 70 310 -5 12 44_Mg34 Rear-Turret
-GunOrigin 2 -18 -22 -8
+GunOrigin 2 -1.8 -0.1 -6
 
 TurretOrigin 8 0 0
 
@@ -101,7 +101,8 @@ AddDye 5 gray
 
 //Health and collision
 
-SetupPart core 1300 -47 -2 -20 85 38 40
+SetupPart core 1300 -58 -2 -20 114 26 40
+SetupPart turret 320 -15 24 -18.5 44 18.5 37
 SetupPart leftTrack 300 -47 -10 -27 99 22 10
 SetupPart rightTrack 300 -47 -10 17 99 22 10
 
@@ -303,3 +304,8 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+FlashModel DefaultFlash
+hasScope true
+Gunsight warfare44_pz4
+gunsightZoom 3.5

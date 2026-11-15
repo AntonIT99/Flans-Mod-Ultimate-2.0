@@ -16,8 +16,8 @@ ModelScale 1.2
 // Paintjobs
 AdvPaintJob Original Tiger tiger_original gray 8
 AdvPaintJob Alternate Tiger tiger_alternate gray 8
-AdvPaintJob Desert Tiger tiger_desert yellow 8
-AdvPaintJob Snow Tiger tiger_snow white 8
+AdvPaintJob Desert tiger_desert tiger_desert yellow 8
+AdvPaintJob Snow tiger_snow tiger_snow white 8
 
 // Recipe
 AddRecipeParts turret 1 heavyTankTurret 1 vehicleSeat

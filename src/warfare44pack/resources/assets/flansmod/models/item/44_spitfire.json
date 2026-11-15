@@ -21,6 +21,12 @@
         "flansmod:paintjob": 3
       },
       "model": "flansmod:item/44_spitfiredesert2"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/44_spitfire_german"
     }
   ]
 }

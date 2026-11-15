@@ -3,5 +3,12 @@
   "textures": {
     "layer0": "flansmod:item/legacymanust34"
   },
-  "overrides": []
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/legacymanust34_kirby"
+    }
+  ]
 }

@@ -484,7 +484,7 @@ public class ModelBerthierM1916 extends ModelGun {
       caseScale = 0.09F;
       casingAttachPoint = new Vector3f(2.5F, 3.5F, 0.3F);
       flashScale = 0.85F;
-      muzzleFlashPoint = new Vector3f(1.55F, 0.5F, 0.0F);
+      muzzleFlashPoint = new Vector3f(1.375F, 0.49632F, 0.0F);
       fancyStance = true;
       stanceRotate = new Vector3f(40.0F, 0.0F, -8.0F);
       stanceTranslate = new Vector3f(0.4F, 0.0F, 0.0F);

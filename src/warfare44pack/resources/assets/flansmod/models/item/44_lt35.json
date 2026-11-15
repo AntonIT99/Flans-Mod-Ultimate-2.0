@@ -3,5 +3,12 @@
   "textures": {
     "layer0": "flansmod:item/44_lt35"
   },
-  "overrides": []
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/44_panzer38t_winter"
+    }
+  ]
 }

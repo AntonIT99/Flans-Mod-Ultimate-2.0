@@ -17,8 +17,8 @@ ShellSlots 5
 FuelTankSize 2000
 
 // Paintjobs
-advpaintjob Dunkelgelb 44_Flak88 44_flak88_dunkelgelb yellow 8
-advpaintjob DunkelgelbShieldless 44_Flak88 44_flak88_dunkelgelb_shieldless yellow 8
+advpaintjob Dunkelgelb 44_flak88_dunkelgelb 44_flak88_dunkelgelb yellow 8
+advpaintjob DunkelgelbShieldless 44_flak88_dunkelgelbshieldless 44_flak88_dunkelgelb_shieldless yellow 8
 advpaintjob Shieldless 44_Flak88 44_flak88_shieldless gray 8
 AddDye 4 gray
 

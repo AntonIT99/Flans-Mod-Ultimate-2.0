@@ -9,8 +9,8 @@ Icon Icon_WW2_Plane_YAK3_1A
 Texture Skin_WW2_Plane_YAK3_1A
 
 // Paintjobs
-AdvPaintJob LA7 Icon_WW2_Plane_YAK3_1A skin_ww2_plane_yak3_1a_la7 green 8
-AdvPaintJob Thunderbolt Icon_WW2_Plane_YAK3_1A skin_ww2_plane_yak3_1a_thunderbolt green 8
+AdvPaintJob LA7 icon_ww2_plane_yak3_1a_la7 skin_ww2_plane_yak3_1a_la7 green 8
+AdvPaintJob Thunderbolt icon_ww2_plane_yak3_1a_thunderbolt skin_ww2_plane_yak3_1a_thunderbolt green 8
 
 // Recipe and Inventory
 FuelTankSize 6000

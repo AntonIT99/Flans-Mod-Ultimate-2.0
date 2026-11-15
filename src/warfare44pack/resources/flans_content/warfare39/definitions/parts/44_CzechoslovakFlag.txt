@@ -1,0 +1,16 @@
+// Identity
+Name Czechoslovak Flag
+ShortName 44_CzechoslovakFlag
+Category Misc
+
+// Rendering
+Icon 44_CzechoslovakFlag
+Colour 255 255 255
+
+// Recipe and inventory
+Recipe B cloth.11 R cloth.14 W cloth.0
+WWW
+BWW
+BRR
+RecipeOutput 3
+StackSize 6

@@ -878,7 +878,7 @@ public class ModelChauchat1915 extends ModelGun {
       caseScale = 0.08F;
       casingAttachPoint = new Vector3f(0.1F, 0.15F, 0.03F);
       flashScale = 0.85F;
-      muzzleFlashPoint = new Vector3f(1.0F, 0.2F, 0.0F);
+      muzzleFlashPoint = new Vector3f(0.90993F, 0.25147F, 0.02279F);
       fancyStance = true;
       stanceRotate = new Vector3f(40.0F, 0.0F, -8.0F);
       stanceTranslate = new Vector3f(0.4F, 0.0F, 0.0F);

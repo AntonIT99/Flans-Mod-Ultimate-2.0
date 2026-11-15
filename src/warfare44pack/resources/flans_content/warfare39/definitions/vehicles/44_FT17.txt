@@ -91,7 +91,8 @@ AddRecipeParts rightTrack 1 44_Tank_Track
 AddDye 3 green
 
 //Health and collision
-SetupPart core 600 -42 -7 -10 56 34 20
+SetupPart core 460 -44 -7 -10 72 24 20
+SetupPart turret 140 -11.5 17 -11 23 15 22
 SetupPart rightTrack 200 -37 -10 -16 67 21 6
 SetupPart leftTrack 200 -37 -10 10 67 21 6
 
@@ -258,3 +259,8 @@ LeftLinkPoint [10,11.2,-13]
 BulletSpeed 9
 BulletSpread 4
 IsExplosionWhenDestroyed true
+
+FlashModel DefaultFlash
+hasScope true
+Gunsight warfare44_m5stuart
+gunsightZoom 2.5

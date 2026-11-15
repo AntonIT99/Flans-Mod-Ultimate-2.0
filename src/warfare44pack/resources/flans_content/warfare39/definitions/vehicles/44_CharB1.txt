@@ -52,7 +52,7 @@ RotatedDriverOffset -5 0 -3
 Passengers 1
 Passenger 1 32 3 -2 core 0 0 -12 28 44_75mmCannon PassengerGun1
 RotatedPassengerOffset 1 -5 0 -4
-GunOrigin 1 -40 -10 8.5
+GunOrigin 1 39 -11.6 8.5
 
 // X + 5 , -Y -20 
 //----------------------------Ammo
@@ -97,10 +97,11 @@ AddRecipeParts frontalArmor 5 44_Reinforced_Plating
 AddDye 5 green
 
 //Health and collision
-SetupPart core 2000 -71 -3 -16 86 39 30
+SetupPart core 2000 -71 -3 -16 99 26 30
+SetupPart turret 500 -20 23 -13 34 21.5 28
 SetupPart rightsideArmor 1000 -59 -3 -25 101 24 3
 SetupPart rightTrack 400 -74 -9 -22 118 27 5
-SetupPart frontalArmor 1500 15 -3 -16 4 24 30
+SetupPart frontalArmor 1500 28 -3 -16 12 18 30
 SetupPart leftTrack 400 -74 -9 15 118 27 5
 SetupPart leftsideArmor 1000 -59 -3 20 101 24 3
 
@@ -317,6 +318,11 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+FlashModel DefaultFlash
+hasScope true
+Gunsight warfare44_2pdr
+gunsightZoom 3
 
 
 

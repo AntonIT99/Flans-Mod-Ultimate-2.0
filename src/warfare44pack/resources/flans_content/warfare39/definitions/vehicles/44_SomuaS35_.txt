@@ -93,7 +93,8 @@ AddRecipeParts frontalArmor 5 44_Reinforced_Plating
 AddDye 5 green
 
 //Health and collision
-SetupPart core 960 -54 -4 -13 69 38 28
+SetupPart core 960 -54 -4 -13 69 25 28
+SetupPart turret 240 -20 21 -15 34 19.5 28
 SetupPart frontalArmor 1200 15 -4 -13 20 19 28
 SetupPart rightTrack 300 -57 -10 -19 93 16 6
 SetupPart leftTrack 300 -57 -10 15 93 16 5
@@ -271,5 +272,10 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+FlashModel DefaultFlash
+hasScope true
+Gunsight warfare44_2pdr
+gunsightZoom 3
 
 

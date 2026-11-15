@@ -9,6 +9,12 @@
         "flansmod:paintjob": 1
       },
       "model": "flansmod:item/44_m4a3e8sherman_fury"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/44_m4a3e8sherman_koreanwar"
     }
   ]
 }

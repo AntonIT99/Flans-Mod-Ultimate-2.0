@@ -6,15 +6,21 @@
   "overrides": [
     {
       "predicate": {
-        "flansmod:paintjob": 1
+        "flansmod:paintjob": 2
       },
-      "model": "flansmod:item/tigerii"
+      "model": "flansmod:item/tigerii_dunkelgelb"
     },
     {
       "predicate": {
-        "flansmod:paintjob": 2
+        "flansmod:paintjob": 3
       },
-      "model": "flansmod:item/tigerii"
+      "model": "flansmod:item/tigerii_camo"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/tigerii_wintercamo"
     }
   ]
 }

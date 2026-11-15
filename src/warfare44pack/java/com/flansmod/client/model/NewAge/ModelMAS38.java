@@ -243,7 +243,7 @@ public class ModelMAS38 extends ModelGun {
       caseScale = 0.025F;
       casingAttachPoint = new Vector3f(3.0F, 18.0F, 0.0F);
       flashScale = 0.85F;
-      muzzleFlashPoint = new Vector3f(1.5F, 0.5F, 0.0F);
+      muzzleFlashPoint = new Vector3f(0.80515F, 0.54449F, 0.01103F);
       fancyStance = true;
       stanceRotate = new Vector3f(40.0F, 0.0F, -8.0F);
       stanceTranslate = new Vector3f(0.4F, 0.0F, 0.0F);

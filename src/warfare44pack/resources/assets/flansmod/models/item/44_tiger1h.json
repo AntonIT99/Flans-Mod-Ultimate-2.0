@@ -27,6 +27,12 @@
         "flansmod:paintjob": 4
       },
       "model": "flansmod:item/44_tiger1h_tiger"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 5
+      },
+      "model": "flansmod:item/44_tiger1h_dunkelgelb"
     }
   ]
 }

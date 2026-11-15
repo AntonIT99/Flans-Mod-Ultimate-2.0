@@ -93,7 +93,8 @@ AddDye 3 gray
 //Health and collision
 
 
-SetupPart core 500 -36 -4 -14 76 30 28
+SetupPart core 500 -46 -4 -14 88 22 28
+SetupPart turret 120 -12.5 18 -9 29 8.5 26
 SetupPart rightTrack 100 -44 -11 -21 86 23 7
 SetupPart leftTrack 100 -44 -11 14 86 23 7
 
@@ -264,6 +265,8 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+FlashModel DefaultFlash
 
 
 

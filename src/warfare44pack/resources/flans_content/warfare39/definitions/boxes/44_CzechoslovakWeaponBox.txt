@@ -1,0 +1,45 @@
+// Identity
+Name W39 Czechoslovak Weapon Box
+ShortName 44_CzechoslovakWeaponBox
+
+// Rendering
+TopTexture 44_WeaponBoxTop
+SideTexture 44_CzechoslovakWeaponBox
+BottomTexture 44_WeaponBoxBottom
+GuiTexture gui/WeaponBoxCzechoslovakW39
+GunBoxNameColor FFFFFF
+PageTextColor FFFFFF
+ButtonTextColor FFFFFF
+ButtonTextHighlight FFD34F
+ListTextColor FFFFFF
+ItemTextColor FFFFFF
+
+// Recipe
+Recipe I ingotIron L log F 44_CzechoslovakFlag
+LLL
+IFI
+LLL
+
+// Contents
+SetPage Bolt-Rifles
+
+AddGun 44_Kar98k 1 44_Gun_Barrel 1 44_Receiver 4 log 2 ingotIron 1 44_Trigger
+AddAmmo 44_Kar98kAmmo 3 ingotIron 2 gunpowder
+
+SetPage MGs
+
+AddGun 44_Mg26t 1 44_Gun_Barrel 1 44_Receiver 8 ingotIron 1 44_Grip
+AddAmmo 44_Mg26tAmmo 1 44_Magazine 4 ingotIron 3 gunpowder
+
+AddGun 44_ZBvz37 1 44_Gun_Barrel 1 44_Receiver 2 log 10 ingotIron 1 44_Grip
+AddAmmo 44_ZBvz37Ammo 5 ingotIron 5 gunpowder
+
+SetPage Side-Arms
+
+AddGun 44_PPk 1 44_Gun_Barrel 1 44_Receiver 1 ingotIron 1 44_Grip
+AddAmmo 44_PPkAmmo 1 44_Magazine 1 ingotIron 1 gunpowder
+
+SetPage Uniforms
+
+AddGun 44_CZHelmet 5 ingotIron
+AddGun 44_CZUniform 8 cloth.13 1 44_CzechoslovakFlag

@@ -8,13 +8,13 @@
       "predicate": {
         "flansmod:paintjob": 1
       },
-      "model": "flansmod:item/lancaster"
+      "model": "flansmod:item/lancaster_ac130"
     },
     {
       "predicate": {
         "flansmod:paintjob": 2
       },
-      "model": "flansmod:item/lancaster"
+      "model": "flansmod:item/lancaster_b24"
     },
     {
       "predicate": {

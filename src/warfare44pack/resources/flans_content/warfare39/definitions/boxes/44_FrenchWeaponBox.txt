@@ -1,0 +1,45 @@
+// Identity
+Name W39 French Weapon Box
+ShortName 44_FrenchWeaponBox
+
+// Rendering
+TopTexture 44_WeaponBoxTop
+SideTexture 44_FrenchWeaponBox
+BottomTexture 44_WeaponBoxBottom
+GuiTexture gui/WeaponBoxFrenchW39
+GunBoxNameColor FFFFFF
+PageTextColor FFFFFF
+ButtonTextColor FFFFFF
+ButtonTextHighlight FFD34F
+ListTextColor FFFFFF
+ItemTextColor FFFFFF
+
+// Recipe
+Recipe I ingotIron L log F 44_FrenchFlag
+LLL
+IFI
+LLL
+
+// Contents
+SetPage Bolt-Rifles
+
+AddGun 44_Berthier 1 44_Gun_Barrel 1 44_Receiver 4 log 2 ingotIron 1 44_Trigger
+AddAmmo 44_BerthierAmmo 3 ingotIron 2 gunpowder
+
+SetPage SMGs
+
+AddGun 44_MAS38 1 44_Gun_Barrel 1 44_Receiver 4 ingotIron 1 44_Grip
+AddAmmo 44_MAS38Ammo 1 44_Magazine 1 ingotIron 1 gunpowder
+
+SetPage MGs
+
+AddGun 44_Chauchat 1 44_Gun_Barrel 1 44_Receiver 1 log 7 ingotIron 1 44_Grip
+AddAmmo 44_ChauchatAmmo 1 44_Magazine 3 ingotIron 2 gunpowder
+
+AddGun 44_MAC31 1 44_Gun_Barrel 1 44_Receiver 10 ingotIron 1 44_Grip
+AddAmmo 44_MAC31Ammo 1 44_Magazine 6 ingotIron 6 gunpowder
+
+SetPage Uniforms
+
+AddGun 44_FrenchAdrianHelmet 5 ingotIron
+AddGun 44_FrenchUniform 8 cloth.12 1 44_FrenchFlag

@@ -51,7 +51,7 @@ Driver 0 43 0 -360 360 -8 15
 RotatedDriverOffset -1 0 -8
 Passengers 1
 Passenger 1 -96 29 0 core 65 295 -8 11 44_MAC31 PassengerGun1
-GunOrigin 1 -80 36.2 0
+GunOrigin 1 -80 14.6 0
 // X + 5 , -Y -20 
 //----------------------------Ammo
 AddAmmo 44_75APShell
@@ -94,7 +94,9 @@ AddRecipeParts frontalArmor 5 44_Reinforced_Plating
 AddDye 5 green
 
 //Health and collision
-SetupPart core 2000 -130 -2 -16 156 57 32
+SetupPart core 2000 -130 -2 -16 156 39.5 32
+SetupPart superstructure 400 -89 37.5 -19.5 67 13.5 39
+SetupPart turret 500 -20 37.5 -19.5 42 28.5 39
 SetupPart leftTrack 600 -130 -9 15 170 35 12
 SetupPart rightTrack 600 -130 -8 -27 170 34 12
 SetupPart frontalArmor 800 26 0 -16 13 34 32
@@ -316,5 +318,10 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+FlashModel DefaultFlash
+hasScope true
+Gunsight warfare44_m4a3
+gunsightZoom 2.5
 
 

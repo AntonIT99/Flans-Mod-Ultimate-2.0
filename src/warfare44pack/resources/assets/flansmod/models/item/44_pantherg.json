@@ -21,6 +21,12 @@
         "flansmod:paintjob": 3
       },
       "model": "flansmod:item/44_pantherg_black"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/44_pantherg_dunkelgelbcamo"
     }
   ]
 }

@@ -93,7 +93,8 @@ AddRecipeParts rightTrack 1 44_Tank_Track
 AddDye 3 gray
 
 //Health and collision
-SetupPart core 670 -22 0 -14 89 31 28
+SetupPart core 630 -22 0 -14 89 31 28
+SetupPart turret 40 -12 31 -13 24.5 11.5 26
 
 BulletDetection 5
 
@@ -156,7 +157,6 @@ ShootParticlesPrimary flansmod.fmflame 0.1 -0.4 0
 ShootParticlesPrimary flansmod.fmflame 0.1 0.4 0
 
 ShootParticlesSecondary crit 0.5 0 0
-BarrelPosition 45 28 0
 
 CanRoll true
 
@@ -304,3 +304,5 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+FlashModel DefaultFlash

@@ -26,9 +26,9 @@ ShellSlots 6
 FuelTankSize 2000
 
 // Paintjobs
-advpaintjob Dunkelgelb 44_Tiger2H 44_tiger2_dunkelgelb yellow 8
-advpaintjob Camo 44_Tiger2H 44_tiger2_camo yellow 8
-advpaintjob WinterCamo 44_Tiger2H 44_tiger2_winter_camo white 8
+advpaintjob Dunkelgelb 44_tiger2h_dunkelgelb 44_tiger2_dunkelgelb yellow 8
+advpaintjob Camo 44_tiger2h_camo 44_tiger2_camo yellow 8
+advpaintjob WinterCamo 44_tiger2h_wintercamo 44_tiger2_winter_camo white 8
 AddDye 10 gray
 
 // Real-world specifications

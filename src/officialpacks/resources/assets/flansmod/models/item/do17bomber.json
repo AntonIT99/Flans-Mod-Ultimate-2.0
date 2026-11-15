@@ -8,25 +8,19 @@
       "predicate": {
         "flansmod:paintjob": 1
       },
-      "model": "flansmod:item/do17"
+      "model": "flansmod:item/do17_ac130"
     },
     {
       "predicate": {
         "flansmod:paintjob": 2
       },
-      "model": "flansmod:item/do17"
+      "model": "flansmod:item/do17_b24"
     },
     {
       "predicate": {
         "flansmod:paintjob": 3
       },
-      "model": "flansmod:item/do17"
-    },
-    {
-      "predicate": {
-        "flansmod:paintjob": 4
-      },
-      "model": "flansmod:item/do17"
+      "model": "flansmod:item/do17_b71"
     }
   ]
 }

@@ -3,5 +3,24 @@
   "textures": {
     "layer0": "flansmod:item/44_t3476mod1940"
   },
-  "overrides": []
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/44_t3476mod1940_finland"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/44_t3476mod1940_snow"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/44_t3476mod1940_white"
+    }
+  ]
 }

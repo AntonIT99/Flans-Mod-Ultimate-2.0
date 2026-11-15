@@ -2,6 +2,7 @@ package com.flansmod.client.model.NFS;
 
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmod.common.vector.Vector3f;
 
 public class ModelMAC31 extends ModelGun {
    int textureX = 1024;
@@ -173,6 +174,7 @@ public class ModelMAC31 extends ModelGun {
       gunModel[51].setRotationPoint(8.0F, -2.0F, 0.0F);
       gunModel[52].addShapeBox(3.76F, -1.25F, -0.5F, 1, 2, 1, 0.0F, 0.0F, -0.2F, 0.0F, -0.7F, -0.2F, 0.0F, -0.7F, -0.2F, 0.0F, 0.0F, -0.2F, 0.0F, 0.0F, -0.5F, 0.0F, -0.7F, -0.5F, 0.0F, -0.7F, -0.5F, 0.0F, 0.0F, -0.5F, 0.0F);
       gunModel[52].setRotationPoint(8.0F, -2.0F, 0.0F);
+      muzzleFlashPoint = new Vector3f(0.90625F, 0.18906F, 0.0F);
       translateAll(0.0F, 0.0F, 0.0F);
       flipAll();
    }

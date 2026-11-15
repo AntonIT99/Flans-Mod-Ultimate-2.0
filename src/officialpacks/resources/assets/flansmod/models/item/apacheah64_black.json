@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "flansmod:item/44_berthierammo"
+    "layer0": "flansmod:item/apacheah64_black"
   }
 }

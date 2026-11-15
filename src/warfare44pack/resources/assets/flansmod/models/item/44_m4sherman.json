@@ -15,6 +15,24 @@
         "flansmod:paintjob": 2
       },
       "model": "flansmod:item/44_m4sherman_winter"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/44_m4sherman_winteralternate"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 5
+      },
+      "model": "flansmod:item/44_m4sherman_beutepanzer"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 6
+      },
+      "model": "flansmod:item/44_m4sherman_peggie"
     }
   ]
 }

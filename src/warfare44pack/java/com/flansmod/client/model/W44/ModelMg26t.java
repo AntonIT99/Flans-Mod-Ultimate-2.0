@@ -630,7 +630,7 @@ public class ModelMg26t extends ModelGun {
       caseScale = 1.5F;
       casingAttachPoint = new Vector3f(0.25F, 0.5F, 0.09375F);
       flashScale = 2.0F;
-      muzzleFlashPoint = new Vector3f(1.84375F, 0.421875F, 0.0625F);
+      muzzleFlashPoint = new Vector3f(1.78906F, 0.44063F, 0.0625F);
       ShakeDistance = 0.3F;
    }
 }

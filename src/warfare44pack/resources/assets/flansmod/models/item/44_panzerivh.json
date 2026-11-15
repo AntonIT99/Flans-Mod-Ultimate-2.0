@@ -15,6 +15,18 @@
         "flansmod:paintjob": 2
       },
       "model": "flansmod:item/44_panzerivh_winter"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/44_panzerivh_dunkelgelbcamo"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/44_panzerivh_finland"
     }
   ]
 }
