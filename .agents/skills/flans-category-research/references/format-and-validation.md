@@ -98,6 +98,30 @@ Use this shape:
   readers deliberately prioritize one alias, and map iteration must not select
   between contradictory values.
 
+## Service dates
+
+Every type accepts `IssueDate` and optional `RetirementDate`
+(`common/eras/ServicePeriodReader`); era rules use them, so set them on every
+real-world category where service dates are researchable.
+
+- Syntax (`ServiceDate.parse`): `1944-06`, `1944`, `~1944` (approximate),
+  `480BC`, `20C`/`5CBC` (century), an era id (`WW2`, `ColdWar`, `Interwar`, ...
+  from `EraCatalog`) or `Future`. There is no year 0; use `1BC`.
+- Prefer the most precise defensible form: month of first operational issue or
+  adoption, not design, prototype or first order. Use `~year` when sources
+  disagree or only approximate, a century or era only for ancient or vague items.
+- `RetirementDate` is the end of front-line service with the primary user
+  (month or year). Omit it while the item is still in service, and when unknown;
+  it is ignored without an `IssueDate`. Never set it before `IssueDate`.
+- Dates follow the configuration a category models: a variant category carries
+  its variant's dates, not the family's first service.
+- Generic or fictional items: date to the exemplar's era or tier; use `Future`
+  for sci-fi/futuristic content, and omit dates when no era is defensible.
+- Wearable armor and mecha categories set dates only when the set or chassis
+  represents a historical item; tier-only groupings get none.
+- Place both keys together with the category's other identity-level properties,
+  following the ordering of neighbouring categories.
+
 ## Ordering
 
 Order category labels using case-insensitive **natural** order: split each label into

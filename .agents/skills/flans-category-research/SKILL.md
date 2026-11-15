@@ -11,7 +11,7 @@ runtime copies. This skill owns category policy; domain references own values.
 
 ## Read only what the task needs
 
-- JSON, ordering, membership, scanner: [format-and-validation.md](references/format-and-validation.md).
+- JSON, service dates, ordering, membership, scanner: [format-and-validation.md](references/format-and-validation.md).
 - Identity or real-world statistics: [research-policy.md](references/research-policy.md).
   Armor uses only **Identity and scope** and **Source ladder**, for construction.
 - Guns, AA guns, ammunition, grenades or bombs: [guns-ammunition-grenades.md](references/guns-ammunition-grenades.md).
@@ -40,7 +40,9 @@ sorting-only work needs no historical research or domain balance tables.
 3. Select the doctrine: researched historical configuration; resolved generic or
    fictional exemplar/tier; fixed armor tables; or mecha chassis tables. Keep each
    configuration coherent. Armor/mecha groups may share a balance profile without
-   sharing an exact historical model.
+   sharing an exact historical model. Research `IssueDate` and, where the item
+   left service, `RetirementDate` for every real-world category you create or
+   touch, following **Service dates** in `format-and-validation.md`.
 4. Edit minimally, restore documented ordering, and run the applicable format and
    domain checks. For mixed belts, assess tracer entries using the ammunition
    reference. Rerun the scanner after coverage changes.
