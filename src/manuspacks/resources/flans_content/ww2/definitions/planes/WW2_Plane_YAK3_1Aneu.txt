@@ -12,6 +12,7 @@ Texture Skin_WW2_Plane_YAK3_1Aneu
 AdvPaintJob 303FAD Icon_WW2_Plane_YAK3_1Aneu Skin_WW2_Plane_YAK3_1Aneu
 AdvPaintJob 402IAP Icon_WW2_Plane_YAK3_1B Skin_WW2_Plane_YAK3_1B gray 6
 AdvPaintJob 940IAP Icon_WW2_Plane_YAK3_1C Skin_WW2_Plane_YAK3_1C gray 6
+AdvPaintJob Alternate Icon_WW2_Plane_YAK3_1Aneu skin_ww2_plane_yak3_1d gray 6
 
 // Recipe and Inventory
 AllowAllAmmo False
