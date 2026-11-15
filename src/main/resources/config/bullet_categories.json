@@ -347,7 +347,9 @@
             "frenchoidammomas49",
             "frenchoidammomas36t",
             "ayanamiammo",
-            "frenchoidammomas39"
+            "frenchoidammomas39",
+            "44_mac31ammo",
+            "44_mas36ammo"
         ]
     },
 
@@ -671,7 +673,8 @@
             "FlakParticles": 0
         },
         "items": [
-            "mas38ammo"
+            "mas38ammo",
+            "44_mas38ammo"
         ]
     },
 
@@ -829,7 +832,8 @@
             "pg_7.92mm_mg81z_ammo",
             "mg1325",
             "mg1375",
-            "carbonmg42ammo"
+            "carbonmg42ammo",
+            "44_zbvz37ammo"
         ]
     },
 
@@ -943,7 +947,9 @@
             "mle1914belttracer",
             "berthierammot",
             "berthierpunjabi",
-            "berthierpunjabit"
+            "berthierpunjabit",
+            "44_berthierammo",
+            "44_chauchatammo"
         ]
     },
 

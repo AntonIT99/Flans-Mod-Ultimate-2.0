@@ -61,6 +61,16 @@
         ]
     },
 
+    "Czechoslovak Army - 1938 mobilisation service period": {
+        "properties": {
+            "IssueDate": "1938-05",
+            "RetirementDate": "1939-03"
+        },
+        "items": [
+            "w39_czechoslovakarmy"
+        ]
+    },
+
     "France": {
         "properties": {
             "VictoryFlagTexture": "flag_team_france"
@@ -73,7 +83,8 @@
             "francemodernw",
             "franceww2",
             "gign",
-            "legacyfrenchteam"
+            "legacyfrenchteam",
+            "w39_frencharmy"
         ]
     },
 
@@ -88,6 +99,16 @@
         ]
     },
 
+    "French Army - 1939 to 1940 service period": {
+        "properties": {
+            "IssueDate": "1939-09",
+            "RetirementDate": "1940-06"
+        },
+        "items": [
+            "w39_frencharmy"
+        ]
+    },
+
     "French Army F2 Daguet Uniform Service Period": {
         "properties": {
             "IssueDate": "~1990",
@@ -95,6 +116,16 @@
         },
         "items": [
             "francemodernd"
+        ]
+    },
+
+    "German Army - 1939 to 1940 service period": {
+        "properties": {
+            "IssueDate": "1939-09",
+            "RetirementDate": "1940-06"
+        },
+        "items": [
+            "w39_germanarmy"
         ]
     },
 
@@ -565,6 +596,22 @@
         },
         "items": [
             "usa80s"
+        ]
+    },
+
+    "Warhammer 40k - Imperium of Man": {
+        "properties": {
+            "IssueDate": "Future"
+        },
+        "items": [
+            "wh40k_team_blacktemplars",
+            "wh40k_team_bloodangels",
+            "wh40k_team_cadia",
+            "wh40k_team_catachan",
+            "wh40k_team_imperialfists",
+            "wh40k_team_ravenguard",
+            "wh40k_team_spacewolves",
+            "wh40k_team_ultramarines"
         ]
     }
 }

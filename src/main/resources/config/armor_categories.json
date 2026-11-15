@@ -97,7 +97,8 @@
             "RetirementDate": "~1951"
         },
         "items": [
-            "m26adrian"
+            "m26adrian",
+            "44_frenchadrianhelmet"
         ]
     },
 
@@ -637,6 +638,16 @@
         },
         "items": [
             "corinthian"
+        ]
+    },
+
+    "Czechoslovak vz. 32 Steel Helmet Service Period": {
+        "properties": {
+            "IssueDate": "1932",
+            "RetirementDate": "~1953"
+        },
+        "items": [
+            "44_czhelmet"
         ]
     },
 
@@ -1919,7 +1930,9 @@
             "americavest",
             "bananavest",
             "katusha",
-            "heisters"
+            "heisters",
+            "44_czuniform",
+            "44_frenchuniform"
         ]
     },
 
@@ -4324,7 +4337,9 @@
             "stahlhelm",
             "gk80",
             "gk80woodland",
-            "americahat"
+            "americahat",
+            "44_czhelmet",
+            "44_frenchadrianhelmet"
         ]
     },
 
