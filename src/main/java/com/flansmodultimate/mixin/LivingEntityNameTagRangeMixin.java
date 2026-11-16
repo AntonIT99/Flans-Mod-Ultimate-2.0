@@ -3,9 +3,8 @@ package com.flansmodultimate.mixin;
 import com.flansmodultimate.api.client.NameTagRanges;
 import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.api.entity.ILivingVisualEffects;
-import com.flansmodultimate.common.driveables.physics.PlaneRiderRotation;
+import com.flansmodultimate.common.driveables.physics.DriveableRiderRotation;
 import com.flansmodultimate.api.entity.FlansCorpses;
-import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -19,7 +18,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
-/** Controls living-entity name range, optional hurt/death effects and seated body alignment, including aircraft attitude. */
+/** Controls living-entity name range, optional hurt/death effects and seated body alignment, including driveable pitch and roll. */
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityNameTagRangeMixin
 {
@@ -34,10 +33,10 @@ public abstract class LivingEntityNameTagRangeMixin
 
     @SuppressWarnings("NameDoesntMatchTargetClass") // Callback names describe the rider and body heading independently of mapping parameter names.
     @Inject(method = "setupRotations", at = @At("RETURN"))
-    private void flansmodultimateRotateRiderWithPlane(LivingEntity rider, PoseStack pose, float ageInTicks, float bodyYaw, float partialTick, CallbackInfo callback)
+    private void flansmodultimateRotateRiderWithDriveable(LivingEntity rider, PoseStack pose, float ageInTicks, float bodyYaw, float partialTick, CallbackInfo callback)
     {
-        if (rider.getVehicle() instanceof Seat seat && seat.getDriveable() instanceof Plane plane)
-            pose.mulPose(PlaneRiderRotation.at(plane, partialTick, bodyYaw));
+        if (rider.getVehicle() instanceof Seat seat && seat.getDriveable() != null)
+            pose.mulPose(DriveableRiderRotation.at(seat.getDriveable(), partialTick, bodyYaw));
     }
 
     // Presentation and name range

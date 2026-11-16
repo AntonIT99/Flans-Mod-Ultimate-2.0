@@ -2,8 +2,7 @@ package com.flansmodultimate.common.raytracing;
 
 import com.flansmodultimate.api.entity.HumanoidBody;
 import com.flansmodultimate.api.equipment.ArmPoseRule;
-import com.flansmodultimate.common.driveables.physics.PlaneRiderRotation;
-import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.driveables.physics.DriveableRiderRotation;
 import com.flansmodultimate.common.entity.ProneSupport;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.GunArmPoses;
@@ -283,8 +282,8 @@ public class PlayerSnapshot
                 root.translate(0F, -1F, 0.3F);
         }
 
-        if (p.getVehicle() instanceof Seat seat && seat.getDriveable() instanceof Plane plane)
-            root.rotate(PlaneRiderRotation.at(plane, partialTick, bodyYaw));
+        if (p.getVehicle() instanceof Seat seat && seat.getDriveable() != null)
+            root.rotate(DriveableRiderRotation.at(seat.getDriveable(), partialTick, bodyYaw));
 
         return root.scale(-shape.scaleX(), -shape.scaleY(), shape.scaleZ()).translate(0F, -1.501F, 0F);
     }
