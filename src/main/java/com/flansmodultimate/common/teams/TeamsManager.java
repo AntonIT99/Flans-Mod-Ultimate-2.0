@@ -2305,14 +2305,29 @@ public final class TeamsManager
     /** The loaded spawners connected to the bases of the map being played, as the API reports them. */
     public List<TeamsSpawner> getSpawners()
     {
+        return getCurrentRound().isPresent() ? getSpawners(base -> true) : List.of();
+    }
+
+    /**
+     * The loaded spawners connected to the bases of the map being played that a team may use, as players of the team
+     * may: those of its own bases and, with {@link #alliedSpawnSharing} on, those of its allies.
+     */
+    public List<TeamsSpawner> getSpawners(int teamId)
+    {
         TeamsRound round = getCurrentRound().orElse(null);
-        if (round == null)
+        TeamsMap map = round == null ? null : getMap(round.getMapId()).orElse(null);
+        if (map == null || teamId < TeamsRound.FIRST_TEAM_ID)
             return List.of();
+        return getSpawners(spawnBases(round, map, teamId));
+    }
+
+    private List<TeamsSpawner> getSpawners(Predicate<ITeamBase> usable)
+    {
         List<TeamsSpawner> spawners = new ArrayList<>();
         for (ITeamObject object : liveObjects.values())
         {
             ITeamBase base = object.getBaseId() == null ? null : liveBases.get(object.getBaseId());
-            if (!(object instanceof TeamSpawnerBlockEntity spawner) || base == null || !isBaseInCurrentMap(base))
+            if (!(object instanceof TeamSpawnerBlockEntity spawner) || base == null || !isBaseInCurrentMap(base) || !usable.test(base))
                 continue;
             TeamsSpawner.Kind kind = switch (spawner.getMode())
             {

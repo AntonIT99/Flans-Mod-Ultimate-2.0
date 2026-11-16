@@ -141,6 +141,13 @@ public final class TeamsLiveRound implements ITeamsLiveRound
         return isCurrent() ? manager.getSpawners() : List.of();
     }
 
+    @Override
+    public List<TeamsSpawner> getSpawners(ITeam team)
+    {
+        int teamId = team instanceof Team internal ? round.getTeamId(internal) : 0;
+        return !isCurrent() || teamId < TeamsRound.FIRST_TEAM_ID ? List.of() : manager.getSpawners(teamId);
+    }
+
     /** A capture point as the API reports it, with side ids turned into side indices. */
     TeamsCapturePoint toApi(ITeamCapturePoint point)
     {

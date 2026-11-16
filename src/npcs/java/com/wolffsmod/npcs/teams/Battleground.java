@@ -63,6 +63,12 @@ interface Battleground
 
     List<TeamsSpawner> spawners();
 
+    /** @return the spawners a team may bring its vehicles in at: its own and, where allies share spawns, its allies' */
+    default List<TeamsSpawner> spawners(ITeam team)
+    {
+        return spawners().stream().filter(spawner -> spawner.owner() != null && spawner.owner().getShortName().equals(team.getShortName())).toList();
+    }
+
     /** @return the map whose markers the bots use, or empty for a battle on no map */
     Optional<String> mapId();
 

@@ -105,6 +105,12 @@ record RoundBattleground(ITeamsLiveRound live) implements Battleground
     }
 
     @Override
+    public List<TeamsSpawner> spawners(ITeam team)
+    {
+        return live.getSpawners(team);
+    }
+
+    @Override
     public Optional<String> mapId()
     {
         return Optional.of(live.getRound().getMapId());
