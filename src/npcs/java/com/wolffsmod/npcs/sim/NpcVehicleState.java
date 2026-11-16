@@ -179,6 +179,8 @@ public final class NpcVehicleState
     private final NpcContact contact = new NpcContact();
     /** Shows a standing hull's front armour to the enemy vehicle that threatens it. */
     private final NpcHullAngling angling = new NpcHullAngling();
+    /** Where an idle turret watches while the NPC looks at nothing. */
+    private final NpcTurretScan scan = new NpcTurretScan();
     private int targetId = -1;
     @Nullable
     private Vec3 solution;
@@ -706,7 +708,11 @@ public final class NpcVehicleState
         {
             // A turret that has been shot off no longer turns.
             if (!options.enabled(Feature.TURRET_LOCKED) && !parts.effects().gunDisabled())
+            {
+                if (wanted != null)
+                    scan.reset();
                 turnTurret(current.driver(), tuning, wanted != null ? wanted : idleLook(npc, current, options), options.enabled(Feature.GRADUAL_AIM));
+            }
         }
         else
         {
@@ -722,18 +728,19 @@ public final class NpcVehicleState
     /**
      * Without a target, the turret follows what the NPC's idle look goals turn its head toward, such as a player standing
      * nearby, at its own traverse and elevation speeds and within its limits, as a crew watching its surroundings would.
+     * While the NPC looks at nothing, which is most of the time it wanders, the turret scans random bearings of its own.
      *
-     * @return where the turret looks, relative to the hull; null to bring it back to rest once the NPC looks at nothing
+     * @return where the turret looks, relative to the hull; null to bring it back to rest
      */
     @Nullable
     private MountAim idleLook(EntityNPCInterface npc, Layout current, NpcWeaponOptions options)
     {
         var look = npc.getLookControl();
         if (!look.isLookingAtTarget())
-            return null;
+            return npc.getTarget() == null ? scan.bearing(current.driver(), npc.tickCount, npc.getRandom()) : null;
         Vec3 direction = new Vec3(look.getWantedX(), look.getWantedY(), look.getWantedZ()).subtract(fireOrigin(npc, current, options));
         if (direction.lengthSqr() < 1.0E-6D)
-            return null;
+            return scan.bearing(current.driver(), npc.tickCount, npc.getRandom());
         MountAim aim = NpcModels.relative(npc, direction, hullYaw);
         return current.driver() == null ? aim : current.driver().clamp(aim);
     }
