@@ -47,8 +47,8 @@ ShellSlots 0
 AllowAllAmmo false
 
 //----------------------------Driver and passenger positions
-Driver 0 17 -5 -360 360 -10 20
-RotatedDriverOffset -4 0 5
+Driver 0 17 5 -360 360 -10 20
+RotatedDriverOffset -4 0 -5
 Passengers 0
 //Passenger 1 0 34 0 turret -360 360 -15 60 bren Bren
 
