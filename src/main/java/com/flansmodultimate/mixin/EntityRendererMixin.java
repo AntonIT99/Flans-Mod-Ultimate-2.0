@@ -2,6 +2,8 @@ package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.api.client.NameTagRanges;
 import com.flansmodultimate.client.teams.TeamsClientState;
+import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.EntityDistancePolicy;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -35,6 +37,12 @@ import net.minecraft.world.item.ItemStack;
  * <p>
  * Holders of items with oversized parts such as laser beams skip frustum culling but keep the distance check.
  * </p>
+ *
+ * <p>
+ * The crew of a driveable drawn beyond the loaded chunks is drawn there too. Renderers that cull entities by visible
+ * chunk section, such as Embeddium, would reject it; it falls back to the plain distance and frustum test, as
+ * {@code DriveableRenderer} does for the driveable itself.
+ * </p>
  */
 @SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(EntityRenderer.class)
@@ -63,6 +71,13 @@ public abstract class EntityRendererMixin
     {
         if (entity instanceof LivingEntity living && (flansmodultimateIsCullingDisabled(living.getMainHandItem()) || flansmodultimateIsCullingDisabled(living.getOffhandItem())))
             result.setReturnValue(entity.shouldRender(camX, camY, camZ));
+    }
+
+    @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
+    private void flansmodultimateDrawCrewBeyondChunks(Entity entity, Frustum frustum, double camX, double camY, double camZ, CallbackInfoReturnable<Boolean> result)
+    {
+        if (!(entity instanceof Driveable) && EntityDistancePolicy.rendersBeyondChunks(entity) && !entity.level().hasChunkAt(entity.blockPosition()))
+            result.setReturnValue(entity.shouldRender(camX, camY, camZ) && frustum.isVisible(entity.getBoundingBoxForCulling().inflate(0.5D)));
     }
 
     @Unique

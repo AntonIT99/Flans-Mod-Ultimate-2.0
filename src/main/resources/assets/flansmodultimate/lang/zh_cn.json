@@ -724,6 +724,8 @@
   "options.flansmodultimate.landingFlapGearDragMultiplier": "起落架放下时的襟翼阻力倍率",
   "options.flansmodultimate.legshotModifier": "腿部命中伤害倍率",
   "options.flansmodultimate.loadAllModelsInCache": "将所有模型载入缓存",
+  "options.flansmodultimate.loadChunksToSimulationDistance": "加载区块至模拟距离",
+  "options.flansmodultimate.loadChunksToSimulationDistance.tooltip": "当模拟距离超过视距时，加载并运算该范围内的区块。这些区块的地形不会发送给客户端，但其中的载具及其乘员在载具追踪范围内仍然可见。会占用服务器内存和刻时间。",
   "options.flansmodultimate.loadTeamFlagsFromUrls": "通过网络链接加载队旗",
   "options.flansmodultimate.lockOnRange": "锁定范围",
   "options.flansmodultimate.lodPreset": "模型 LOD",

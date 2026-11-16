@@ -724,6 +724,8 @@
   "options.flansmodultimate.landingFlapGearDragMultiplier": "착륙 장치 전개 시 플랩 항력 배율",
   "options.flansmodultimate.legshotModifier": "다리 명중 피해 배율",
   "options.flansmodultimate.loadAllModelsInCache": "모든 모델을 캐시에 로드",
+  "options.flansmodultimate.loadChunksToSimulationDistance": "시뮬레이션 거리까지 청크 로드",
+  "options.flansmodultimate.loadChunksToSimulationDistance.tooltip": "시뮬레이션 거리가 시야 거리보다 클 때 그 거리까지 청크를 로드하고 처리합니다. 지형은 클라이언트로 전송되지 않지만, 그곳의 탑승물과 탑승원은 탑승물 추적 범위까지 계속 보입니다. 서버 메모리와 틱 시간을 사용합니다.",
   "options.flansmodultimate.loadTeamFlagsFromUrls": "웹 링크에서 팀 깃발 로드",
   "options.flansmodultimate.lockOnRange": "표적 고정 범위",
   "options.flansmodultimate.lodPreset": "모델 LOD",

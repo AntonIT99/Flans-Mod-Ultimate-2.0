@@ -37,7 +37,8 @@ import net.minecraft.world.phys.*;
  * </p>
  *
  * <p>
- * The owning Flan NPC is culled before its detached Flan model renderer is called.
+ * The owning Flan NPC is culled before its detached Flan model renderer is called. The crew of a driveable, players
+ * and NPCs alike, is drawn at least as far as its driveable.
  * </p>
  */
 @Mixin(Entity.class)
@@ -131,7 +132,10 @@ public abstract class EntityMixin implements HullCarriedEntity, SeatRiderEntity
     private void flansmodultimateNpcDistance(double distanceSquared, CallbackInfoReturnable<Boolean> result)
     {
         Entity entity = (Entity) (Object) this;
-        if (EntityDistancePolicy.isFlanNpc(entity))
+        Driveable driveable = EntityDistancePolicy.riddenDriveable(entity);
+        if (driveable != null && driveable.shouldRenderAtSqrDistance(distanceSquared))
+            result.setReturnValue(true);
+        else if (EntityDistancePolicy.isFlanNpc(entity))
         {
             double distance = EntityDistancePolicy.renderDistance(entity, true);
             result.setReturnValue(distanceSquared < distance * distance);

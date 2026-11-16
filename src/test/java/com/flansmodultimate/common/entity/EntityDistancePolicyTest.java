@@ -29,6 +29,15 @@ class EntityDistancePolicyTest
     }
 
     @Test
+    void playerTicketsReachASimulationDistanceBeyondTheViewDistanceOnlyWhenEnabled()
+    {
+        assertEquals(16, EntityDistancePolicy.playerTicketRadius(8, 16, true));
+        assertEquals(8, EntityDistancePolicy.playerTicketRadius(8, 16, false));
+        assertEquals(12, EntityDistancePolicy.playerTicketRadius(12, 6, true));
+        assertEquals(32, EntityDistancePolicy.playerTicketRadius(8, 64, true));
+    }
+
+    @Test
     void malformedGeometryAndSettingsCannotProduceAnUnboundedDistance()
     {
         assertEquals(64D, EntityDistancePolicy.proportionalDistance(Double.NaN, 1D, 1D));

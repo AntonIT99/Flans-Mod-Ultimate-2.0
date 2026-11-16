@@ -1045,6 +1045,8 @@
   "options.flansmodultimate.landingFlapGearDragMultiplier": "Mnożnik oporu klap przy wysuniętym podwoziu",
   "options.flansmodultimate.legshotModifier": "Mnożnik obrażeń nóg",
   "options.flansmodultimate.loadAllModelsInCache": "Wczytaj wszystkie modele do pamięci podręcznej",
+  "options.flansmodultimate.loadChunksToSimulationDistance": "Ładuj chunki do dystansu symulacji",
+  "options.flansmodultimate.loadChunksToSimulationDistance.tooltip": "Ładuje i aktualizuje chunki do dystansu symulacji, gdy przekracza on zasięg widzenia. Ich teren nie jest wysyłany do klientów, ale pojazdy i ich załogi pozostają tam widoczne do zasięgu śledzenia pojazdów. Kosztuje pamięć i czas ticków serwera.",
   "options.flansmodultimate.loadTeamFlagsFromUrls": "Flagi drużyn z łączy internetowych",
   "options.flansmodultimate.lockOnRange": "Zasięg namierzania",
   "options.flansmodultimate.lodPreset": "LOD modeli",

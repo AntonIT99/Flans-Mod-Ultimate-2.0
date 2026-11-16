@@ -40,6 +40,7 @@ public record CommonConfigSnapshot(
     int aaGunTrackingRange,
     int driveableTrackingRange,
     int flanNpcTrackingRange,
+    boolean loadChunksToSimulationDistance,
 
     float headshotDamageModifier,
     float chestshotDamageModifier,
@@ -200,7 +201,7 @@ public record CommonConfigSnapshot(
     boolean enableSurfaceTraction
 )
 {
-    public static final int CURRENT_VERSION = 58;
+    public static final int CURRENT_VERSION = 59;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -237,6 +238,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.aaGunTrackingRange);
         buf.writeVarInt(s.driveableTrackingRange);
         buf.writeVarInt(s.flanNpcTrackingRange);
+        buf.writeBoolean(s.loadChunksToSimulationDistance);
 
         buf.writeFloat(s.headshotDamageModifier);
         buf.writeFloat(s.chestshotDamageModifier);
@@ -443,6 +445,7 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
+            buf.readBoolean(),
 
             buf.readFloat(),
             buf.readFloat(),

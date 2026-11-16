@@ -477,6 +477,16 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         // Proxy entities are noSave. Their parent owns all persistent state.
     }
 
+    /**
+     * Like its driveable, a seat keeps ticking on a client outside the loaded chunks, so its rider keeps following
+     * the driveable there instead of freezing. Server ticking stays bound to loaded chunks.
+     */
+    @Override
+    public boolean isAlwaysTicking()
+    {
+        return level().isClientSide;
+    }
+
     @Override
     public void tick()
     {

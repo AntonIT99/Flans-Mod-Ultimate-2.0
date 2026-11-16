@@ -1045,6 +1045,8 @@
   "options.flansmodultimate.landingFlapGearDragMultiplier": "Landeklappen-Widerstand bei ausgefahrenem Fahrwerk",
   "options.flansmodultimate.legshotModifier": "Faktor Beintreffer",
   "options.flansmodultimate.loadAllModelsInCache": "Alle Modelle in den Cache laden",
+  "options.flansmodultimate.loadChunksToSimulationDistance": "Chunks bis zur Simulationsdistanz laden",
+  "options.flansmodultimate.loadChunksToSimulationDistance.tooltip": "Lädt und tickt Chunks bis zur Simulationsdistanz, wenn diese die Sichtweite übersteigt. Ihr Gelände wird nicht an Clients gesendet, aber Fahrzeuge und ihre Besatzungen dort bleiben bis zur Fahrzeug-Trackingreichweite sichtbar. Kostet Serverspeicher und Tickzeit.",
   "options.flansmodultimate.loadTeamFlagsFromUrls": "Teamflaggen aus Weblinks",
   "options.flansmodultimate.lockOnRange": "Zielaufschaltreichweite",
   "options.flansmodultimate.lodPreset": "Modell-LOD",
