@@ -724,6 +724,8 @@
   "options.flansmodultimate.landingFlapGearDragMultiplier": "Множитель сопротивления закрылков при выпущенном шасси",
   "options.flansmodultimate.legshotModifier": "Множитель урона в ноги",
   "options.flansmodultimate.loadAllModelsInCache": "Загружать все модели в кэш",
+  "options.flansmodultimate.loadChunksToSimulationDistance": "Загружать чанки до дистанции симуляции",
+  "options.flansmodultimate.loadChunksToSimulationDistance.tooltip": "Загружает и обрабатывает чанки до дистанции симуляции, если она больше дальности прорисовки. Их ландшафт не отправляется клиентам, но техника и её экипажи там остаются видимыми в пределах дальности отслеживания техники. Расходует память и время тиков сервера.",
   "options.flansmodultimate.loadTeamFlagsFromUrls": "Флаги команд по веб-ссылкам",
   "options.flansmodultimate.lockOnRange": "Дальность захвата цели",
   "options.flansmodultimate.lodPreset": "LOD моделей",

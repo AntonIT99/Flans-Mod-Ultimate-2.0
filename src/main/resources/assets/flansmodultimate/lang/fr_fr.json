@@ -724,6 +724,8 @@
   "options.flansmodultimate.landingFlapGearDragMultiplier": "Multiplicateur de traînée des volets, train sorti",
   "options.flansmodultimate.legshotModifier": "Multiplicateur de dégâts aux jambes",
   "options.flansmodultimate.loadAllModelsInCache": "Charger tous les modèles en cache",
+  "options.flansmodultimate.loadChunksToSimulationDistance": "Charger les chunks jusqu'à la distance de simulation",
+  "options.flansmodultimate.loadChunksToSimulationDistance.tooltip": "Charge et met à jour les chunks jusqu'à la distance de simulation lorsqu'elle dépasse la distance d'affichage. Leur terrain n'est pas envoyé aux clients, mais les véhicules et leurs équipages y restent visibles jusqu'à la portée de suivi des véhicules. Coûte de la mémoire et du temps de tick au serveur.",
   "options.flansmodultimate.loadTeamFlagsFromUrls": "Drapeaux d’équipe depuis des liens web",
   "options.flansmodultimate.lockOnRange": "Portée de verrouillage des cibles",
   "options.flansmodultimate.lodPreset": "LOD des modèles",

@@ -138,6 +138,7 @@ public final class ModCommonConfig
 
     public static final IntValue DRIVEABLE_TRACKING_RANGE;
     public static final IntValue FLAN_NPC_TRACKING_RANGE;
+    public static final BooleanValue LOAD_CHUNKS_TO_SIMULATION_DISTANCE;
 
     private static final Supplier<Boolean> ADD_ALL_PAINTJOBS_TO_CREATIVE;
     private static final Supplier<Boolean> ADD_GUNPOWDER_RECIPE;
@@ -423,11 +424,14 @@ public final class ModCommonConfig
 
         builder.push(ENTITY_TRACKING_CONFIG_SECTION);
         DRIVEABLE_TRACKING_RANGE = builder
-            .comment("Live server-side tracking range in blocks for driveables and their seats/wheels. Not capped by the server view distance, so clients can draw driveables beyond their loaded chunks; tracking scaling still applies. No restart required.")
+            .comment("Live server-side tracking range in blocks for driveables, their seats/wheels and their crews. Not capped by the server view distance, so clients can draw driveables beyond their loaded chunks; tracking scaling still applies. No restart required.")
             .defineInRange("driveableTrackingRange", 512, 16, 512);
         FLAN_NPC_TRACKING_RANGE = builder.comment(
             "Live server-side tracking range in blocks for Flan-model NPCs and explicitly opted-in soldiers. Requires the NPC module. Server view distance and tracking scaling still apply. No restart required.")
             .defineInRange("flanNpcTrackingRange", 256, 16, 512);
+        LOAD_CHUNKS_TO_SIMULATION_DISTANCE = builder.comment(
+            "Load and tick chunks out to the simulation distance when it exceeds the view distance, as the simulation distance setting suggests; vanilla only loads chunks within the view distance. Chunks beyond the view distance are not sent to clients, so their terrain costs no client rendering, but driveables and their crews in them stay tracked and drawn up to the driveable tracking range. In singleplayer the view distance is the client render distance. Costs server memory and tick time for the extra chunks. No restart required.")
+            .define("loadChunksToSimulationDistance", true);
         BULLET_TRACKING_RANGE = builder.comment("Server-side tracking range in blocks for bullets. Requires restart because entity types are registered during startup.")
             .defineInRange("bulletTrackingRange", DEFAULT_BULLET_TRACKING_RANGE, MIN_ENTITY_TRACKING_RANGE, MAX_ENTITY_TRACKING_RANGE);
         GRENADE_TRACKING_RANGE = builder.comment("Server-side tracking range in blocks for grenades. Requires restart because entity types are registered during startup.")
@@ -818,7 +822,7 @@ public final class ModCommonConfig
             DISABLE_CROSSHAIR_FOR_GUNS.get(), DISABLE_CROSSHAIR_WHILE_SCOPED.get(), ALLOW_GUN_CROSSHAIR_OVERRIDE.get(), EXPLOSIONS_BREAK_BLOCKS.get(), PARACHUTES_CAN_BE_HIT.get(), FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS.get(),
             FLAN_EXPLOSIONS_DROP_BLOCKS.get(), BONUS_REGEN_AMOUNT.get(), BONUS_REGEN_TICK_DELAY.get(), BONUS_REGEN_FOOD_LIMIT.get(), MAX_PLAYER_HEALTH.get(), ENABLE_KILL_MESSAGES.get(),
             SHOW_DISTANCE_IN_KILL_MESSAGE.get(), DEFAULT_FLAGPOLE_HEIGHT_VALUE.get(), BULLET_SNAPSHOT_MIN.get(), BULLET_SNAPSHOT_DIVISOR.get(), BULLET_TRACKING_RANGE.get(),
-            GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(),
+            GRENADE_TRACKING_RANGE.get(), DEPLOYED_GUN_TRACKING_RANGE.get(), AA_GUN_TRACKING_RANGE.get(), DRIVEABLE_TRACKING_RANGE.get(), FLAN_NPC_TRACKING_RANGE.get(), LOAD_CHUNKS_TO_SIMULATION_DISTANCE.get(),
 
             HEADSHOT_DAMAGE_MODIFIER.get().floatValue(), CHESTSHOT_DAMAGE_MODIFIER.get().floatValue(), ARMSHOT_DAMAGE_MODIFIER.get().floatValue(), LEGSHOT_MODIFIER.get().floatValue(),
             VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER.get().floatValue(), DRIVEABLE_COLLISIONS_BREAK_BLOCKS.get(), AUTO_REFILL_VEHICLE_AMMO.get(), GUNS_IN_DESTROYED_PARTS_WORK.get(),
@@ -1491,6 +1495,12 @@ public final class ModCommonConfig
         return config == null ? 256 : config.flanNpcTrackingRange();
     }
 
+    public static boolean loadChunksToSimulationDistance()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.loadChunksToSimulationDistance();
+    }
+
     public static int aaGunTrackingRange()
     {
         CommonConfigSnapshot config = get();
@@ -1666,6 +1676,7 @@ public final class ModCommonConfig
         ALLOW_PRONE(() -> ModCommonConfig.ALLOW_PRONE, QuickSection.SERVER),
         DRIVEABLE_TRACKING_RANGE(() -> ModCommonConfig.DRIVEABLE_TRACKING_RANGE, QuickSection.SERVER),
         FLAN_NPC_TRACKING_RANGE(() -> ModCommonConfig.FLAN_NPC_TRACKING_RANGE, QuickSection.SERVER),
+        LOAD_CHUNKS_TO_SIMULATION_DISTANCE(() -> ModCommonConfig.LOAD_CHUNKS_TO_SIMULATION_DISTANCE, QuickSection.SERVER),
         RELOAD_SOUND_RANGE(() -> ModCommonConfig.RELOAD_SOUND_RANGE, QuickSection.SOUNDS),
         GUN_ACTION_SOUND_RANGE(() -> ModCommonConfig.GUN_ACTION_SOUND_RANGE, QuickSection.SOUNDS),
         MELEE_SOUND_RANGE(() -> ModCommonConfig.MELEE_SOUND_RANGE, QuickSection.SOUNDS),

@@ -724,6 +724,8 @@
   "options.flansmodultimate.landingFlapGearDragMultiplier": "Moltiplicatore di resistenza dei flap con carrello abbassato",
   "options.flansmodultimate.legshotModifier": "Moltiplicatore danni alle gambe",
   "options.flansmodultimate.loadAllModelsInCache": "Carica tutti i modelli nella cache",
+  "options.flansmodultimate.loadChunksToSimulationDistance": "Carica i chunk fino alla distanza di simulazione",
+  "options.flansmodultimate.loadChunksToSimulationDistance.tooltip": "Carica e aggiorna i chunk fino alla distanza di simulazione quando supera la distanza visiva. Il loro terreno non viene inviato ai client, ma i veicoli e i loro equipaggi restano visibili fino al raggio di tracciamento dei veicoli. Costa memoria e tempo di tick del server.",
   "options.flansmodultimate.loadTeamFlagsFromUrls": "Bandiere delle squadre da link web",
   "options.flansmodultimate.lockOnRange": "Portata di aggancio dei bersagli",
   "options.flansmodultimate.lodPreset": "LOD dei modelli",

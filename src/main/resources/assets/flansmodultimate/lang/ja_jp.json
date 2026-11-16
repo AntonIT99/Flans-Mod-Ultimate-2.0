@@ -724,6 +724,8 @@
   "options.flansmodultimate.landingFlapGearDragMultiplier": "脚展開時のフラップ抗力倍率",
   "options.flansmodultimate.legshotModifier": "脚へのダメージ倍率",
   "options.flansmodultimate.loadAllModelsInCache": "すべてのモデルをキャッシュに読み込む",
+  "options.flansmodultimate.loadChunksToSimulationDistance": "シミュレーション距離までチャンクを読み込む",
+  "options.flansmodultimate.loadChunksToSimulationDistance.tooltip": "シミュレーション距離が描画距離を超える場合、その距離までチャンクを読み込んで処理します。地形はクライアントに送信されませんが、そこにある乗り物と搭乗員は乗り物の追跡範囲まで表示されたままになります。サーバーのメモリとティック時間を消費します。",
   "options.flansmodultimate.loadTeamFlagsFromUrls": "Webリンクからチーム旗を読み込む",
   "options.flansmodultimate.lockOnRange": "ロックオン範囲",
   "options.flansmodultimate.lodPreset": "モデルLOD",

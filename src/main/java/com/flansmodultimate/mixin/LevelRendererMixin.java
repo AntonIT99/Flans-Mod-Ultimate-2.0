@@ -14,7 +14,7 @@ import net.minecraft.world.entity.Entity;
  * Hooks into the world renderer's entity pass.
  *
  * <ul>
- * <li>Draws driveables in chunks that are not built, which vanilla skips, when their render distance
+ * <li>Draws driveables and their crews in chunks that are not built, which vanilla skips, when their render distance
  * setting reaches beyond the loaded chunks.</li>
  * </ul>
  */

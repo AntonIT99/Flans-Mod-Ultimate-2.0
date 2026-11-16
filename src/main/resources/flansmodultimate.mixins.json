@@ -6,6 +6,7 @@
   "mixins": [
     "ChunkMapEntityTrackingMixin",
     "ConnectionMixin",
+    "DistanceManagerMixin",
     "EntityMixin",
     "EntityTrackingDistanceMixin",
     "FoodDataMixin",

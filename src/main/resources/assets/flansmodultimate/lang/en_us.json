@@ -1045,6 +1045,8 @@
   "options.flansmodultimate.landingFlapGearDragMultiplier": "Landing Flap Drag Multiplier With Gear Down",
   "options.flansmodultimate.legshotModifier": "Legshot Modifier",
   "options.flansmodultimate.loadAllModelsInCache": "Load All Models In Cache",
+  "options.flansmodultimate.loadChunksToSimulationDistance": "Load Chunks to Simulation Distance",
+  "options.flansmodultimate.loadChunksToSimulationDistance.tooltip": "Loads and ticks chunks out to the simulation distance when it exceeds the view distance. Their terrain is not sent to clients, but driveables and their crews there stay visible up to the driveable tracking range. Costs server memory and tick time.",
   "options.flansmodultimate.loadTeamFlagsFromUrls": "Team Flags from Web Links",
   "options.flansmodultimate.lockOnRange": "Lock On Range",
   "options.flansmodultimate.lodPreset": "Model LOD",
