@@ -73,7 +73,7 @@ import java.util.*;
  * <li>Infantry roles coordinate assault, melee and skirmishing; temporary crouch/crawl postures synchronize through the native animation data with matching dimensions and speed.</li>
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling. The entity box always
  * has the size Custom NPCs works out for the NPC, on both sides, which it otherwise misses on several changes.</li>
- * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat;
+ * <li>Presentation settings control rendering, server-timed idle/movement clips and an engine pitch following the speed the server measures and synchronizes, without changing combat;
  * a playing engine sound replaces the Custom NPCs step and idle sounds.</li>
  * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
  * scales outside pushes by mass while it is a Flan model. Vehicle models inherit the driveable melee threshold, with per-NPC overrides;
@@ -146,6 +146,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         IFlanSeatOccupant,
         ILivingVisualEffects,
         IEngineSoundSource,
+        NpcEngineSpeed,
         IMechaEquipment,
         IFlanPartTarget,
         IFlanHumanoidBody,
@@ -174,6 +175,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private static final EntityDataAccessor<Boolean> WOLFFSMODNPCS_DISTANCE_DATA = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_THROW_DISPLAY = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
+    @Unique
+    private static final EntityDataAccessor<Float> WOLFFSMODNPCS_ENGINE_SPEED = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.FLOAT);
     @Unique
     private static final EntityDataAccessor<ItemStack> WOLFFSMODNPCS_MECHA_TOOL = SynchedEntityData.defineId(EntityNPCInterface.class, EntityDataSerializers.ITEM_STACK);
     @Unique
@@ -370,6 +373,19 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public float flansmodultimateEnginePitch()
     {
         return NpcVehicleSounds.pitch((EntityNPCInterface) (Object) this);
+    }
+
+    @Override
+    public float wolffsmodnpcsEngineSpeed()
+    {
+        return getEntityData().get(WOLFFSMODNPCS_ENGINE_SPEED);
+    }
+
+    @Override
+    public void wolffsmodnpcsEngineSpeed(float share)
+    {
+        if (!level().isClientSide)
+            getEntityData().set(WOLFFSMODNPCS_ENGINE_SPEED, share);
     }
 
     @Override
@@ -1539,6 +1555,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     {
         getEntityData().define(WOLFFSMODNPCS_DISTANCE_DATA, false);
         getEntityData().define(WOLFFSMODNPCS_THROW_DISPLAY, ItemStack.EMPTY);
+        getEntityData().define(WOLFFSMODNPCS_ENGINE_SPEED, 0F);
         getEntityData().define(WOLFFSMODNPCS_MECHA_TOOL, ItemStack.EMPTY);
         getEntityData().define(WOLFFSMODNPCS_MECHA_LEFT_TOOL, ItemStack.EMPTY);
         getEntityData().define(WOLFFSMODNPCS_MECHA_LIGHT, 0);

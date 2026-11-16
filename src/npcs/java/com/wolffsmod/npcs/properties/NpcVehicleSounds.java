@@ -158,13 +158,20 @@ public final class NpcVehicleSounds
         };
     }
 
-    public static float pitch(EntityNPCInterface npc)
+    /** @return the share of its normal speed the NPC moved at this tick, from 0 to 1; measured on the server, where movement is exact */
+    public static float speedShare(EntityNPCInterface npc)
     {
         double distance = movementSquared(npc);
         double speed = distance < 256D ? Math.sqrt(distance) : 0D;
         double normalSpeed = Math.max(0.01D, npc.ais.getWalkingSpeed() / 20D);
-        float fraction = (float) Math.min(1D, speed / normalSpeed);
-        return NpcPresentation.vehicleType(npc).map(type -> FlansEntityTypes.getEnginePitch(type, fraction)).orElse(0.5F + 0.7F * fraction);
+        return (float) Math.min(1D, speed / normalSpeed);
+    }
+
+    /** @return the engine pitch for the speed share the server synchronized, so that clients need not measure the NPC's movement */
+    public static float pitch(EntityNPCInterface npc)
+    {
+        float share = npc instanceof NpcEngineSpeed engine ? engine.wolffsmodnpcsEngineSpeed() : speedShare(npc);
+        return NpcPresentation.vehicleType(npc).map(type -> FlansEntityTypes.getEnginePitch(type, share)).orElse(0.5F + 0.7F * share);
     }
 
     public void load(CompoundTag root)
