@@ -24,6 +24,17 @@ class NpcFlightAndDepthTest
     }
 
     @Test
+    void aPlaneOnTheGroundStaysLevelAndLeansFurtherTheHigherItIs()
+    {
+        assertEquals(0F, NpcFlight.groundAttitude(0D));
+        assertEquals(0F, NpcFlight.groundAttitude(-3D));
+        assertEquals(10F, NpcFlight.groundAttitude(5D));
+        // High enough, neither its steepest bank nor its steepest climb is held back.
+        assertTrue(NpcFlight.groundAttitude(30D) >= NpcFlight.MAX_BANK);
+        assertEquals(90F, NpcFlight.groundAttitude(500D));
+    }
+
+    @Test
     void anAircraftClimbsFirmlyWhenTooLowAndDescendsOnlyWhenFarTooHigh()
     {
         // Ten blocks too low: a plane climbs, harder the lower it is, up to its limit.
