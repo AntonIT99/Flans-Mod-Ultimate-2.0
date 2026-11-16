@@ -74,6 +74,14 @@ public final class VehiclePhysicsConstants
     public static final float SLOPE_FALLOFF_SPAN_DEG = 20F;
     /** Minimum uphill propulsion retained for block edges and very steep Minecraft terrain. */
     public static final float SLOPE_CRAWL_PROPULSION = 0.2F;
+    /** Steepest terrain angle, in degrees, a profiled ground vehicle's suspension follows, however strong it is. */
+    public static final float SLOPE_MAX_TERRAIN_ANGLE_DEG = 55F;
+    /** Descent, in degrees, up to which a profiled ground vehicle keeps its full speed. */
+    public static final float DESCENT_FALLOFF_START_DEG = 20F;
+    /** Degrees over which its speed then comes down to the share below, as its driver holds it back on the engine. */
+    public static final float DESCENT_FALLOFF_SPAN_DEG = 25F;
+    /** Share of its speed a vehicle keeps on the steepest descents. */
+    public static final float DESCENT_MIN_SPEED = 0.45F;
 
     // ---------------------------------------------------------------- aircraft
 

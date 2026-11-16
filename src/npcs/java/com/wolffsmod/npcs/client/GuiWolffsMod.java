@@ -49,8 +49,8 @@ import java.util.stream.Collectors;
  * Per-NPC controls inside the Wolff's Mod tab, using the Custom NPCs stats transport and sound picker.
  *
  * <p>
- * The overview is split into hub tabs along its top: General, Combat, Movement and Advanced list pages under section
- * headings, one column per heading, below the kind of NPC being edited, a standard NPC or a Flan model; the pages of Server
+ * The overview is split into hub tabs along its top. General shows the Start here pages beside the live status of the NPC;
+ * Model, Combat, Behaviour and Advanced list pages under section headings, one column per heading, below the kind of NPC being edited, a standard NPC or a Flan model; the pages of Server
  * hold the settings of the whole server instead. Locomotion lists only pages meant for this kind; Boarding & piloting uses
  * expandable sections in a scrolling viewport. Other pages are all listed, and those not meant for the kind are greyed.
  * A page is a list of rows, split into named tabs where they do not fit together, and may link to a sub-page. The title of a page is the path
@@ -61,8 +61,8 @@ import java.util.stream.Collectors;
  * the census of every NPC, and the latest server benchmarks side by side.
  * </p>
  */
-// Custom NPCs' editor requires the external GUI inheritance chain.
-@SuppressWarnings("java:S110")
+// Custom NPCs' editor requires the external GUI inheritance chain, and this one Custom NPCs tab hosts every page, each kept in its own helper.
+@SuppressWarnings({"java:S110", "java:S6539"})
 public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfieldListener, ISliderListener
 {
     public static final int MENU_ID = 100;
@@ -163,6 +163,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int LINES_BUTTON_TOP = 178;
     /** Client ticks between two requests of what the Diagnosis page shows. */
     private static final int INSPECT_INTERVAL = 20;
+    /** Room between the presets and the picture of the live status below them. */
+    private static final int STATUS_PICTURE_GAP = 4;
     /** The left edges of the columns of the benchmark comparison: the figure, the previous run, the latest run and the change. */
     private static final int[] COMPARISON_COLUMNS = {8, 214, 278, 342};
     private static final String DIAGNOSIS = "wolffsmodnpcs.diagnosis.";
@@ -184,8 +186,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private static final int OVERVIEW_HEADING_HEIGHT = 12;
     /** The line naming the kind of NPC, above the columns of a hub tab. */
     private static final int OVERVIEW_KIND_HEIGHT = 14;
-    /** Width of a hub tab button; Server stands apart at the right end of the row. */
-    private static final int HUB_WIDTH = 76;
+    /** Width of a hub tab button: six fit the page, Server standing apart at the right end of the row. */
+    private static final int HUB_WIDTH = 64;
     /** The title row of the Essentials page: its title, then a link to each full page, then Back. */
     private static final int LINK_WIDTH = 110;
     /** Where the content of a page starts, and where it starts below a row of tab buttons. */
@@ -242,7 +244,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     /** A tab of the overview, in the row along its top. The pages of Server hold the settings of the whole server instead of this NPC's. */
     private enum Hub
     {
-        GENERAL, COMBAT, BEHAVIOUR, ADVANCED, SERVER;
+        GENERAL, MODEL, COMBAT, BEHAVIOUR, ADVANCED, SERVER;
 
         private String key()
         {
@@ -256,7 +258,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         // One hub tab a line, its columns left to right.
         // spotless:off
-        START(Hub.GENERAL, 0), MODEL(Hub.GENERAL, 1), LOOK(Hub.GENERAL, 2),
+        START(Hub.GENERAL, 0),
+        MODEL(Hub.MODEL, 0), LOOK(Hub.MODEL, 1),
         WEAPONS(Hub.COMBAT, 0), TARGETING(Hub.COMBAT, 1), PROTECTION(Hub.COMBAT, 2),
         PLANNING(Hub.BEHAVIOUR, 0), TRAVEL(Hub.BEHAVIOUR, 1),
         PERFORMANCE(Hub.ADVANCED, 0), INSPECTION(Hub.ADVANCED, 1), DEBUGGING(Hub.ADVANCED, 2),
@@ -469,6 +472,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         Map.entry(Value.MOVING_SPREAD, Need.on(Feature.UNSTEADY_GUNS)),
         Map.entry(Feature.GUN_STABILISER, Need.on(Feature.UNSTEADY_GUNS)),
         Map.entry(Value.CORPSE_TIME, Need.on(Feature.KEEP_CORPSE)),
+        Map.entry(Value.WRECK_TIME, Need.choice(Value.WRECK_LIFETIME, NpcTuning.WreckLifetime.CUSTOM)),
         Map.entry(Feature.DRIVING, Need.on(Feature.HULL_FACES_TRAVEL)),
         Map.entry(Value.HULL_TURN_RATE, Need.on(Feature.HULL_FACES_TRAVEL)),
         Map.entry(Value.DRIVE_PRESET, Need.on(Feature.DRIVING)),
@@ -566,7 +570,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("duties", Scope.STANDARD, Value.DUTY, Value.RETREAT_HEALTH, Feature.SUITED_TARGETS)),
         PATHFINDING(Section.PLANNING, Scope.ALL, Tab.of(Feature.ADAPTIVE_PATH_RANGE, Value.PATH_MARGIN, Value.PATH_RETRY_INTERVAL, Feature.RETURN_HOME_TELEPORT)),
         MOVEMENT(Section.TRAVEL, Scope.ALL,
-            Tab.named("movement_terrain", Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Feature.STEP_CLIMB, Value.STEP_HEIGHT, Feature.SLOPE_PHYSICS),
+            Tab.named("movement_terrain", Value.TERRAIN, Value.MAX_WADE_DEPTH, Value.MIN_WATER_DEPTH, Feature.STEP_CLIMB, Value.STEP_HEIGHT, Feature.SLOPE_PHYSICS, Feature.SURFACE_TRACTION, Feature.VEHICLE_PATHS, Feature.AVOID_LEDGES),
             Tab.named("movement_speed", Value.LAND_SPEED, Value.WATER_SPEED),
             Tab.named("movement_watercraft", Value.SUBMARINE_DEPTH, Value.DIVE_RATE, Feature.SUBMARINE_TRIM),
             Tab.named("movement_flight", Scope.PLANES_AND_VEHICLES, Value.FLIGHT_TYPE, Value.AIRCRAFT_ROLE, Value.AIR_SEARCH_RANGE, Value.ATTACK_ALTITUDE, Feature.MODEL_FLIGHT, Layout.COLUMN, Value.FLIGHT_SPEED, Value.CRUISE_SPEED,
@@ -585,7 +589,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             Tab.named("equipment_animation", Value.AIM_POSE, Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION, Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION),
             Tab.named(HeldItemAnimationPage.ITEMS), Tab.named(HeldItemAnimationPage.ARMS_TAB)),
         EFFECTS(Section.LOOK, Scope.ALL, Tab.named("effects_combat", Look.BLOOD_EFFECTS, Look.HURT_FLASH, Feature.SHOOT_PARTICLES, Feature.MUZZLE_FLASHES, Feature.ALLY_NAME_TAGS),
-            Tab.named("effects_death", Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Feature.KEEP_CORPSE, Value.CORPSE_TIME)),
+            Tab.named("effects_death", Look.DEATH_ROTATION, Look.HIDE_BODY, Look.KEEP_WRECK, Value.WRECK_LIFETIME, Value.WRECK_TIME, Feature.KEEP_CORPSE, Value.CORPSE_TIME)),
         SOUNDS(Section.LOOK, Scope.ALL,
             Tab.named(OVERVIEW_TAB),
             Tab.named("weapon", Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS),
@@ -676,6 +680,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private final HeldItemAnimationPage heldItems;
     private final CrewPage crew;
     private final TeamFactionsPage teamFactions;
+    private final NpcStatusPanel statusPanel;
     private final SettingsTooltip settingsTooltip = new SettingsTooltip();
 
     public GuiWolffsMod(EntityNPCInterface npc)
@@ -686,6 +691,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         heldItems = new HeldItemAnimationPage(this, npc);
         crew = new CrewPage(this, npc);
         teamFactions = new TeamFactionsPage(this, npc);
+        statusPanel = new NpcStatusPanel(this, npc);
         kind = NpcKind.of(npc);
         Packets.sendServer(new SPacketMenuGet(EnumMenuType.STATS));
         NpcNetwork.sendToServer(NpcPresetPacket.request(npc.getId()));
@@ -711,6 +717,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     {
         settingsTooltip.beginFrame();
         super.render(graphics, mouseX, mouseY, partialTick);
+        if (showsStatus())
+            statusPanel.render(graphics, mouseX, mouseY);
         settingsTooltip.render(graphics, font, mouseX, mouseY);
     }
 
@@ -724,6 +732,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     public boolean mouseScrolled(double mouseX, double mouseY, double delta)
     {
         if (hasShiftDown() && settingsTooltip.scroll(delta))
+            return true;
+        if (showsStatus() && statusPanel.scroll(mouseX, mouseY, delta))
             return true;
         if (category == Category.BOARDING && !hasSubGui() && mouseX >= guiLeft + 8 && mouseX < guiLeft + 404 && mouseY >= guiTop + MOVEMENT_TOP
             && mouseY < guiTop + MOVEMENT_TOP + MOVEMENT_VISIBLE_ROWS * ROW_HEIGHT && delta != 0D)
@@ -751,7 +761,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if ((category == null ? HUB.get() : category.section.hub) == Hub.SERVER)
             return TUNING + (ClientServerSettings.isKnown() ? "server_hint" : "server_waiting");
         if (category == null)
-            return OVERVIEW + "hint";
+            return OVERVIEW + (HUB.get() == Hub.GENERAL ? "status_hint" : "hint");
         if (diagnosisPage())
             return DIAGNOSIS + "hint";
         return combat.active() ? combat.hint() : category.hint();
@@ -782,7 +792,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         {
             int x = guiLeft + 8 + section.column * OVERVIEW_COLUMN;
             int y = PAGE_TOP + OVERVIEW_KIND_HEIGHT;
-            if (sections.size() > 1)
+            // General keeps the Start here heading, which sets its pages apart from the live status beside them.
+            if (sections.size() > 1 || hub == Hub.GENERAL)
             {
                 addLabel(new GuiLabel(SECTION_LABEL_ID + section.ordinal(), section.key(), x, guiTop + y));
                 y += OVERVIEW_HEADING_HEIGHT;
@@ -795,8 +806,19 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 y += ROW_HEIGHT;
             }
             if (section == Section.START)
+            {
                 initPresets(x, guiTop + y);
+                int width = OVERVIEW_COLUMN - OVERVIEW_GAP;
+                statusPanel.layout(x + OVERVIEW_COLUMN, guiTop + PAGE_TOP + OVERVIEW_KIND_HEIGHT, PAGE_WIDTH - OVERVIEW_COLUMN, guiTop + HINT_TOP - 4, x,
+                    guiTop + y + 2 * ROW_HEIGHT + STATUS_PICTURE_GAP, width);
+            }
         }
+    }
+
+    /** @return whether the overview shows the General hub tab, whose right side and foot hold the live status of the NPC */
+    private boolean showsStatus()
+    {
+        return category == null && HUB.get() == Hub.GENERAL && !hasSubGui();
     }
 
     /** One button per hub tab along the top, each counting the changed settings of its pages; the one shown is pressed. */
@@ -1585,6 +1607,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     public void tick()
     {
         super.tick();
+        if (showsStatus())
+            statusPanel.tick();
         // While the Diagnosis page is open, it asks the server once a second; the first request starts the count.
         if (!diagnosisPage() || !loaded)
             return;
@@ -1807,6 +1831,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             options.set(Feature.GEAR_UP, value == GEAR_UP_CHOICE);
             options.set(Feature.GEAR_DYNAMIC, value == GEAR_DYNAMIC_CHOICE);
         }
+        else if (feature == Feature.KEEP_CORPSE)
+            NpcWrecks.setKeepCorpse(npc, value == 1);
         else
             options.set(feature, value == 1);
         if (feature == Feature.NON_LETHAL)
@@ -1857,7 +1883,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 case HULL_ASSISTS_AIM, MANOEUVRE_TO_FIRE, MISALIGNED_THROTTLE, DRIVING, DRIVE_REVERSE -> Scope.VEHICLES;
                 case HULL_FACES_TRAVEL -> Scope.HULLS;
                 case RUN_OVER, STEP_CLIMB -> Scope.GROUND_MACHINES;
-                case SLOPE_PHYSICS -> Scope.VEHICLES;
+                case SLOPE_PHYSICS, SURFACE_TRACTION, VEHICLE_PATHS, AVOID_LEDGES -> Scope.VEHICLES;
                 case MODEL_FLIGHT -> Scope.PLANES_AND_VEHICLES;
                 case PLAYER_SEAT_DEPLOYMENT, MAN_EMPLACEMENTS, DRIVE_DRIVEABLES, LIMB_HITBOXES, WEAPON_FIRING_RANGE, OUTRANGED_COVER, SUPPRESSIBLE, SUITED_TARGETS, COMBAT_ADVANCE, COVERING_FIRE ->
                     Scope.STANDARD;
@@ -1999,6 +2025,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case GRENADE_USE, THROWN_WEAPON_USE, NATIVE_THROWABLE_USE -> NpcTuning.Throwing.values();
             case SKILL_LEVEL -> NpcSkill.Level.values();
             case DUTY -> NpcTuning.Duty.values();
+            case WRECK_LIFETIME -> NpcTuning.WreckLifetime.values();
             default -> new Enum<?>[0];
         };
     }

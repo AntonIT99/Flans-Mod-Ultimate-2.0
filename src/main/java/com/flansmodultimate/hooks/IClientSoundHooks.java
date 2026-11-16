@@ -16,6 +16,20 @@ public interface IClientSoundHooks
     /** Keeps one named looping sound playing on an entity, replacing it when the sound changes and stopping it when there is none. */
     void setLoopingEntitySound(Entity source, String channel, @Nullable String sound, float range, boolean varyPitch);
 
+    /**
+     * Keeps one named looping sound playing on an entity for the given number of ticks, stopping it unless it is renewed
+     * by calling this again. Client only; the server keeps the no-op.
+     */
+    default void leaseLoopingEntitySound(Entity source, String channel, String sound, float range, int leaseTicks)
+    {}
+
+    /**
+     * Like {@link #leaseLoopingEntitySound}, for an engine whose pitch follows the source's
+     * {@link com.flansmodultimate.api.entity.IEngineSoundSource} when {@code enginePitch} is set. Client only.
+     */
+    default void leaseEngineLoop(Entity source, String channel, String sound, float range, int leaseTicks, boolean enginePitch)
+    {}
+
     /** Plays a sound once, following the entity that emits it rather than staying where it started. */
     void playEntitySound(Entity source, @Nullable String sound, float range);
 

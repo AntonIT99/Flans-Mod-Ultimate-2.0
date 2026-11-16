@@ -53,6 +53,8 @@ public final class NpcNetwork
         NpcNetworkPlatform.bidirectional("bot_clones", BotClonesPacket.class, BotClonesPacket::write, BotClonesPacket::read, () -> com.wolffsmod.npcs.client.NpcClientPackets::botClones,
             BotClonesPacket::handle);
         NpcNetworkPlatform.toClient("ally_factions", AllyFactionsPacket.class, AllyFactionsPacket::write, AllyFactionsPacket::read, () -> com.wolffsmod.npcs.client.ClientAllyFactions::receive);
+        NpcNetworkPlatform.bidirectional("npc_status", NpcStatusPacket.class, NpcStatusPacket::write, NpcStatusPacket::read, () -> com.wolffsmod.npcs.client.NpcStatusView::receive,
+            NpcStatusPacket::handle);
     }
 
     public static void sendTo(ServerPlayer player, ServerReportPacket packet)
@@ -81,6 +83,16 @@ public final class NpcNetwork
     }
 
     public static void sendToServer(NpcInspectPacket packet)
+    {
+        NpcNetworkPlatform.sendToServer(packet);
+    }
+
+    public static void sendTo(ServerPlayer player, NpcStatusPacket packet)
+    {
+        NpcNetworkPlatform.sendToPlayer(player, packet);
+    }
+
+    public static void sendToServer(NpcStatusPacket packet)
     {
         NpcNetworkPlatform.sendToServer(packet);
     }

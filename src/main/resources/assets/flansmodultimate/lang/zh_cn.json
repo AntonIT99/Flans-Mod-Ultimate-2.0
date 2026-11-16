@@ -621,6 +621,8 @@
   "options.flansmodultimate.enableRandomSprintStance": "启用随机疾跑姿势",
   "options.flansmodultimate.enableRealisticAircraftDamage": "启用真实飞机损伤",
   "options.flansmodultimate.enableSightDownwardMovement": "启用瞄具下移",
+  "options.flansmodultimate.enableSurfaceTraction": "启用地面附着力",
+  "options.flansmodultimate.enableSurfaceTraction.tooltip": "车轮下的地面会影响载具：冰面降低抓地力、制动和转向，沙地、雪地和泥地会使载具减速，履带载具受影响最小。",
   "options.flansmodultimate.enableUncensoredContent": "启用未删减内容",
   "options.flansmodultimate.enableWeaponSprintStance": "启用武器疾跑姿势",
   "options.flansmodultimate.enchantmentModuleEnabled": "启用附魔模块",

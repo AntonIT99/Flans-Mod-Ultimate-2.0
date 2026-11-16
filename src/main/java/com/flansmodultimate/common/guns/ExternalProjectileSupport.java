@@ -561,7 +561,7 @@ public final class ExternalProjectileSupport
         GunType gun = muzzle.weapon().orElse(null) instanceof GunType type ? type : null;
         if (gun != null && gun.hasMuzzleFlashModel())
             return true;
-        if (!(platform instanceof DriveableType type) || !type.isDefaultMuzzleFlash())
+        if (!(platform instanceof DriveableType type) || !type.hasDefaultMuzzleFlash(secondary))
             return false;
         EnumWeaponType bank = type.weaponType(secondary);
         return gun != null || bank == EnumWeaponType.GUN || bank == EnumWeaponType.SHELL;

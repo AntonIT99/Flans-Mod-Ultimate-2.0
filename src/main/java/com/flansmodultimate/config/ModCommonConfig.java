@@ -294,6 +294,7 @@ public final class ModCommonConfig
     @SuppressWarnings("java:S4968")
     private static final ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
+    private static final Supplier<Boolean> ENABLE_SURFACE_TRACTION;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
     private static final Supplier<Boolean> ENABLE_REALISTIC_AIRCRAFT_DAMAGE;
     private static final Supplier<Double> AIR_BRAKE_EFFECTIVENESS;
@@ -666,6 +667,8 @@ public final class ModCommonConfig
             "Helicopter, VTOL and six-DOF movement is already legacy, but the switch also bypasses global movement caps for them.").define("forceLegacyPlanePhysics", false);
         FORCE_LEGACY_VEHICLE_PHYSICS = builder.comment("Force all ground and water vehicles to use their legacy movement physics, even when Real* vehicle parameters are present.",
             "This bypasses derived propulsion, turning loss, slope and reverse overrides, draft, movement scaling and speed caps.").define("forceLegacyVehiclePhysics", false);
+        ENABLE_SURFACE_TRACTION = builder.comment("Let the ground under the wheels affect ground vehicles: ice cuts grip, braking and steering, while sand, snow, mud and similar soft ground",
+            "slow vehicles down, tracked ones the least. Applies to player-driven vehicles and NPC vehicle models alike; off restores uniform terrain.").define("enableSurfaceTraction", true);
         ENABLE_AIRCRAFT_ROLL_SELF_LEVELING = builder.comment("Enable the weak airborne roll force that slowly returns planes, helicopters and VTOL hover mode toward horizontal.",
             "Keyboard or mouse roll input overrides it immediately. Fixed-wing airflow, rotor authority, damage and available",
             "real-world lifting-surface characteristics still determine its strength when enabled.").define("enableAircraftRollSelfLeveling", true);
@@ -865,7 +868,7 @@ public final class ModCommonConfig
             FORCE_UNCENSORED_CONTENT.get(), UNCENSORED_CONTENT_BY_DEFAULT.get(), SHOW_BOT_KILLS_IN_KILL_FEED.get(), EXPLOSION_PARTICLE_RANGE.get(), AIR_BRAKE_EFFECTIVENESS.get(), AIR_BRAKE_ASSIST_DECELERATION.get(),
             AIR_BRAKE_ASSIST_REFERENCE_SPEED_KMH.get(), ENABLE_REALISTIC_AIRCRAFT_DAMAGE.get(), VEHICLE_SCREEN_SHAKE.get(), GUN_SCREEN_SHAKE.get(), EXPLOSION_SCREEN_SHAKE.get(),
             EXPLOSION_SHAKE_INTENSITY.get(), EXPLOSION_SHAKE_DURATION.get(), SUPPRESSION_DURATION.get(), SUPPRESSION_CAMERA_ROLL.get(), SUPPRESSION_VIGNETTE.get(), LANDING_FLAP_DRAG_EFFECTIVENESS.get(), LANDING_FLAP_ASSIST_DECELERATION.get(), LANDING_FLAP_GEAR_DRAG_MULTIPLIER.get(), ENABLE_AFTERBURNERS.get(), AFTERBURNER_JET_DRY_THRUST_RATIO.get(), AFTERBURNER_PISTON_DRY_POWER_RATIO.get(), AFTERBURNER_THROTTLE_DETENT.get(),
-            AFTERBURNER_SPOOL_SECONDS.get(), AFTERBURNER_FUEL_MULTIPLIER.get());
+            AFTERBURNER_SPOOL_SECONDS.get(), AFTERBURNER_FUEL_MULTIPLIER.get(), ENABLE_SURFACE_TRACTION.get());
     }
 
     public static CommonConfigSnapshot get()
@@ -996,6 +999,13 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config != null && config.forceLegacyVehiclePhysics();
+    }
+
+    /** Whether the ground under the wheels affects grip and speed of ground vehicles, player-driven and NPC alike. */
+    public static boolean surfaceTractionEnabled()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.enableSurfaceTraction();
     }
 
     /** Whether aircraft damage is progressive and crippled or dead aircraft come down as airframes. */

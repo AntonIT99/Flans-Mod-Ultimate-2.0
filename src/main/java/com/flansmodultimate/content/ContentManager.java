@@ -248,7 +248,7 @@ public class ContentManager
             resolveDeferredContentReferences();
             Team.resolveClassContributions();
             PlatformLoadingProgress.message("Flan's Mod: measuring muzzle points");
-            applyMeasuredMuzzles();
+            applyMeasuredMuzzles(workers);
             long end = System.nanoTime();
 
             int types = configs.values().stream().mapToInt(List::size).sum();
@@ -565,14 +565,14 @@ public class ContentManager
      * Measures the muzzles of deployable-gun, driveable and AA-gun models, on a dedicated server as on a client.
      * This runs once every pack has been read, because a model may come from another pack and a seat gun from yet another.
      */
-    private static void applyMeasuredMuzzles()
+    private static void applyMeasuredMuzzles(ContentLoadingWorkers workers)
     {
         List<InfoType> types = new ArrayList<>();
         for (IContentProvider provider : contentPacks)
             types.addAll(configs.getOrDefault(provider, new ArrayList<>()));
 
         boolean overrideConfiguredShootPoints = ContentLoadingConfig.isOverrideConfiguredShootPoints();
-        ModelMuzzleMeasurement.measure(types, contentPacks, Collections.unmodifiableMap(definitionInputs), overrideConfiguredShootPoints);
+        ModelMuzzleMeasurement.measure(types, contentPacks, Collections.unmodifiableMap(definitionInputs), overrideConfiguredShootPoints, workers::map);
         if (!overrideConfiguredShootPoints)
             FlansLog.log.info("Keeping the shoot points and AA gun barrels configured in the flan folder packs because overrideConfiguredShootPoints is disabled.");
     }

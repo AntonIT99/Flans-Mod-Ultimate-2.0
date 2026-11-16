@@ -65,7 +65,7 @@ public final class NpcRenderBuffers implements MultiBufferSource
         if (!(vertices instanceof NpcRenderBuffers.BodyVertices body) || body.owner().type != type || alpha != 1F)
             return false;
         NpcRenderBuffers context = body.owner();
-        ModelPose modelPose = NpcModelPoses.of(context.npc);
+        ModelPose modelPose = NpcModelPoses.of(context.npc, context.partialTick);
         if (modelPose == null)
             return FlansModelPreviews.renderWorld(type.getInfoType(), context.npc, context.partialTick, context.entityPose, context.renderOffset, body.texture, pose, context.source, light, overlay,
                 red, green, blue, alpha);

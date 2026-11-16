@@ -942,6 +942,8 @@
   "options.flansmodultimate.enableRandomSprintStance": "Enable Random Sprint Stance",
   "options.flansmodultimate.enableRealisticAircraftDamage": "Enable Realistic Aircraft Damage",
   "options.flansmodultimate.enableSightDownwardMovement": "Enable Sight Downward Movement",
+  "options.flansmodultimate.enableSurfaceTraction": "Enable Surface Traction",
+  "options.flansmodultimate.enableSurfaceTraction.tooltip": "The ground under the wheels affects vehicles: ice cuts grip, braking and steering, while sand, snow and mud slow vehicles down, tracked ones the least.",
   "options.flansmodultimate.enableUncensoredContent": "Enable Uncensored Content",
   "options.flansmodultimate.enableWeaponSprintStance": "Enable Weapon Sprint Stance",
   "options.flansmodultimate.enchantmentModuleEnabled": "Enchantment Module Enabled",

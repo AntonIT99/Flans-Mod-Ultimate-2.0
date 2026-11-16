@@ -120,19 +120,24 @@ class MountMotionTest
     }
 
     @Test
-    void aGunnerIsCarriedRoundItsGunsPivotFromTheGunsRest()
+    void aGunnerStaysInItsSeatAsItsGunTraverses()
     {
-        // A rear gun traversing from 100 to 260 degrees rests at 180, its gunner ahead of the pivot.
-        WeaponMount rear = new WeaponMount(1, false, false, new MountAim(100F, 0F), new MountAim(260F, 0F), 2F, 2F, new Vec3(0D, 1D, -1D), new Vec3(0D, 1D, -1D), Optional.of(mock(IContentType.class)),
-            Vec3.ZERO, Optional.of(Vec3.ZERO));
-        assertEquals(rear.position(), rear.positionAt(0F, 180F));
-        // A quarter turn of the gun to the right carries its gunner round to the pivot's right.
-        Vec3 turned = rear.positionAt(0F, 270F);
-        assertEquals(1D, turned.x, 1.0E-9D);
-        assertEquals(1D, turned.y, 1.0E-9D);
-        assertEquals(0D, turned.z, 1.0E-9D);
-        // Without a measured pivot the gunner stays in its seat.
-        WeaponMount unmeasured = new WeaponMount(1, false, false, rear.minimum(), rear.maximum(), 2F, 2F, rear.position(), rear.pivot(), rear.gun(), Vec3.ZERO);
-        assertEquals(rear.position(), unmeasured.positionAt(0F, 270F));
+        // A driven driveable keeps its gunner where the seat is, whichever way the seat's gun points.
+        WeaponMount rear = new WeaponMount(1, false, false, new MountAim(100F, 0F), new MountAim(260F, 0F), 2F, 2F, new Vec3(0D, 1D, -1D), new Vec3(0D, 1D, -1D), Optional.of(mock(IContentType.class)));
+        assertEquals(rear.position(), rear.positionAt(0F, 30F));
+    }
+
+    @Test
+    void aSeatOnTheBarrelElevatesWithTheGunButTheTurretOriginOffsetDoesNot()
+    {
+        Vec3 originOffset = new Vec3(0D, 0D, 1D);
+        WeaponMount barrel = new WeaponMount(1, false, true, MountAim.REST, MountAim.REST, 2F, 2F, new Vec3(0D, 0D, -2D), new Vec3(0D, 0D, -1D), Optional.empty(), Vec3.ZERO, originOffset, "barrel");
+        // Depressing the gun a quarter turn carries a seat ahead of the pivot down below it; the offset stays behind.
+        Vec3 depressed = barrel.positionAt(0F, 90F);
+        assertEquals(0D, depressed.x, 1.0E-9D);
+        assertEquals(-1D, depressed.y, 1.0E-9D);
+        assertEquals(0D, depressed.z, 1.0E-9D);
+        WeaponMount turret = new WeaponMount(1, false, true, MountAim.REST, MountAim.REST, 2F, 2F, new Vec3(0D, 0D, -2D), new Vec3(0D, 0D, -1D), Optional.empty(), Vec3.ZERO, originOffset, "turret");
+        assertEquals(new Vec3(0D, 0D, -1D), turret.positionAt(0F, 90F));
     }
 }

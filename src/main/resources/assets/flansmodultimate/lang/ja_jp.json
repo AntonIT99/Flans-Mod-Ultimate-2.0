@@ -621,6 +621,8 @@
   "options.flansmodultimate.enableRandomSprintStance": "ランダムなダッシュ姿勢を有効化",
   "options.flansmodultimate.enableRealisticAircraftDamage": "航空機のリアルな損傷を有効化",
   "options.flansmodultimate.enableSightDownwardMovement": "照準器の下方向移動を有効化",
+  "options.flansmodultimate.enableSurfaceTraction": "路面トラクションを有効化",
+  "options.flansmodultimate.enableSurfaceTraction.tooltip": "車輪の下の地面が車両に影響します。氷はグリップ・制動・操舵を低下させ、砂・雪・泥は車両を減速させます。装軌車両への影響は最小です。",
   "options.flansmodultimate.enableUncensoredContent": "無修正版コンテンツを有効化",
   "options.flansmodultimate.enableWeaponSprintStance": "武器のダッシュ姿勢を有効化",
   "options.flansmodultimate.enchantmentModuleEnabled": "エンチャントモジュールを有効化",

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.damage;
 
 import com.flansmod.client.model.ModelDriveable;
+import com.flansmod.client.model.TrackLinkAnimation;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
@@ -175,6 +176,10 @@ public final class DetachedPieces
         RandomSource random = entity.level().random;
         Piece piece = new Piece();
         copy(capture, piece.capture);
+        // The host keeps advancing its live track links; a torn-off track must keep the pose it left with.
+        ModelDriveable.RenderState state = piece.capture.state;
+        if (state != null && state.trackLinks() != null)
+            piece.capture.state = withTrackLinks(state, state.trackLinks().snapshot());
         piece.visual = PieceVisuals.of(capture.visual, parts, burning);
         Vec3 relativePivot = pivot.subtract(capture.origin);
         piece.pivot = new Vector3f((float) relativePivot.x, (float) relativePivot.y, (float) relativePivot.z);
@@ -254,6 +259,14 @@ public final class DetachedPieces
             piece.offset = piece.offset.add(0D, support - pivot.y, 0D);
             piece.prevOffset = piece.offset;
         }
+    }
+
+    private static ModelDriveable.RenderState withTrackLinks(ModelDriveable.RenderState s, TrackLinkAnimation links)
+    {
+        return new ModelDriveable.RenderState(s.partialTick(), s.yaw(), s.pitch(), s.roll(), s.throttle(), s.turretYaw(), s.turretPitch(), s.wheelAngle(), s.steeringAngle(), s.animationTime(),
+            s.gearProgress(), s.doorProgress(), s.modeProgress(), s.leftTrackProgress(), s.rightTrackProgress(), s.legSwing(), s.legYaw(), s.wingTransform(), s.wingWheelTransform(),
+            s.bodyWheelTransform(), s.tailWheelTransform(), s.doorTransform(), s.door2Transform(), s.wheelCoverTransform(), s.wingFlapTransform(), s.legAnimation(), s.inputMask(), s.mode(),
+            s.flareActive(), s.oilHeat(), s.waterHeat(), links);
     }
 
     private static void copy(Capture from, Capture to)

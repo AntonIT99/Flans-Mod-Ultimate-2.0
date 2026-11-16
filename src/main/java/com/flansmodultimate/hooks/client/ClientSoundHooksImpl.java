@@ -27,6 +27,18 @@ public class ClientSoundHooksImpl implements IClientSoundHooks
         SoundHelper.setLoopingEntitySound(source, channel, sound, range, varyPitch);
     }
 
+    @Override
+    public void leaseLoopingEntitySound(Entity source, String channel, String sound, float range, int leaseTicks)
+    {
+        SoundHelper.leaseLoopingEntitySound(source, channel, sound, range, leaseTicks);
+    }
+
+    @Override
+    public void leaseEngineLoop(Entity source, String channel, String sound, float range, int leaseTicks, boolean enginePitch)
+    {
+        SoundHelper.leaseLoopingEntitySound(source, channel, sound, range, leaseTicks, enginePitch);
+    }
+
     public void playEntitySound(Entity source, @Nullable String sound, float range)
     {
         SoundHelper.playEntitySound(source, sound, range);

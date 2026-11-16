@@ -178,10 +178,17 @@ public class Vehicle extends Driveable implements VehicleVisual
             if (!ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasReverseSpeedOverride() && targetSpeed < 0D)
                 targetSpeed = Math.max(targetSpeed, -physics.reverseSpeedBlocksPerTick(speedScale));
         }
+        // The ground under the wheels: last tick's averaged wheel sample, firm while airborne, afloat or switched off.
+        SurfaceTraction.Sample surface = ModCommonConfig.surfaceTractionEnabled() && !isInWater() ? wheelSurface : SurfaceTraction.Sample.FIRM;
+        targetSpeed *= surface.speedFactor();
         // A complete real-world ground profile derives a forgiving uphill response
         // from power-to-weight and drive layout; legacy propulsion stays unchanged.
+        // Downhill its driver holds it back on the engine instead, so that it does not take a steep descent at road speed.
         if (derivedPhysics)
-            targetSpeed *= GroundSlopePhysics.propulsionFactor(getPitch(), Math.signum(normalizedThrottle), physics.powerToWeightKwPerKg(), physics.driveType());
+        {
+            targetSpeed *= GroundSlopePhysics.propulsionFactor(getPitch(), Math.signum(normalizedThrottle), physics.powerToWeightKwPerKg(), physics.driveType(), surface.grip());
+            targetSpeed *= GroundSlopePhysics.descentFactor(getPitch(), Math.signum(normalizedThrottle));
+        }
         boolean steeringHeld = isPartIntact(EnumDriveablePart.STEERING) && axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) != 0F;
         float turnControl = singleTrackDrive ? DriveableControlPhysics.singleTrackTurnControl(effectiveThrottle, wheelYaw, steeringHeld, leftTrackIntact, rightTrackIntact) : wheelYaw;
         float steeringModifier = turnControl > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
@@ -213,6 +220,8 @@ public class Vehicle extends Driveable implements VehicleVisual
             float realTurnControl = singleTrackDrive ? DriveableControlPhysics.realSingleTrackTurnControl(effectiveThrottle, wheelYaw, steeringHeld, leftTrackIntact, rightTrackIntact) : wheelYaw;
             yawDelta = DriveableControlPhysics.realSteeringYawDelta(type.getRealTurnRateDegPerSec(), realTurnControl, tracked, isEngineActive(), signedSpeed, referenceSpeed);
         }
+        // Low surface grip costs steering authority gently: a vehicle on ice understeers but still answers.
+        yawDelta *= SurfaceTraction.steeringFactor(surface.grip());
         if ((braking && tracked) || !isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
         // Only wheel contact keeps the terrain pose: a body resting on a ledge with its wheels over a drop has nothing
@@ -250,15 +259,16 @@ public class Vehicle extends Driveable implements VehicleVisual
         }
         else
         {
+            // Lateral slip decays at the grip the surface leaves, so a vehicle on ice slides where it was going.
             if (onGround() || hasWheelContact())
-                grip = 0.22D;
+                grip = 0.22D * surface.grip();
             else
                 grip = 0.035D;
         }
         Vec3 velocity;
         if (derivedPhysics)
         {
-            velocity = derivedGroundVelocity(physics, current, forward, targetSpeed, traction, grip, braking, speedScale, yawDelta, normalizedThrottle);
+            velocity = derivedGroundVelocity(physics, current, forward, targetSpeed, traction, grip, braking, speedScale, yawDelta, normalizedThrottle, surface.grip());
         }
         else
         {
@@ -275,7 +285,7 @@ public class Vehicle extends Driveable implements VehicleVisual
         if (!ModCommonConfig.forceLegacyVehiclePhysics())
             velocity = enforceSpeedCap(velocity, ModCommonConfig.maxVehicleSpeedKmh());
 
-        velocity = applyGroundFriction(current, velocity, effectiveThrottle, braking, tracked, pushed, derivedPhysics && drivetrain.isShifting() ? Math.abs(normalizedThrottle) : 0F);
+        velocity = applyGroundFriction(current, velocity, effectiveThrottle, braking, tracked, pushed, derivedPhysics && drivetrain.isShifting() ? Math.abs(normalizedThrottle) : 0F, surface.grip());
         moveWithCollisions(velocity);
 
         handleLandingImpact(type, descent);
@@ -486,7 +496,7 @@ public class Vehicle extends Driveable implements VehicleVisual
      *            driver is braking while the gearbox sits in neutral
      */
     private Vec3 derivedGroundVelocity(ResolvedVehiclePhysics physics, Vec3 current, Vec3 forward, double targetSpeed, float traction, double grip, boolean braking, double speedScale, float yawDelta,
-        float demand)
+        float demand, float surfaceGrip)
     {
         Vec3 horizontal = new Vec3(current.x, 0D, current.z);
         double forwardSpeed = horizontal.dot(forward);
@@ -507,10 +517,12 @@ public class Vehicle extends Driveable implements VehicleVisual
             targetSpeed = 0D;
             brakeFraction = Math.max(brakeFraction, Float.isFinite(demand) ? Math.abs(demand) : 0D);
         }
-        double tractionFactor = physics.driveType().tractionFactor() * (isInWater() ? 0.35D : 1D) * Math.max(0F, traction);
+        // The surface limits what both the drive and the brakes can put down: launching and stopping lengthen on ice.
+        double surface = Mth.clamp(surfaceGrip, 0F, 1F);
+        double tractionFactor = physics.driveType().tractionFactor() * (isInWater() ? 0.35D : 1D) * Math.max(0F, traction) * surface;
         double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(forwardSpeed, power, physics.massKg(), terminal, tractionFactor, ModCommonConfig.dragFactor(level()))
             * transmission;
-        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(forwardSpeed, power, physics.massKg(), terminal, brakeFraction, ModCommonConfig.dragFactor(level()));
+        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(forwardSpeed, power, physics.massKg(), terminal, brakeFraction * surface, ModCommonConfig.dragFactor(level()));
         double newForwardSpeed = GroundPropulsionPhysics.approach(forwardSpeed, targetSpeed, acceleration, deceleration);
         newForwardSpeed = GroundPropulsionPhysics.applyTurningLoss(newForwardSpeed, yawDelta);
 
@@ -545,7 +557,9 @@ public class Vehicle extends Driveable implements VehicleVisual
      * is in neutral is that same rolling resistance plus the brake the driver is
      * standing on, so a full reversal of demand stops like the brake control.
      */
-    private Vec3 applyGroundFriction(Vec3 before, Vec3 after, float effectiveThrottle, boolean braking, boolean tracked, boolean pushed, float neutralBrakeDemand)
+    // The friction mode needs the tick's whole drive state; a parameter record would only move the list.
+    @SuppressWarnings("java:S107")
+    private Vec3 applyGroundFriction(Vec3 before, Vec3 after, float effectiveThrottle, boolean braking, boolean tracked, boolean pushed, float neutralBrakeDemand, float surfaceGrip)
     {
         double deceleration;
         if (getControllingEntity() == null || !isEngineActive() && !pushed || braking)
@@ -555,7 +569,8 @@ public class Vehicle extends Driveable implements VehicleVisual
                 Math.min(1F, neutralBrakeDemand) * VehiclePhysicsConstants.PARKED_GROUND_FRICTION_DECELERATION_MS2);
         else
             return after;
-        return applyMinimumGroundDeceleration(before, after, deceleration);
+        // Locked wheels and rolling resistance both work through the surface: a vehicle braking on ice keeps sliding.
+        return applyMinimumGroundDeceleration(before, after, deceleration * Mth.clamp(surfaceGrip, 0F, 1F));
     }
 
     /** Per-tick downward velocity gravity contributes, shared with the suspension. */

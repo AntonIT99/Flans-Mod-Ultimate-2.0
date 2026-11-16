@@ -126,7 +126,7 @@ public final class ContentLoadingConfig
 
         config.set(KEY_OVERRIDE_SOUND_LENGTHS, overrideConfiguredSoundLengths);
         config.setComment(KEY_OVERRIDE_SOUND_LENGTHS, """
-            Sound lengths such as EngineSoundLength or LoopedSoundLength tell the mod when to play a looping sound again.
+            Sound lengths such as EngineSoundLength or IdleSoundLength tell the mod when to play a looping sound again.
             Content packs often configure them only roughly, which makes looping sounds overlap or leave a gap.
             By default these values are replaced with the real length of the sound file, measured while loading the pack.
             Set this option to false if you want the values configured in the content packs to be used as they are.

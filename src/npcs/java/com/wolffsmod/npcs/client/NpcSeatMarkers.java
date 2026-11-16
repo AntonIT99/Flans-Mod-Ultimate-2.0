@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.client;
 import com.flansmodultimate.api.client.debug.FlansDebugMarkers;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.WeaponMount;
+import com.flansmodultimate.api.driveables.WeaponMuzzle;
 import com.flansmodultimate.api.projectiles.FlansProjectiles;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.sim.NpcModels;
@@ -15,12 +16,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Marks the seats of vehicle NPCs in Flan's debug mode, as Flan's marks the seats of its driveables: the driver's in blue,
- * the others in magenta, each with a line straight up, and the muzzle of each seat gun in green with a line along its
- * barrel. Client side.
+ * Marks the seats and weapons of vehicle NPCs in Flan's debug mode, as Flan's marks those of its driveables: the driver's
+ * seat in blue, the others in magenta, each with a line straight up; every barrel of the main weapon bank in cyan and of the
+ * secondary one in orange, and the muzzle of each seat gun in green, each with a line along the way it fires. Client side.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcSeatMarkers
@@ -35,6 +37,9 @@ public final class NpcSeatMarkers
     private static final float[] DRIVER = {0F, 0.45F, 1F};
     private static final float[] SEAT = {1F, 0F, 1F};
     private static final float[] GUN = {0F, 1F, 0.25F};
+    /** The main and secondary weapon banks, as Flan's marks the shoot points of its driveables. */
+    private static final float[] PRIMARY = {0F, 1F, 1F};
+    private static final float[] SECONDARY = {1F, 0.5F, 0F};
 
     /** Once a client tick. */
     public static void tick()
@@ -52,7 +57,13 @@ public final class NpcSeatMarkers
         NpcVehicleState state = NpcVehicleState.of(npc);
         FlanModelEntity model = NpcModels.flan(npc);
         IContentType definition = model == null ? null : model.getInfoType();
-        for (WeaponMount mount : state.crewSeats(npc))
+        List<WeaponMount> seats = state.crewSeats(npc);
+        if (definition != null && !seats.isEmpty())
+        {
+            markBank(npc, state, model, definition, false, PRIMARY);
+            markBank(npc, state, model, definition, true, SECONDARY);
+        }
+        for (WeaponMount mount : seats)
         {
             Optional<Vec3> offset = state.seatOffset(npc, mount);
             if (offset.isPresent())
@@ -64,6 +75,21 @@ public final class NpcSeatMarkers
                 if (definition != null && mount.gun().isPresent())
                     markGun(npc, state, model, definition, mount);
             }
+        }
+    }
+
+    /** Marks every barrel of a weapon bank where the drawn model holds it, with a line along the way it fires. */
+    private static void markBank(EntityNPCInterface npc, NpcVehicleState state, FlanModelEntity model, IContentType definition, boolean secondary, float[] colour)
+    {
+        List<WeaponMuzzle> muzzles = FlansProjectiles.getMuzzles(definition, secondary, 0, false, state.turretAim());
+        if (muzzles.isEmpty())
+            return;
+        Vec3 direction = state.barrelDirection(npc, !FlansProjectiles.aimsWithTurret(definition, secondary)).scale(BARREL_LINE);
+        for (WeaponMuzzle muzzle : muzzles)
+        {
+            Vec3 position = NpcModels.world(npc, model, muzzle.offset(), state.getHullYaw());
+            FlansDebugMarkers.point(position, TICKS, colour[0], colour[1], colour[2]);
+            FlansDebugMarkers.vector(position, direction, TICKS, colour[0], colour[1], colour[2]);
         }
     }
 

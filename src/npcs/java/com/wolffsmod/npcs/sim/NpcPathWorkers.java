@@ -218,6 +218,9 @@ public final class NpcPathWorkers
             // the server just as a synchronous search would; its done() retains them but clears the search caches.
             original.prepare(region, mob);
             original.done();
+            // The worker is handed what that read of the NPC's vehicle model, instead of reading the NPC itself.
+            if (original instanceof NpcVehiclePaths.Evaluator read && isolated instanceof NpcVehiclePaths.Evaluator handed)
+                handed.wolffsmodnpcsPresetVehiclePath(read.wolffsmodnpcsVehiclePath());
         }
         else if (original.getClass() == FlyNodeEvaluator.class)
             isolated = new FlyNodeEvaluator();

@@ -6,7 +6,7 @@ import com.flansmodultimate.api.entity.EngineSound;
 public final class NpcEngineCadence
 {
     private EngineSound playing;
-    private float remaining;
+    private int remaining;
 
     public void reset()
     {
@@ -21,11 +21,6 @@ public final class NpcEngineCadence
 
     public boolean tick(EngineSound desired, boolean moving)
     {
-        return tick(desired, moving, 1F);
-    }
-
-    public boolean tick(EngineSound desired, boolean moving, float playbackRate)
-    {
         if (!moving || desired == null)
         {
             playing = null;
@@ -36,7 +31,7 @@ public final class NpcEngineCadence
             remaining = 0;
         playing = desired;
         if (remaining > 0)
-            remaining -= Float.isFinite(playbackRate) ? Math.max(0.5F, Math.min(2F, playbackRate)) : 1F;
+            --remaining;
         if (remaining > 0)
             return false;
         remaining = Math.max(1, desired.repeatTicks());

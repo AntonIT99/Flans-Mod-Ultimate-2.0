@@ -5,7 +5,10 @@ import com.flansmodultimate.api.entity.EngineSound;
 import com.flansmodultimate.api.entity.FlansEntitySounds;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.entity.SoundRange;
+import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelKind;
+import com.wolffsmod.npcs.sim.NpcModels;
+import com.wolffsmod.npcs.sim.NpcTuning;
 import lombok.Getter;
 import lombok.Setter;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -13,6 +16,7 @@ import noppes.npcs.entity.EntityNPCInterface;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
@@ -21,6 +25,8 @@ import java.util.Optional;
 @Getter
 public final class NpcVehicleSounds
 {
+    /** Degrees of hull yaw per tick below which a turn is just settling jitter. */
+    private static final float MIN_TURN_DEGREES = 0.5F;
     private static final String NBT_KEY = "VehicleSounds";
     private static final String MOVEMENT_ENABLED = "MovementEnabled";
     private static final String VARIABLE_PITCH = "VariablePitch";
@@ -128,7 +134,28 @@ public final class NpcVehicleSounds
     {
         double distance = movementSquared(npc);
         // Ignore sub-centimetre jitter and teleport jumps; reverse, flight and swimming still count.
-        return distance > 0.0001D && distance < 256D;
+        return distance > 0.0001D && distance < 256D || turnsOnSpot(npc);
+    }
+
+    /** A tracked hull turning on the spot runs its engine like a driven vehicle, although its position stays put. */
+    static boolean turnsOnSpot(EntityNPCInterface npc)
+    {
+        float turn = Math.abs(Mth.wrapDegrees(npc.yBodyRot - npc.yBodyRotO));
+        return turn > MIN_TURN_DEGREES && turn < 90F && tracked(npc);
+    }
+
+    private static boolean tracked(EntityNPCInterface npc)
+    {
+        return switch (NpcTuning.of(npc).driveType())
+        {
+            case TRACKED, HEAVY_TRACKED -> true;
+            case WHEELED -> false;
+            default ->
+            {
+                FlanModelEntity model = NpcModels.flan(npc);
+                yield model != null && model.getInfoType() instanceof IDriveableType type && type.isTracked();
+            }
+        };
     }
 
     public static float pitch(EntityNPCInterface npc)

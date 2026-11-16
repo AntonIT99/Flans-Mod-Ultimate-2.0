@@ -21,6 +21,9 @@ import java.util.UUID;
 @ApiStatus.Experimental
 public final class FlansEntitySounds
 {
+    /** Most ticks between two {@link #loopEngineSound} calls that keep a loop playing without a break. */
+    public static final int ENGINE_LOOP_RENEW_TICKS = 10;
+
     private FlansEntitySounds()
     {}
 
@@ -129,5 +132,31 @@ public final class FlansEntitySounds
     public static void stopEngineSound(Entity source, UUID instance)
     {
         EntitySoundSupport.stop(source, instance);
+    }
+
+    /**
+     * Keeps one engine sound looping on the source for the clients tracking it. Clients loop it themselves, so it plays
+     * without the breaks that repeating {@link #playEngineSound} clips leave between repetitions. Call again at least every
+     * {@link #ENGINE_LOOP_RENEW_TICKS} ticks: clients stop a loop that is no longer renewed, and start it on players who
+     * began tracking the source since. Passing another sound replaces the loop. Server thread only.
+     *
+     * @param source
+     *            live emitting entity
+     * @param sound
+     *            engine audio, with a registered sound event ID and a finite positive radius in blocks; its repeat ticks
+     *            are ignored
+     * @param variablePitch
+     *            whether clients follow {@link IEngineSoundSource#flansmodultimateEnginePitch()}
+     * @return whether the loop was sent; false for invalid or silent sources and sound IDs
+     */
+    public static boolean loopEngineSound(Entity source, EngineSound sound, boolean variablePitch)
+    {
+        return EntitySoundSupport.loop(source, sound, variablePitch);
+    }
+
+    /** Stops the loop {@link #loopEngineSound} keeps on the source, for the clients tracking it. Server thread only. */
+    public static void stopEngineLoop(Entity source)
+    {
+        EntitySoundSupport.stopLoop(source);
     }
 }

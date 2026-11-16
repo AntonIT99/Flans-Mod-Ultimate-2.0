@@ -621,6 +621,8 @@
   "options.flansmodultimate.enableRandomSprintStance": "Включить случайную позу при беге",
   "options.flansmodultimate.enableRealisticAircraftDamage": "Включить реалистичные повреждения авиации",
   "options.flansmodultimate.enableSightDownwardMovement": "Включить движение прицела вниз",
+  "options.flansmodultimate.enableSurfaceTraction": "Включить сцепление с поверхностью",
+  "options.flansmodultimate.enableSurfaceTraction.tooltip": "Грунт под колёсами влияет на технику: лёд снижает сцепление, торможение и управляемость, а песок, снег и грязь замедляют технику, гусеничную — меньше всего.",
   "options.flansmodultimate.enableUncensoredContent": "Включить контент без цензуры",
   "options.flansmodultimate.enableWeaponSprintStance": "Включить позу оружия при беге",
   "options.flansmodultimate.enchantmentModuleEnabled": "Включить модуль зачарований",

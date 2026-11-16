@@ -95,7 +95,8 @@ import java.util.*;
  * slows down while the hull turns; its eyes sit at its gun, riders sit in its driver seat, and the client culls it by its whole model.
  * An aircraft below its attack altitude makes no attack, and an NPC without a hitbox is culled by the width it would have.
  * A vehicle or mecha climbs steps as high as its model does and slows on grades its engine cannot take; a ground vehicle
- * stays on its wheels rather than jumping, and a mecha jumps as high as its model.</li>
+ * stays on its wheels rather than jumping, and a mecha jumps as high as its model. A turret carried as the head yaw turns all
+ * round the hull, which the head would otherwise be held near on clients while the vehicle moves.</li>
  * <li>Repairs share driveable rates in part HP, including tools, timed sessions, carrier servicing and resource-backed nanobots.</li>
  * <li>Solid part boxes replace the NPC's rectangular entity collision and both incoming and outgoing pushing, so walking on a vehicle meets only its actual hull.</li>
  * <li>Senses and movement: line of sight reaches as far as NPCs may fight and can pass transparent blocks, a held target is kept
@@ -281,22 +282,25 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             callback.setReturnValue(NpcDisplayNames.name(npc.display));
     }
 
-    /** Non-respawning machines retain an inert wreck instead of vanilla's timed corpse removal. */
+    /** NPCs that never respawn retain an inert wreck for its wreck lifetime instead of vanilla's removal after the death animation. */
     @Inject(method = {"tickDeath", "m_6153_"}, at = @At("HEAD"), cancellable = true)
     private void wolffsmodnpcsKeepWreck(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (NpcWrecks.retainsBody(npc))
+        {
             callback.cancel();
+            NpcWrecks.tickRetained(npc);
+        }
         else
             wolffsmodnpcsKeepCorpse(npc, callback);
     }
 
-    /** A respawning NPC with Retain wreck leaves a copy of its dead body behind as it comes back. */
+    /** A respawning NPC with Retain wreck leaves a copy of its dead body behind as it comes back; a revived one is no wreck. */
     @Inject(method = "reset", at = @At("HEAD"))
     private void wolffsmodnpcsLeaveWreck(CallbackInfo callback)
     {
-        NpcWrecks.leaveOnRespawn((EntityNPCInterface) (Object) this);
+        NpcWrecks.onReset((EntityNPCInterface) (Object) this);
     }
 
     /**
@@ -850,6 +854,17 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         return wolffsmodnpcsDriver;
     }
 
+    /**
+     * Vanilla's body rotation control holds a moving mob's head within this many degrees of its body, on every client as
+     * well as the server. A turret whose traverse travels as the head yaw would be pulled back toward the hull on clients
+     * while the vehicle moves, and left there until the server's head yaw next changed, so it is free to turn all round.
+     */
+    @Override
+    public int getMaxHeadYRot()
+    {
+        return wolffsmodnpcsVehicleState().isTurretInHead() ? 180 : super.getMaxHeadYRot();
+    }
+
     @Override
     public void broadcastBreakEvent(EquipmentSlot slot)
     {
@@ -1313,8 +1328,9 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
             setDeltaMovement(0D, motion.y, 0D);
             return new Vec3(0D, driven.y, 0D);
         }
-        // Broken tracks, wheels and engines slow the NPC down or stop it, and so does a grade too steep for its engine.
-        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().climbFactor(npc);
+        // Broken tracks, wheels and engines slow the NPC down or stop it, and so do a grade too steep for its engine
+        // and soft ground under its wheels.
+        float factor = NpcMobility.landFactor(npc) * wolffsmodnpcsVehicleState().climbFactor(npc) * wolffsmodnpcsVehicleState().surfaceFactor(npc);
         return factor == 1F ? driven : new Vec3(driven.x * factor, driven.y, driven.z * factor);
     }
 

@@ -24,9 +24,14 @@ public final class NpcModelPoses
     /** Blocks per tick a walking mob settles at, per unit of its speed squared. */
     private static final float GROUND_SPEED_FACTOR = 2.158F;
 
-    /** @return the pose to draw, or null to draw the model at rest because the NPC's animation is switched off */
+    /**
+     * @param partialTick
+     *            how far the frame is between the last tick and this one, which the turret and seat guns are drawn at, as the
+     *            hull is
+     * @return the pose to draw, or null to draw the model at rest because the NPC's animation is switched off
+     */
     @Nullable
-    public static ModelPose of(EntityNPCInterface npc)
+    public static ModelPose of(EntityNPCInterface npc, float partialTick)
     {
         NpcVehicleState state = NpcVehicleState.of(npc);
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
@@ -34,7 +39,7 @@ public final class NpcModelPoses
             return null;
         List<MountAim> seats = new ArrayList<>(state.seatCount());
         for (int seat = 0; seat < state.seatCount(); seat++)
-            seats.add(state.seatAim(seat));
+            seats.add(state.seatAim(seat, partialTick));
         boolean running = options.enabled(Feature.ENGINE_RUNNING) && !npc.isKilled();
         float speed = Math.max(0.01F, npc.ais.getWalkingSpeed() / 20F);
         float cruise = GROUND_SPEED_FACTOR * speed * speed;
@@ -52,7 +57,7 @@ public final class NpcModelPoses
         // Only aircraft have gear to draw, so only they look for the ground beneath them.
         boolean dynamic = options.enabled(Feature.GEAR_DYNAMIC) && state.kind() == FlanModelKind.PLANE;
         boolean gearDown = dynamic ? state.dynamicGearDown(npc) : !options.enabled(Feature.GEAR_UP);
-        return new ModelPose(state.turretAim(), seats, throttle, travel, state.getTurn(), options.enabled(Feature.DOORS_OPEN), gearDown, options.enabled(Feature.WINGS_FOLDED), running,
+        return new ModelPose(state.turretAim(partialTick), seats, throttle, travel, state.getTurn(), options.enabled(Feature.DOORS_OPEN), gearDown, options.enabled(Feature.WINGS_FOLDED), running,
             state.getShots(), state.getBarrel());
     }
 }

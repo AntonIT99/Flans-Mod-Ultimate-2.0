@@ -57,15 +57,7 @@ public class FlansOptionsList extends ContainerObjectSelectionList<FlansOptionsL
                 AbstractWidget input = option.widgetFactory().apply(INPUT_WIDTH);
                 widgets.put(option, input);
                 Component caption = Component.literal(minecraft.font.plainSubstrByWidth(option.label().getString(), INPUT_LABEL_WIDTH));
-                StringWidget label = new StringWidget(INPUT_LABEL_WIDTH, 20, caption, minecraft.font)
-                {
-                    @Override
-                    public void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
-                    {
-                        setTooltip(input.getTooltip());
-                        super.renderWidget(graphics, mouseX, mouseY, partialTick);
-                    }
-                }.alignLeft();
+                StringWidget label = new InputLabel(caption, input).alignLeft();
                 label.setX(width / 2 - ROW_HALF_WIDTH);
                 input.setX(label.getX() + INPUT_LABEL_WIDTH + 10);
                 addEntry(new OptionEntry(List.of(label, input)));
@@ -170,6 +162,28 @@ public class FlansOptionsList extends ContainerObjectSelectionList<FlansOptionsL
         public List<? extends NarratableEntry> narratables()
         {
             return List.of();
+        }
+    }
+
+    /**
+     * Caption of a direct input field that shows the field's tooltip. A named class with an explicit constructor: anonymous subclasses fail to compile against binary
+     * Minecraft artifacts, whose constructor parameters all share one name.
+     */
+    private final class InputLabel extends StringWidget
+    {
+        private final AbstractWidget input;
+
+        private InputLabel(Component caption, AbstractWidget input)
+        {
+            super(INPUT_LABEL_WIDTH, 20, caption, minecraft.font);
+            this.input = input;
+        }
+
+        @Override
+        public void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+        {
+            setTooltip(input.getTooltip());
+            super.renderWidget(graphics, mouseX, mouseY, partialTick);
         }
     }
 

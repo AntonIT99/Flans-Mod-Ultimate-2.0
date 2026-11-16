@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.sound;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.entity.EntityDistancePolicy;
 import com.flansmodultimate.common.guns.GunSoundPermissions.Kind;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.effects.PacketRequestPlaySound;
@@ -38,6 +39,9 @@ public final class SoundHelper
 
     /** Looping sounds attached to an entity, keyed by entity id and channel name. */
     private static final Map<String, EntitySoundInstance> loopingEntitySounds = new HashMap<>();
+
+    /** Ticks left before a leased looping sound stops, keyed like {@link #loopingEntitySounds}. */
+    private static final Map<String, Integer> loopLeases = new HashMap<>();
 
     /** Blocks sound covers in a tick, about 343 metres a second. */
     private static final double SOUND_BLOCKS_PER_TICK = 17D;
@@ -78,6 +82,47 @@ public final class SoundHelper
         // already out of range. Forgetting those lets the owner start the loop again as it comes back
         // into earshot, instead of staying silent for good after driving away once.
         loopingEntitySounds.values().removeIf(soundInstance -> soundInstance.isStopped() || soundInstance.isSourceGone() || !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
+
+        Iterator<Map.Entry<String, Integer>> leases = loopLeases.entrySet().iterator();
+        while (leases.hasNext())
+        {
+            Map.Entry<String, Integer> lease = leases.next();
+            int ticksLeft = lease.getValue() - 1;
+            if (ticksLeft > 0)
+            {
+                lease.setValue(ticksLeft);
+                continue;
+            }
+            leases.remove();
+            stopLoopingEntitySound(lease.getKey());
+        }
+    }
+
+    /**
+     * Keeps a looping sound playing on an entity like {@link #setLoopingEntitySound}, but only for a limited number of
+     * ticks unless renewed. The owner renews it from afar, so a stop that never arrives cannot leave it playing.
+     */
+    public static void leaseLoopingEntitySound(Entity source, String channel, String sound, float range, int leaseTicks)
+    {
+        leaseLoopingEntitySound(source, channel, sound, range, leaseTicks, false);
+    }
+
+    /**
+     * Leases a looping sound like {@link #leaseLoopingEntitySound(Entity, String, String, float, int)}, with its pitch
+     * following the source's {@link com.flansmodultimate.api.entity.IEngineSoundSource} engine pitch when asked to.
+     */
+    public static void leaseLoopingEntitySound(Entity source, String channel, String sound, float range, int leaseTicks, boolean enginePitch)
+    {
+        setLoopingEntitySound(source, channel, sound, range, false);
+        String key = loopingSoundKey(source, channel);
+        EntitySoundInstance playing = loopingEntitySounds.get(key);
+        if (playing != null)
+        {
+            playing.setExternalEnginePitch(enginePitch);
+            loopLeases.put(key, Math.max(1, leaseTicks));
+        }
+        else
+            loopLeases.remove(key);
     }
 
     /**
@@ -97,34 +142,40 @@ public final class SoundHelper
      */
     public static void setLoopingEntitySound(Entity source, String channel, @Nullable String sound, float range, boolean varyPitch)
     {
-        String key = source.getId() + ":" + channel;
+        String key = loopingSoundKey(source, channel);
         EntitySoundInstance playing = loopingEntitySounds.get(key);
 
         if (StringUtils.isBlank(sound) || source.isRemoved())
         {
-            if (playing != null)
-            {
-                playing.requestStop();
-                Minecraft.getInstance().getSoundManager().stop(playing);
-                loopingEntitySounds.remove(key);
-            }
+            stopLoopingEntitySound(key);
             return;
         }
 
-        if (playing != null && playing.isSound(sound) && !playing.isStopped())
+        if (playing != null && !playing.isStopped() && (playing.isSound(sound) || getSoundEvent(sound).map(event -> event.getLocation().equals(playing.getLocation())).orElse(false)))
         {
             playing.setVaryPitch(varyPitch);
             return;
         }
 
+        stopLoopingEntitySound(key);
+
+        playEntitySound(source, sound, range, true, varyPitch).ifPresent(soundInstance -> loopingEntitySounds.put(key, soundInstance));
+    }
+
+    private static String loopingSoundKey(Entity source, String channel)
+    {
+        return source.getId() + ":" + channel;
+    }
+
+    private static void stopLoopingEntitySound(String key)
+    {
+        loopLeases.remove(key);
+        EntitySoundInstance playing = loopingEntitySounds.remove(key);
         if (playing != null)
         {
             playing.requestStop();
             Minecraft.getInstance().getSoundManager().stop(playing);
-            loopingEntitySounds.remove(key);
         }
-
-        playEntitySound(source, sound, range, true, varyPitch).ifPresent(soundInstance -> loopingEntitySounds.put(key, soundInstance));
     }
 
     /** Plays a sound once, following the entity that emits it rather than staying where it started. */
@@ -180,7 +231,7 @@ public final class SoundHelper
         getSoundEvent(sound).ifPresent(soundEvent ->
         {
             RandomSource r = RandomSource.create(instanceUUID.getMostSignificantBits() ^ instanceUUID.getLeastSignificantBits());
-            float volume = SoundHelper.getVolumeFromRange(range, silenced);
+            float volume = cancellable && source != null ? getFollowingVolume(source, range, silenced) : getVolumeFromRange(range, silenced);
             float pitchBase = distort ? (1.0F / (r.nextFloat() * 0.4F + 0.8F)) : 1.0F;
             float pitch = pitchBase * (silenced ? 2.0F : 1.0F);
 
@@ -268,5 +319,37 @@ public final class SoundHelper
     {
         float volume = Math.max(1F, range / 16F);
         return silenced ? volume / 2F : volume;
+    }
+
+    /**
+     * The volume of a sound that follows an entity. Such a sound stops as soon as this client stops tracking its source,
+     * and the server view distance usually puts that edge well inside the sound's range: a plane heard over 512 blocks
+     * drops out at about 160 while still loud. Fading out over the distance the source can actually be heard from
+     * instead makes it grow quieter all the way to that edge.
+     */
+    static float getFollowingVolume(Entity source, float range, boolean silenced)
+    {
+        return getVolumeFromRange(audibleRange(range, trackingHorizon(source), Minecraft.getInstance().options.getEffectiveRenderDistance()), silenced);
+    }
+
+    /** The sound range, cut down to how far the client can still have the source: its tracking range within the loaded chunks. */
+    static float audibleRange(float range, int trackingRange, int chunkRadius)
+    {
+        return Math.min(range, Math.min(trackingRange, chunkRadius * 16));
+    }
+
+    /** The tracking range of the source in blocks, raised by its passengers as the server's tracker does. */
+    private static int trackingHorizon(Entity source)
+    {
+        int range = trackingRange(source);
+        for (Entity passenger : source.getIndirectPassengers())
+            range = Math.max(range, trackingRange(passenger));
+        return range;
+    }
+
+    private static int trackingRange(Entity entity)
+    {
+        int range = EntityDistancePolicy.trackingRange(entity);
+        return range >= 0 ? range : entity.getType().clientTrackingRange() * 16;
     }
 }

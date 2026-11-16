@@ -58,6 +58,10 @@ public final class NpcDriving
     private static final double ARRIVED = 0.3D;
     /** Ticks of travel at its current speed a vehicle steers ahead for on a straight, when that reaches beyond its lookahead. */
     private static final double STEER_TICKS = 8D;
+    /** Blocks short of a drop it does not drive down that the front of a hull comes to a halt. */
+    private static final double LEDGE_MARGIN = 0.5D;
+    /** Blocks below the vehicle from which a path node counts as leading down. */
+    private static final double DESCENT = 0.6D;
     /** Farthest, in blocks, a vehicle looks along its path for a corner to brake for. */
     private static final double MAX_CORNER_SCAN = 64D;
     /** Throttle response without a model to take it from, per tick. */
@@ -283,10 +287,20 @@ public final class NpcDriving
      *            blocks from the end of its path at which it comes to a halt
      * @param topSpeed
      *            blocks per tick it moves at full throttle; 0 when unknown, which leaves it at speed up to its goal
+     * @param ledgeDistance
+     *            blocks it may still travel before a drop it does not drive down; {@link NpcLedges#NONE} without one
      */
     public record Situation(float hullYaw, float wantedYaw, double goalDistance, float cornerAngle, double cornerDistance, double lookahead, double speed, float limit, double haltDistance,
-        double topSpeed)
-    {}
+        double topSpeed, double ledgeDistance)
+    {
+        // One argument per thing the vehicle faces, as the record itself has them.
+        @SuppressWarnings("java:S107")
+        public Situation(float hullYaw, float wantedYaw, double goalDistance, float cornerAngle, double cornerDistance, double lookahead, double speed, float limit, double haltDistance,
+            double topSpeed)
+        {
+            this(hullYaw, wantedYaw, goalDistance, cornerAngle, cornerDistance, lookahead, speed, limit, haltDistance, topSpeed, NpcLedges.NONE);
+        }
+    }
 
     /**
      * The decision for this tick.
@@ -299,8 +313,15 @@ public final class NpcDriving
     public record Command(float hullYaw, float throttle)
     {}
 
-    /** Where the path leads from here. */
-    private record Route(Vec3 steer, double goalDistance, float cornerAngle, double cornerDistance, double haltDistance)
+    /**
+     * Where the path leads from here.
+     *
+     * @param pathed
+     *            whether a path leads there, rather than a goal pushing the NPC directly
+     * @param descends
+     *            whether the path ahead leads down, so that a drop in its way is meant
+     */
+    private record Route(Vec3 steer, double goalDistance, float cornerAngle, double cornerDistance, double haltDistance, boolean pathed, boolean descends)
     {}
 
     /** Steers and sets the throttle for one tick with somewhere to go. */
@@ -334,8 +355,33 @@ public final class NpcDriving
         float free = reversing ? share * settings.reverseShare() : share;
         float wanted = Math.min(free, arrival(situation.goalDistance() - situation.haltDistance(), situation.topSpeed(), brake));
         arriving = wanted < free;
+        // A drop it does not drive down is braked for like a wall it can see: down to a halt short of the edge.
+        if (situation.ledgeDistance() < NpcLedges.NONE)
+            wanted = Math.min(wanted, situation.ledgeDistance() <= 0D ? 0F : approachLimit(situation.ledgeDistance(), situation.topSpeed(), brake, 0F));
         throttle = approach(reversing ? -wanted : wanted, settings, false, situation.speed(), situation.topSpeed());
         return new Command(hull, throttle);
+    }
+
+    /**
+     * @param stopping
+     *            blocks the vehicle needs to come to a halt
+     * @return blocks the vehicle may still travel before the front of its hull reaches a drop it does not drive down;
+     *         {@link NpcLedges#NONE} without one, for anything but a ground vehicle model on the ground, or where its path
+     *         leads down on purpose
+     */
+    private double ledgeDistance(EntityNPCInterface npc, NpcVehicleState state, float hullYaw, Route route, double stopping, NpcWeaponOptions options)
+    {
+        if (route.descends() || !options.enabled(Feature.AVOID_LEDGES) || state.kind() != FlanModelKind.VEHICLE || !npc.onGround() || npc.isInWater())
+            return NpcLedges.NONE;
+        double hull = state.reach(npc);
+        double reach = hull + LEDGE_MARGIN + 1D + stopping;
+        // A path answers for the ground beyond the point steered for; only a drop on the way there is in the way.
+        if (route.pathed())
+            reach = Math.min(reach, horizontal(npc.position(), route.steer()));
+        // At a standstill the direction last decided on is the one it sets off in.
+        boolean backward = throttle < 0F || throttle == 0F && reversing;
+        double distance = NpcLedges.ahead(npc, backward ? hullYaw + 180F : hullYaw, reach);
+        return distance == NpcLedges.NONE ? NpcLedges.NONE : distance - hull - LEDGE_MARGIN;
     }
 
     /** Smooths yaw demand while enforcing the current rolling/yaw limits, including during recovery. */
@@ -485,8 +531,9 @@ public final class NpcDriving
         NpcVehicleState state = NpcVehicleState.of(npc);
         float limit = state.getGunnery().haltsToFire(npc, state, options) ? 0F : followLimit;
         // The NPC's own motion is no measure of its speed here: before it moves, ground friction has already been taken off it.
-        Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), lookahead, speed, limit, route.haltDistance(), topSpeed), settings,
-            tuning.get(Value.STEERING_RESPONSE), tuning.get(Value.STATIONARY_TURN) != 0);
+        double ledge = ledgeDistance(npc, state, hullYaw, route, settings.stoppingDistance(speed, topSpeed), options);
+        Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), lookahead, speed, limit, route.haltDistance(), topSpeed, ledge),
+            settings, tuning.get(Value.STEERING_RESPONSE), tuning.get(Value.STATIONARY_TURN) != 0);
         watchProgress(npc, Mth.wrapDegrees(wanted - command.hullYaw()), settings.accelerationAt(speed, topSpeed));
         return command;
     }
@@ -595,6 +642,12 @@ public final class NpcDriving
             return model.climbFactor(climbDegrees);
         }
 
+        @Override
+        public double descentFactor(double descentDegrees)
+        {
+            return model.descentFactor(descentDegrees);
+        }
+
         private double scale()
         {
             return powerKw / model.enginePowerKw().orElseThrow() * (model.massKg().orElseThrow() / mass);
@@ -699,6 +752,7 @@ public final class NpcDriving
         double travelled = horizontal(position, steer);
         float cornerAngle = 0F;
         double cornerDistance = Double.MAX_VALUE;
+        boolean descends = steer.y < position.y - DESCENT;
         Vec3 from = steer;
         for (int node = index + 1; node < path.getNodeCount() && travelled < scan; node++)
         {
@@ -714,12 +768,13 @@ public final class NpcDriving
             if (cornerAngle == 0F && Math.abs(to.y - from.y) < 0.6D && travelled + length <= lookahead)
                 steer = to;
             travelled += length;
+            descends |= to.y < position.y - DESCENT;
             from = to;
         }
         Vec3 end = path.getEntityPosAtNode(npc, path.getNodeCount() - 1);
         // The navigator calls the path done as soon as the NPC's body reaches its last node.
         float width = npc.getBbWidth();
-        return new Route(steer, horizontal(position, end), cornerAngle, cornerDistance, Math.max(stopDistance, width > 0.75F ? width / 2F : 0.75F - width / 2F));
+        return new Route(steer, horizontal(position, end), cornerAngle, cornerDistance, Math.max(stopDistance, width > 0.75F ? width / 2F : 0.75F - width / 2F), true, descends);
     }
 
     /** Without a path, a goal may still push the NPC directly: toward a wanted position, or sideways round a target. */
@@ -730,12 +785,12 @@ public final class NpcDriving
         {
             Vec3 wanted = new Vec3(npc.getMoveControl().getWantedX(), npc.getMoveControl().getWantedY(), npc.getMoveControl().getWantedZ());
             double distance = horizontal(position, wanted);
-            return distance < ARRIVED ? null : new Route(wanted, distance, 0F, Double.MAX_VALUE, ARRIVED);
+            return distance < ARRIVED ? null : new Route(wanted, distance, 0F, Double.MAX_VALUE, ARRIVED, false, false);
         }
         if (npc.zza == 0F && npc.xxa == 0F)
             return null;
         Vec3 direction = new Vec3(npc.xxa, 0D, npc.zza).normalize().yRot((float) Math.toRadians(-npc.getYRot()));
-        return new Route(position.add(direction.scale(lookahead)), Double.MAX_VALUE, 0F, Double.MAX_VALUE, 0D);
+        return new Route(position.add(direction.scale(lookahead)), Double.MAX_VALUE, 0F, Double.MAX_VALUE, 0D, false, false);
     }
 
     private static double horizontal(Vec3 from, Vec3 to)

@@ -621,6 +621,8 @@
   "options.flansmodultimate.enableRandomSprintStance": "Activer la posture de sprint aléatoire",
   "options.flansmodultimate.enableRealisticAircraftDamage": "Activer les dégâts réalistes des aéronefs",
   "options.flansmodultimate.enableSightDownwardMovement": "Activer le mouvement descendant du viseur",
+  "options.flansmodultimate.enableSurfaceTraction": "Activer la traction selon la surface",
+  "options.flansmodultimate.enableSurfaceTraction.tooltip": "Le sol sous les roues agit sur les véhicules : la glace réduit l'adhérence, le freinage et la direction, tandis que le sable, la neige et la boue ralentissent les véhicules, les chenillés le moins.",
   "options.flansmodultimate.enableUncensoredContent": "Activer le contenu non censuré",
   "options.flansmodultimate.enableWeaponSprintStance": "Activer la posture d’arme en sprint",
   "options.flansmodultimate.enchantmentModuleEnabled": "Activer le module d’enchantements",

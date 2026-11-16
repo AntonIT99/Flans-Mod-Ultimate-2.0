@@ -53,6 +53,19 @@ public final class TrackLinkAnimation
         return left ? leftAngles : rightAngles;
     }
 
+    /** A frozen copy of the current link angles, for geometry that has left the vehicle and must stop animating. */
+    public TrackLinkAnimation snapshot()
+    {
+        TrackLinkAnimation copy = new TrackLinkAnimation();
+        copy.configuredType = configuredType;
+        copy.leftPath = leftPath;
+        copy.rightPath = rightPath;
+        copy.leftAngles = leftAngles.clone();
+        copy.rightAngles = rightAngles.clone();
+        copy.seeded = seeded;
+        return copy;
+    }
+
     /**
      * Advances one animation tick. {@code elapsed} covers ticks skipped while the
      * vehicle was not rendered, so a track that comes back into view catches up

@@ -64,4 +64,15 @@ public interface GroundPropulsion
     {
         return 1D;
     }
+
+    /**
+     * @param descentDegrees
+     *            grade the vehicle drives down, in degrees along its travel; zero or below on level ground and uphill
+     * @return share of its speed the vehicle keeps on that descent, from 0 to 1: one on a complete real-world profile is
+     *         held back on its engine down steep grades, as the vehicle is; a legacy response is unaffected
+     */
+    default double descentFactor(double descentDegrees)
+    {
+        return 1D;
+    }
 }

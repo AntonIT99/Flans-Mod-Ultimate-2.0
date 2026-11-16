@@ -942,6 +942,8 @@
   "options.flansmodultimate.enableRandomSprintStance": "Włącz losową postawę sprintu",
   "options.flansmodultimate.enableRealisticAircraftDamage": "Włącz realistyczne uszkodzenia statków powietrznych",
   "options.flansmodultimate.enableSightDownwardMovement": "Włącz ruch celownika w dół",
+  "options.flansmodultimate.enableSurfaceTraction": "Włącz przyczepność nawierzchni",
+  "options.flansmodultimate.enableSurfaceTraction.tooltip": "Podłoże pod kołami wpływa na pojazdy: lód zmniejsza przyczepność, hamowanie i skręcanie, a piasek, śnieg i błoto spowalniają pojazdy, gąsienicowe najmniej.",
   "options.flansmodultimate.enableUncensoredContent": "Włącz zawartość bez cenzury",
   "options.flansmodultimate.enableWeaponSprintStance": "Włącz postawę broni podczas sprintu",
   "options.flansmodultimate.enchantmentModuleEnabled": "Włącz moduł zaklęć",

@@ -134,6 +134,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Opt-in for the built-in three-frame flash on every fired gun or shell muzzle. */
     protected boolean defaultMuzzleFlash;
     protected boolean shellMuzzleFlash;
+    /** Per-bank opt-outs from the default flash, e.g. for a coaxial cannon that should only emit its shoot particles. */
+    protected boolean muzzleFlashPrimary = true;
+    protected boolean muzzleFlashSecondary = true;
     protected boolean alternatePrimary;
     protected boolean alternateSecondary;
     protected float shootDelayPrimary = -1F;
@@ -774,6 +777,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);
         defaultMuzzleFlash = "DefaultFlash".equalsIgnoreCase(readValue("FlashModel", StringUtils.EMPTY, file));
         shellMuzzleFlash = readValue("ShellMuzzleFlash", shellMuzzleFlash, file);
+        muzzleFlashPrimary = readValue("MuzzleFlashPrimary", muzzleFlashPrimary, file);
+        muzzleFlashSecondary = readValue("MuzzleFlashSecondary", muzzleFlashSecondary, file);
         damageMultiplierPrimary = readValue("DamageMultiplierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DamageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
@@ -1756,6 +1761,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public EnumFireMode fireMode(boolean secondaryWeapon)
     {
         return secondaryWeapon ? modeSecondary : modePrimary;
+    }
+
+    public boolean hasDefaultMuzzleFlash(boolean secondaryWeapon)
+    {
+        return defaultMuzzleFlash && (secondaryWeapon ? muzzleFlashSecondary : muzzleFlashPrimary);
     }
 
     public EnumWeaponType weaponType(boolean secondaryWeapon)

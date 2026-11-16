@@ -213,7 +213,11 @@ public final class NpcTuning
          * Seconds a vehicle fights a target further off than it would close to before it puts the crew it carries down; 0
          * puts them down as soon as it has one to fight. Crew it has closed with its target get out whatever this says.
          */
-        DISEMBARK_DELAY(5, 0, 120);
+        DISEMBARK_DELAY(5, 0, 120),
+        /** Index into {@link WreckLifetime}: whether a retained wreck lasts as long as Flan's driveable wrecks or this NPC's Wreck time. */
+        WRECK_LIFETIME(0, 0, WreckLifetime.values().length - 1),
+        /** Seconds a retained wreck of the NPC stays with a custom wreck lifetime; 0 keeps it until it is removed. */
+        WRECK_TIME(300, 0, 86400);
 
         private final int fallback;
         private final int minimum;
@@ -342,6 +346,15 @@ public final class NpcTuning
         HELICOPTER,
         /** As a helicopter when the NPC shows a rotorcraft model, otherwise as a plane; as Normal without an aircraft model. */
         AUTO
+    }
+
+    /** How long a retained wreck stays. Saves hold the index, so a new choice goes at the end. */
+    public enum WreckLifetime
+    {
+        /** The {@code driveableWreckLifetime} of Flan's common configuration, which its driveable wrecks last. */
+        SERVER_DEFAULT,
+        /** The NPC's own Wreck time. */
+        CUSTOM
     }
 
     /** What an NPC that uses up its ammunition does once the gun it holds has none left. */

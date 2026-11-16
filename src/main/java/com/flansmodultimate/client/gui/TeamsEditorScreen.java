@@ -19,6 +19,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -367,22 +368,13 @@ public final class TeamsEditorScreen extends Screen
         }
     }
 
-    @SuppressWarnings("java:S110") // Minecraft RemotePlayer has a fixed vanilla inheritance hierarchy.
     private void equipment()
     {
         button(tr("inventory"), left + 8, top + 55, 95, () -> picker(true));
         button(tr("catalogue"), left + 108, top + 55, 95, () -> picker(false));
         button(tr("capture"), left + 208, top + 55, Math.max(88, panelWidth - 216), this::capture);
         if (minecraft != null && minecraft.level != null && preview == null)
-            preview = new RemotePlayer(minecraft.level, new GameProfile(UUID.randomUUID(), "Editor"))
-            {
-                @Override
-                @NotNull
-                public ResourceLocation getSkinTextureLocation()
-                {
-                    return previewSkin == null ? super.getSkinTextureLocation() : previewSkin;
-                }
-            };
+            preview = new PreviewPlayer(minecraft.level);
     }
 
     private void picker(boolean inventory)
@@ -1030,6 +1022,26 @@ public final class TeamsEditorScreen extends Screen
         }
         if (panelHeight >= 270)
             graphics.drawString(font, tr("equipment_hint"), left + 8, top + 210, 0xAABBDD);
+    }
+
+    /**
+     * Equipment preview wearing the edited skin. A named class with an explicit constructor: anonymous subclasses fail to compile against binary Minecraft artifacts,
+     * whose constructor parameters all share one name.
+     */
+    @SuppressWarnings("java:S110") // Minecraft RemotePlayer has a fixed vanilla inheritance hierarchy.
+    private final class PreviewPlayer extends RemotePlayer
+    {
+        private PreviewPlayer(ClientLevel level)
+        {
+            super(level, new GameProfile(UUID.randomUUID(), "Editor"));
+        }
+
+        @Override
+        @NotNull
+        public ResourceLocation getSkinTextureLocation()
+        {
+            return previewSkin == null ? super.getSkinTextureLocation() : previewSkin;
+        }
     }
 
     private final class ColourSlider extends AbstractSliderButton

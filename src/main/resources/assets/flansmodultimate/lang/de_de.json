@@ -942,6 +942,8 @@
   "options.flansmodultimate.enableRandomSprintStance": "Zufällige Sprinthaltung",
   "options.flansmodultimate.enableRealisticAircraftDamage": "Realistischer Luftfahrzeugschaden",
   "options.flansmodultimate.enableSightDownwardMovement": "Visier senkt sich in Bewegung",
+  "options.flansmodultimate.enableSurfaceTraction": "Untergrund-Traktion aktivieren",
+  "options.flansmodultimate.enableSurfaceTraction.tooltip": "Der Untergrund unter den Rädern wirkt auf Fahrzeuge: Eis verringert Grip, Bremsen und Lenkung, während Sand, Schnee und Schlamm Fahrzeuge verlangsamen, Kettenfahrzeuge am wenigsten.",
   "options.flansmodultimate.enableUncensoredContent": "Unzensierte Inhalte aktivieren",
   "options.flansmodultimate.enableWeaponSprintStance": "Waffen-Sprinthaltung aktivieren",
   "options.flansmodultimate.enchantmentModuleEnabled": "Verzauberungsmodul aktiviert",

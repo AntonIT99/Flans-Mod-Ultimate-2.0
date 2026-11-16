@@ -196,10 +196,11 @@ public record CommonConfigSnapshot(
     double afterburnerPistonDryPowerRatio,
     double afterburnerThrottleDetent,
     double afterburnerSpoolSeconds,
-    double afterburnerFuelMultiplier
+    double afterburnerFuelMultiplier,
+    boolean enableSurfaceTraction
 )
 {
-    public static final int CURRENT_VERSION = 57;
+    public static final int CURRENT_VERSION = 58;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -403,6 +404,7 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.afterburnerThrottleDetent);
         buf.writeDouble(s.afterburnerSpoolSeconds);
         buf.writeDouble(s.afterburnerFuelMultiplier);
+        buf.writeBoolean(s.enableSurfaceTraction);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -597,7 +599,8 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
-            buf.readDouble()
+            buf.readDouble(),
+            buf.readBoolean()
         );
     }
 

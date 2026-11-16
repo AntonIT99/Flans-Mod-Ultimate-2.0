@@ -621,6 +621,8 @@
   "options.flansmodultimate.enableRandomSprintStance": "Abilita postura di corsa casuale",
   "options.flansmodultimate.enableRealisticAircraftDamage": "Abilita danni realistici agli aeromobili",
   "options.flansmodultimate.enableSightDownwardMovement": "Abilita movimento del mirino verso il basso",
+  "options.flansmodultimate.enableSurfaceTraction": "Attiva trazione del terreno",
+  "options.flansmodultimate.enableSurfaceTraction.tooltip": "Il terreno sotto le ruote influisce sui veicoli: il ghiaccio riduce aderenza, frenata e sterzo, mentre sabbia, neve e fango rallentano i veicoli, i cingolati meno di tutti.",
   "options.flansmodultimate.enableUncensoredContent": "Abilita contenuti non censurati",
   "options.flansmodultimate.enableWeaponSprintStance": "Abilita postura dell'arma in corsa",
   "options.flansmodultimate.enchantmentModuleEnabled": "Abilita modulo degli incantesimi",

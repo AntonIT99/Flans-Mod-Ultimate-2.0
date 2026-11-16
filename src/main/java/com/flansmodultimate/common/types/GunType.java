@@ -583,10 +583,11 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected int warmupSoundLength = 20;
     /**
-     * Played in a loop until player stops holding shoot
+     * Played in a loop until player stops holding shoot. Clients loop it seamlessly themselves.
      */
     @Getter
     protected String loopedSound;
+    /** Legacy repeat interval of the looped sound, no longer needed now that clients loop it themselves. */
     @Getter
     protected int loopedSoundLength = 20;
     /**
@@ -1108,7 +1109,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         loopedSoundLength = readValue("SpinSoundLength", loopedSoundLength, file);
         lockOnSoundTime = readValue("LockOnSoundTime", lockOnSoundTime, file);
         distantSoundRange = readValue("DistantSoundRange", distantSoundRange, file);
-        useLoopingSounds = StringUtils.isNotBlank(loopedSound);
+        useLoopingSounds = StringUtils.isNotBlank(warmupSound) || StringUtils.isNotBlank(loopedSound) || StringUtils.isNotBlank(cooldownSound);
 
         registerSoundTimer("SoundLength", () -> shootSound, () -> shootSoundLength, length -> shootSoundLength = length);
         registerSoundTimer("IdleSoundLength", () -> idleSound, () -> idleSoundLength, length -> idleSoundLength = length);

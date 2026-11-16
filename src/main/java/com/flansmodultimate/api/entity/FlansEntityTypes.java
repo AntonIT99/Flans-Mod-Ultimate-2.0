@@ -10,12 +10,14 @@ import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.parts.PartArmor;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.MechaEquipmentSupport;
+import com.flansmodultimate.common.driveables.physics.SurfaceTraction;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
 import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +26,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -231,6 +234,24 @@ public final class FlansEntityTypes
     public static Optional<GroundPropulsion> getGroundPropulsion(IContentType type)
     {
         return GroundPropulsionProfiles.of(type);
+    }
+
+    /**
+     * The share of its speed the ground a vehicle of this definition stands on leaves it: 1 on firm ground or with
+     * surface traction switched off, less on sand, snow, mud and similar soft ground, with tracked and all-wheel-drive
+     * layouts recovering part of the penalty. Either side after content loading.
+     *
+     * @param type
+     *            selected definition
+     * @param standingOn
+     *            the block the vehicle stands on
+     * @return a factor in {@code (0, 1]}; 1 for anything but a ground vehicle
+     */
+    public static float getSurfaceSpeedFactor(IContentType type, BlockState standingOn)
+    {
+        if (standingOn == null || !ModCommonConfig.surfaceTractionEnabled() || !(type instanceof VehicleType vehicle))
+            return 1F;
+        return SurfaceTraction.sample(SurfaceTraction.classify(standingOn), vehicle.getResolvedPhysics().driveType()).speedFactor();
     }
 
     /**
@@ -561,6 +582,12 @@ public final class FlansEntityTypes
     public static Optional<Entity> spawnDriveable(ServerLevel level, IContentType type, Vec3 position, float yaw, float health)
     {
         return spawnDriveable(level, type, position, yaw, health, 0);
+    }
+
+    /** @return ticks a destroyed driveable stays as a wreck, from the {@code driveableWreckLifetime} config; 0 when wrecks are removed at once */
+    public static int getDriveableWreckLifetimeTicks()
+    {
+        return com.flansmodultimate.config.ModCommonConfig.driveableWreckLifetimeTicks();
     }
 
     /**

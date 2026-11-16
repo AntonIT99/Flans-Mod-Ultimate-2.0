@@ -621,6 +621,8 @@
   "options.flansmodultimate.enableRandomSprintStance": "무작위 질주 자세 활성화",
   "options.flansmodultimate.enableRealisticAircraftDamage": "현실적 항공기 손상 활성화",
   "options.flansmodultimate.enableSightDownwardMovement": "조준기 하향 이동 활성화",
+  "options.flansmodultimate.enableSurfaceTraction": "지면 접지력 활성화",
+  "options.flansmodultimate.enableSurfaceTraction.tooltip": "바퀴 아래 지면이 차량에 영향을 줍니다. 얼음은 접지력·제동·조향을 떨어뜨리고, 모래·눈·진흔은 차량을 느리게 하며 궤도 차량이 가장 영향을 적게 받습니다.",
   "options.flansmodultimate.enableUncensoredContent": "무검열 콘텐츠 활성화",
   "options.flansmodultimate.enableWeaponSprintStance": "질주 시 무기 자세 활성화",
   "options.flansmodultimate.enchantmentModuleEnabled": "마법 부여 모듈 활성화",

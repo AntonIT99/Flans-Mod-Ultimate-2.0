@@ -14,7 +14,7 @@ class WeaponMountPartTest
 {
     private static WeaponMount mount(boolean onTurret, String part)
     {
-        return new WeaponMount(1, false, onTurret, MountAim.REST, MountAim.REST, 1F, 1F, Vec3.ZERO, Vec3.ZERO, Optional.empty(), Vec3.ZERO, Optional.empty(), part);
+        return new WeaponMount(1, false, onTurret, MountAim.REST, MountAim.REST, 1F, 1F, Vec3.ZERO, Vec3.ZERO, Optional.empty(), Vec3.ZERO, Vec3.ZERO, part);
     }
 
     @Test

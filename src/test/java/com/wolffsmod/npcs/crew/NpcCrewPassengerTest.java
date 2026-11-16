@@ -289,7 +289,7 @@ class NpcCrewPassengerTest
         when(vehicle.getPassengers()).thenReturn(List.of(player));
         when(player.getVehicle()).thenReturn(vehicle);
         WeaponMount turretGunner = new WeaponMount(1, false, true, MountAim.REST, MountAim.REST, 1F, 1F, Vec3.ZERO, Vec3.ZERO, Optional.of(mock(IContentType.class)), Vec3.ZERO,
-            Optional.empty(), "turret");
+            Vec3.ZERO, "turret");
         PartState turret = mock(PartState.class);
         when(turret.enabled()).thenReturn(true);
         when(turret.destroyed()).thenReturn(true);

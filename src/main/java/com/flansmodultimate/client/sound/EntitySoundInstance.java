@@ -32,7 +32,7 @@ public class EntitySoundInstance extends AbstractTickableSoundInstance
 
     public EntitySoundInstance(SoundEvent soundEvent, Entity source, float range, boolean looping, boolean varyPitch)
     {
-        this(soundEvent, source, SoundHelper.getVolumeFromRange(range, false), 1F, RandomSource.create());
+        this(soundEvent, source, SoundHelper.getFollowingVolume(source, range, false), 1F, RandomSource.create());
         this.varyPitch = varyPitch;
         this.looping = looping;
     }
