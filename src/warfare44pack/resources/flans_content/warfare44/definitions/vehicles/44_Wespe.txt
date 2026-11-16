@@ -150,9 +150,9 @@ SetupPart rightTrack 600 -68 -10 18 112 21 9
 SetupPart leftTrack 600 -68 -10 -27 112 21 9
 
 // Seats
-Driver -15 17 8 -11 11 -5 42
+Driver 0 17 0 -11 11 -5 42
 Passengers 0
-RotatedDriverOffset -5 0 0
+RotatedDriverOffset -20 0 8
 DriverAimSpeed 0.6 0.5 0
 DriverYawBeforePitch false
 

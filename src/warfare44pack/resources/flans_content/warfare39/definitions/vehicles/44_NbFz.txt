@@ -47,8 +47,8 @@ ShellSlots 4
 AllowAllAmmo false
 
 //----------------------------Driver and passenger positions
-Driver 0 27 0 -360 360 -10 22
-RotatedDriverOffset -2 0 0
+Driver 8 27 0 -360 360 -10 22
+RotatedDriverOffset -10 0 0
 Passengers 2
 Passenger 1 33 10 7 core -85 110 -5 12 44_Mg34 Front-Turret
 GunOrigin 1 48.2 -0.1 8.8
