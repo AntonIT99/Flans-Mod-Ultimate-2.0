@@ -50,8 +50,9 @@ public final class NpcRenderBuffers implements MultiBufferSource
         VertexConsumer vertices = source.getBuffer(renderType);
         var infoType = type.getInfoType();
         ResourceLocation texture = npc.textureLocation;
-        // Only the normal body buffer opts in. Glow overlays, invisibility and outlines retain their exact consumer.
-        if (source.getClass() == MultiBufferSource.BufferSource.class && texture != null && infoType != null && renderType == FlansModelPreviews.getRenderType(infoType, texture))
+        // Only the normal body buffer opts in. Glow overlays, invisibility and outlines retain their exact consumer. Render mods such as
+        // ImmediatelyFast and Iris substitute a subclass for the world buffer source, so the exact class is not required.
+        if (source instanceof MultiBufferSource.BufferSource && texture != null && infoType != null && renderType == FlansModelPreviews.getRenderType(infoType, texture))
             return new BodyVertices(vertices, texture);
         return vertices;
     }
