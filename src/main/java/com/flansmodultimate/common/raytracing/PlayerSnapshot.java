@@ -4,7 +4,6 @@ import com.flansmodultimate.api.entity.HumanoidBody;
 import com.flansmodultimate.api.equipment.ArmPoseRule;
 import com.flansmodultimate.common.driveables.physics.DriveableRiderRotation;
 import com.flansmodultimate.common.entity.ProneSupport;
-import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.HeldItemPresentation;
 import com.flansmodultimate.common.guns.MeleeBlocking;
@@ -16,6 +15,7 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.util.JomlUtils;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import net.minecraft.core.Direction;
@@ -282,8 +282,9 @@ public class PlayerSnapshot
                 root.translate(0F, -1F, 0.3F);
         }
 
-        if (p.getVehicle() instanceof Seat seat && seat.getDriveable() != null)
-            root.rotate(DriveableRiderRotation.at(seat.getDriveable(), partialTick, bodyYaw));
+        Quaternionf mountTilt = DriveableRiderRotation.at(p.getVehicle(), partialTick, bodyYaw);
+        if (mountTilt != null)
+            root.rotate(mountTilt);
 
         return root.scale(-shape.scaleX(), -shape.scaleY(), shape.scaleZ()).translate(0F, -1.501F, 0F);
     }

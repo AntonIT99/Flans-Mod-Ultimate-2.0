@@ -1,6 +1,7 @@
 package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
+import com.flansmodultimate.api.driveables.IFlanTiltingMount;
 import com.flansmodultimate.common.driveables.physics.DriveableRiderRotation;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
@@ -8,6 +9,7 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -84,6 +86,32 @@ class MountedRiderRenderingTest
                 assertEquals(expected.y, up.y, 1.0E-5F);
                 assertEquals(expected.z, up.z, 1.0E-5F);
             }
+        }
+    }
+
+    @Test
+    void ridersOfATiltingMountLeanWithItsBody() throws ReflectiveOperationException
+    {
+        LivingEntity mount = mock(LivingEntity.class, withSettings().extraInterfaces(IFlanTiltingMount.class));
+        mount.yBodyRotO = 90F;
+        mount.yBodyRot = 90F;
+        when(((IFlanTiltingMount) mount).flansmodultimateRiderTilt(0.5F)).thenReturn(new Quaternionf().rotateZ(90F * (float) Math.PI / 180F));
+        Method hook = hook("flansmodultimateRotateRiderWithDriveable", LivingEntity.class, PoseStack.class, float.class, float.class, float.class, CallbackInfo.class);
+        for (LivingEntity rider : List.of(mock(LivingEntity.class), mock(Player.class)))
+        {
+            when(rider.getVehicle()).thenReturn(mount);
+            // Facing the way the mount faces, the rider takes its tilt unchanged; facing aside, about its own side.
+            PoseStack ahead = new PoseStack();
+            hook.invoke(hooks, rider, ahead, 0F, 90F, 0.5F, new CallbackInfo("setupRotations", false));
+            Vector3f up = ahead.last().normal().transform(new Vector3f(0F, 1F, 0F));
+            assertEquals(-1F, up.x, 1.0E-5F);
+            assertEquals(0F, up.y, 1.0E-5F);
+            PoseStack aside = new PoseStack();
+            hook.invoke(hooks, rider, aside, 0F, 0F, 0.5F, new CallbackInfo("setupRotations", false));
+            up = aside.last().normal().transform(new Vector3f(0F, 1F, 0F));
+            assertEquals(0F, up.x, 1.0E-5F);
+            assertEquals(0F, up.y, 1.0E-5F);
+            assertEquals(-1F, up.z, 1.0E-5F);
         }
     }
 

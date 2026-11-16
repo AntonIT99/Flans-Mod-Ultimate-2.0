@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.mixin;
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
+import com.flansmodultimate.api.driveables.IFlanTiltingMount;
 import com.flansmodultimate.api.entity.*;
 import com.flansmodultimate.api.equipment.*;
 import com.flansmodultimate.api.parts.*;
@@ -29,6 +30,7 @@ import noppes.npcs.controllers.data.Faction;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataInventory;
+import org.joml.Quaternionf;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -144,6 +146,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
         IHeldItemPresentation,
         IFlanNpcDistance,
         IFlanSeatOccupant,
+        IFlanTiltingMount,
         ILivingVisualEffects,
         IEngineSoundSource,
         NpcEngineSpeed,
@@ -1409,6 +1412,14 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     public boolean flansmodultimateHasSeatBodyRotation()
     {
         return NpcCrew.vehicleOf(this).isPresent();
+    }
+
+    @Override
+    public Quaternionf flansmodultimateRiderTilt(float partialTick)
+    {
+        // Riders of an NPC drawn as a Flan vehicle lean with its hull as it is drawn.
+        NpcVehicleState state = NpcVehicleState.of((EntityNPCInterface) (Object) this);
+        return NpcRiderTilt.of(state.attitudePitch(partialTick), state.attitudeBank(partialTick));
     }
 
     @Override

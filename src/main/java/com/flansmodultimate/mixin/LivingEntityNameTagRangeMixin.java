@@ -5,9 +5,9 @@ import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
 import com.flansmodultimate.api.entity.ILivingVisualEffects;
 import com.flansmodultimate.common.driveables.physics.DriveableRiderRotation;
 import com.flansmodultimate.api.entity.FlansCorpses;
-import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Quaternionf;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -35,8 +35,9 @@ public abstract class LivingEntityNameTagRangeMixin
     @Inject(method = "setupRotations", at = @At("RETURN"))
     private void flansmodultimateRotateRiderWithDriveable(LivingEntity rider, PoseStack pose, float ageInTicks, float bodyYaw, float partialTick, CallbackInfo callback)
     {
-        if (rider.getVehicle() instanceof Seat seat && seat.getDriveable() != null)
-            pose.mulPose(DriveableRiderRotation.at(seat.getDriveable(), partialTick, bodyYaw));
+        Quaternionf tilt = DriveableRiderRotation.at(rider.getVehicle(), partialTick, bodyYaw);
+        if (tilt != null)
+            pose.mulPose(tilt);
     }
 
     // Presentation and name range
