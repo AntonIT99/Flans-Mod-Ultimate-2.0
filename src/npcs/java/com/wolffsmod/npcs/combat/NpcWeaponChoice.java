@@ -13,8 +13,10 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
 
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Comparator;
 import java.util.List;
@@ -33,6 +35,8 @@ public final class NpcWeaponChoice
     /** The most penetration beyond what the plate needs costs, and the millimetres of it that cost one point. */
     private static final double OVERKILL_WORTH = 30D;
     private static final double OVERKILL_MILLIMETRES = 10D;
+    /** Blocks from a vehicle's centre at which its flank and rear plates are probed. */
+    private static final double FLANK_PROBE = 12D;
 
     public enum Effectiveness
     {
@@ -41,9 +45,15 @@ public final class NpcWeaponChoice
 
     public static Effectiveness effectiveness(EntityNPCInterface npc, LivingEntity target)
     {
+        return effectiveness(npc, target, npc.position());
+    }
+
+    /** What the NPC's weapons would do to the target's armour from a point beside it, rather than from where it stands. */
+    public static Effectiveness effectiveness(EntityNPCInterface npc, LivingEntity target, Vec3 observer)
+    {
         if (!NpcVehicleThreats.groundVehicle(target))
             return Effectiveness.EFFECTIVE;
-        Optional<PartArmor> armor = NpcVehicleThreats.protection(target, npc.position());
+        Optional<PartArmor> armor = NpcVehicleThreats.protection(target, observer);
         if (armor.isEmpty())
             return Effectiveness.UNKNOWN;
         boolean known = false;
@@ -68,6 +78,30 @@ public final class NpcWeaponChoice
     {
         ItemStack ammunition = ammunition(npc, weapon);
         return FlansEquipment.getArmorPenetration(weapon, ammunition).orElse(0D) >= 40D;
+    }
+
+    /** @return whether the NPC carries an anti-armour weapon it can fire, in hand or in its inventory */
+    public static boolean carriesAntiArmor(EntityNPCInterface npc)
+    {
+        for (ItemStack weapon : NpcAmmunition.supplies(npc))
+            if (!unusable(npc, weapon) && antiArmor(npc, weapon))
+                return true;
+        return false;
+    }
+
+    /**
+     * Whether the NPC's weapons would go through the vehicle's flank or rear plate, which it can reach by going round, though
+     * they stay out of the plate it faces now.
+     */
+    public static boolean beatsFromFlank(EntityNPCInterface npc, LivingEntity target)
+    {
+        Entity vehicle = NpcVehicleThreats.platform(target);
+        Vec3 front = NpcVehicleThreats.front(target);
+        Vec3 side = front.yRot((float) (Math.PI / 2D));
+        for (Vec3 direction : new Vec3[]{side, side.scale(-1D), front.scale(-1D)})
+            if (effectiveness(npc, target, vehicle.position().add(direction.scale(FLANK_PROBE))) == Effectiveness.EFFECTIVE)
+                return true;
+        return false;
     }
 
     /** The hardest-hitting round a weapon has, which tells what the NPC could do to armour rather than what it fires now. */

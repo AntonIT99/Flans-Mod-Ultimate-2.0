@@ -12,26 +12,29 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Crew who get out of their vehicle NPC to fight its target on foot, as their seats say. A vehicle on the ground lets them
  * out beside it once it has closed with a target on the ground, or, since it often fights from further off than that, once
  * it has been in action against one for a while and stands still enough for them to get out safely. An aircraft high above
- * the ground drops those who carry a parachute over its target, one at a time, as a stick of paratroopers; the others stay
- * aboard until it is on the ground. Each takes the vehicle's target as its own. Server thread.
+ * the ground drops those who carry a parachute over its target in quick waves of several at once, as sticks of paratroopers;
+ * the others stay aboard until it is on the ground. Each takes the vehicle's target as its own. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CrewDisembark
 {
-    /** Ticks between checks, and so between two paratroopers jumping from an aircraft. */
-    private static final int INTERVAL = 10;
+    /** Ticks between checks, and so between two waves of paratroopers jumping from an aircraft. */
+    private static final int INTERVAL = 5;
+    /** Most paratroopers who jump together in one wave. */
+    static final int WAVE_SIZE = 4;
     private static final int TICKS_PER_SECOND = 20;
     /** Blocks from its target within which a vehicle on the ground lets its crew out at once. */
     private static final double GROUND_RANGE = 32D;
     /** Blocks per tick under which a vehicle fighting from further off stands still enough for its crew to get out. */
     private static final double DEPLOY_SPEED = 0.1D;
     /** Blocks across the ground from its target within which an aircraft drops its paratroopers. */
-    private static final double DROP_RADIUS = 32D;
+    private static final double DROP_RADIUS = 48D;
     /** Blocks above the ground an aircraft has to be for its crew to jump, and the most a target may be above it to be fought on foot. */
     private static final double JUMP_HEIGHT = 8D;
 
@@ -60,7 +63,7 @@ public final class CrewDisembark
         if (height(vehicle) > JUMP_HEIGHT)
         {
             if (across(vehicle, target) <= DROP_RADIUS)
-                leaving.stream().filter(NpcParachutes::carries).findFirst().ifPresent(member -> getOut(vehicle, member, target));
+                wave(leaving, NpcParachutes::carries).forEach(member -> getOut(vehicle, member, target));
         }
         else if (vehicle.onGround()
             && deploys(vehicle.distanceTo(target), state.getContact().heldFor(vehicle.tickCount), vehicle.getDeltaMovement().horizontalDistance(), delay(vehicle)))
@@ -90,6 +93,18 @@ public final class CrewDisembark
         if (distance <= GROUND_RANGE)
             return true;
         return contact >= delay && speed <= DEPLOY_SPEED;
+    }
+
+    /**
+     * @param leaving
+     *            crew who fight on foot, in seat order
+     * @param jumps
+     *            whether a crew member can jump, carrying a parachute
+     * @return the next wave of paratroopers: the first of them who can jump, at most {@link #WAVE_SIZE}
+     */
+    static <T> List<T> wave(List<T> leaving, Predicate<T> jumps)
+    {
+        return leaving.stream().filter(jumps).limit(WAVE_SIZE).toList();
     }
 
     /** @return the living crew aboard whose seats let them out to fight, in seat order */

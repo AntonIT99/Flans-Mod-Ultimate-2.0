@@ -3,6 +3,9 @@ package com.wolffsmod.npcs.crew;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -64,5 +67,15 @@ class CrewDisembarkTest
         assertTrue(CrewDisembark.deploys(STANDOFF, 0, STOPPED, 0));
         // Standing still is still required, so that nobody is thrown out of a vehicle on the move.
         assertFalse(CrewDisembark.deploys(STANDOFF, 0, DRIVING, 0));
+    }
+
+    @Test
+    void paratroopersJumpTogetherInWaves()
+    {
+        List<String> stick = List.of("a", "b", "c", "d", "e", "f");
+        assertEquals(CrewDisembark.WAVE_SIZE, CrewDisembark.wave(stick, member -> true).size(), "a full stick jumps a wave at a time");
+        assertEquals(List.of("a", "b", "c", "d"), CrewDisembark.wave(stick, member -> true), "in seat order");
+        assertEquals(List.of("b", "d"), CrewDisembark.wave(stick, member -> member.equals("b") || member.equals("d")), "only those carrying a parachute");
+        assertTrue(CrewDisembark.wave(stick, member -> false).isEmpty());
     }
 }

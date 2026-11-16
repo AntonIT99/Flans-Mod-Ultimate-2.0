@@ -66,6 +66,25 @@ class NpcLedgesTest
     }
 
     @Test
+    void aWallOrLedgeThatDropsAwayBehindItIsADropWhereItBegins()
+    {
+        // A wall one block high and one wide at x = 2, with the ground three blocks lower beyond it.
+        IntUnaryOperator wall = x -> x == 2 ? 64 : x > 2 ? 61 : 63;
+        assertEquals(2D, ahead(wall, 8D, 1));
+        // Following a path, which priced the climb, only the drop behind it counts.
+        assertEquals(3D, NpcLedges.distance(ground(wall), ORIGIN, EAST, 8D, 1, 1, false));
+        // Two blocks wide it is still a ledge; three blocks wide the hull stands on it.
+        assertEquals(2D, ahead(x -> x == 2 || x == 3 ? 64 : x > 3 ? 61 : 63, 8D, 1));
+        assertEquals(5D, ahead(x -> x >= 2 && x <= 4 ? 64 : x > 4 ? 61 : 63, 8D, 1));
+        // A curb with the ground back at its own level behind it is driven over.
+        assertEquals(NpcLedges.NONE, ahead(x -> x == 2 ? 64 : 63, 8D, 1));
+        // So is a step up onto ground that drops only as far as the vehicle drives down.
+        assertEquals(NpcLedges.NONE, ahead(x -> x == 2 ? 65 : x > 2 ? 63 : 63, 8D, 2));
+        // A wall behind the step ends the look before the ground behind it is seen.
+        assertEquals(NpcLedges.NONE, ahead(x -> x == 2 ? 64 : x == 3 ? 67 : x > 3 ? VOID : 63, 8D, 1));
+    }
+
+    @Test
     void theLookFollowsTheHeading()
     {
         Solids pitToTheNorth = (x, y, z) -> z >= 0 && y <= 63;

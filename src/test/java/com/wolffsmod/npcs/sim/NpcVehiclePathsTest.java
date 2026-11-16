@@ -155,6 +155,21 @@ class NpcVehiclePathsTest
     }
 
     @Test
+    void aStepOntoAWallOrLedgeIsARidgeAndOneOntoASlopeIsNot()
+    {
+        // Stepped up onto x = 1 at feet 65, heading +X: a wall one block wide, and a ledge two blocks wide.
+        assertTrue(NpcVehiclePaths.ridge(new Blocks().put(1, 64, 0), 1, 65, 0, 1, 0));
+        assertTrue(NpcVehiclePaths.ridge(new Blocks().ground(1, 2, 65), 1, 65, 0, 1, 0));
+        // Ground carrying on as far as the ridge look reaches is a slope or a terrace.
+        assertFalse(NpcVehiclePaths.ridge(new Blocks().ground(1, 3, 65), 1, 65, 0, 1, 0));
+        // Higher ground ahead is still ground under the far side.
+        assertFalse(NpcVehiclePaths.ridge(new Blocks().put(1, 64, 0).put(2, 64, 0).put(2, 65, 0).put(3, 64, 0), 1, 65, 0, 1, 0));
+        // Only the direction travelled in is looked along; without one there is nothing to look along.
+        assertFalse(NpcVehiclePaths.ridge(new Blocks().put(1, 64, 0), 1, 65, 0, 0, 0));
+        assertTrue(NpcVehiclePaths.ridge(new Blocks().put(1, 64, 0).put(2, 64, 0).put(3, 64, 0), 1, 65, 0, 0, 1));
+    }
+
+    @Test
     void aGradeCostsWhatItSlowsTheVehicleDownBy()
     {
         GroundPropulsion engine = mock(GroundPropulsion.class);

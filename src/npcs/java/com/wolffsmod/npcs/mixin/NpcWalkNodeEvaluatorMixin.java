@@ -39,12 +39,6 @@ import java.util.Optional;
 @SuppressWarnings({"UnresolvedMixinReference", "AddedMixinMembersNamePattern"})
 public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator implements NpcVehiclePaths.Evaluator
 {
-    /** Blocks ahead of a step up within which ground dropping away again makes it a wall or ledge rather than a slope. */
-    @Unique
-    private static final int WOLFFSMODNPCS_RIDGE_REACH = 2;
-    /** Extra path cost of climbing onto a wall or ledge, in blocks of detour. */
-    @Unique
-    private static final float WOLFFSMODNPCS_RIDGE_MALUS = 12F;
     @Unique
     private static final byte WOLFFSMODNPCS_HULL_FITS = 1;
     @Unique
@@ -123,8 +117,8 @@ public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator implem
 
     /**
      * Makes a driveable's path step up onto a wall or ledge only where there is no way around: a climb onto ground that
-     * drops away again within {@value #WOLFFSMODNPCS_RIDGE_REACH} blocks ahead costs as much as a detour of
-     * {@value #WOLFFSMODNPCS_RIDGE_MALUS} blocks.
+     * drops away again within {@value NpcVehiclePaths#RIDGE_REACH} blocks ahead costs as much as a detour of
+     * {@value NpcVehiclePaths#RIDGE_MALUS} blocks.
      */
     @Override
     public int getNeighbors(@NotNull Node[] neighbors, @NotNull Node node)
@@ -138,26 +132,10 @@ public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator implem
         for (int index = 0; index < count; index++)
         {
             Node next = neighbors[index];
-            if (next != null && next.y > node.y && wolffsmodnpcsRidge(next.x, next.y, next.z, Integer.signum(next.x - node.x), Integer.signum(next.z - node.z)))
-                next.costMalus = Math.max(next.costMalus, WOLFFSMODNPCS_RIDGE_MALUS);
+            if (next != null && next.y > node.y && NpcVehiclePaths.ridge(this::wolffsmodnpcsSolid, next.x, next.y, next.z, Integer.signum(next.x - node.x), Integer.signum(next.z - node.z)))
+                next.costMalus = Math.max(next.costMalus, NpcVehiclePaths.RIDGE_MALUS);
         }
         return count;
-    }
-
-    /** @return whether the ground under a node stepped up onto in the given direction drops back down shortly ahead */
-    @Unique
-    private boolean wolffsmodnpcsRidge(int x, int y, int z, int dx, int dz)
-    {
-        if (dx == 0 && dz == 0)
-            return false;
-        BlockPos.MutableBlockPos ground = new BlockPos.MutableBlockPos();
-        for (int step = 1; step <= WOLFFSMODNPCS_RIDGE_REACH; step++)
-        {
-            ground.set(x + dx * step, y - 1, z + dz * step);
-            if (currentContext.level().getBlockState(ground).getCollisionShape(currentContext.level(), ground).isEmpty())
-                return true;
-        }
-        return false;
     }
 
     // Vehicle paths
@@ -207,7 +185,9 @@ public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator implem
 
     /**
      * Drops the neighbours the vehicle cannot drive up onto, and makes the others as dear as the grade up to them and the
-     * ground on them slow the vehicle down. A node keeps the dearest way onto it, as it does its other costs.
+     * ground on them slow the vehicle down. A step up onto a wall or ledge, which the hull would hang over, costs a
+     * detour of {@value NpcVehiclePaths#RIDGE_MALUS} blocks besides, as it does a driven vehicle. A node keeps the
+     * dearest way onto it, as it does its other costs.
      *
      * @return how many neighbours are left
      */
@@ -225,7 +205,11 @@ public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator implem
             float cost = wolffsmodnpcsSurfaceCost(profile, next);
             if (rise > 0D)
             {
-                cost += profile.gradeCost(profile.grade(this::wolffsmodnpcsSolid, next.x, next.y, next.z, Integer.signum(next.x - node.x), Integer.signum(next.z - node.z), rise));
+                int dx = Integer.signum(next.x - node.x);
+                int dz = Integer.signum(next.z - node.z);
+                cost += profile.gradeCost(profile.grade(this::wolffsmodnpcsSolid, next.x, next.y, next.z, dx, dz, rise));
+                if (next.y > node.y && NpcVehiclePaths.ridge(this::wolffsmodnpcsSolid, next.x, next.y, next.z, dx, dz))
+                    cost = Math.max(cost, NpcVehiclePaths.RIDGE_MALUS);
             }
             if (cost > 0F)
                 next.costMalus = Math.max(next.costMalus, Math.max(0F, mob.getPathfindingMalus(next.type)) + cost);

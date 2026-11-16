@@ -41,6 +41,29 @@ class NpcSafetyGoalTest
     }
 
     @Test
+    void aFlankingSoldierGoesRoundTowardTheRearAndClosesIn()
+    {
+        Vec3 front = new Vec3(0D, 0D, 1D);
+        // Off the tank's front-right, the step leading away from its front goes further right, toward the rear.
+        Vec3 offset = new Vec3(20D, 0D, 20D);
+        Vec3 step = NpcSafetyGoal.flankOffset(offset, front, 12D, true);
+        assertEquals(12D, step.length(), 1.0E-9D);
+        assertTrue(step.normalize().dot(front) < offset.normalize().dot(front));
+        assertEquals(step.x > 0D, NpcSafetyGoal.flankOffset(offset, front, 12D, false).x > 0D, "the tie-break only applies straight ahead");
+    }
+
+    @Test
+    void soldiersStraightAheadOfATankSplitToBothSides()
+    {
+        Vec3 front = new Vec3(0D, 0D, 1D);
+        Vec3 ahead = new Vec3(0D, 0D, 30D);
+        Vec3 left = NpcSafetyGoal.flankOffset(ahead, front, 30D, true);
+        Vec3 right = NpcSafetyGoal.flankOffset(ahead, front, 30D, false);
+        assertTrue(left.x * right.x < 0D);
+        assertTrue(left.normalize().dot(front) < 0.5D);
+    }
+
+    @Test
     void anOverlappingTankStillAllowsARetreatDirection()
     {
         Vec3 retreat = NpcSafetyGoal.blastRetreat(Vec3.ZERO, Vec3.ZERO, 10D, point -> true);

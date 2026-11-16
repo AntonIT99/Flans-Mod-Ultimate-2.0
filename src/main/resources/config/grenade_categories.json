@@ -71,7 +71,7 @@
             "ThrowSpeedMs": 12,
             "Mass": 230,
             "FragType": "DEFAULT",
-            "SmokeTime": 800,
+            "SmokeTime": 300,
             "SmokeRadius": 3,
             "Fuse": 20
         },
@@ -171,7 +171,7 @@
             "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "FragType": "DEFAULT",
-            "SmokeTime": 1200,
+            "SmokeTime": 500,
             "SmokeRadius": 4
         },
         "items": [
@@ -299,7 +299,7 @@
             "ThrowSpeedMs": 6,
             "Mass": 1000,
             "FragType": "DEFAULT",
-            "SmokeTime": 2000,
+            "SmokeTime": 800,
             "SmokeRadius": 10
         },
         "items": [
@@ -459,7 +459,7 @@
             "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 540,
             "FragType": "DEFAULT",
-            "SmokeTime": 2400,
+            "SmokeTime": 1200,
             "SmokeRadius": 6,
             "Fuse": 100
         },
@@ -477,7 +477,7 @@
             "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 538.64,
             "FragType": "DEFAULT",
-            "SmokeTime": 1600,
+            "SmokeTime": 700,
             "SmokeRadius": 4,
             "Fuse": 30
         },
@@ -631,7 +631,7 @@
             "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 800,
             "FragType": "DEFAULT",
-            "SmokeTime": 2000,
+            "SmokeTime": 900,
             "SmokeRadius": 5,
             "Fuse": 100
         },
@@ -650,7 +650,7 @@
             "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 440,
             "FragType": "DEFAULT",
-            "SmokeTime": 1200,
+            "SmokeTime": 400,
             "SmokeRadius": 6
         },
         "items": [
@@ -727,7 +727,7 @@
             "UnderhandThrowSpeedMultiplier": 0.4,
             "Mass": 500,
             "FragType": "DEFAULT",
-            "SmokeTime": 2000,
+            "SmokeTime": 900,
             "SmokeRadius": 5
         },
         "items": [
@@ -889,7 +889,7 @@
             "ThrowSpeedMs": 24,
             "Mass": 500,
             "FragType": "DEFAULT",
-            "SmokeTime": 1600,
+            "SmokeTime": 600,
             "SmokeRadius": 10,
             "Fuse": 80
         },

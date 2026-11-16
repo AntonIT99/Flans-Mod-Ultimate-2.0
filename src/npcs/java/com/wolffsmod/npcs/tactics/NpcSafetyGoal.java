@@ -26,7 +26,18 @@ import java.util.function.Predicate;
 /** Shared infantry safety and adaptive positions, independent of Teams membership and the current firing target. */
 public final class NpcSafetyGoal extends Goal
 {
-    private record Situation(Vec3 position, boolean visible, boolean outmatched, boolean outranged, boolean seekCover, boolean reloading, List<Vec3> sources)
+    /** Blocks from a vehicle within which an anti-armour soldier does not plan its flanking circle. */
+    private static final double FLANK_MIN_RADIUS = 10D;
+    /** Ticks between flanking bounds of a soldier whose weapons cannot pierce the plate it faces, and of one that can. */
+    private static final long FLANK_PAUSE_BLOCKED = 70L;
+    private static final long FLANK_PAUSE = 160L;
+
+    /**
+     * @param huntsArmour
+     *            whether the NPC sees a ground vehicle and carries a weapon to fight it with: it then works round to a flank
+     *            before it thinks of cover
+     */
+    private record Situation(Vec3 position, boolean visible, boolean outmatched, boolean outranged, boolean seekCover, boolean reloading, List<Vec3> sources, boolean huntsArmour)
     {}
 
     private final EntityNPCInterface npc;
@@ -206,6 +217,9 @@ public final class NpcSafetyGoal extends Goal
             return;
         }
         updateIntent(fight, now);
+        // An anti-armour soldier goes round a tank rather than waiting behind cover for it to come past.
+        if (fight.huntsArmour() && !fight.outmatched() && flank(target, now))
+            return;
         if (advance(target, fight, now))
             return;
         if (fight.seekCover() && takeCover(target, fight, now) || state.active(now))
@@ -213,7 +227,7 @@ public final class NpcSafetyGoal extends Goal
         if (holdOrder(target))
             return;
         state.setCover(null);
-        if (!flank(target, fight, now) && !spread(target))
+        if (!flank(target, now) && !spread(target))
             state.clear();
     }
 
@@ -520,11 +534,9 @@ public final class NpcSafetyGoal extends Goal
         if (danger == null || !danger.isAlive())
             return null;
         boolean visible = npc.getSensing().hasLineOfSight(danger);
-        boolean vehicle = NpcVehicleThreats.groundVehicle(danger);
+        boolean huntsArmour = huntsArmour(danger, visible);
         // A vehicle that has shot itself dry has no fight left to win, whatever is in front of it, so it breaks contact too.
-        boolean spent = outOfAmmunition();
-        boolean outmatched = spent
-            || visible && vehicle && NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS) && NpcWeaponChoice.effectiveness(npc, danger) == NpcWeaponChoice.Effectiveness.INEFFECTIVE;
+        boolean outmatched = outOfAmmunition() || visible && unwinnable(danger, huntsArmour);
         boolean outranged = NpcEquipment.enabled(npc, Feature.OUTRANGED_COVER) && !threats.isEmpty() && !npc.isInRange(danger, NpcWeaponRange.firing(npc));
         boolean underFire = !threats.isEmpty() && NpcEquipment.enabled(npc, Feature.TACTICAL_COVER);
         List<Vec3> sources = new ArrayList<>();
@@ -533,7 +545,23 @@ public final class NpcSafetyGoal extends Goal
         if (visible)
             sources.add(NpcVehicleThreats.fireOrigin(danger));
         Vec3 position = visible || threats.isEmpty() ? danger.position() : threats.get(threats.size() - 1).position();
-        return new Situation(position, visible, outmatched, outranged, outmatched || outranged || underFire, NpcTacticState.of(npc).isReloading(now), sources);
+        return new Situation(position, visible, outmatched, outranged, outmatched || outranged || underFire, NpcTacticState.of(npc).isReloading(now), sources, huntsArmour);
+    }
+
+    /** @return whether the enemy is a ground vehicle in sight that the NPC goes after, with an anti-armour weapon it carries */
+    private boolean huntsArmour(LivingEntity enemy, boolean visible)
+    {
+        return visible && NpcVehicleThreats.groundVehicle(enemy) && NpcEquipment.enabled(npc, Feature.ADAPTIVE_FLANKING) && NpcWeaponChoice.carriesAntiArmor(npc);
+    }
+
+    /**
+     * @return whether the NPC may break contact with a visible ground vehicle its weapons cannot pierce. A plate too thick from
+     *         the front is no reason to give up a fight the flank or rear plate would decide.
+     */
+    private boolean unwinnable(LivingEntity vehicle, boolean huntsArmour)
+    {
+        return NpcVehicleThreats.groundVehicle(vehicle) && NpcEquipment.enabled(npc, Feature.AVOID_UNWINNABLE_FIGHTS) && NpcWeaponChoice.effectiveness(npc, vehicle) == NpcWeaponChoice.Effectiveness.INEFFECTIVE
+            && !(huntsArmour && NpcWeaponChoice.beatsFromFlank(npc, vehicle));
     }
 
     /** @return whether the NPC is a vehicle that has used up everything it could fire, and is allowed to give up the fight over it */
@@ -589,20 +617,46 @@ public final class NpcSafetyGoal extends Goal
         return true;
     }
 
-    private boolean flank(@Nullable LivingEntity target, Situation fight, long now)
+    /**
+     * Works round a ground vehicle the NPC carries an anti-armour weapon for: off its front, or, when its weapons cannot pierce
+     * the plate it faces, on toward a flank or the rear they can. A reload goes on during the bound. The circle draws in to
+     * the firing range, so that a soldier far off closes in as it goes round.
+     */
+    private boolean flank(@Nullable LivingEntity target, long now)
     {
         if (target == null || !npc.getSensing().hasLineOfSight(target) || !NpcVehicleThreats.groundVehicle(target) || !NpcEquipment.enabled(npc, Feature.ADAPTIVE_FLANKING)
-            || now < state.getFlankReadyAt() || !NpcWeaponChoice.antiArmor(npc, npc.getMainHandItem()) || fight.reloading())
+            || now < state.getFlankReadyAt() || !NpcWeaponChoice.carriesAntiArmor(npc))
             return false;
-        Vec3 offset = npc.position().subtract(NpcVehicleThreats.platform(target).position()).multiply(1D, 0D, 1D);
-        if (offset.normalize().dot(NpcVehicleThreats.front(target)) <= 0.5D)
+        Vec3 centre = NpcVehicleThreats.platform(target).position();
+        Vec3 offset = npc.position().subtract(centre).multiply(1D, 0D, 1D);
+        Vec3 front = NpcVehicleThreats.front(target);
+        boolean blocked = NpcWeaponChoice.effectiveness(npc, target) == NpcWeaponChoice.Effectiveness.INEFFECTIVE;
+        if (blocked ? !NpcWeaponChoice.beatsFromFlank(npc, target) : offset.normalize().dot(front) <= 0.5D)
             return false;
-        Vec3 side = offset.yRot((npc.getId() % 2 == 0 ? 1F : -1F) * (float) Math.toRadians(65D));
-        Vec3 destination = NpcVehicleThreats.platform(target).position().add(side);
+        double radius = Math.max(FLANK_MIN_RADIUS, Math.min(offset.length(), NpcWeaponRange.firing(npc) * 0.75D));
+        Vec3 destination = centre.add(flankOffset(offset, front, radius, npc.getId() % 2 == 0));
         if (!moveAside(Action.FLANK, destination.subtract(npc.position()).normalize(), Math.min(8D, npc.position().distanceTo(destination))))
             return false;
-        state.setFlankReadyAt(now + 160L);
+        state.setFlankReadyAt(now + (blocked ? FLANK_PAUSE_BLOCKED : FLANK_PAUSE));
         return true;
+    }
+
+    /**
+     * @param offset
+     *            horizontal offset of the soldier from the vehicle
+     * @param front
+     *            horizontal direction the vehicle faces
+     * @param left
+     *            the way to go round when both are as far from the front, so that a squad in front of it splits
+     * @return the offset from the vehicle to go to: a 65-degree step round it, the way that leads away from its front
+     */
+    static Vec3 flankOffset(Vec3 offset, Vec3 front, double radius, boolean left)
+    {
+        Vec3 anticlockwise = offset.yRot((float) Math.toRadians(65D)).normalize();
+        Vec3 clockwise = offset.yRot((float) Math.toRadians(-65D)).normalize();
+        double difference = anticlockwise.dot(front) - clockwise.dot(front);
+        boolean turnLeft = Math.abs(difference) < 0.1D ? left : difference < 0D;
+        return (turnLeft ? anticlockwise : clockwise).scale(radius);
     }
 
     private boolean spread(@Nullable LivingEntity target)
