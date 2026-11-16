@@ -7851,6 +7851,16 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return distance > 0D && distSq < distance * distance;
     }
 
+    /**
+     * A client keeps interpolating a driveable outside its loaded chunks, where it can still be drawn;
+     * vanilla would freeze it there. Server ticking stays bound to loaded chunks.
+     */
+    @Override
+    public boolean isAlwaysTicking()
+    {
+        return level().isClientSide;
+    }
+
     public static Optional<Driveable> spawn(@NotNull Level level, @NotNull DriveableType type, double x, double y, double z, float yaw, @Nullable Player placer, @Nullable ItemStack sourceStack)
     {
         if (level.isClientSide || !validSpawnCoordinate(x) || !validSpawnCoordinate(y) || !validSpawnCoordinate(z) || !Float.isFinite(yaw))

@@ -423,7 +423,7 @@ public final class ModCommonConfig
 
         builder.push(ENTITY_TRACKING_CONFIG_SECTION);
         DRIVEABLE_TRACKING_RANGE = builder
-            .comment("Live server-side tracking range in blocks for driveables and their seats/wheels. Server view distance and tracking scaling still apply. No restart required.")
+            .comment("Live server-side tracking range in blocks for driveables and their seats/wheels. Not capped by the server view distance, so clients can draw driveables beyond their loaded chunks; tracking scaling still applies. No restart required.")
             .defineInRange("driveableTrackingRange", 512, 16, 512);
         FLAN_NPC_TRACKING_RANGE = builder.comment(
             "Live server-side tracking range in blocks for Flan-model NPCs and explicitly opted-in soldiers. Requires the NPC module. Server view distance and tracking scaling still apply. No restart required.")

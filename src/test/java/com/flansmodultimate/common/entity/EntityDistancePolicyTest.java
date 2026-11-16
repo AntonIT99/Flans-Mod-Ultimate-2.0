@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EntityDistancePolicyTest
@@ -14,6 +15,17 @@ class EntityDistancePolicyTest
         assertEquals(normal * 2D, EntityDistancePolicy.proportionalDistance(4D, 1.5D, 1D));
         assertEquals(normal * 0.5D, EntityDistancePolicy.proportionalDistance(2D, 1.5D, 0.5D));
         assertEquals(normal * 2D, EntityDistancePolicy.proportionalDistance(2D, 3D, 1D));
+    }
+
+    @Test
+    void onlyMultipliersAboveOneReachBeyondLoadedChunks()
+    {
+        assertFalse(EntityDistancePolicy.extendsBeyondChunks(0.25D));
+        assertFalse(EntityDistancePolicy.extendsBeyondChunks(1D));
+        assertTrue(EntityDistancePolicy.extendsBeyondChunks(1.25D));
+        assertTrue(EntityDistancePolicy.extendsBeyondChunks(4D));
+        assertFalse(EntityDistancePolicy.extendsBeyondChunks(Double.NaN));
+        assertFalse(EntityDistancePolicy.extendsBeyondChunks(Double.POSITIVE_INFINITY));
     }
 
     @Test

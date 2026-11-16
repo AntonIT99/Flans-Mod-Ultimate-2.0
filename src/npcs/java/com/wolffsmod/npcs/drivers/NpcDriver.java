@@ -79,6 +79,8 @@ public final class NpcDriver
     private static final int RECOVERY_TICKS = 30;
     /** Manoeuvres out of being stuck after which the NPC gives the driveable up. */
     private static final int GIVE_UP = 5;
+    /** Ticks a vehicle leaves courses straight across the ground alone after one ran it into something. */
+    private static final int COURSE_BLOCKED_TICKS = 200;
     /** Cosine of the 3 degrees a weapon may point off its target and still fire. */
     private static final double FIRE_CONE = Math.cos(Math.toRadians(3D));
     /** Fewest blocks at which the driveable's weapons engage, whatever the NPC's firing range; more for an aircraft's. */
@@ -140,6 +142,10 @@ public final class NpcDriver
     private boolean recoveryBackward;
     /** Manoeuvres since the driveable last got free. */
     private int recoveries;
+    /** Whether the vehicle steers straight across the ground for a point of its own this tick, rather than along a searched path. */
+    private boolean straight;
+    /** Game time until which it takes no such course, after one ran it into something. */
+    private long courseBlockedUntil;
     /** The driveable ahead the vehicle keeps its distance to, as last looked for. */
     private DriveSteering.Traffic ahead = DriveSteering.Traffic.NONE;
     /** Ticks the vehicle has stood waiting behind it, and the game time until which it drives on regardless. */
@@ -277,8 +283,14 @@ public final class NpcDriver
             if (recovery == 0 && recoveries >= REPATH_AFTER)
                 npc.getNavigation().recomputePath();
         }
-        else if (stuck(position, MountMotion.yaw(heading), pushes(controls, mecha), turns(controls, mecha, tracked), now) && !startRecovery(controls, now))
-            return false;
+        else if (stuck(position, MountMotion.yaw(heading), pushes(controls, mecha), turns(controls, mecha, tracked), now))
+        {
+            // What holds it on a course of its own is that course, not the driveable: it backs off and leaves the course alone.
+            if (straight)
+                courseBlockedUntil = now + COURSE_BLOCKED_TICKS;
+            if (!startRecovery(controls, now, !straight))
+                return false;
+        }
         report(mecha, route.steer(), controls, off, route.distance(), speed);
         act(npc, seat, driveable, mecha, controls, off);
         return true;
@@ -362,6 +374,7 @@ public final class NpcDriver
     @Nullable
     private Route fightingCourse(EntityNPCInterface npc, ISeat seat, Vec3 position, Vec3 heading)
     {
+        straight = false;
         LivingEntity target = npc.getTarget();
         if (target == null || !target.isAlive() || target.level() != npc.level())
         {
@@ -378,7 +391,7 @@ public final class NpcDriver
             course = null;
             double back = standoff - distance + STANDOFF_MARGIN;
             Vec3 point = position.add(away(position, target.position(), heading).scale(back));
-            return !adaptive || NpcCombatMovement.permits(npc, point) ? new Route(point, back) : null;
+            return !adaptive || NpcCombatMovement.permits(npc, point) ? straightCourse(npc, seat, position, point, back) : null;
         }
         if (adaptiveMecha(seat, adaptive))
             return rangedMechaCourse(npc, seat, target, position, distance, standoff);
@@ -448,7 +461,44 @@ public final class NpcDriver
     private Route groundCourse(EntityNPCInterface npc, ISeat seat, LivingEntity target, Vec3 position)
     {
         Route flank = armorCourse(npc, seat, target, position);
-        return flank != null ? flank : lateralCourse(npc, seat, target, position);
+        if (flank != null)
+            return flank;
+        Route lateral = lateralCourse(npc, seat, target, position);
+        return lateral == null ? null : straightCourse(npc, seat, position, lateral.steer(), lateral.distance());
+    }
+
+    /**
+     * A course straight across the ground to a point no path was searched to. A vehicle takes it only while nothing
+     * stands in its way there, and not for a while after such a course ran it into something: it would only drive back
+     * into what held it. A ship keeps to its waters by other means, and a mecha climbs or digs through.
+     */
+    @Nullable
+    private Route straightCourse(EntityNPCInterface npc, ISeat seat, Vec3 position, Vec3 point, double distance)
+    {
+        Route route = new Route(point, distance);
+        if (ship(seat) || seat.getDriveableType().filter(IMechaType.class::isInstance).isPresent())
+            return route;
+        // The manoeuvre out of being stuck still turns the front toward where it was going.
+        if (recovery == 0 && (npc.level().getGameTime() < courseBlockedUntil || !open(NpcVehicleThreats.platform(npc), position, point)))
+            return null;
+        straight = true;
+        return route;
+    }
+
+    /** @return whether the hull drives the first stretch of the straight way to the point without running into terrain */
+    private static boolean open(Entity hull, Vec3 position, Vec3 point)
+    {
+        double x = point.x - position.x;
+        double z = point.z - position.z;
+        double length = Math.sqrt(x * x + z * z);
+        double share = length < 1.0E-3D ? 0D : Math.min(1D, lookahead(hull, false) / length);
+        return DriveCorridor.clear(position, new Vec3(position.x + x * share, position.y, position.z + z * share), NpcDrivers.hullWidth(hull), solid(hull.level()));
+    }
+
+    private static DriveCorridor.Solid solid(Level level)
+    {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        return (x, y, z) -> level.isLoaded(cursor.set(x, y, z)) && !level.getBlockState(cursor).getCollisionShape(level, cursor).isEmpty();
     }
 
     @Nullable
@@ -660,10 +710,16 @@ public final class NpcDriver
         drivingSince = now;
     }
 
-    /** Starts a manoeuvre out of being stuck, after which the driveable keeps clear of terrain for a while. @return false once the NPC has tried too often */
-    private boolean startRecovery(Set<DriveControl> controls, long now)
+    /**
+     * Starts a manoeuvre out of being stuck, after which the driveable keeps clear of terrain for a while.
+     *
+     * @param counted
+     *            whether it counts toward giving the driveable up
+     * @return false once the NPC has tried too often
+     */
+    private boolean startRecovery(Set<DriveControl> controls, long now, boolean counted)
     {
-        if (++recoveries > GIVE_UP)
+        if (counted && ++recoveries > GIVE_UP)
             return false;
         recovery = RECOVERY_TICKS;
         carefulUntil = now + CAREFUL_TICKS;
@@ -1106,8 +1162,7 @@ public final class NpcDriver
     {
         Level level = hull.level();
         double width = NpcDrivers.hullWidth(hull) + (level.getGameTime() < carefulUntil ? CAREFUL_MARGIN * 2D : 0D);
-        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-        DriveCorridor.Solid solid = (x, y, z) -> level.isLoaded(cursor.set(x, y, z)) && !level.getBlockState(cursor).getCollisionShape(level, cursor).isEmpty();
+        DriveCorridor.Solid solid = solid(level);
         for (int index = furthest; index > near; index--)
         {
             if (DriveCorridor.clear(position, node(current, index, middle), width, solid))
@@ -1183,6 +1238,8 @@ public final class NpcDriver
         stuckAt = null;
         recovery = 0;
         recoveries = 0;
+        straight = false;
+        courseBlockedUntil = 0L;
         ahead = DriveSteering.Traffic.NONE;
         waited = 0;
         passUntil = 0L;

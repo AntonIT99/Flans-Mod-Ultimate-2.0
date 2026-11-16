@@ -596,7 +596,7 @@
   "options.flansmodultimate.driveableLodDetailMultiplier": "Множитель детализации LOD",
   "options.flansmodultimate.driveableMeleeDamageThreshold": "Порог урона в ближнем бою",
   "options.flansmodultimate.driveableRenderDistanceMultiplier": "Дальность отрисовки техники",
-  "options.flansmodultimate.driveableRenderDistanceMultiplier.tooltip": "Множитель дальности по размеру коллизии и настройке Minecraft для сущностей. Опция DH до границы чанков может расширять предел.",
+  "options.flansmodultimate.driveableRenderDistanceMultiplier.tooltip": "Множитель дальности по размеру коллизии и настройке Minecraft для сущностей. Выше 1x техника рисуется и за пределами загруженных чанков. Опция DH до границы чанков может расширять предел.",
   "options.flansmodultimate.driveableSpeedUnit": "Единица скорости техники",
   "options.flansmodultimate.driveableTrackLinkGroupingPixelSize": "Размер в пикселях для группировки траков",
   "options.flansmodultimate.driveableTrackLinkLodPixelSize": "Размер LOD траков в пикселях",

@@ -596,7 +596,7 @@
   "options.flansmodultimate.driveableLodDetailMultiplier": "Multiplicador de detalhes LOD",
   "options.flansmodultimate.driveableMeleeDamageThreshold": "Limite de dano corpo a corpo",
   "options.flansmodultimate.driveableRenderDistanceMultiplier": "Distância de renderização de veículos",
-  "options.flansmodultimate.driveableRenderDistanceMultiplier.tooltip": "Multiplica a distância baseada na caixa de colisão e na distância de entidades do Minecraft. A opção DH de borda dos chunks pode ampliar o limite.",
+  "options.flansmodultimate.driveableRenderDistanceMultiplier.tooltip": "Multiplica a distância baseada na caixa de colisão e na distância de entidades do Minecraft. Acima de 1x, os veículos também são desenhados além dos chunks carregados. A opção DH de borda dos chunks pode ampliar o limite.",
   "options.flansmodultimate.driveableSpeedUnit": "Unidade de velocidade dos veículos",
   "options.flansmodultimate.driveableTrackLinkGroupingPixelSize": "Tamanho em pixels para agrupar elos",
   "options.flansmodultimate.driveableTrackLinkLodPixelSize": "Tamanho em pixels do LOD dos elos",

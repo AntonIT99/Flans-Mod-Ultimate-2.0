@@ -32,6 +32,7 @@
       "HumanoidModelMixin",
       "ItemInHandLayerMixin",
       "KeyMappingConflictMixin",
+      "LevelRendererMixin",
       "LivingEntityNameTagRangeMixin",
       "LocalPlayerMixin",
       "ModMismatchDisconnectedScreenAccessor",
