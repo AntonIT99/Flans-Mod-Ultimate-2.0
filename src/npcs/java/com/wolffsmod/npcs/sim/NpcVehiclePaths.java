@@ -36,6 +36,10 @@ public final class NpcVehiclePaths
     /** Most a grade or the surface adds to the cost of one node, in blocks of detour, so that a path still crosses them where nothing else leads on. */
     static final float MAX_GRADE_COST = 8F;
     static final float MAX_SURFACE_COST = 4F;
+    /** Blocks ahead of a step up within which ground dropping away again makes it a wall or ledge rather than a slope. */
+    static final int RIDGE_REACH = 2;
+    /** Extra path cost of climbing onto a wall or ledge, in blocks of detour, so that a vehicle goes round one where it can. */
+    public static final float RIDGE_MALUS = 12F;
     /** Share of its speed below which a vehicle is costed as if it kept this much. */
     private static final double MIN_SHARE = 0.1D;
     private static final double STEP_TOLERANCE = 1.0E-3D;
@@ -160,6 +164,28 @@ public final class NpcVehiclePaths
             }
             return Math.toDegrees(Math.atan2(firstRise + feet - y, run * Math.sqrt((double) dx * dx + dz * dz)));
         }
+    }
+
+    /**
+     * A vehicle steps up onto a wall as readily as onto a slope, which look the same from one node to the next; a wall is
+     * told by the ground dropping away again behind it, where a hull would hang over the far edge.
+     *
+     * @param x
+     *            the node stepped up onto, where the feet of the vehicle are
+     * @param dx
+     *            direction of travel, each -1, 0 or 1
+     * @return whether the ground under the node drops back down within {@value #RIDGE_REACH} blocks ahead
+     */
+    public static boolean ridge(Solids solids, int x, int y, int z, int dx, int dz)
+    {
+        if (dx == 0 && dz == 0)
+            return false;
+        for (int step = 1; step <= RIDGE_REACH; step++)
+        {
+            if (!solids.solid(x + dx * step, y - 1, z + dz * step))
+                return true;
+        }
+        return false;
     }
 
     /** @return blocks of detour that driving a node at a share of the vehicle's speed is worth */

@@ -365,9 +365,9 @@ public final class NpcDriving
     /**
      * @param stopping
      *            blocks the vehicle needs to come to a halt
-     * @return blocks the vehicle may still travel before the front of its hull reaches a drop it does not drive down;
-     *         {@link NpcLedges#NONE} without one, for anything but a ground vehicle model on the ground, or where its path
-     *         leads down on purpose
+     * @return blocks the vehicle may still travel before the front of its hull reaches a drop it does not drive down, or,
+     *         without a path, a wall or ledge it would climb only to hang over; {@link NpcLedges#NONE} without one, for
+     *         anything but a ground vehicle model on the ground, or where its path leads down on purpose
      */
     private double ledgeDistance(EntityNPCInterface npc, NpcVehicleState state, float hullYaw, Route route, double stopping, NpcWeaponOptions options)
     {
@@ -380,7 +380,9 @@ public final class NpcDriving
             reach = Math.min(reach, horizontal(npc.position(), route.steer()));
         // At a standstill the direction last decided on is the one it sets off in.
         boolean backward = throttle < 0F || throttle == 0F && reversing;
-        double distance = NpcLedges.ahead(npc, backward ? hullYaw + 180F : hullYaw, reach);
+        double halfWidth = state.groundVehicleModel().flatMap(FlansEntityTypes::getHullFootprint).map(footprint -> footprint.width() * 0.5D * NpcModels.scale(npc)).orElse(0D);
+        // A path has already priced climbing onto a wall or ledge; steering straight, the vehicle stops short of one instead.
+        double distance = NpcLedges.ahead(npc, backward ? hullYaw + 180F : hullYaw, reach, halfWidth, !route.pathed());
         return distance == NpcLedges.NONE ? NpcLedges.NONE : distance - hull - LEDGE_MARGIN;
     }
 

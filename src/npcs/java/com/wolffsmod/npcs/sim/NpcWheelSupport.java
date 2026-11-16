@@ -22,8 +22,12 @@ import net.minecraft.world.phys.Vec3;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcWheelSupport
 {
-    /** Share of its wheels a model keeps on the ground to be carried by them. Below half the footprint, the hull tips. */
-    private static final double HOLD_SHARE = 0.5D;
+    /**
+     * Share of its wheels a model keeps on the ground to be carried by them. A hull with exactly half its footprint over
+     * the edge balances on a knife edge and goes over too: with one axle on the wall and the other in the air it is not
+     * parked, however squarely its mob box stands on the corner.
+     */
+    static final double HOLD_SHARE = 0.55D;
     /** Horizontal acceleration, in blocks per tick squared, with which an overhanging hull slides off its support. */
     private static final double TOPPLE_ACCELERATION = 0.045D;
     /** Fastest, in blocks per tick, that sliding alone pushes a hull off its support. */
@@ -47,10 +51,21 @@ public final class NpcWheelSupport
     {
         if (npc.isPassenger() || npc.isInWater() || npc.isKilled() || !support.overhanging(HOLD_SHARE))
             return;
+        npc.setDeltaMovement(toppled(support, npc.getDeltaMovement(), facing));
+        npc.hasImpulse = true;
+    }
+
+    /**
+     * @param motion
+     *            the velocity of the NPC before the tip, in blocks per tick
+     * @return its velocity with the tip added: pushed over the way it hangs, and downwards once nothing carries it
+     */
+    static Vec3 toppled(WheelSupport support, Vec3 motion, float facing)
+    {
         Vec3 direction = slideDirection(support, facing);
-        Vec3 motion = npc.getDeltaMovement();
-        // The share of the footprint left hanging decides how hard it goes over: a hull on its last wheel barely holds.
-        double push = TOPPLE_ACCELERATION * (1D - support.share() / HOLD_SHARE);
+        // The share of the footprint left hanging decides how hard it goes over. Half of it hanging has to push against
+        // the ground friction a mob is held by, or a hull balanced on an edge would only creep.
+        double push = TOPPLE_ACCELERATION * (1D - support.share());
         double x = motion.x + direction.x * push;
         double z = motion.z + direction.z * push;
         double speed = Math.sqrt(x * x + z * z);
@@ -61,8 +76,7 @@ public final class NpcWheelSupport
         }
         // With no wheel at all on the ground the mob box is the only thing holding it up, and it has to come off that too.
         double y = support.unsupported() ? Math.min(motion.y, -DROP_SPEED) : motion.y;
-        npc.setDeltaMovement(x, y, z);
-        npc.hasImpulse = true;
+        return new Vec3(x, y, z);
     }
 
     /** @return the horizontal unit vector the hull goes over along: towards the wheels that hang, or its nose when all of them do */
