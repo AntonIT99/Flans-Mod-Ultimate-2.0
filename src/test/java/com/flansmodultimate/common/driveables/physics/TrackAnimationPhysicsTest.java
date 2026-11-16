@@ -1,6 +1,9 @@
 package com.flansmodultimate.common.driveables.physics;
 
+import com.flansmod.common.vector.Vector3f;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -75,5 +78,17 @@ class TrackAnimationPhysicsTest
         assertEquals(0F, TrackAnimationPhysics.framePhase(1F));
         assertEquals(0.8F, TrackAnimationPhysics.framePhase(-0.05F), 1E-6);
         assertEquals(TrackAnimationPhysics.framePhase(0.95F), TrackAnimationPhysics.framePhase(-0.05F), 1E-6);
+    }
+
+    @Test
+    void linkLoopScaleMovesLinksAtGroundSpeed()
+    {
+        // A 40 x 10 pixel rectangle: a 100 pixel loop.
+        List<Vector3f> loop = List.of(new Vector3f(0F, 0F, 0F), new Vector3f(40F, 0F, 0F), new Vector3f(40F, 10F, 0F), new Vector3f(0F, 10F, 0F));
+        float travel = TrackAnimationPhysics.travelStep(1D, 0D, 1D, 0D);
+        assertEquals(16F, travel * TrackAnimationPhysics.linkLoopScale(loop, 3F, 1F) * 100F, 1E-4, "One block moves the links 16 model pixels");
+        assertEquals(8F, travel * TrackAnimationPhysics.linkLoopScale(loop, 3F, 2F) * 100F, 1E-4, "Model scale shrinks the pixel distance");
+        assertEquals(1F, TrackAnimationPhysics.linkLoopScale(loop, 0F, 1F), "No links, no rescale");
+        assertEquals(1F, TrackAnimationPhysics.linkLoopScale(List.of(), 3F, 1F));
     }
 }

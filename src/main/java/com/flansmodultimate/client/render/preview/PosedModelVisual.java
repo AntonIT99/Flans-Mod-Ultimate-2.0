@@ -183,8 +183,8 @@ public final class PosedModelVisual implements VehicleVisual, PlaneVisual, Mecha
             VehicleGeometry geometry = vehicle.getResolvedPhysics().geometry();
             Float width = geometry.trackWidthM() != null ? geometry.trackWidthM() : geometry.widthM();
             TrackAnimationPhysics.Steps steps = TrackAnimationPhysics.steps(trackTravel, pose.turn(), width == null ? 1D : width, true, true);
-            leftTrackStep = steps.left();
-            rightTrackStep = steps.right();
+            leftTrackStep = steps.left() * TrackAnimationPhysics.linkLoopScale(vehicle.getLeftTrackPoints(), vehicle.getTrackLinkLength(), vehicle.getModelScale());
+            rightTrackStep = steps.right() * TrackAnimationPhysics.linkLoopScale(vehicle.getRightTrackPoints(), vehicle.getTrackLinkLength(), vehicle.getModelScale());
         }
         else
         {
