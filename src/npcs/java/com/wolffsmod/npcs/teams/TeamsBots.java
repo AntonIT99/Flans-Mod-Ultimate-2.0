@@ -653,8 +653,7 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
         {
             List<BotSettings.VehicleEntry> vehicles = current.getSettings().team(slot.getTeam()).getVehicles();
             UUID wanted = slot.getEntry() < vehicles.size() ? vehicles.get(slot.getEntry()).spawner() : null;
-            List<TeamsSpawner> spawners = current.getGround().spawners().stream()
-                .filter(spawner -> spawner.kind() == TeamsSpawner.Kind.VEHICLE && spawner.owner() != null && spawner.owner().getShortName().equals(slot.getTeam()))
+            List<TeamsSpawner> spawners = current.getGround().spawners(team).stream().filter(spawner -> spawner.kind() == TeamsSpawner.Kind.VEHICLE)
                 .filter(spawner -> spawner.dimension().equals(level.dimension())).filter(spawner -> wanted == null || wanted.equals(spawner.id())).toList();
             spawners = spawners.stream().filter(spawner -> FlanModelNpcs.type(slot.getRole()).map(type -> spawner.npcPolicy().allows(type.getInfoType())).orElse(false)).toList();
             if (!spawners.isEmpty())

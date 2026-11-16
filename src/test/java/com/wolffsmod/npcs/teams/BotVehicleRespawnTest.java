@@ -39,7 +39,7 @@ class BotVehicleRespawnTest
         TeamsSpawner spawner = new TeamsSpawner(UUID.randomUUID(), TeamsSpawner.Kind.VEHICLE, Level.OVERWORLD, BlockPos.ZERO, null, team, policy);
         Battleground ground = mock(Battleground.class);
         when(ground.team("red")).thenReturn(Optional.of(team));
-        when(ground.spawners()).thenReturn(List.of(spawner));
+        when(ground.spawners(team)).thenReturn(List.of(spawner));
         BotBattle battle = new BotBattle(UUID.randomUUID(), ground, settings, Map.of("red", 1));
         BotSlot first = battle.newSlot("red", BotSlot.Source.VEHICLE, 0);
         BotSlot second = battle.newSlot("red", BotSlot.Source.VEHICLE, 0);
@@ -82,5 +82,32 @@ class BotVehicleRespawnTest
             assertTrue(ready.get());
             teams.verify(() -> FlansTeams.recordVehicleSpawnerSpawn(spawner), times(1));
         }
+    }
+
+    @Test
+    void outsideRoundsATeamOnlyUsesItsOwnSpawners()
+    {
+        ITeam red = mock(ITeam.class);
+        when(red.getShortName()).thenReturn("red");
+        ITeam blue = mock(ITeam.class);
+        when(blue.getShortName()).thenReturn("blue");
+        SpawnerNpcPolicy policy = mock(SpawnerNpcPolicy.class);
+        TeamsSpawner own = new TeamsSpawner(UUID.randomUUID(), TeamsSpawner.Kind.VEHICLE, Level.OVERWORLD, BlockPos.ZERO, null, red, policy);
+        TeamsSpawner other = new TeamsSpawner(UUID.randomUUID(), TeamsSpawner.Kind.VEHICLE, Level.OVERWORLD, BlockPos.ZERO, null, blue, policy);
+        TeamsSpawner unowned = new TeamsSpawner(UUID.randomUUID(), TeamsSpawner.Kind.VEHICLE, Level.OVERWORLD, BlockPos.ZERO, null, null, policy);
+        Battleground ground = mock(Battleground.class, CALLS_REAL_METHODS);
+        doReturn(List.of(own, other, unowned)).when(ground).spawners();
+        assertEquals(List.of(own), ground.spawners(red));
+    }
+
+    @Test
+    void roundsLetATeamUseTheSpawnersTheRoundAllowsIt()
+    {
+        ITeam red = mock(ITeam.class);
+        ITeam blue = mock(ITeam.class);
+        TeamsSpawner allied = new TeamsSpawner(UUID.randomUUID(), TeamsSpawner.Kind.VEHICLE, Level.OVERWORLD, BlockPos.ZERO, null, blue, mock(SpawnerNpcPolicy.class));
+        ITeamsLiveRound live = mock(ITeamsLiveRound.class);
+        when(live.getSpawners(red)).thenReturn(List.of(allied));
+        assertEquals(List.of(allied), new RoundBattleground(live).spawners(red));
     }
 }

@@ -109,4 +109,14 @@ public interface ITeamsLiveRound
      * @return the loaded spawner blocks connected to the bases of the map, immutable
      */
     List<TeamsSpawner> getSpawners();
+
+    /**
+     * The spawners a team may use right now, as its players may: those connected to its own bases and, while the round
+     * lets allies share spawns, those of its allies' bases.
+     *
+     * @param team
+     *            a team of the round
+     * @return the loaded spawner blocks, immutable; empty for a team that does not play
+     */
+    List<TeamsSpawner> getSpawners(ITeam team);
 }
