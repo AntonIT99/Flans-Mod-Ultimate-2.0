@@ -171,6 +171,9 @@ public final class NpcEquipmentRangedGoal extends Goal
         main.spinSpeed *= 0.9F;
         off.spinSpeed *= 0.9F;
         npc.getLookControl().setLookAt(target, 30F, 30F);
+        // A tank beyond the reach of the gun in hand may be within the launcher's: draw it now rather than never.
+        if (decisions && main.reloading <= 0 && charging <= 0 && main.cadence.ready() && NpcVehicleThreats.groundVehicle(target))
+            NpcWeaponChoice.select(npc, target);
         if (!npc.isInRange(target, NpcWeaponRange.firing(npc)) || !npc.getSensing().hasLineOfSight(target) || NpcSupportFire.blocked(npc, target))
         {
             cancelUse();
