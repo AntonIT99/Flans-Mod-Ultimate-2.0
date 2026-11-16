@@ -113,6 +113,11 @@ bots do not replace real-client rendering, GUI or modded-physics checks.
   on their own. Do not create wiki pages, audit reports, or other documentation merely
   to record that work was done, unless explicitly requested. Changelogs are the exception:
   keep them current (`docs/changelogs.md`).
+- Document features as platform independent. Do not qualify wiki or feature docs with a
+  loader or Minecraft version ("Forge 1.20.1", "NeoForge 1.21.1", "(Forge 1.20.1 only)") just
+  because a feature has not been ported to every maintained branch yet; branches are merged
+  later. Mention a platform only for genuine, lasting differences (loader APIs, mod
+  compatibility, build or artifact setup).
 - In a mixed worktree, preserve unrelated changes and stage explicit paths only.
 - Some source sets under `src/` (for example `src/wolff*pack/`) are independent, published git
   repositories with their own `.git`, excluded through `.git/info/exclude`. Treat edits there as
