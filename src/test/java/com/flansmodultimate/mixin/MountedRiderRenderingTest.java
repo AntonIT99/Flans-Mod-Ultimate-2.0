@@ -1,11 +1,15 @@
 package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.api.driveables.IFlanSeatOccupant;
-import com.flansmodultimate.common.driveables.physics.PlaneRiderRotation;
+import com.flansmodultimate.api.driveables.IFlanTiltingMount;
+import com.flansmodultimate.common.driveables.physics.DriveableRiderRotation;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -56,29 +60,58 @@ class MountedRiderRenderingTest
     }
 
     @Test
-    void aircraftAttitudeAppliesIdenticallyToNpcAndPlayerRiders() throws ReflectiveOperationException
+    void driveableAttitudeAppliesIdenticallyToNpcAndPlayerRiders() throws ReflectiveOperationException
     {
-        Plane plane = mock(Plane.class);
-        when(plane.getPrevYaw()).thenReturn(20F);
-        when(plane.getYaw()).thenReturn(30F);
-        when(plane.getEntityFacingYaw(25F)).thenReturn(25F);
-        when(plane.getPrevPitch()).thenReturn(10F);
-        when(plane.getPitch()).thenReturn(30F);
-        when(plane.getPrevRoll()).thenReturn(-30F);
-        when(plane.getRoll()).thenReturn(-50F);
-        Seat seat = mock(Seat.class);
-        when(seat.getDriveable()).thenReturn(plane);
-        Method hook = hook("flansmodultimateRotateRiderWithPlane", LivingEntity.class, PoseStack.class, float.class, float.class, float.class, float.class, CallbackInfo.class);
-        Vector3f expected = PlaneRiderRotation.at(plane, 0.5F, 60F).transform(new Vector3f(0F, 1F, 0F));
+        Method hook = hook("flansmodultimateRotateRiderWithDriveable", LivingEntity.class, PoseStack.class, float.class, float.class, float.class, float.class, CallbackInfo.class);
+        for (Class<? extends Driveable> kind : List.of(Plane.class, Vehicle.class))
+        {
+            Driveable driveable = mock(kind);
+            when(driveable.getPrevYaw()).thenReturn(20F);
+            when(driveable.getYaw()).thenReturn(30F);
+            when(driveable.getPrevPitch()).thenReturn(10F);
+            when(driveable.getPitch()).thenReturn(30F);
+            when(driveable.getPrevRoll()).thenReturn(-30F);
+            when(driveable.getRoll()).thenReturn(-50F);
+            Seat seat = mock(Seat.class);
+            when(seat.getDriveable()).thenReturn(driveable);
+            Vector3f expected = DriveableRiderRotation.at(driveable, 0.5F, 60F).transform(new Vector3f(0F, 1F, 0F));
+            assertNotEquals(1F, expected.y, 1.0E-3F);
+            for (LivingEntity rider : List.of(mock(LivingEntity.class), mock(Player.class)))
+            {
+                when(rider.getVehicle()).thenReturn(seat);
+                PoseStack pose = new PoseStack();
+                hook.invoke(hooks, rider, pose, 0F, 60F, 0.5F, 1F, new CallbackInfo("setupRotations", false));
+                Vector3f up = pose.last().normal().transform(new Vector3f(0F, 1F, 0F));
+                assertEquals(expected.x, up.x, 1.0E-5F);
+                assertEquals(expected.y, up.y, 1.0E-5F);
+                assertEquals(expected.z, up.z, 1.0E-5F);
+            }
+        }
+    }
+
+    @Test
+    void ridersOfATiltingMountLeanWithItsBody() throws ReflectiveOperationException
+    {
+        LivingEntity mount = mock(LivingEntity.class, withSettings().extraInterfaces(IFlanTiltingMount.class));
+        mount.yBodyRotO = 90F;
+        mount.yBodyRot = 90F;
+        when(((IFlanTiltingMount) mount).flansmodultimateRiderTilt(0.5F)).thenReturn(new Quaternionf().rotateZ(90F * (float) Math.PI / 180F));
+        Method hook = hook("flansmodultimateRotateRiderWithDriveable", LivingEntity.class, PoseStack.class, float.class, float.class, float.class, float.class, CallbackInfo.class);
         for (LivingEntity rider : List.of(mock(LivingEntity.class), mock(Player.class)))
         {
-            when(rider.getVehicle()).thenReturn(seat);
-            PoseStack pose = new PoseStack();
-            hook.invoke(hooks, rider, pose, 0F, 60F, 0.5F, 1F, new CallbackInfo("setupRotations", false));
-            Vector3f up = pose.last().normal().transform(new Vector3f(0F, 1F, 0F));
-            assertEquals(expected.x, up.x, 1.0E-5F);
-            assertEquals(expected.y, up.y, 1.0E-5F);
-            assertEquals(expected.z, up.z, 1.0E-5F);
+            when(rider.getVehicle()).thenReturn(mount);
+            // Facing the way the mount faces, the rider takes its tilt unchanged; facing aside, about its own side.
+            PoseStack ahead = new PoseStack();
+            hook.invoke(hooks, rider, ahead, 0F, 90F, 0.5F, 1F, new CallbackInfo("setupRotations", false));
+            Vector3f up = ahead.last().normal().transform(new Vector3f(0F, 1F, 0F));
+            assertEquals(-1F, up.x, 1.0E-5F);
+            assertEquals(0F, up.y, 1.0E-5F);
+            PoseStack aside = new PoseStack();
+            hook.invoke(hooks, rider, aside, 0F, 0F, 0.5F, 1F, new CallbackInfo("setupRotations", false));
+            up = aside.last().normal().transform(new Vector3f(0F, 1F, 0F));
+            assertEquals(0F, up.x, 1.0E-5F);
+            assertEquals(0F, up.y, 1.0E-5F);
+            assertEquals(-1F, up.z, 1.0E-5F);
         }
     }
 
