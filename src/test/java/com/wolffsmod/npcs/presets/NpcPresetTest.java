@@ -51,6 +51,17 @@ class NpcPresetTest
     }
 
     @Test
+    void everyPresetEitherHidesTheBodyOrRetainsTheWreck()
+    {
+        for (NpcPreset preset : NpcPreset.values())
+        {
+            int hide = preset.getTargets().stream().filter(target -> target.setting() == NpcPresetSetting.HIDE_BODY).findFirst().orElseThrow().value();
+            int wreck = preset.getTargets().stream().filter(target -> target.setting() == NpcPresetSetting.KEEP_WRECK).findFirst().orElseThrow().value();
+            assertEquals(1, hide + wreck, preset + " hides the body " + hide + " and retains the wreck " + wreck);
+        }
+    }
+
+    @Test
     void everyPresetSetsEachSettingOnceToAValueItCanHold()
     {
         for (NpcPreset preset : NpcPreset.values())

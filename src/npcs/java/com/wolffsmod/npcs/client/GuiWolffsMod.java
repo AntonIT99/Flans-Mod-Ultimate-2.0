@@ -2579,8 +2579,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             case BLOOD_EFFECTS_ID -> settings.setBloodEffects(yes);
             case HURT_FLASH_ID -> settings.setHurtFlash(yes);
             case DEATH_ROTATION_ID -> settings.setDeathRotation(yes);
-            case HIDE_BODY_ID -> npc.stats.hideKilledBody = yes;
-            case KEEP_WRECK_ID -> settings.setKeepWreck(yes);
+            case HIDE_BODY_ID -> NpcWrecks.setHideBody(npc, yes);
+            case KEEP_WRECK_ID -> NpcWrecks.setKeepWreck(npc, yes);
             case IDLE_ENABLED_ID -> sounds().setIdleEnabled(yes);
             case MOVEMENT_ENABLED_ID -> sounds().setMovementEnabled(yes);
             case VARIABLE_PITCH_ID -> sounds().setVariablePitch(yes);

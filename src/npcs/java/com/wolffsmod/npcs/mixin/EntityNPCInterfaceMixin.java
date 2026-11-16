@@ -56,7 +56,7 @@ import java.util.*;
 
 /**
  * Teams controls passive regeneration for round soldiers; medical healing and vehicle repairs stay independent.
- * Every hook into the Custom NPCs entity base class. Preset wrecks remain inert after death instead of being removed, and kept corpses lie in their death pose for their corpse time.
+ * Every hook into the Custom NPCs entity base class. Retained wrecks remain inert after death instead of being removed, a respawning one leaving a copy behind, and kept corpses lie in their death pose for their corpse time.
  *
  * <ul>
  * <li>Equipment owns native combat; Custom NPCs' stored stats remain fallback/editor data, and stand in for each melee statistic
@@ -286,10 +286,17 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob
     private void wolffsmodnpcsKeepWreck(CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
-        if (npc.stats.spawnCycle == 3 && !npc.stats.hideKilledBody && NpcPresentation.of(npc).isKeepWreck())
+        if (NpcWrecks.retainsBody(npc))
             callback.cancel();
         else
             wolffsmodnpcsKeepCorpse(npc, callback);
+    }
+
+    /** A respawning NPC with Retain wreck leaves a copy of its dead body behind as it comes back. */
+    @Inject(method = "reset", at = @At("HEAD"))
+    private void wolffsmodnpcsLeaveWreck(CallbackInfo callback)
+    {
+        NpcWrecks.leaveOnRespawn((EntityNPCInterface) (Object) this);
     }
 
     /**
