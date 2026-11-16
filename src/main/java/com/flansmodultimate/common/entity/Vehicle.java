@@ -608,8 +608,8 @@ public class Vehicle extends Driveable implements VehicleVisual
             Float width = geometry.trackWidthM() != null ? geometry.trackWidthM() : geometry.widthM();
             TrackAnimationPhysics.Steps steps = TrackAnimationPhysics.steps(trackTravelStep, yawDelta, width == null ? 1D : width, isPartIntact(EnumDriveablePart.LEFT_TRACK),
                 isPartIntact(EnumDriveablePart.RIGHT_TRACK));
-            leftTrackStep = steps.left();
-            rightTrackStep = steps.right();
+            leftTrackStep = steps.left() * TrackAnimationPhysics.linkLoopScale(type.getLeftTrackPoints(), type.getTrackLinkLength(), type.getModelScale());
+            rightTrackStep = steps.right() * TrackAnimationPhysics.linkLoopScale(type.getRightTrackPoints(), type.getTrackLinkLength(), type.getModelScale());
         }
         else
         {

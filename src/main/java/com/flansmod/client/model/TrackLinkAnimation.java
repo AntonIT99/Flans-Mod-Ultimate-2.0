@@ -14,18 +14,27 @@ import net.minecraft.util.Mth;
  * speed, so their spacing never changes and the shared scroll offset on
  * {@link Vehicle} places them. Only the link <em>angle</em> carries history. Each
  * tick a link eases halfway towards the direction of travel of the path segment
- * it currently sits on, which smooths the corner-to-corner transitions but spins
- * the wrong way through the seam where {@code atan2} flips between +&pi; and
- * -&pi;. That is what {@code FixTrackLink} / {@code TrackLinkFix} exists for: it
- * names the segment index on which links snap straight to the true angle instead
- * of easing, so the seam is crossed in a single tick. The snap segment shifts by
- * one when the track runs backwards, matching the legacy sign handling.
+ * it currently sits on, which smooths the corner-to-corner transitions.
+ * {@code FixTrackLink} / {@code TrackLinkFix} names the segment index on which
+ * links snap straight to the true angle instead of easing; it shifts by one when
+ * the track runs backwards, matching the legacy sign handling.
+ * </p>
+ *
+ * <p>
+ * Legacy links moved a fixed 1.5 pixels per tick at full throttle. Links now
+ * travel at ground speed, so the easing is applied once per 1.5 pixels travelled
+ * (at least once per tick), keeping the legacy corner lag per distance instead
+ * of letting fast links trail their corners. Easing takes the shortest way round,
+ * so links never spin through the {@code atan2} seam even when they move far
+ * enough in one tick to skip the snap segment.
  * </p>
  */
 public final class TrackLinkAnimation
 {
     /** Fraction of the remaining angle a link closes each tick away from the fix segment. */
     private static final float EASE = 0.5F;
+    /** Legacy link travel per tick at full throttle, in model pixels: the distance one easing step covered. */
+    private static final float LEGACY_PIXELS_PER_EASE = 1.5F;
     /** Legacy links started a hundredth of a pixel along the loop rather than exactly on a vertex. */
     private static final float START_OFFSET = 0.01F;
     private static final int MAX_LINKS = 512;
@@ -100,6 +109,8 @@ public final class TrackLinkAnimation
         float snapSegment = type.getTrackLinkFix() + (speed < 0F ? 0F : 1F);
         float spacing = type.getTrackLinkLength();
         float scrolled = scroll * path.length();
+        float easeSteps = Math.max(1F, Math.abs(speed) * path.length() / LEGACY_PIXELS_PER_EASE);
+        float eased = 1F - (float) Math.pow(1F - EASE, easeSteps);
 
         for (int link = 0; link < angles.length; link++)
         {
@@ -112,9 +123,15 @@ public final class TrackLinkAnimation
             // 1.7.10 aimed each link at the point it is travelling towards, which
             // is the reverse of the static pose used for inventory renders.
             float target = (float) Math.atan2(path.pointY(segment) - y, path.pointX(segment) - x);
-            float ease = segment != snapSegment ? EASE : 1F;
-            angles[link] = seeded ? Mth.lerp(ease, angles[link], target) : target;
+            float ease = segment != snapSegment ? eased : 1F;
+            angles[link] = seeded ? wrapRadians(angles[link] + wrapRadians(target - angles[link]) * ease) : target;
         }
+    }
+
+    /** Wraps an angle into {@code [-pi, pi)}. */
+    private static float wrapRadians(float angle)
+    {
+        return angle - Mth.TWO_PI * Mth.floor((angle + Mth.PI) / Mth.TWO_PI);
     }
 
     /** Rebuilds the paths and link arrays when the vehicle type changes. Returns false if the type has no fancy track. */
