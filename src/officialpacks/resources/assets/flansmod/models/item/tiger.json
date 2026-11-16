@@ -6,27 +6,15 @@
   "overrides": [
     {
       "predicate": {
-        "flansmod:paintjob": 1
-      },
-      "model": "flansmod:item/tiger"
-    },
-    {
-      "predicate": {
-        "flansmod:paintjob": 2
-      },
-      "model": "flansmod:item/tiger"
-    },
-    {
-      "predicate": {
         "flansmod:paintjob": 3
       },
-      "model": "flansmod:item/tiger"
+      "model": "flansmod:item/tiger_desert"
     },
     {
       "predicate": {
         "flansmod:paintjob": 4
       },
-      "model": "flansmod:item/tiger"
+      "model": "flansmod:item/tiger_snow"
     }
   ]
 }

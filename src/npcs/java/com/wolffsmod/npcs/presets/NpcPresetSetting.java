@@ -42,7 +42,7 @@ public enum NpcPresetSetting
     /** Stats > Respawn: Yes, Day, Night, No or Naturally. */
     RESPAWN(npc -> npc.stats.spawnCycle, (npc, value) -> npc.stats.spawnCycle = value, List.of("gui.yes", "gui.day", "gui.night", "gui.no", "stats.naturally")),
     /** Stats > Respawn > Hide body when killed. */
-    HIDE_BODY(npc -> yes(npc.stats.hideKilledBody), (npc, value) -> npc.stats.hideKilledBody = value != 0, Values.NO_YES),
+    HIDE_BODY(npc -> yes(npc.stats.hideKilledBody), (npc, value) -> NpcWrecks.setHideBody(npc, value != 0), Values.NO_YES),
     /** AI > Door interact: Break, Open or Disabled. */
     DOOR_INTERACT(npc -> npc.ais.doorInteract, (npc, value) -> npc.ais.doorInteract = value, List.of("gui.break", "gui.open", "gui.disabled")),
     /** AI > Can sprint. */
@@ -92,7 +92,7 @@ public enum NpcPresetSetting
     /** Death rotation. */
     DEATH_ROTATION(npc -> yes(NpcPresentation.of(npc).isDeathRotation()), (npc, value) -> NpcPresentation.of(npc).setDeathRotation(value != 0), Values.NO_YES),
     /** Keep wreck. */
-    KEEP_WRECK(npc -> yes(NpcPresentation.of(npc).isKeepWreck()), (npc, value) -> NpcPresentation.of(npc).setKeepWreck(value != 0), Values.NO_YES),
+    KEEP_WRECK(npc -> yes(NpcPresentation.of(npc).isKeepWreck()), (npc, value) -> NpcWrecks.setKeepWreck(npc, value != 0), Values.NO_YES),
     /** Can drown. */
     CAN_DROWN(NpcTypeProperty.CAN_DROWN),
     /** No fall damage. */

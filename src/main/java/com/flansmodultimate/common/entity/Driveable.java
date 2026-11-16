@@ -137,6 +137,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** Looping sound channels this vehicle drives on the client. */
     protected static final String SOUND_CHANNEL_ENGINE = "engine";
     protected static final String SOUND_CHANNEL_REVERSE = "reverse";
+    /** Ticks the driving loop outlasts a closed throttle, so a brief dip does not restart the engine sound twice. */
+    protected static final int ENGINE_LOOP_HOLD_TICKS = 10;
     protected static final int FLAG_IT1_CAN_FIRE = 1 << 5;
     protected static final int FLAG_IT1_RELOADING = 1 << 6;
     /** Countermeasures have finished deploying but are not ready to fire again. */
@@ -250,6 +252,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected Wheel[] wheels = new Wheel[0];
     protected int groundedWheelCount;
+    /** What the grounded wheels last stood on, averaged; firm ground while airborne or unsampled. */
+    protected SurfaceTraction.Sample wheelSurface = SurfaceTraction.Sample.FIRM;
     /** Tells this driveable's own motion apart from outside pushes, which are weighed against its mass. Server only. */
     private final ExternalImpulseTracker externalImpulses = new ExternalImpulseTracker();
     @Getter
@@ -389,6 +393,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     private int riderRecallTicks;
     /** Counts down while the start sound plays, holding the engine loop back until it has finished. */
     protected int startSoundTicks;
+    /** Counts down once the throttle closes, keeping the driving loop until it reaches zero. Client side. */
+    protected int engineLoopHoldTicks;
     protected int engineStartTicks;
     protected int recoilTicksRemaining;
     protected int recoilDuration;
@@ -1083,6 +1089,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public void setAfterburnerArmed(boolean value)
     {
         setFlag(FLAG_AFTERBURNER, value);
+    }
+
+    /** Whether an afterburner is simulated, so its switch decides when afterburn exhaust shows. Only aircraft carry one. */
+    public boolean hasAfterburner()
+    {
+        return false;
     }
 
     /** Whether an afterburner is actually lit. Only aircraft carry one. */
@@ -3231,7 +3243,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             }
             return modelLocalDirectionToWorld(localDirection).normalize();
         }
-        if (isTurretMountedPart(part))
+        // A gun on a numbered turret stays where it is on the hull but fires where the driver aims, as in the legacy mod.
+        if (EnumDriveablePart.isTurretPart(part))
             return aimedDirection(getTurretYaw(), getTurretPitch());
         return modelLocalDirectionToWorld(configuredModelLocal(new Vec3(1D, 0D, 0D))).normalize();
     }
@@ -3276,7 +3289,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         if (configType == null)
             return point;
-        Vec3 turretPivot = configuredModelLocal(configType.getTurretOrigin());
+        Vec3 turretPivot = attachmentModelLocal(configType.getTurretOrigin());
         Vec3 barrelPivot = modelBarrelPitchPivot == null ? null : modelPivotToLocal(modelBarrelPitchPivot);
         Vec3 defaultPivot = barrelPivot != null ? barrelPivot : turretPivot;
         Vec3 pitchPivot = partPivot != null ? partPivot : defaultPivot;
@@ -3285,7 +3298,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // then yaws the complete turret around TurretOrigin.
         Vec3 pitched = rotateBarrelPitchLocal(point.subtract(pitchPivot), pitch).add(pitchPivot);
         Vec3 rotated = rotateTurretYawLocal(pitched.subtract(turretPivot), yaw).add(turretPivot);
-        Vec3 configuredOffset = configuredModelLocal(configType.getTurretOriginOffset());
+        Vec3 configuredOffset = attachmentModelLocal(configType.getTurretOriginOffset());
         Vec3 originOffset = rotateTurretYawLocal(configuredOffset, yaw);
         return rotated.add(originOffset);
     }
@@ -3447,7 +3460,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             for (DriveableType.ShootParticle particle : particles)
             {
                 Vec3 localDirection = configuredModelLocal(new Vec3(particle.x(), particle.y(), particle.z()));
-                if (isTurretMountedPart(part))
+                if (EnumDriveablePart.isTurretPart(part))
                     localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
                 Vec3 direction = modelLocalDirectionToWorld(localDirection);
                 ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, 1F);
@@ -3935,7 +3948,16 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // Remote clients may not have resolved the driver seat yet, so use the synced engine flag.
         boolean active = engineActive;
         boolean loaded = isEngineLoadedWithoutThrottle();
-        boolean throttled = active && (Math.abs(getThrottle()) > 0.001F || loaded);
+        // Each switch between the driving and idle loops starts the new one from its beginning, so a throttle
+        // that drops to zero for a moment, as an NPC driver's or a helicopter collective's often does, keeps
+        // the driving loop instead of cutting to idle and back.
+        if (active && (Math.abs(getThrottle()) > 0.001F || loaded))
+            engineLoopHoldTicks = ENGINE_LOOP_HOLD_TICKS;
+        else if (!active)
+            engineLoopHoldTicks = 0;
+        else if (engineLoopHoldTicks > 0)
+            --engineLoopHoldTicks;
+        boolean throttled = active && engineLoopHoldTicks > 0;
 
         if (startSoundTicks > 0)
             --startSoundTicks;
@@ -4160,6 +4182,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // A wreck has already given up its parts and its blast.
         if (destroyed)
             return;
+        killTurretCrew(part);
         dropDestroyedPartRecipe(part);
         if (configType != null)
         {
@@ -4184,6 +4207,23 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
         if (part == EnumDriveablePart.CORE)
             destroyDriveable();
+    }
+
+    /** Those seated inside a turret, the driver included, die with it rather than being thrown clear. */
+    protected void killTurretCrew(EnumDriveablePart turret)
+    {
+        if (level().isClientSide)
+            return;
+        for (Seat seat : seats)
+        {
+            if (seat == null || seat.getSeatInfo() == null || !EnumDriveablePart.isSeatInTurret(seat.getSeatInfo().getPart(), turret))
+                continue;
+            for (Entity passenger : List.copyOf(seat.getPassengers()))
+            {
+                passenger.stopRiding();
+                passenger.hurt(level().damageSources().generic(), Float.MAX_VALUE);
+            }
+        }
     }
 
     protected void dropDestroyedPartRecipe(EnumDriveablePart partType)
@@ -4347,9 +4387,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     /**
      * Basis conversion for a point authored as an attachment on the driveable:
-     * seat positions and their rotated offsets, passenger gun origins and the
-     * driveable's own shoot points. Aircraft take the model-facing half-turn,
-     * everything else the lateral mirror.
+     * seat positions and their rotated offsets, passenger gun origins, the
+     * driveable's own shoot points, and TurretOrigin with TurretOriginOffset,
+     * which legacy Flan's authored in the same frame as the seats and guns they
+     * carry round. Aircraft take the model-facing half-turn, everything else
+     * the lateral mirror.
      *
      * <p>
      * The mirror is the part that is easy to lose, because most content is
@@ -4717,7 +4759,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public boolean isDriverWeaponHullFixed(boolean secondary)
     {
         List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
-        return !points.isEmpty() && !isTurretMountedPart(points.get(0).getRootPos().getPart());
+        return !points.isEmpty() && !EnumDriveablePart.isTurretPart(points.get(0).getRootPos().getPart());
     }
 
     /** @return the round the bank of the driver's trigger would fire now, or null with none loaded. Server side. */
@@ -5732,12 +5774,18 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return;
         if ((this instanceof Vehicle || this instanceof Plane) && !isEngineActive())
             return;
-        (isAfterburnerBurning() ? java.util.stream.Stream.concat(configType.getEmitters().stream(), configType.getAfterburnEmitters().stream()) : configType.getEmitters().stream()).forEach(emitter ->
+        boolean burning = isAfterburnerBurning();
+        // Legacy packs author afterburn exhaust as plain throttle emitters; with a simulated afterburner the switch and its throttle detent decide instead.
+        boolean afterburnerGoverned = hasAfterburner();
+        (burning ? java.util.stream.Stream.concat(configType.getEmitters().stream(), configType.getAfterburnEmitters().stream()) : configType.getEmitters().stream()).forEach(emitter ->
         {
             if (tickCount % emitter.getEmitRate() != 0 || !isPartIntact(emitter.getPart()))
                 return;
+            boolean governedExhaust = afterburnerGoverned && FlanParticles.FM_AFTERBURN.equals(emitter.getParticleType());
+            if (governedExhaust && !burning)
+                return;
             float throttle = getThrottle();
-            if (throttle < emitter.getMinThrottle() || throttle > emitter.getMaxThrottle())
+            if (!governedExhaust && (throttle < emitter.getMinThrottle() || throttle > emitter.getMaxThrottle()))
                 return;
 
             DriveablePart partState = driveableData == null ? null : driveableData.getPart(emitter.getPart());
@@ -5775,7 +5823,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 direction = direction.add(movement);
             }
 
-            ClientHooks.RENDER.spawnParticle(emitter.getParticleType(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, 1F);
+            // Afterburner exhaust grows with the lever, full size at full throttle.
+            float scale = governedExhaust || configType.getAfterburnEmitters().contains(emitter) ? Mth.clamp(throttle, 0F, 1F) : 1F;
+            ClientHooks.RENDER.spawnParticle(emitter.getParticleType(), origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, scale);
         });
     }
 
@@ -5804,9 +5854,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      *
      * <p>
      * Kept for the points where the mirror would be wrong or pointless: the
-     * synthetic forward vector, whose lateral component is zero either way; the
-     * turret pivot, which every pack puts on the centreline; and wheel anchors,
-     * which come in symmetric sets and whose left/right lever arms are derived
+     * synthetic forward vector, whose lateral component is zero either way; and
+     * wheel anchors, which come in symmetric sets and whose left/right lever arms are derived
      * in this same basis by {@code applyWheelContactPhysics}. Mirroring wheels
      * alone would inverse the roll response on side slopes while moving nothing
      * a player can see.
@@ -5925,7 +5974,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         ItemStack held = player.getItemInHand(hand);
         if (held.getItem() instanceof ToolItem tool && tool.getConfigType().isKey())
             return InteractionResult.sidedSuccess(level().isClientSide || bindOrCheckKey(player, held));
-        if (isWreck() || ToolItem.isRepairTool(held))
+        if (isWreck() || ToolItem.isHoldingRepairTool(player))
             return InteractionResult.PASS;
         if (!canPlayerAccess(player) || player.isSpectator() || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
             return InteractionResult.PASS;
@@ -6796,13 +6845,13 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     public Vec3 getCollisionTurretPivot()
     {
-        return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO : configuredModelLocal(configType.getTurretOrigin());
+        return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO : attachmentModelLocal(configType.getTurretOrigin());
     }
 
     /** Model-local offset that turret-mounted part boxes carry, yawed with the turret. */
     public Vec3 getCollisionTurretOffset()
     {
-        return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO : configuredModelLocal(configType.getTurretOriginOffset());
+        return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO : attachmentModelLocal(configType.getTurretOriginOffset());
     }
 
     /**
@@ -7026,11 +7075,21 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected Vec3 applyGravityAndBuoyancy(@NotNull Vec3 velocity, double gravity)
     {
+        return applyGravityAndBuoyancy(velocity, gravity, 0D);
+    }
+
+    /**
+     * As above, for a caller whose own motion step already applied {@code carriedWeight} of gravity this tick. The
+     * restoring responses carry that weight while the hull floats; the legacy constant lift was authored against it.
+     */
+    protected Vec3 applyGravityAndBuoyancy(@NotNull Vec3 velocity, double gravity, double carriedWeight)
+    {
         if (isFloatingOnWater())
         {
             double ceiling = Mth.clamp(configType.getBuoyancy(), 0F, 0.25F);
+            double carried = MarineDraftPhysics.carriedVelocity(velocity.y, carriedWeight);
             ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
-            Float draft = physics.draftM();
+            Float draft = configType.getModelDraftM();
             if (draft != null && !ModCommonConfig.forceLegacyMovement(physics.category()))
             {
                 // A declared draft turns flotation into a restoring response that
@@ -7041,7 +7100,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 double surface = Double.isFinite(bottom) ? findWaterSurfaceY(new Vec3(getX(), bottom, getZ())) : Double.NaN;
                 if (Double.isFinite(surface))
                 {
-                    double corrected = MarineDraftPhysics.verticalVelocity(velocity.y, bottom, surface, draft, ceiling);
+                    double corrected = MarineDraftPhysics.verticalVelocity(carried, bottom, surface, draft, ceiling);
                     double drag = ModPhysics.dragRetention(0.92D, level());
                     return applyEpicShipFlotation(new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag));
                 }
@@ -7049,7 +7108,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             double waterlineDepth = legacyWaterlineDepth();
             if (Double.isFinite(waterlineDepth))
             {
-                double corrected = MarineDraftPhysics.waterlineVelocity(velocity.y, waterlineDepth, ceiling);
+                double corrected = MarineDraftPhysics.waterlineVelocity(carried, waterlineDepth, ceiling);
                 double drag = ModPhysics.dragRetention(0.92D, level());
                 return applyEpicShipFlotation(new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag));
             }
@@ -7150,7 +7209,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         double anchor = configType.getLowestWheelAnchor();
         if (Double.isFinite(anchor))
             waterline += anchor - (this instanceof Vehicle ? configType.getFloatOffset() : 0D);
-        Float draft = configType.getResolvedPhysics().draftM();
+        Float draft = configType.getModelDraftM();
         double bottom = flotationHullBottomY();
         if (draft != null && Double.isFinite(bottom) && !ModCommonConfig.forceLegacyMovement(configType.getResolvedPhysics().category()))
             waterline = bottom + draft;
@@ -7267,8 +7326,12 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected Vec3 applyWheelContactPhysics(@NotNull Vec3 velocity, boolean alignToTerrain, double appliedGravity)
     {
         groundedWheelCount = 0;
+        wheelSurface = SurfaceTraction.Sample.FIRM;
         if (configType == null || configType.getWheelPositions().isEmpty())
             return velocity;
+        EnumDriveType surfaceDriveType = configType.getResolvedPhysics().driveType();
+        double surfaceGripSum = 0D;
+        double surfaceSpeedSum = 0D;
         float spring = Mth.clamp(configType.getWheelSpringStrength(), 0F, 1F);
         float step = Mth.clamp(configType.getWheelStepHeight(), 0F, 2.5F);
         // Horizontal anchor spacing follows the scaled model. Anchor heights do
@@ -7276,142 +7339,88 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         double scale = modelScale();
         double suspensionDroop = 0.35D + (1D - spring) * 0.2D;
         double maximumCompression = Math.max(0.15D, step + 0.1D);
-        double minimumMountHeight = Double.POSITIVE_INFINITY;
-        double maximumMountHeight = Double.NEGATIVE_INFINITY;
-        for (DriveablePosition definition : configType.getWheelPositions())
-        {
-            if (definition != null && isPartIntact(definition.getPart()))
-            {
-                minimumMountHeight = Math.min(minimumMountHeight, definition.getPosition().y);
-                maximumMountHeight = Math.max(maximumMountHeight, definition.getPosition().y);
-            }
-        }
-        double mountHeightRange = Double.isFinite(minimumMountHeight) ? maximumMountHeight - minimumMountHeight : 0D;
         // A legacy wheel was an independently falling collision entity. Keep
         // probing far enough below high-mounted tail gear to reproduce that
         // behaviour while another wheel is supporting the driveable.
-        double poseProbeDroop = suspensionDroop + mountHeightRange + step + 0.45D;
-        double supportError = 0D;
-        double frontHeight = 0D;
-        double backHeight = 0D;
-        double leftHeight = 0D;
-        double rightHeight = 0D;
-        double frontMountHeight = 0D;
-        double backMountHeight = 0D;
-        double leftMountHeight = 0D;
-        double rightMountHeight = 0D;
-        int frontCount = 0;
-        int backCount = 0;
-        int leftCount = 0;
-        int rightCount = 0;
-        double frontX = 0D;
-        double backX = 0D;
-        double leftZ = 0D;
-        double rightZ = 0D;
-
-        // The historical 1.5 block look-ahead is correct only up to about
-        // 108 km/h. A type on the real-world profile probes as far as it can
-        // actually travel in a tick; legacy types keep the historical value.
+        double poseProbeDroop = suspensionDroop + wheelMountHeightRange() + step + 0.45D;
         ResolvedVehiclePhysics resolvedPhysics = configType.getResolvedPhysics();
-        double predictionCap = ModCommonConfig.forceLegacyMovement(resolvedPhysics.category())
-            ? VehiclePhysicsConstants.LEGACY_WHEEL_PREDICTION_BLOCKS
-            : resolvedPhysics.wheelPredictionBlocks(ModCommonConfig.realisticSpeedScale(resolvedPhysics.category()));
-        Vec3 horizontalPrediction = new Vec3(velocity.x, 0D, velocity.z);
-        double predictionLength = horizontalPrediction.length();
-        if (predictionLength > predictionCap)
-            horizontalPrediction = horizontalPrediction.scale(predictionCap / predictionLength);
 
+        // The tilt looks ahead; a wheel the terrain ahead does not carry is still carried by what it stands on.
+        WheelTerrainSampler sampler = new WheelTerrainSampler(this::clipWheelTerrain,
+            new WheelTerrainSampler.Reach(step + 0.6D, poseProbeDroop + 0.45D, wheelGroundClearance(), maximumCompression, poseProbeDroop, suspensionDroop), wheelPrediction(velocity, resolvedPhysics),
+            false);
         for (int index = 0; index < configType.getWheelPositions().size(); index++)
         {
             DriveablePosition definition = configType.getWheelPosition(index);
             if (definition == null || !isPartIntact(definition.getPart()))
                 continue;
-            Vec3 wheel = getWheelWorldPosition(index).add(horizontalPrediction);
-            Vec3 rayStart = wheel.add(0D, step + 0.6D, 0D);
-            Vec3 rayEnd = wheel.add(0D, -poseProbeDroop - 0.45D, 0D);
-            BlockHitResult hit = level().clip(new ClipContext(rayStart, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-            if (hit.getType() != HitResult.Type.BLOCK)
-                continue;
-            double surface = hit.getLocation().y;
-            double desiredWheelY = surface + wheelGroundClearance();
-            double error = desiredWheelY - wheel.y;
-            if (error < -poseProbeDroop || error > maximumCompression)
-                continue;
-            if (error >= -suspensionDroop)
-            {
-                supportError += error;
-                ++groundedWheelCount;
-            }
-
             Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition()).scale(scale);
-            double forwardPosition = LegacyDriveableCoordinates.legacyForwardCoordinate(local);
-            double rightPosition = LegacyDriveableCoordinates.legacyRightCoordinate(local);
-            double mountHeight = definition.getPosition().y;
-            if (forwardPosition > 1.0E-4D)
+            BlockHitResult carrying = sampler.add(getWheelWorldPosition(index), LegacyDriveableCoordinates.legacyForwardCoordinate(local), LegacyDriveableCoordinates.legacyRightCoordinate(local),
+                definition.getPosition().y);
+            if (carrying != null)
             {
-                frontHeight += surface;
-                frontMountHeight += mountHeight;
-                frontX += forwardPosition;
-                ++frontCount;
-            }
-            else if (forwardPosition < -1.0E-4D)
-            {
-                backHeight += surface;
-                backMountHeight += mountHeight;
-                backX += forwardPosition;
-                ++backCount;
-            }
-            if (rightPosition > 1.0E-4D)
-            {
-                rightHeight += surface;
-                rightMountHeight += mountHeight;
-                rightZ += rightPosition;
-                ++rightCount;
-            }
-            else if (rightPosition < -1.0E-4D)
-            {
-                leftHeight += surface;
-                leftMountHeight += mountHeight;
-                leftZ += rightPosition;
-                ++leftCount;
+                SurfaceTraction.Sample wheelSample = SurfaceTraction.sample(SurfaceTraction.classify(level().getBlockState(carrying.getBlockPos())), surfaceDriveType);
+                surfaceGripSum += wheelSample.grip();
+                surfaceSpeedSum += wheelSample.speedFactor();
             }
         }
+        groundedWheelCount = sampler.grounded();
         if (groundedWheelCount == 0)
             return velocity;
+        wheelSurface = SurfaceTraction.average(surfaceGripSum, surfaceSpeedSum, groundedWheelCount);
 
-        double correctedY = SuspensionPhysics.dampVerticalVelocity(velocity.y, supportError / groundedWheelCount, spring, velocity.horizontalDistance(), appliedGravity);
+        double correctedY = SuspensionPhysics.dampVerticalVelocity(velocity.y, sampler.meanError(), spring, velocity.horizontalDistance(), appliedGravity);
 
         if (alignToTerrain)
         {
             // Support found at only one end (the other wheels over a drop deeper than the probe) eases the
             // driveable level instead of freezing whatever angle it had at that moment.
-            float targetPitch = 0F;
-            if (frontCount > 0 && backCount > 0)
-            {
-                double front = frontHeight / frontCount;
-                double back = backHeight / backCount;
-                double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
-                double mountDifference = frontMountHeight / frontCount - backMountHeight / backCount;
-                targetPitch = SuspensionPhysics.supportAngle(front - back, length, mountDifference, this instanceof Plane);
-            }
-            float pitch = SuspensionPhysics.smoothTerrainAngle(getPitch(), targetPitch, spring);
-            float roll = getRoll();
-            if (configType.isCanRoll() && (leftCount == 0 || rightCount == 0))
-            {
-                roll = SuspensionPhysics.smoothTerrainAngle(getRoll(), 0F, spring);
-            }
-            else if (configType.isCanRoll())
-            {
-                double left = leftHeight / leftCount;
-                double right = rightHeight / rightCount;
-                double width = Math.max(0.5D, rightZ / rightCount - leftZ / leftCount);
-                double lateralMountDifference = rightMountHeight / rightCount - leftMountHeight / leftCount;
-                float targetRoll = SuspensionPhysics.supportAngle(right - left, width, lateralMountDifference, this instanceof Plane);
-                roll = SuspensionPhysics.smoothTerrainAngle(getRoll(), targetRoll, spring);
-            }
+            boolean inverted = this instanceof Plane;
+            float limit = ModCommonConfig.forceLegacyMovement(resolvedPhysics.category()) ? SuspensionPhysics.DEFAULT_TERRAIN_ANGLE : resolvedPhysics.terrainAngleLimitDegrees();
+            float pitch = SuspensionPhysics.smoothTerrainAngle(getPitch(), sampler.pitchTarget(inverted, limit), spring);
+            float roll = configType.isCanRoll() ? SuspensionPhysics.smoothTerrainAngle(getRoll(), sampler.rollTarget(inverted, limit), spring) : getRoll();
             setOrientation(getYaw(), pitch, roll);
         }
         return new Vec3(velocity.x, correctedY, velocity.z);
+    }
+
+    /** @return how far apart in height the anchors of the intact wheels are authored; 0 without any */
+    private double wheelMountHeightRange()
+    {
+        double minimum = Double.POSITIVE_INFINITY;
+        double maximum = Double.NEGATIVE_INFINITY;
+        for (DriveablePosition definition : configType.getWheelPositions())
+        {
+            if (definition != null && isPartIntact(definition.getPart()))
+            {
+                minimum = Math.min(minimum, definition.getPosition().y);
+                maximum = Math.max(maximum, definition.getPosition().y);
+            }
+        }
+        return Double.isFinite(minimum) ? maximum - minimum : 0D;
+    }
+
+    /**
+     * How far ahead of the wheels the terrain is probed. The historical 1.5 block look-ahead is correct only up to
+     * about 108 km/h. A type on the real-world profile probes as far as it can actually travel in a tick; legacy
+     * types keep the historical value.
+     */
+    private static Vec3 wheelPrediction(Vec3 velocity, ResolvedVehiclePhysics physics)
+    {
+        double cap = ModCommonConfig.forceLegacyMovement(physics.category())
+            ? VehiclePhysicsConstants.LEGACY_WHEEL_PREDICTION_BLOCKS
+            : physics.wheelPredictionBlocks(ModCommonConfig.realisticSpeedScale(physics.category()));
+        Vec3 prediction = new Vec3(velocity.x, 0D, velocity.z);
+        double length = prediction.length();
+        return length > cap ? prediction.scale(cap / length) : prediction;
+    }
+
+    /** The collision a wheel probe meets first, or null where it meets none. */
+    @Nullable
+    private BlockHitResult clipWheelTerrain(Vec3 from, Vec3 to)
+    {
+        BlockHitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+        return hit.getType() == HitResult.Type.BLOCK ? hit : null;
     }
 
     /** See {@link DriveableType#getWheelGroundClearance()}. */
@@ -7435,6 +7444,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void clearWheelContact()
     {
         groundedWheelCount = 0;
+        wheelSurface = SurfaceTraction.Sample.FIRM;
     }
 
     /**
@@ -7839,6 +7849,16 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return true;
         double distance = DistantRenderRange.driveableRenderDistance();
         return distance > 0D && distSq < distance * distance;
+    }
+
+    /**
+     * A client keeps interpolating a driveable outside its loaded chunks, where it can still be drawn;
+     * vanilla would freeze it there. Server ticking stays bound to loaded chunks.
+     */
+    @Override
+    public boolean isAlwaysTicking()
+    {
+        return level().isClientSide;
     }
 
     public static Optional<Driveable> spawn(@NotNull Level level, @NotNull DriveableType type, double x, double y, double z, float yaw, @Nullable Player placer, @Nullable ItemStack sourceStack)

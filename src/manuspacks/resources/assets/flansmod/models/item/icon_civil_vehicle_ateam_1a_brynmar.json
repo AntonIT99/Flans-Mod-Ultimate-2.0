@@ -1,0 +1,6 @@
+{
+  "parent": "builtin/generated",
+  "textures": {
+    "layer0": "flansmod:item/icon_civil_vehicle_ateam_1a_brynmar"
+  }
+}

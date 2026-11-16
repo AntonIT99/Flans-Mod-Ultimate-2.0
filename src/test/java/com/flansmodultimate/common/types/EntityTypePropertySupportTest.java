@@ -128,6 +128,26 @@ class EntityTypePropertySupportTest
     }
 
     @Test
+    void aTurretSeatTurnsRoundTheTurretPointsInTheFrameOfItsSeat()
+    {
+        ContentPack pack = new ContentPack("mounts", Path.of("build", "test-packs", "mounts"));
+        List<String> lines = List.of("Driver 0 0 0", "Passenger 1 16 0 0 turret", "TurretOrigin 0 0 16", "TurretOriginOffset 0 0 8");
+        VehicleType vehicle = new VehicleType();
+        vehicle.read(new TypeFile("vehicle", EnumType.VEHICLE, pack, lines));
+        PlaneType plane = new PlaneType();
+        plane.read(new TypeFile("plane", EnumType.PLANE, pack, lines));
+        WeaponMount driven = EntityTypePropertySupport.mounts(vehicle).get(1);
+        WeaponMount flown = EntityTypePropertySupport.mounts(plane).get(1);
+        // Driveable takes a seat and the turret points it turns round through one basis, so an off-centre turret stays
+        // on the authored side of its seats, as the legacy renderers drew it.
+        assertEquals(1D, driven.pivot().x, 1.0E-9D);
+        assertEquals(0.5D, driven.originOffset().x, 1.0E-9D);
+        assertEquals(flown.pivot(), driven.pivot());
+        assertEquals(flown.originOffset(), driven.originOffset());
+        assertEquals(flown.position(), driven.position());
+    }
+
+    @Test
     void vehicleAndPlaneBanksExposeTheirOwnValuesAndTotalPartHealth()
     {
         TestVehicle vehicle = new TestVehicle();

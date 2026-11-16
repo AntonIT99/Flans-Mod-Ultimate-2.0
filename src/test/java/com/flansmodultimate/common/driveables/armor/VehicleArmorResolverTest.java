@@ -103,7 +103,11 @@ class VehicleArmorResolverTest
             EnumDriveablePart.TURRET_ARMOR, EnumDriveablePart.MORE_TURRET_ARMOR,
             EnumDriveablePart.TURRET_SIDE, EnumDriveablePart.TURRET_SKIRT,
             EnumDriveablePart.TURRET_WEAK, EnumDriveablePart.TURRET_WEAK_2,
-            EnumDriveablePart.COMPOSITE));
+            EnumDriveablePart.TURRET_3, EnumDriveablePart.COMPOSITE));
+
+        // A numbered turret stays on the hull but is still armoured as a turret.
+        assertEquals(100F, armor.plate(EnumDriveablePart.TURRET_3, EnumArmorFacing.FRONT)
+            .authored().thicknessMm());
 
         assertEquals(100F, armor.plate(EnumDriveablePart.TURRET_ARMOR, EnumArmorFacing.FRONT)
             .authored().thicknessMm());

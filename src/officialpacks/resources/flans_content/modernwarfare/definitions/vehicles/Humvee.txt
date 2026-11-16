@@ -51,8 +51,7 @@ ShellDelay 999
 ReadWeaponsFromGunTypes true
 
 // Health and armour
-SetupPart core 3000 -24 -6 -16 48 12 32
-SetupPart core 100 -53 6 -22 98 25 43
+SetupPart core 3000 -60 4 -24 109 36 48
 SetupPart frontLeftWheel 100 23 -10 16 21 21 7
 SetupPart frontRightWheel 100 23 -10 -23 21 21 7
 SetupPart backRightWheel 100 -46 -10 -23 21 21 7

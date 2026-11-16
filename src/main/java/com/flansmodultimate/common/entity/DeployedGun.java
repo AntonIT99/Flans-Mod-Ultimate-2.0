@@ -10,6 +10,7 @@ import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.teams.RoundRule;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.*;
@@ -439,6 +440,9 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     {
         Level level = level();
         Entity gunner = getFirstPassenger();
+
+        if (ToolItem.isHoldingRepairTool(player))
+            return InteractionResult.PASS;
 
         // If someone else is mounted, ignore
         if (!SeatOccupants.canEnter(this, player, false))

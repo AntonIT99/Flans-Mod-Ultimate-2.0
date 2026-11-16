@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.driveables.armor;
 
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.collision.DriveableCollisionProfile;
 import com.flansmodultimate.common.driveables.damage.PartDamageKind;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +45,7 @@ public final class ResolvedVehicleArmor
     {
         if (part == null || facing == null || !plates.containsKey(part))
             return false;
-        return source.partOverrides().containsKey(part) || DriveableCollisionProfile.isTurretMountedPart(part) && source.turret().containsKey(facing) || source.hull().containsKey(facing);
+        return source.partOverrides().containsKey(part) || EnumDriveablePart.isTurretPart(part) && source.turret().containsKey(facing) || source.hull().containsKey(facing);
     }
 
     public ResolvedArmorPlate plate(EnumDriveablePart part, EnumArmorFacing facing)
@@ -108,7 +107,7 @@ public final class ResolvedVehicleArmor
         EnumDriveablePart cover = coveringPart(facing);
         if (part == null || part == EnumDriveablePart.CORE || cover == null || shotOff == null || part == cover || !plates.containsKey(cover))
             return false;
-        if (source.partOverrides().containsKey(part) || DriveableCollisionProfile.isTurretMountedPart(part) || PartDamageKind.defaultFor(part) == PartDamageKind.ARMOR)
+        if (source.partOverrides().containsKey(part) || EnumDriveablePart.isTurretPart(part) || PartDamageKind.defaultFor(part) == PartDamageKind.ARMOR)
             return false;
         return shotOff.test(cover);
     }

@@ -1,0 +1,14 @@
+// Identity
+Name Reservist Automatic Rifleman (Chauchat)
+ShortName W39_FrenchArmyReservistChauchat
+Description Second-line automatic rifleman with the Chauchat still issued to reserve divisions in 1939-40.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Chauchat
+AddItem 44_ChauchatAmmo 6
+AddItem 44_AmmoBag
+AddItem 44_Bandage

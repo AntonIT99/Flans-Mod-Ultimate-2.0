@@ -24,6 +24,7 @@ import java.util.Set;
  *
  * <ul>
  * <li>Overrides the cached registration range only for managed entities, before vanilla server scaling.</li>
+ * <li>Pairs driveables and their proxies up to that range, past the server view distance.</li>
  * <li>Keeps an entity pinned for a player paired with that player whatever the distance.</li>
  * </ul>
  */
@@ -41,6 +42,9 @@ public abstract class EntityTrackingDistanceMixin implements EntityTrackingRefre
 
     @Shadow
     protected abstract int scaledRange(int range);
+
+    @Shadow
+    protected abstract int getEffectiveRange();
 
     @Shadow
     public abstract void updatePlayers(List<ServerPlayer> players);
@@ -66,6 +70,27 @@ public abstract class EntityTrackingDistanceMixin implements EntityTrackingRefre
         }
         if (managed)
             result.setReturnValue(scaledRange(effectiveRange));
+    }
+
+    /** Vanilla's pairing rule without its cap at the server view distance. */
+    @Inject(method = "updatePlayer", at = @At("HEAD"), cancellable = true)
+    private void flansmodultimateTrackBeyondViewDistance(ServerPlayer player, CallbackInfo callback)
+    {
+        if (player == entity || !EntityDistancePolicy.tracksBeyondViewDistance(entity) || EntityTrackingPins.isPinned(entity, player))
+            return;
+        double trackedRange = getEffectiveRange();
+        double dx = player.getX() - entity.getX();
+        double dz = player.getZ() - entity.getZ();
+        if (dx * dx + dz * dz <= trackedRange * trackedRange && entity.broadcastToPlayer(player))
+        {
+            if (seenBy.add(player.connection))
+                serverEntity.addPairing(player);
+        }
+        else if (seenBy.remove(player.connection))
+        {
+            serverEntity.removePairing(player);
+        }
+        callback.cancel();
     }
 
     @Override

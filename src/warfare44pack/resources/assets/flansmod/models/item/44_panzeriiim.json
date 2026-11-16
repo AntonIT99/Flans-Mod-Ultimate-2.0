@@ -15,6 +15,12 @@
         "flansmod:paintjob": 2
       },
       "model": "flansmod:item/44_panzeriiim_winter"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/44_panzeriiim_dunkelgelb"
     }
   ]
 }

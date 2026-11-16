@@ -85,6 +85,12 @@ public class ToolItem extends FlanItem implements IFlanItem<ToolType>
         return stack.getItem() instanceof ToolItem tool && tool.getConfigType().isHealDriveables();
     }
 
+    /** Checks both hands: a PASS from the main hand makes vanilla retry the interaction with the off hand. */
+    public static boolean isHoldingRepairTool(Player player)
+    {
+        return isRepairTool(player.getMainHandItem()) || isRepairTool(player.getOffhandItem());
+    }
+
     @Override
     @NotNull
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)

@@ -80,6 +80,31 @@ class MuzzleMeasurementCacheTest
     }
 
     @Test
+    void resultsMeasuredPerTypeMergeIntoOnePassOfResults()
+    {
+        MuzzleMeasurementCache.Results single = new MuzzleMeasurementCache.Results();
+        MuzzleMeasurementCache.Results vehicleResults = new MuzzleMeasurementCache.Results();
+        MuzzleMeasurementCache.Results aaGunResults = new MuzzleMeasurementCache.Results();
+        for (MuzzleMeasurementCache.Results results : List.of(single, vehicleResults))
+        {
+            MuzzleMeasurementCache.recordMove(results, vehicle(), new MuzzleMeasurementCache.Move(false, false, 0, 30F, 22F, -4F));
+            MuzzleMeasurementCache.recordPivot(results, vehicle(), new MuzzleMeasurementCache.Pivot(1, 2F, 3F, 4F));
+        }
+        for (MuzzleMeasurementCache.Results results : List.of(single, aaGunResults))
+            MuzzleMeasurementCache.recordBarrels(results, aaGun(), new Vec3[]{new Vec3(1, 2, 3)}, new Vec3[]{new Vec3(20, 2, 3)});
+
+        MuzzleMeasurementCache.Results merged = new MuzzleMeasurementCache.Results();
+        merged.addAll(aaGunResults);
+        merged.addAll(vehicleResults);
+
+        MuzzleMeasurementCache.State expected = new MuzzleMeasurementCache.State();
+        expected.packs.put("pack", new MuzzleMeasurementCache.Entry(Map.of(), single));
+        MuzzleMeasurementCache.State actual = new MuzzleMeasurementCache.State();
+        actual.packs.put("pack", new MuzzleMeasurementCache.Entry(Map.of(), merged));
+        assertEquals(MuzzleMeasurementCache.toJson(expected), MuzzleMeasurementCache.toJson(actual));
+    }
+
+    @Test
     void storedBarrelsReplayAndFollowTheirPointWhenItMoves()
     {
         MuzzleMeasurementCache.Results results = new MuzzleMeasurementCache.Results();

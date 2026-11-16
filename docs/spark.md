@@ -31,7 +31,7 @@ Codex. Restart the agent session to discover newly registered tools. The checked
 
 Normal `runClient`, `runClient2` and `runServer` configurations load spark,
 independently of Minecraft MCP; no profiler flag is needed. Use `-PwithoutSpark`
-to omit it for a particular launch. ForgeGradle remaps the pinned Modrinth Maven
+to omit it for a particular launch. ModDevGradle Legacy remaps the pinned Modrinth Maven
 artifact; each run depends on `prepareSpark`, which verifies its hash. NeoForge
 loads the verified preparation output through `localRuntime`. Gradle resolves and
 verifies the mod automatically after `clean`, so plain launches need no separate

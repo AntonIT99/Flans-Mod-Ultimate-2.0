@@ -1,0 +1,13 @@
+// Identity
+Name Medic
+ShortName W39_FrenchArmyMedic
+Description Stretcher-bearer and medic carrying a medical bag and bandages.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Berthier
+AddItem 44_BerthierAmmo 4
+AddItem 44_MedicalBag
+AddItem 44_Bandage 4

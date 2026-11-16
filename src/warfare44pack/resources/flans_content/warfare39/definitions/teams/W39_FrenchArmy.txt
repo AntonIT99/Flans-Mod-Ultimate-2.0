@@ -1,0 +1,26 @@
+// Identity
+Name French Army (1939-1940)
+ShortName W39_FrenchArmy
+
+// Appearance
+VictoryFlagTexture flag_team_france
+TextColour Blue
+TeamColour 150 135 90
+Hat 44_FrenchAdrianHelmet
+Chest 44_FrenchUniform
+Legs 44_British40PatternPants
+Shoes 44_BritishBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Infantry, support, engineers, medics, command and tank crews of 1939-40
+AddClass W39_FrenchArmyRifleman
+AddClass W39_FrenchArmyScout
+AddClass W39_FrenchArmyAssaultMAS38
+AddClass W39_FrenchArmyReservistChauchat
+AddClass W39_FrenchArmyAmmoBearer
+AddClass W39_FrenchArmyEngineer
+AddClass W39_FrenchArmyMedic
+AddClass W39_FrenchArmySquadLeader
+AddClass W39_FrenchArmyTankCrew

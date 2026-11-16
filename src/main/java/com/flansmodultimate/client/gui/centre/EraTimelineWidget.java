@@ -99,6 +99,18 @@ final class EraTimelineWidget extends AbstractWidget
         firstRow = 0;
     }
 
+    /** Zooms the axis onto a span of months with a margin, an open end falling back to the default view's. */
+    void focus(int first, int last)
+    {
+        double from = first == ServiceDate.OPEN_LOW ? Math.min(DEFAULT_START, yearOf(last) - 50D) : yearOf(first);
+        double to = last >= ServiceDate.FUTURE ? Math.max(DEFAULT_END, from + 50D) : yearOf(last + 1);
+        double margin = Math.max(1D, (to - from) * 0.1D);
+        double span = Math.max(MIN_SPAN, Math.min(MAX_SPAN, to - from + 2 * margin));
+        startYear = (from + to) / 2D - span / 2D;
+        endYear = startYear + span;
+        firstRow = 0;
+    }
+
     private int plotLeft()
     {
         return getX() + LABEL_WIDTH;

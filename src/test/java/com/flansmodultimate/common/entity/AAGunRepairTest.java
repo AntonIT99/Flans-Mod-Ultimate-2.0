@@ -58,6 +58,8 @@ class AAGunRepairTest
             when(player.getAbilities()).thenReturn(new Abilities());
             when(player.getCooldowns()).thenReturn(mock(ItemCooldowns.class));
             when(player.getItemInHand(InteractionHand.MAIN_HAND)).thenReturn(stack);
+            when(player.getMainHandItem()).thenReturn(stack);
+            when(player.getOffhandItem()).thenReturn(ItemStack.EMPTY);
             when(world.level.getEntities(eq(player), any(), any())).thenReturn(List.of(gun));
             Vec3 start = player.getEyePosition();
             Vec3 end = start.add(0D, 0D, -5D);

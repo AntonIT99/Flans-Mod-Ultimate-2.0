@@ -7,6 +7,9 @@ package com.flansmodultimate.common.driveables.physics;
  */
 public final class SuspensionPhysics
 {
+    /** Steepest terrain angle, in degrees, a driveable follows unless its physics profile says otherwise. */
+    public static final float DEFAULT_TERRAIN_ANGLE = 35F;
+
     private SuspensionPhysics()
     {}
 
@@ -46,7 +49,7 @@ public final class SuspensionPhysics
     {
         if (!Double.isFinite(heightDifference) || !Double.isFinite(distance))
             return 0F;
-        return (float) clamp(Math.toDegrees(Math.atan2(heightDifference, Math.max(0.5D, distance))), -35D, 35D);
+        return (float) clamp(Math.toDegrees(Math.atan2(heightDifference, Math.max(0.5D, distance))), -DEFAULT_TERRAIN_ANGLE, DEFAULT_TERRAIN_ANGLE);
     }
 
     /**
@@ -57,6 +60,17 @@ public final class SuspensionPhysics
      */
     public static float supportAngle(double supportHeightDifference, double axisDistance, double mountHeightDifference, boolean invertRotation)
     {
+        return supportAngle(supportHeightDifference, axisDistance, mountHeightDifference, invertRotation, DEFAULT_TERRAIN_ANGLE);
+    }
+
+    /**
+     * As above, for a driveable that follows terrain up to its own steepest angle.
+     *
+     * @param limit
+     *            steepest angle followed, in degrees; anything unusable falls back to {@link #DEFAULT_TERRAIN_ANGLE}
+     */
+    public static float supportAngle(double supportHeightDifference, double axisDistance, double mountHeightDifference, boolean invertRotation, float limit)
+    {
         if (!Double.isFinite(supportHeightDifference) || !Double.isFinite(axisDistance) || !Double.isFinite(mountHeightDifference))
             return 0F;
         double distance = Math.max(0.5D, Math.abs(axisDistance));
@@ -66,7 +80,8 @@ public final class SuspensionPhysics
         double result = Math.toDegrees(supportAngle - mountAngle);
         if (invertRotation)
             result = -result;
-        return (float) clamp(result, -35D, 35D);
+        double steepest = Float.isFinite(limit) && limit > 0F ? limit : DEFAULT_TERRAIN_ANGLE;
+        return (float) clamp(result, -steepest, steepest);
     }
 
     public static float smoothTerrainAngle(float current, float target, float springStrength)

@@ -121,6 +121,8 @@ public class Plane extends Driveable implements PlaneVisual
     private boolean lostFlightSurface;
     /** The turn a crippled aircraft that can no longer be flown makes each tick, as a world-space rotation vector in degrees. */
     private Vec3 crashRotation = Vec3.ZERO;
+    /** Downward velocity this tick's flight step applied as weight, which the water carries while the hull floats. */
+    private double flightWeight;
 
     public Plane(EntityType<?> entityType, Level level)
     {
@@ -289,6 +291,12 @@ public class Plane extends Driveable implements PlaneVisual
     private boolean simulatesAfterburner(@Nullable PlaneType type)
     {
         return type != null && type.isHasAfterBurner() && ModCommonConfig.enableAfterburners();
+    }
+
+    @Override
+    public boolean hasAfterburner()
+    {
+        return simulatesAfterburner(getPlaneType());
     }
 
     /** Lit once armed and at the top of the throttle range. Pilots that are not players have no switch to arm. */
@@ -476,7 +484,7 @@ public class Plane extends Driveable implements PlaneVisual
         Vec3 velocity = flightVelocity(type);
         // Flotation belongs to every flight path, including model-plane ships
         // whose marine propulsion returns before the aerodynamic drag path.
-        velocity = applyGravityAndBuoyancy(velocity, 0D);
+        velocity = applyGravityAndBuoyancy(velocity, 0D, flightWeight);
         Vec3 impactVelocity = velocity;
         ResolvedVehiclePhysics resolvedPhysics = type.getResolvedPhysics();
         boolean derivedAircraft = !ModCommonConfig.forceLegacyPlanePhysics() && resolvedPhysics.hasAircraftProfile();
@@ -518,6 +526,8 @@ public class Plane extends Driveable implements PlaneVisual
     /** The velocity this tick's flight path gives: the crash of an aircraft that can no longer be flown, or its mode's own physics. */
     private Vec3 flightVelocity(PlaneType type)
     {
+        // A crashing airframe is a wreck, not a hull: its weight is never carried.
+        flightWeight = 0D;
         CrashMode crash = uncontrollableCrash(type);
         if (crash.falling())
             return crashFlight(type, crash);
@@ -1030,6 +1040,13 @@ public class Plane extends Driveable implements PlaneVisual
         return type.isNewFlightControl() ? throttle : LegacyPlanePhysics.propellerThrottle(throttle, intactPropellerFraction(type.getPropellers()));
     }
 
+    /** Records gravity a fixed-wing or marine step applies this tick, so flotation can carry it, and returns it. */
+    private double weight(double gravity)
+    {
+        flightWeight += gravity;
+        return gravity;
+    }
+
     private Vec3 fixedWingPhysics(PlaneType type)
     {
         Vec3 current = getDeltaMovement();
@@ -1043,7 +1060,7 @@ public class Plane extends Driveable implements PlaneVisual
             return derivedFixedWingPhysics(type, type.getResolvedPhysics(), current);
         applyLegacyControls(type, current);
         if (type.getPropellers().isEmpty())
-            return current.add(0D, -ModPhysics.gravity(LegacyPlanePhysics.GRAVITY, level()), 0D);
+            return current.add(0D, -weight(ModPhysics.gravity(LegacyPlanePhysics.GRAVITY, level())), 0D);
 
         float throttle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
         float effectiveThrottle = effectivePropellerThrottle(type, throttle);
@@ -1062,7 +1079,7 @@ public class Plane extends Driveable implements PlaneVisual
         double wings = wingLiftShare(false);
         double lift = type.isNewFlightControl() ? type.getLift() * wingAirspeed * wingAirspeed * 0.5D * type.getWingArea() * wings : wingAirspeed * wingAirspeed * wings;
         lift *= Math.abs(flightUpVector().y);
-        double gravity = ModPhysics.gravity(LegacyPlanePhysics.GRAVITY, level());
+        double gravity = weight(ModPhysics.gravity(LegacyPlanePhysics.GRAVITY, level()));
         lift = Math.min(lift, LegacyPlanePhysics.GRAVITY);
         velocity = velocity.add(0D, lift - gravity, 0D);
         if (onGround() && velocity.y <= 0D)
@@ -1269,7 +1286,7 @@ public class Plane extends Driveable implements PlaneVisual
         applyDerivedControls(type, physics, current, terminalBlocksPerTick);
 
         if (type.getPropellers().isEmpty())
-            return current.add(0D, -ModPhysics.gravity(VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2, level()), 0D);
+            return current.add(0D, -weight(ModPhysics.gravity(VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2, level())), 0D);
 
         float throttle = isEngineActive() && hasWorkingPropeller(type) ? Math.max(0F, getThrottle()) : 0F;
         // On the wheels the aircraft rolls along its nose and neither gravity
@@ -1369,7 +1386,7 @@ public class Plane extends Driveable implements PlaneVisual
 
         // The wing supplies what it is asked for, up to what it can actually
         // make, and only the vertical share survives a bank or a steep attitude.
-        double gravity = ModPhysics.gravity(VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2, level());
+        double gravity = weight(ModPhysics.gravity(VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2, level()));
         double lift = Math.min(loadFactor, liftFraction) * VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2 * Math.abs(flightUpVector().y);
         velocity = velocity.add(0D, lift - gravity, 0D);
         // Applying lift on the world vertical leaks a component along the flight
@@ -1790,8 +1807,9 @@ public class Plane extends Driveable implements PlaneVisual
 
         Vec3 travel = heading.scale(astern ? -newSpeed : newSpeed);
         // Draft provides its own restoring response. Legacy wheel flotation
-        // still needs the flight controller's gravity to balance constant lift.
-        double vertical = physics.hasDraft() && Double.isFinite(flotationHullBottomY()) ? current.y : current.y - ModPhysics.gravity(LegacyPlanePhysics.GRAVITY, level());
+        // still needs the flight controller's gravity to balance constant lift;
+        // the waterline response carries it again.
+        double vertical = physics.hasDraft() && Double.isFinite(flotationHullBottomY()) ? current.y : current.y - weight(ModPhysics.gravity(LegacyPlanePhysics.GRAVITY, level()));
         return new Vec3(travel.x, vertical, travel.z);
     }
 

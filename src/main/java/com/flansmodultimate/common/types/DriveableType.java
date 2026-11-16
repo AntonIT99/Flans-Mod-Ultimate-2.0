@@ -134,6 +134,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Opt-in for the built-in three-frame flash on every fired gun or shell muzzle. */
     protected boolean defaultMuzzleFlash;
     protected boolean shellMuzzleFlash;
+    /** Per-bank opt-outs from the default flash, e.g. for a coaxial cannon that should only emit its shoot particles. */
+    protected boolean muzzleFlashPrimary = true;
+    protected boolean muzzleFlashSecondary = true;
     protected boolean alternatePrimary;
     protected boolean alternateSecondary;
     protected float shootDelayPrimary = -1F;
@@ -774,6 +777,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);
         defaultMuzzleFlash = "DefaultFlash".equalsIgnoreCase(readValue("FlashModel", StringUtils.EMPTY, file));
         shellMuzzleFlash = readValue("ShellMuzzleFlash", shellMuzzleFlash, file);
+        muzzleFlashPrimary = readValue("MuzzleFlashPrimary", muzzleFlashPrimary, file);
+        muzzleFlashSecondary = readValue("MuzzleFlashSecondary", muzzleFlashSecondary, file);
         damageMultiplierPrimary = readValue("DamageMultiplierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DamageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
@@ -1395,6 +1400,20 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return Float.isNaN(lowestAnchor) ? yOffset : getWheelGroundClearance() - lowestAnchor;
     }
 
+    /**
+     * @return the draft flotation settles this hull at, in blocks: the resolved draft capped to what the scaled core
+     *         box can carry, or null without a draft
+     */
+    @Nullable
+    public Float getModelDraftM()
+    {
+        Float draft = getResolvedPhysics().draftM();
+        CollisionBox core = health.get(EnumDriveablePart.CORE);
+        if (draft == null || core == null)
+            return draft;
+        return (float) MarineDraftPhysics.modelDraft(draft, core.getHeight() * Math.max(1.0E-4F, getModelScale()));
+    }
+
     @Override
     public float getFloatingHeight()
     {
@@ -1405,7 +1424,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         ResolvedVehiclePhysics physics = getResolvedPhysics();
         CollisionBox core = health.get(EnumDriveablePart.CORE);
         if (physics.draftM() != null && !ModCommonConfig.forceLegacyMovement(physics.category()) && core != null && core.getWidth() > 0F && core.getHeight() > 0F && core.getDepth() > 0F)
-            return (float) (-physics.draftM() - core.asAabb().minY * Math.max(1.0E-4F, getModelScale()));
+            return (float) (-getModelDraftM() - core.asAabb().minY * Math.max(1.0E-4F, getModelScale()));
         float lowestAnchor = getLowestWheelAnchor();
         if (Float.isNaN(lowestAnchor))
             return getRestingHeight();
@@ -1742,6 +1761,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public EnumFireMode fireMode(boolean secondaryWeapon)
     {
         return secondaryWeapon ? modeSecondary : modePrimary;
+    }
+
+    public boolean hasDefaultMuzzleFlash(boolean secondaryWeapon)
+    {
+        return defaultMuzzleFlash && (secondaryWeapon ? muzzleFlashSecondary : muzzleFlashPrimary);
     }
 
     public EnumWeaponType weaponType(boolean secondaryWeapon)

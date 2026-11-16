@@ -10,8 +10,8 @@ Texture Skin_WW2_Vehicle_PanzerhaubitzeHummel_1A
 RotateWheels True
 
 // Paintjobs
-AdvPaintJob Camo Icon_WW2_Vehicle_PanzerhaubitzeHummel_1A skin_ww2_vehicle_panzerhaubitzehummel_1a_camo green 8
-AdvPaintJob Panzergrau Icon_WW2_Vehicle_PanzerhaubitzeHummel_1A skin_ww2_vehicle_panzerhaubitzehummel_1a_panzergrau gray 8
+AdvPaintJob Camo icon_ww2_vehicle_panzerhaubitzehummel_1a_camo skin_ww2_vehicle_panzerhaubitzehummel_1a_camo green 8
+AdvPaintJob Panzergrau icon_ww2_vehicle_panzerhaubitzehummel_1a_panzergrau skin_ww2_vehicle_panzerhaubitzehummel_1a_panzergrau gray 8
 
 // Recipe and Inventory
 FuelTankSize 2000

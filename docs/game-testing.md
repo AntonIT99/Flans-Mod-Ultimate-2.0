@@ -73,6 +73,12 @@ coordinator passes it on in a form Gradle rejects. Content-pack source sets load
 server, so a test can put an NPC in a real pack model with `modelData.setEntity` and the id of the
 matching `FlanModelEntities` type.
 
+The same server suits server-side driveable physics such as flotation: place the driveable through
+its item's `spawnDriveable` on blocks the test sets, as `ShipFlotationGameTests` does. A pack that is
+not a source set loads when its archive is copied into the run's `run/gametest/flan`; a test that needs
+one fails with a message naming it. Reach protected physics stages through reflection only while
+diagnosing, and assert the settled outcome in the kept test.
+
 Assert the real behavior over sufficient ticks with a timeout. For example,
 starting a retreat goal is different from reaching a safer position while
 retaining the target. Control random inputs and starting geometry where the
@@ -80,6 +86,12 @@ scenario depends on them. Use actual fixtures and source-set membership rather
 than inventing Gradle filters or mixing JUnit `--tests` with GameTest discovery.
 Check both the process result and test summary; inspect failures in the active
 profile's log. Keep development-only fixtures out of published artifacts.
+
+Batches run one after another at the same test position, and only the template's bounds are
+reset between them. Blocks a test sets beyond `npc_empty` (the flotation tests' water pool) remain
+for later batches, so a test that needs dry ground clears its area first. A config value a test
+changes through `ForgeConfigSpec` is saved to `run/gametest/config` and outlives the run: restore it
+on every path, failures included, and check that file when results change between identical runs.
 
 ## Evidence and recovery
 

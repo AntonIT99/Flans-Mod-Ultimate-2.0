@@ -1,0 +1,14 @@
+// Identity
+Name Assault (MAS-38)
+ShortName W39_FrenchArmyAssaultMAS38
+Description Close-quarters soldier with the MAS-38, which reached front-line units only in 1940.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_MAS38
+AddItem 44_MAS38Ammo 4
+AddItem 44_Mk2Frag
+AddItem 44_Bandage

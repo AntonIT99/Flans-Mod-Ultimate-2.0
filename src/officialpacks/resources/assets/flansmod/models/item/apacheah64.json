@@ -8,19 +8,19 @@
       "predicate": {
         "flansmod:paintjob": 1
       },
-      "model": "flansmod:item/apacheah64"
+      "model": "flansmod:item/apacheah64_green"
     },
     {
       "predicate": {
         "flansmod:paintjob": 2
       },
-      "model": "flansmod:item/apacheah64"
+      "model": "flansmod:item/apacheah64_black"
     },
     {
       "predicate": {
         "flansmod:paintjob": 3
       },
-      "model": "flansmod:item/apacheah64"
+      "model": "flansmod:item/apacheah64_grey"
     }
   ]
 }

@@ -3,6 +3,7 @@ package com.flansmodultimate.client.gui.centre;
 import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 import com.flansmodultimate.client.eras.EraClientState;
 import com.flansmodultimate.common.command.FlansModCommandAliases;
+import com.flansmodultimate.common.eras.Era;
 import com.flansmodultimate.common.eras.EraCatalog;
 import com.flansmodultimate.common.eras.EraEnforcement;
 import com.flansmodultimate.common.eras.EraRestriction;
@@ -38,6 +39,8 @@ final class TimelinePage extends TeamsPage
     private final EraTimelineWidget timeline = new EraTimelineWidget(this::windowMoved, this::selected);
     private String targetId = "server";
     private String group = "all";
+    /** The era rows must overlap, or empty for all. */
+    private String eraFilter = "";
     private boolean undated;
     @Nullable
     private InfoType chosen;
@@ -78,11 +81,26 @@ final class TimelinePage extends TeamsPage
         int third = (width - 2 * GAP) / 3;
         int y = view.getTop();
         choice(view, tr("eras.target"), targets.stream().map(EraTargets.Target::id).toList(), target.id(),
-            id -> EraTargets.byId(targets, id).map(EraTargets.Target::name).orElse(Component.empty()), left, y, 2 * third + GAP, id ->
+            id -> EraTargets.byId(targets, id).map(EraTargets.Target::name).orElse(Component.empty()), left, y, third, id ->
             {
                 targetId = id;
                 view.rebuild();
             });
+        List<String> eraIds = new ArrayList<>();
+        eraIds.add("");
+        EraClientState.state().eras().getEras().forEach(era -> eraIds.add(era.id()));
+        if (!eraIds.contains(eraFilter))
+            eraFilter = "";
+        choice(view, tr("timeline.era"), eraIds, eraFilter, id -> id.isEmpty() ? tr("timeline.era.all") : Component.literal(id), left + third + GAP, y, third, id ->
+        {
+            eraFilter = id;
+            Era era = EraClientState.state().eras().find(id);
+            if (era == null)
+                timeline.resetView();
+            else
+                timeline.focus(era.first(), era.last());
+            view.rebuild();
+        });
         button(view, tr("eras.edit"), left + 2 * (third + GAP), y, third, () -> ErasPage.open(view, targetId));
         y += ROW;
         choice(view, tr("timeline.group"), GROUPS, group, name -> tr("timeline.group." + name), left, y, third, name ->
@@ -154,6 +172,7 @@ final class TimelinePage extends TeamsPage
             window = null;
         EraRestriction drawing = window == null ? EraRestriction.of(EraRestriction.BoundaryMode.NOT_BEFORE, ServiceDate.parse("1C"), null) : window;
         String search = searched.strip().toLowerCase(Locale.ROOT);
+        Era era = eraFilter.isEmpty() ? null : eras.find(eraFilter);
         List<EraTimelineWidget.Entry> entries = new ArrayList<>();
         for (InfoType type : InfoType.getInfoTypes().values().stream().distinct().toList())
         {
@@ -169,11 +188,15 @@ final class TimelinePage extends TeamsPage
             boolean allowed = window == null || EraVerdicts.decide(window, type.getType(), period, eras);
             if (!dated)
             {
+                if (era != null)
+                    continue;
                 entries.add(new EraTimelineWidget.Entry(type, name, ServiceDate.OPEN_LOW, ServiceDate.OPEN_LOW, false, false, allowed));
                 continue;
             }
             int start = period.introduction().first(eras);
             int end = drawing.serviceEnd(period, eras);
+            if (era != null && (end < era.first() || start > era.last()))
+                continue;
             boolean open = period.retirement() == null && end >= ServiceDate.FUTURE - 1;
             entries.add(new EraTimelineWidget.Entry(type, name, start, end, period.introduction().approximate(), open, allowed));
         }

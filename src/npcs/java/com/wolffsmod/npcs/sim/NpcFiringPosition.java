@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.sim;
 
+import com.wolffsmod.npcs.combat.NpcAirCombat;
 import com.wolffsmod.npcs.combat.NpcBlastSafety;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcVehicleCombat;
@@ -29,7 +30,10 @@ import java.util.OptionalDouble;
  * target close below it, or raise itself onto one close above, backs away until the shot lies within its elevation, in
  * reverse when the way back lies behind it; so does one whose target stands under its barrel, nearer the turret than the
  * muzzle, where no elevation reaches it. One whose line of fire is blocked drives on toward its target, round what
- * blocks it as its path leads, until the line is clear. A ship steams a course of its own instead, as
+ * blocks it as its path leads, until the line is clear. One whose gun cannot rise onto an aircraft overhead, from
+ * anywhere it could back away to, stays where it is rather than chase it, since driving under it only steepens the shot;
+ * so does one chasing an aircraft that flies faster than it drives. It still fires at either whenever it has a shot.
+ * A ship steams a course of its own instead, as
  * {@link ShipBearing} lays it, since only its bow or its side brings its weapons to bear. Whatever moves the NPC in a
  * fight asks here before it stands it still or closes it in. One per NPC, kept by its {@link NpcVehicleState}. Server
  * thread.
@@ -47,6 +51,8 @@ public final class NpcFiringPosition
     /** Degrees within its elevation limit the shot is brought to by backing away, and the fewest degrees off level it is brought to. */
     static final float ELEVATION_MARGIN = 1F;
     static final float MIN_ANGLE = 0.5F;
+    /** How many times its own top speed an aircraft has to fly for a vehicle to give up chasing it, so that it does not flap on the edge. */
+    static final double OUTRUN_FACTOR = 1.2D;
     /** Degrees off straight away from its target that are tried in turn for a way back. */
     private static final float[] BACK_ANGLES = {0F, 45F, -45F, 90F, -90F};
 
@@ -71,13 +77,75 @@ public final class NpcFiringPosition
     {
         NpcVehicleState state = NpcVehicleState.of(npc);
         NpcFiringPosition position = state.getFiringPosition();
-        if (target != null && applies(npc, state, target) && position.move(npc, state, target))
+        boolean leaving = leavesAircraft(npc, target);
+        if (!leaving && target != null && applies(npc, state, target) && position.move(npc, state, target))
             return true;
-        if (position.ordered != null)
+        if (leaving || position.ordered != null)
             npc.getNavigation().stop();
         position.ordered = null;
         position.course = null;
-        return false;
+        return leaving;
+    }
+
+    /**
+     * Whether a ground vehicle or ship NPC leaves an aircraft alone rather than chase it, while it goes on firing at it
+     * whenever it has a shot: one that flies faster than the vehicle drives draws away however it drives, and one whose
+     * gun cannot rise onto it, from anywhere it could back away to, is only brought further out of reach by driving under
+     * it. It takes up the chase again once the aircraft slows down or comes within its elevation.
+     */
+    public static boolean leavesAircraft(EntityNPCInterface npc, @Nullable LivingEntity target)
+    {
+        if (target == null || TacticKind.of(npc) != TacticKind.VEHICLE || (npc.isVehicle() && npc.ais.mountControl) || !NpcAirCombat.airborne(target))
+            return false;
+        NpcVehicleState state = NpcVehicleState.of(npc);
+        return outruns(aircraftSpeed(state, target), NpcMobility.topSpeed(npc)) || outOfElevation(npc, state, target);
+    }
+
+    /** @return blocks per tick an aircraft flies across the ground, smoothed while it is the NPC's target */
+    private static double aircraftSpeed(NpcVehicleState state, LivingEntity target)
+    {
+        return state.motionOf(target).map(motion -> motion.velocity().horizontalDistance()).orElseGet(() -> NpcVehicleThreats.platform(target).getDeltaMovement().horizontalDistance());
+    }
+
+    /**
+     * @param aircraft
+     *            blocks per tick the aircraft flies across the ground
+     * @param vehicle
+     *            blocks per tick the vehicle drives at its top speed
+     * @return whether the aircraft draws away from the vehicle however it drives
+     */
+    static boolean outruns(double aircraft, double vehicle)
+    {
+        return aircraft > vehicle * OUTRUN_FACTOR;
+    }
+
+    /** Whether the main weapon cannot rise onto an aircraft, and backing away would not bring it within its elevation either. */
+    private static boolean outOfElevation(EntityNPCInterface npc, NpcVehicleState state, LivingEntity target)
+    {
+        Optional<Float> limit = state.elevationLimit();
+        Optional<Vec3> origin = state.fireOrigin();
+        if (limit.isEmpty() || origin.isEmpty())
+            return false;
+        Vec3 aim = NpcVehicleState.aimPoint(target);
+        Vec3 from = state.gunReach(npc).filter(GunReach::elevates).map(GunReach::pivot).orElse(origin.get());
+        return unreachableAbove(horizontal(from, aim), from.y - aim.y, limit.get(), npc.stats.ranged.getRange());
+    }
+
+    /**
+     * @param horizontal
+     *            blocks across the ground from where the rounds leave to the point aimed at
+     * @param drop
+     *            blocks that point lies below where the rounds leave, negative above
+     * @param limit
+     *            the pitch nearest to the shot that the gun reaches, relative to the hull and positive downwards
+     * @param range
+     *            the NPC's firing range
+     * @return whether the point lies above, beyond the gun's elevation, and backing away within the firing range does not
+     *         bring it within
+     */
+    static boolean unreachableAbove(double horizontal, double drop, float limit, double range)
+    {
+        return drop < 0D && backDistance(horizontal, drop, limit, range).isEmpty();
     }
 
     /** Whether the NPC is a ground vehicle or ship that drives itself for a shot at a target it may fire at. */

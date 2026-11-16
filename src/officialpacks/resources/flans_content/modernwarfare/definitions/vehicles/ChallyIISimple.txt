@@ -13,7 +13,7 @@ AddDye 5 yellow
 RotateWheels true
 
 // Paintjobs
-AdvPaintJob Destroyed ChallyII challysimple_destroyed black 8
+AdvPaintJob Destroyed challyii_destroyed challysimple_destroyed black 8
 
 // Recipe
 AddRecipeParts turret 1 heavyTankTurret 2 vehicleSeat

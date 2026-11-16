@@ -1,0 +1,85 @@
+package com.flansmod.client.model.NFS;
+
+import com.flansmod.client.model.ModelCustomArmour;
+import com.flansmod.client.tmt.ModelRendererTurbo;
+
+public class Model44CZHelmet extends ModelCustomArmour {
+   int textureX = 256;
+   int textureY = 256;
+
+   public Model44CZHelmet() {
+      headModel = new ModelRendererTurbo[24];
+      headModel[0] = new ModelRendererTurbo(this, 1, 1, textureX, textureY);
+      headModel[1] = new ModelRendererTurbo(this, 25, 1, textureX, textureY);
+      headModel[2] = new ModelRendererTurbo(this, 17, 1, textureX, textureY);
+      headModel[3] = new ModelRendererTurbo(this, 41, 1, textureX, textureY);
+      headModel[4] = new ModelRendererTurbo(this, 57, 1, textureX, textureY);
+      headModel[5] = new ModelRendererTurbo(this, 73, 1, textureX, textureY);
+      headModel[6] = new ModelRendererTurbo(this, 97, 1, textureX, textureY);
+      headModel[7] = new ModelRendererTurbo(this, 105, 1, textureX, textureY);
+      headModel[8] = new ModelRendererTurbo(this, 129, 1, textureX, textureY);
+      headModel[9] = new ModelRendererTurbo(this, 121, 1, textureX, textureY);
+      headModel[10] = new ModelRendererTurbo(this, 1, 1, textureX, textureY);
+      headModel[11] = new ModelRendererTurbo(this, 145, 1, textureX, textureY);
+      headModel[12] = new ModelRendererTurbo(this, 169, 1, textureX, textureY);
+      headModel[13] = new ModelRendererTurbo(this, 17, 1, textureX, textureY);
+      headModel[14] = new ModelRendererTurbo(this, 193, 1, textureX, textureY);
+      headModel[15] = new ModelRendererTurbo(this, 193, 1, textureX, textureY);
+      headModel[16] = new ModelRendererTurbo(this, 217, 1, textureX, textureY);
+      headModel[17] = new ModelRendererTurbo(this, 209, 1, textureX, textureY);
+      headModel[18] = new ModelRendererTurbo(this, 57, 73, textureX, textureY);
+      headModel[19] = new ModelRendererTurbo(this, 81, 73, textureX, textureY);
+      headModel[20] = new ModelRendererTurbo(this, 105, 73, textureX, textureY);
+      headModel[21] = new ModelRendererTurbo(this, 129, 73, textureX, textureY);
+      headModel[22] = new ModelRendererTurbo(this, 25, 17, textureX, textureY);
+      headModel[23] = new ModelRendererTurbo(this, 137, 73, textureX, textureY);
+      headModel[0].addShapeBox(-1.0F, -8.2F, -4.0F, 2, 2, 8, 0.0F, 0.0F, 0.8F, 0.2F, 0.0F, 0.8F, 0.2F, 0.0F, 0.2F, 0.8F, 0.0F, 0.2F, 0.8F, 1.0F, -0.7F, 1.5F, 1.0F, -0.7F, 1.5F, 1.0F, 0.3F, 1.6F, 1.0F, 0.3F, 1.6F);
+      headModel[0].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[1].addShapeBox(-1.0F, -6.7F, -4.0F, 2, 2, 8, 0.0F, 1.0F, 0.2F, 1.5F, 1.0F, 0.2F, 1.5F, 1.0F, -0.8F, 1.6F, 1.0F, -0.8F, 1.6F, 1.0F, 0.3F, 2.7F, 1.0F, 0.3F, 2.7F, 1.0F, 2.0F, 2.0F, 1.0F, 2.0F, 2.0F);
+      headModel[1].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[2].addShapeBox(-1.0F, -5.7F, -5.0F, 2, 1, 5, 0.0F, 1.0F, -1.3F, 1.7F, 1.0F, -1.3F, 1.7F, 0.9F, -1.2F, 0.0F, 1.0F, -1.3F, 0.0F, 1.0F, 0.6F, 2.5F, 1.0F, 0.6F, 2.5F, 1.0F, 0.3F, 0.0F, 1.0F, 0.3F, 0.0F);
+      headModel[2].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[3].addShapeBox(-2.0F, -4.4F, 1.4F, 4, 1, 4, 0.0F, 0.0F, 0.7F, 0.0F, 0.0F, 0.8F, 0.0F, 0.0F, -1.7F, 0.6F, 0.0F, -1.7F, 0.6F, 0.0F, -0.8F, -1.0F, 0.0F, -0.8F, -1.0F, 0.0F, 1.0F, 1.0F, -0.05F, 1.0F, 1.0F);
+      headModel[3].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[4].addShapeBox(-1.0F, -10.1F, -4.0F, 2, 1, 8, 0.0F, 0.0F, 0.3F, -3.0F, 0.0F, 0.3F, -3.0F, 0.0F, 0.0F, -1.2F, 0.0F, 0.0F, -1.2F, 0.0F, 0.1F, 0.2F, 0.0F, 0.1F, 0.2F, 0.0F, 0.7F, 0.8F, 0.0F, 0.7F, 0.8F);
+      headModel[4].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[5].addShapeBox(-5.0F, -0.7F, -3.7F, 10, 1, 1, 0.0F, -0.8F, -0.4F, 0.0F, -0.8F, -0.4F, 0.0F, -0.8F, -0.4F, 0.0F, -0.8F, -0.4F, 0.0F, -1.0F, -0.1F, 0.0F, -1.0F, -0.1F, 0.0F, -1.0F, 0.0F, -0.2F, -1.0F, 0.0F, -0.2F);
+      headModel[5].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[6].addShapeBox(3.0F, -5.1F, -5.0F, 1, 1, 3, 0.0F, 1.0F, -0.7F, 1.7F, 1.4F, -0.9F, 0.2F, 1.7F, -1.2F, 1.0F, 1.0F, -0.3F, 0.0F, 1.0F, 0.0F, 2.5F, 1.6F, 0.2F, 0.4F, 2.0F, 0.5F, 1.0F, 1.0F, 0.0F, 0.0F);
+      headModel[6].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[7].addShapeBox(2.0F, -8.2F, -4.0F, 2, 2, 8, 0.0F, 1.0F, 0.8F, 0.2F, -0.2F, 0.6F, -0.5F, 0.0F, -0.1F, -0.1F, 1.0F, 0.2F, 0.8F, 0.0F, -0.7F, 1.5F, 0.7F, -0.5F, 0.7F, 0.6F, 0.3F, 0.8F, 0.0F, 0.3F, 1.6F);
+      headModel[7].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[8].addShapeBox(2.0F, -10.1F, -4.0F, 2, 1, 8, 0.0F, 1.0F, 0.3F, -3.0F, -1.3F, -0.2F, -3.5F, -1.3F, -0.5F, -1.8F, 1.0F, 0.0F, -1.2F, 1.0F, 0.1F, 0.2F, -0.2F, 0.3F, -0.5F, 0.0F, 1.0F, -0.1F, 1.0F, 0.7F, 0.8F);
+      headModel[8].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[9].addShapeBox(-4.0F, -6.7F, -2.0F, 1, 2, 4, 0.0F, 0.65F, -0.2F, 0.0F, 1.0F, -0.8F, 1.5F, 1.0F, 0.0F, 1.7F, 0.65F, -0.55F, 0.0F, 1.7F, 0.8F, -1.0F, 1.0F, 0.2F, 0.4F, 1.0F, 0.55F, 1.9F, 1.8F, 1.05F, -0.5F);
+      headModel[9].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[10].addShapeBox(-4.0F, -6.7F, 2.0F, 1, 2, 2, 0.0F, 0.65F, -0.55F, 0.0F, 1.0F, 0.0F, 1.7F, 1.0F, -0.8F, 1.6F, 0.6F, -0.8F, 0.8F, 1.8F, 1.05F, 0.5F, 1.0F, -0.8F, 1.9F, 1.0F, 2.0F, 2.0F, 1.2F, 1.8F, 1.2F);
+      headModel[10].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[11].addShapeBox(-6.0F, -4.6F, 1.4F, 4, 1, 4, 0.0F, -0.2F, -0.95F, -0.1F, 0.0F, 0.8F, 0.0F, 0.0F, -1.9F, 0.6F, -0.8F, -1.7F, -0.2F, 0.1F, 0.25F, -0.1F, 0.0F, -0.5F, -1.0F, 0.05F, 1.2F, 1.0F, -0.7F, 0.9F, 0.0F);
+      headModel[11].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[12].addShapeBox(-6.0F, -4.6F, -1.4F, 4, 1, 4, 0.0F, -0.3F, -0.7F, -0.4F, 0.0F, 1.0F, 0.25F, 0.0F, -0.2F, 0.0F, -0.2F, -0.95F, -1.1F, 0.0F, 0.0F, -0.4F, 0.0F, -0.6F, 0.85F, 0.0F, -0.5F, 0.0F, 0.1F, 0.25F, -1.1F);
+      headModel[12].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[13].addShapeBox(-6.0F, -3.0F, -0.5F, 1, 3, 1, 0.0F, -0.3F, 0.75F, -0.5F, -0.5F, 1.05F, -0.5F, -0.3F, 0.7F, 0.5F, -0.4F, 0.7F, 0.5F, -1.8F, -0.3F, 3.0F, 1.2F, -0.3F, 3.0F, 1.2F, -0.2F, -3.3F, -1.8F, -0.2F, -3.3F);
+      headModel[13].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[14].addShapeBox(-4.0F, -6.7F, -4.0F, 1, 2, 2, 0.0F, 0.7F, 0.0F, 0.7F, 1.0F, 0.2F, 1.5F, 1.0F, -0.8F, 1.5F, 0.67F, -0.25F, 0.0F, 1.4F, 0.5F, 1.2F, 1.0F, 0.3F, 2.7F, 1.0F, 0.5F, 2.4F, 1.7F, 0.8F, 1.0F);
+      headModel[14].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[15].addShapeBox(-4.0F, -10.1F, -4.0F, 2, 1, 8, 0.0F, -1.3F, -0.2F, -3.5F, 1.0F, 0.3F, -3.0F, 1.0F, 0.0F, -1.2F, -1.3F, -0.5F, -1.8F, -0.2F, 0.3F, -0.5F, 1.0F, 0.1F, 0.2F, 1.0F, 0.7F, 0.8F, 0.0F, 1.0F, -0.1F);
+      headModel[15].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[16].addShapeBox(-4.0F, -8.2F, -4.0F, 2, 2, 8, 0.0F, -0.2F, 0.6F, -0.5F, 1.0F, 0.8F, 0.2F, 1.0F, 0.2F, 0.8F, 0.0F, -0.1F, -0.1F, 0.7F, -0.5F, 0.7F, 0.0F, -0.7F, 1.5F, 0.0F, 0.3F, 1.6F, 0.6F, 0.3F, 0.8F);
+      headModel[16].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[17].addShapeBox(-4.0F, -5.1F, -5.0F, 1, 1, 3, 0.0F, 1.4F, -0.9F, 0.2F, 1.0F, -0.7F, 1.7F, 1.0F, -0.3F, 0.0F, 1.7F, -1.2F, 1.0F, 1.6F, 0.2F, 0.4F, 1.0F, 0.0F, 2.5F, 1.0F, 0.0F, 0.0F, 2.0F, 0.5F, 1.0F);
+      headModel[17].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[18].addShapeBox(2.0F, -4.6F, -1.4F, 4, 1, 4, 0.0F, 0.0F, 1.0F, 0.25F, -0.3F, -0.7F, -0.4F, -0.2F, -0.95F, -1.1F, 0.0F, -0.2F, 0.0F, 0.0F, -0.6F, 0.85F, 0.0F, 0.0F, -0.4F, 0.1F, 0.25F, -1.1F, 0.0F, -0.5F, 0.0F);
+      headModel[18].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[19].addShapeBox(2.0F, -4.6F, 1.4F, 4, 1, 4, 0.0F, 0.0F, 0.8F, 0.0F, -0.2F, -0.95F, -0.1F, -0.8F, -1.7F, -0.2F, 0.0F, -1.9F, 0.6F, 0.0F, -0.5F, -1.0F, 0.1F, 0.25F, -0.1F, -0.7F, 0.9F, 0.0F, 0.05F, 1.2F, 1.0F);
+      headModel[19].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[20].addShapeBox(5.0F, -3.0F, -0.5F, 1, 3, 1, 0.0F, -0.5F, 1.05F, -0.5F, -0.3F, 0.75F, -0.5F, -0.4F, 0.7F, 0.5F, -0.3F, 0.7F, 0.5F, 1.2F, -0.3F, 3.0F, -1.8F, -0.3F, 3.0F, -1.8F, -0.2F, -3.3F, 1.2F, -0.2F, -3.3F);
+      headModel[20].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[21].addShapeBox(3.0F, -6.7F, -4.0F, 1, 2, 2, 0.0F, 1.0F, 0.2F, 1.5F, 0.7F, 0.0F, 0.7F, 0.67F, -0.25F, 0.0F, 1.0F, -0.8F, 1.5F, 1.0F, 0.3F, 2.7F, 1.4F, 0.5F, 1.2F, 1.7F, 0.8F, 1.0F, 1.0F, 0.5F, 2.4F);
+      headModel[21].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[22].addShapeBox(3.0F, -6.7F, -2.0F, 1, 2, 4, 0.0F, 1.0F, -0.8F, 1.5F, 0.65F, -0.2F, 0.0F, 0.65F, -0.55F, 0.0F, 1.0F, 0.0F, 1.7F, 1.0F, 0.2F, 0.4F, 1.7F, 0.8F, -1.0F, 1.8F, 1.05F, -0.5F, 1.0F, 0.55F, 1.9F);
+      headModel[22].setRotationPoint(0.0F, 0.0F, 0.0F);
+      headModel[23].addShapeBox(3.0F, -6.7F, 2.0F, 1, 2, 2, 0.0F, 1.0F, 0.0F, 1.7F, 0.65F, -0.55F, 0.0F, 0.6F, -0.8F, 0.8F, 1.0F, -0.8F, 1.6F, 1.0F, -0.8F, 1.9F, 1.8F, 1.05F, 0.5F, 1.2F, 1.8F, 1.2F, 1.0F, 2.0F, 2.0F);
+      headModel[23].setRotationPoint(0.0F, 0.0F, 0.0F);
+   }
+}

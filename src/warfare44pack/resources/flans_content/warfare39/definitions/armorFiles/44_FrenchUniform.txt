@@ -1,0 +1,9 @@
+Name French Army Uniform 1937
+ShortName 44_FrenchUniform
+Icon 44_FrenchUniform
+Colour 255 255 255
+Type Chest
+Defence 0.3
+Model NFS.44_FrenchUniform
+ArmourTexture 44_FrenchUniform
+

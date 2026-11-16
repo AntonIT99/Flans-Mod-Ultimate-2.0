@@ -74,6 +74,14 @@ public final class VehiclePhysicsConstants
     public static final float SLOPE_FALLOFF_SPAN_DEG = 20F;
     /** Minimum uphill propulsion retained for block edges and very steep Minecraft terrain. */
     public static final float SLOPE_CRAWL_PROPULSION = 0.2F;
+    /** Steepest terrain angle, in degrees, a profiled ground vehicle's suspension follows, however strong it is. */
+    public static final float SLOPE_MAX_TERRAIN_ANGLE_DEG = 55F;
+    /** Descent, in degrees, up to which a profiled ground vehicle keeps its full speed. */
+    public static final float DESCENT_FALLOFF_START_DEG = 20F;
+    /** Degrees over which its speed then comes down to the share below, as its driver holds it back on the engine. */
+    public static final float DESCENT_FALLOFF_SPAN_DEG = 25F;
+    /** Share of its speed a vehicle keeps on the steepest descents. */
+    public static final float DESCENT_MIN_SPEED = 0.45F;
 
     // ---------------------------------------------------------------- aircraft
 
@@ -263,6 +271,13 @@ public final class VehiclePhysicsConstants
      * settles onto its draft over roughly a second instead of snapping.
      */
     public static final double DRAFT_RESTORING_STIFFNESS = 0.08D;
+    /**
+     * Largest share of its scaled core box height a hull may ride below the
+     * surface. Researched drafts are real metres, while many legacy naval packs
+     * model at a fraction of real size: Rainfire5's 4.7 m destroyer draft is
+     * deeper than its whole 2.8 block hull. Models drawn to scale keep their draft.
+     */
+    public static final double MAX_DRAFT_HULL_FRACTION = 0.6D;
     /**
      * Maximum blocks a draft probe will search upward for the water surface. It
      * must exceed the deepest authored draft: a probe that stops short reads the

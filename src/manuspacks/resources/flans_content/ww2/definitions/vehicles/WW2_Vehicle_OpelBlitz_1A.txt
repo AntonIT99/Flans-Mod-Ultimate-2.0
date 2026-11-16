@@ -9,8 +9,8 @@ Texture Skin_WW2_Vehicle_OpelBlitz_1A
 RotateWheels True
 
 // Paintjobs
-AdvPaintJob Hungarian Icon_WW2_Vehicle_OpelBlitz_1A skin_ww2_vehicle_opelblitz_1a_hungarian green 8
-AdvPaintJob Romanian Icon_WW2_Vehicle_OpelBlitz_1A skin_ww2_vehicle_opelblitz_1a_romanian green 8
+AdvPaintJob Hungarian icon_ww2_vehicle_opelblitz_1a_hungarian skin_ww2_vehicle_opelblitz_1a_hungarian green 8
+AdvPaintJob Romanian icon_ww2_vehicle_opelblitz_1a_romanian skin_ww2_vehicle_opelblitz_1a_romanian green 8
 
 // Recipe and Inventory
 FuelTankSize 1500

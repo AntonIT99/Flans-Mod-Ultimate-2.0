@@ -487,35 +487,10 @@ public class GunItemHandler
 
     private void handleMinigunLoopingSounds(Level level, Player player, PlayerData data, InteractionHand hand)
     {
-        if (data.isReloading(hand) || !item.configType.isUseLoopingSounds())
-        {
-            data.setLoopingSoundActive(false);
+        GunType type = item.configType;
+        if (level.isClientSide || !type.isUseLoopingSounds())
             return;
-        }
-
-        if (data.getLoopedSoundDelay() > 0)
-            return;
-
-        if (data.isShootKeyPressed(hand) && !data.isPrevShootKeyPressed(hand))
-        {
-            data.setLoopedSoundDelay(item.configType.getWarmupSoundLength());
-            data.setLoopingSoundActive(true);
-            if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunActionSoundRange(), item.configType.getWarmupSound(), false);
-        }
-        else if (data.isShootKeyPressed(hand))
-        {
-            data.setLoopedSoundDelay(item.configType.getLoopedSoundLength());
-            data.setLoopingSoundActive(true);
-            if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunActionSoundRange(), item.configType.getLoopedSound(), false);
-        }
-        else if (data.isLoopingSoundActive())
-        {
-            data.setLoopingSoundActive(false);
-            if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunActionSoundRange(), item.configType.getCooldownSound(), false);
-        }
+        data.updateMinigunSounds(player, hand, new MinigunSounds.Sounds(type.getWarmupSound(), type.getWarmupSoundLength(), type.getLoopedSound(), type.getCooldownSound()));
     }
 
     public void checkForLockOn(Level level, Player player, PlayerData data, InteractionHand hand)

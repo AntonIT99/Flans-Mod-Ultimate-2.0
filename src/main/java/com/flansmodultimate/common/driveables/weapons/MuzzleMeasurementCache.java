@@ -75,6 +75,16 @@ final class MuzzleMeasurementCache
             return mounts.values().stream().mapToInt(List::size).sum();
         }
 
+        /** Adds the results of other types; every entry is keyed by its own type. */
+        void addAll(Results other)
+        {
+            deployedGuns.putAll(other.deployedGuns);
+            aaGuns.putAll(other.aaGuns);
+            driveables.putAll(other.driveables);
+            mounts.putAll(other.mounts);
+            pivots.putAll(other.pivots);
+        }
+
     }
 
     /** Measured AA gun barrel pivots and muzzles, in model pixels. */

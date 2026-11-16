@@ -41,6 +41,8 @@
 
     "ADF-01 Falken (Fictional)": {
         "properties": {
+            "IssueDate": "1998-09",
+            "RetirementDate": "1998-09",
             "RealTurnRateDegPerSec": 23.47,
             "RealMassKg": 29410,
             "RealEngineThrustKn": 231.3,
@@ -58,6 +60,8 @@
 
     "ADFX-02 Morgan (Fictional)": {
         "properties": {
+            "IssueDate": "1995-12",
+            "RetirementDate": "1995-12",
             "RealTurnRateDegPerSec": 20.25,
             "RealMassKg": 21430,
             "RealEngineThrustKn": 206.53,
@@ -309,6 +313,8 @@
 
     "Airco D.H.4 (Eagle VII)": {
         "properties": {
+            "IssueDate": "~1917",
+            "RetirementDate": "~1919",
             "RealTurnRateDegPerSec": 20.54,
             "RealMassKg": 1588,
             "RealMaxSpeedKmh": 200,
@@ -809,6 +815,7 @@
 
     "Antonov An-12B": {
         "properties": {
+            "IssueDate": "~1963",
             "RealTurnRateDegPerSec": 6.98,
             "RealMassKg": 55100,
             "RealMaxSpeedKmh": 777,
@@ -835,6 +842,17 @@
             "RealClimbRateMs": 6,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "ar196",
+            "ww2_plane_arado196_1a"
+        ]
+    },
+
+    "Arado Ar 196 family Service Period": {
+        "properties": {
+            "IssueDate": "1939-06",
+            "RetirementDate": "1945"
         },
         "items": [
             "ar196",
@@ -1000,6 +1018,7 @@
 
     "Bell AH-1 Cobra": {
         "properties": {
+            "IssueDate": "1967",
             "RealTurnRateDegPerSec": 23.74,
             "RealMassKg": 4309,
             "RealEnginePowerHp": 1400,
@@ -1016,6 +1035,8 @@
 
     "Bell AH-1F Cobra": {
         "properties": {
+            "IssueDate": "~1979",
+            "RetirementDate": "1999-03",
             "RealTurnRateDegPerSec": 19.78,
             "RealMassKg": 3990,
             "RealEnginePowerHp": 1800,
@@ -1130,6 +1151,7 @@
 
     "Bell D-188 naval adaptation (F3L pack designation)": {
         "properties": {
+            "IssueDate": "~1957",
             "RealMassKg": 10849,
             "RealEngineThrustKn": 92.52,
             "RealMaxSpeedKmh": 2443,
@@ -1147,6 +1169,7 @@
 
     "Bell D-188A (F-109A pack designation)": {
         "properties": {
+            "IssueDate": "~1958",
             "RealMassKg": 10849,
             "RealEngineThrustKn": 92.52,
             "RealMaxSpeedKmh": 2443,
@@ -1164,6 +1187,7 @@
 
     "Bell H-13C Sioux (47D-1 profile)": {
         "properties": {
+            "IssueDate": "~1950",
             "RealMassKg": 1066,
             "RealEnginePowerHp": 200,
             "RealMaxSpeedKmh": 161,
@@ -1397,6 +1421,16 @@
         ]
     },
 
+    "Bell UH-1N Twin Huey Service Period": {
+        "properties": {
+            "IssueDate": "~1971",
+            "RetirementDate": "~1989"
+        },
+        "items": [
+            "vh-1n"
+        ]
+    },
+
     "Bell UH-1P Service Period": {
         "properties": {
             "IssueDate": "~1967",
@@ -1460,6 +1494,15 @@
             "RealClimbRateMs": 2,
             "ReadWeaponsFromGunTypes": "true",
             "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "bv238"
+        ]
+    },
+
+    "Blohm & Voss BV 238 family Service Period": {
+        "properties": {
+            "IssueDate": "~1941"
         },
         "items": [
             "bv238"
@@ -2312,6 +2355,15 @@
         ]
     },
 
+    "Caproni Campini N.2 Service Period": {
+        "properties": {
+            "IssueDate": "~1940"
+        },
+        "items": [
+            "caproni"
+        ]
+    },
+
     "Cessna A-37B Dragonfly": {
         "properties": {
             "IssueDate": "~1968",
@@ -2409,6 +2461,7 @@
 
     "Chengdu J-7 (WP-7)": {
         "properties": {
+            "IssueDate": "~1967",
             "RealTurnRateDegPerSec": 37.1,
             "RealMassKg": 7500,
             "RealEngineThrustKn": 58.8,
@@ -2512,6 +2565,17 @@
         ]
     },
 
+    "Consolidated B-24 Liberator family Service Period": {
+        "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "b24",
+            "b24bomber"
+        ]
+    },
+
     "Consolidated B-24J Liberator": {
         "properties": {
             "RealTurnRateDegPerSec": 9.49,
@@ -2532,6 +2596,8 @@
 
     "Consolidated PB2Y-5 Coronado": {
         "properties": {
+            "IssueDate": "~1944",
+            "RetirementDate": "~1946",
             "RealTurnRateDegPerSec": 9.09,
             "RealMassKg": 30000,
             "RealEnginePowerKw": 3600,
@@ -3036,6 +3102,16 @@
         ]
     },
 
+    "Dornier Do 24 Service Period": {
+        "properties": {
+            "IssueDate": "1938",
+            "RetirementDate": "~1945"
+        },
+        "items": [
+            "do24"
+        ]
+    },
+
     "Dornier Do 24 T-1": {
         "properties": {
             "RealTurnRateDegPerSec": 11.79,
@@ -3295,6 +3371,16 @@
         },
         "items": [
             "ad-4n"
+        ]
+    },
+
+    "Douglas AD/A-1 Skyraider family Service Period": {
+        "properties": {
+            "IssueDate": "1946",
+            "RetirementDate": "~1972"
+        },
+        "items": [
+            "skyraider"
         ]
     },
 
@@ -3848,6 +3934,16 @@
         },
         "items": [
             "fw190a8"
+        ]
+    },
+
+    "Focke-Wulf Fw 200 C-1 Service Period": {
+        "properties": {
+            "IssueDate": "1940",
+            "RetirementDate": "~1945"
+        },
+        "items": [
+            "fw200"
         ]
     },
 
@@ -4457,6 +4553,16 @@
         ]
     },
 
+    "Grumman F7F Tigercat family Service Period": {
+        "properties": {
+            "IssueDate": "~1945",
+            "RetirementDate": "~1954"
+        },
+        "items": [
+            "f7tiger"
+        ]
+    },
+
     "Grumman F7F-1 Tigercat (4N airframe surrogate)": {
         "properties": {
             "IssueDate": "~1944",
@@ -4802,6 +4908,8 @@
 
     "Halberstadt CL.II (180 hp)": {
         "properties": {
+            "IssueDate": "1917-08",
+            "RetirementDate": "1918-11",
             "RealTurnRateDegPerSec": 24.63,
             "RealMassKg": 1145,
             "RealMaxSpeedKmh": 165,
@@ -5108,6 +5216,26 @@
         ]
     },
 
+    "Heinkel He 51 Service Period": {
+        "properties": {
+            "IssueDate": "~1934",
+            "RetirementDate": "~1944"
+        },
+        "items": [
+            "he51"
+        ]
+    },
+
+    "Heinkel He 111 H-4 Service Period": {
+        "properties": {
+            "IssueDate": "~1940",
+            "RetirementDate": "~1945"
+        },
+        "items": [
+            "he111h"
+        ]
+    },
+
     "Heinkel He 111 H-16": {
         "properties": {
             "RealTurnRateDegPerSec": 14.08,
@@ -5127,8 +5255,20 @@
         ]
     },
 
+    "Heinkel He 111 Service Period": {
+        "properties": {
+            "IssueDate": "1936",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "legacymanushe111",
+            "ww2_plane_he111_1a"
+        ]
+    },
+
     "Heinkel He 112 A-0 V4": {
         "properties": {
+            "IssueDate": "~1936",
             "RealTurnRateDegPerSec": 27.68,
             "RealMassKg": 2230,
             "RealEnginePowerKw": 514,
@@ -5244,6 +5384,7 @@
 
     "Hiller YH-32 Hornet (H-32A pack designation)": {
         "properties": {
+            "IssueDate": "~1954",
             "RealMassKg": 490,
             "RealEnginePowerHp": 90,
             "RealMaxSpeedKmh": 129,
@@ -5255,6 +5396,15 @@
         },
         "items": [
             "h-32a"
+        ]
+    },
+
+    "Hughes OH-6A Cayuse Service Period": {
+        "properties": {
+            "IssueDate": "~1966"
+        },
+        "items": [
+            "oh-6a"
         ]
     },
 
@@ -5271,6 +5421,15 @@
         },
         "items": [
             "oh-6a",
+            "oh-6b"
+        ]
+    },
+
+    "Hughes OH-6B Cayuse Service Period": {
+        "properties": {
+            "IssueDate": "~1988"
+        },
+        "items": [
             "oh-6b"
         ]
     },
@@ -5296,6 +5455,7 @@
 
     "Ikarus 451M": {
         "properties": {
+            "IssueDate": "~1952",
             "RealTurnRateDegPerSec": 46.95,
             "RealMassKg": 1350,
             "RealEngineThrustKn": 2.94,
@@ -5313,6 +5473,8 @@
 
     "Ikarus S-49C": {
         "properties": {
+            "IssueDate": "1952",
+            "RetirementDate": "1961",
             "RealTurnRateDegPerSec": 30.9,
             "RealMassKg": 3568,
             "RealEnginePowerKw": 1104,
@@ -5331,6 +5493,7 @@
 
     "Ikarus S-451M Zolja": {
         "properties": {
+            "IssueDate": "~1954",
             "RealTurnRateDegPerSec": 48.23,
             "RealMassKg": 1650,
             "RealEngineThrustKn": 7.8,
@@ -5363,6 +5526,21 @@
         },
         "items": [
             "ill126"
+        ]
+    },
+
+    "Ilyushin Il-2 Single-Seat Service Period": {
+        "properties": {
+            "IssueDate": "1941-06",
+            "RetirementDate": "~1943"
+        },
+        "items": [
+            "ww2_plane_il2_1a",
+            "ww2_plane_il2_1b",
+            "ww2_plane_il2_1c",
+            "ww2_plane_il2_3a",
+            "ww2_plane_il2_3b",
+            "ww2_plane_il2_3c"
         ]
     },
 
@@ -5407,8 +5585,27 @@
         ]
     },
 
+    "Ilyushin Il-2M Two-Seat Service Period": {
+        "properties": {
+            "IssueDate": "1942-10",
+            "RetirementDate": "~1954"
+        },
+        "items": [
+            "ww2_plane_il2m_1a",
+            "ww2_plane_il2m_1b",
+            "ww2_plane_il2m_1c",
+            "ww2_plane_il2m_3a",
+            "ww2_plane_il2m_3b",
+            "ww2_plane_il2m_3c",
+            "ww2_plane_il2m_4a",
+            "ww2_plane_il2m_6a"
+        ]
+    },
+
     "Ilyushin Il-28": {
         "properties": {
+            "IssueDate": "1950",
+            "RetirementDate": "~1977",
             "RealTurnRateDegPerSec": 14.84,
             "RealMassKg": 18400,
             "RealEngineThrustKn": 53,
@@ -5426,6 +5623,7 @@
 
     "Ilyushin Il-76M": {
         "properties": {
+            "IssueDate": "~1978",
             "RealTurnRateDegPerSec": 5.25,
             "RealMassKg": 130000,
             "RealEngineThrustKn": 470.8,
@@ -5479,6 +5677,15 @@
         ]
     },
 
+    "Junkers Ju 87 C-0 Service Period": {
+        "properties": {
+            "IssueDate": "~1939"
+        },
+        "items": [
+            "ju87c"
+        ]
+    },
+
     "Junkers Ju 87 D-1": {
         "properties": {
             "RealTurnRateDegPerSec": 23.06,
@@ -5514,6 +5721,26 @@
         },
         "items": [
             "divebomber_ju87d-3"
+        ]
+    },
+
+    "Junkers Ju 87 D-3 Service Period": {
+        "properties": {
+            "IssueDate": "~1942",
+            "RetirementDate": "~1945"
+        },
+        "items": [
+            "44_ju87d3"
+        ]
+    },
+
+    "Junkers Ju 87 G Service Period": {
+        "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "ww2_plane_ju87_2a"
         ]
     },
 
@@ -5559,6 +5786,17 @@
         ]
     },
 
+    "Junkers Ju 87 Stuka Service Period": {
+        "properties": {
+            "IssueDate": "1937",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "ww2_plane_ju87_1a",
+            "ju87d3"
+        ]
+    },
+
     "Junkers Ju 88 A-4": {
         "properties": {
             "IssueDate": "~1941",
@@ -5599,6 +5837,8 @@
 
     "Kaman SH-2G Super Seasprite": {
         "properties": {
+            "IssueDate": "1993-02",
+            "RetirementDate": "2001-05",
             "RealMassKg": 6120,
             "RealEnginePowerHp": 3446,
             "RealMaxSpeedKmh": 256,
@@ -5787,6 +6027,16 @@
         ]
     },
 
+    "Kawasaki Ki-10-I Service Period": {
+        "properties": {
+            "IssueDate": "1935-12",
+            "RetirementDate": "~1942"
+        },
+        "items": [
+            "ki10"
+        ]
+    },
+
     "Kawasaki Ki-10-II": {
         "properties": {
             "RealTurnRateDegPerSec": 31.77,
@@ -5861,6 +6111,16 @@
         ]
     },
 
+    "Kawasaki Ki-61 Hien Service Period": {
+        "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "ki61"
+        ]
+    },
+
     "Kawasaki Ki-61-I KAIc Hien": {
         "properties": {
             "RealTurnRateDegPerSec": 26.53,
@@ -5916,6 +6176,8 @@
 
     "Kirov Airship (Fictional)": {
         "properties": {
+            "IssueDate": "ColdWar",
+            "RetirementDate": "ColdWar",
             "RealTurnRateDegPerSec": 0,
             "RealMassKg": 240000,
             "RealEnginePowerHp": 4800,
@@ -6255,6 +6517,7 @@
 
     "Lockheed Martin F-22B proposed trainer (A flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "~1991",
             "RealTurnRateDegPerSec": 23.47,
             "RealMassKg": 29410,
             "RealEngineThrustKn": 231.3,
@@ -6426,6 +6689,7 @@
 
     "Lockheed P-38E Lightning": {
         "properties": {
+            "IssueDate": "~1941",
             "RealTurnRateDegPerSec": 20.08,
             "RealMassKg": 6290,
             "RealEnginePowerHp": 2300,
@@ -6446,6 +6710,8 @@
 
     "Lockheed P-38L Lightning": {
         "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "~1949",
             "RealTurnRateDegPerSec": 20.08,
             "RealMassKg": 7938,
             "RealEnginePowerHp": 3200,
@@ -7070,6 +7336,15 @@
         ]
     },
 
+    "McDonnell Douglas F-15 STOL/MTD Service Period": {
+        "properties": {
+            "IssueDate": "~1989"
+        },
+        "items": [
+            "f-15mtd"
+        ]
+    },
+
     "McDonnell Douglas F-15C Eagle": {
         "properties": {
             "IssueDate": "1979-09",
@@ -7308,6 +7583,8 @@
 
     "MD Helicopters AH-6J Little Bird": {
         "properties": {
+            "IssueDate": "~1990",
+            "RetirementDate": "~2010",
             "RealTurnRateDegPerSec": 31.84,
             "RealMassKg": 1400,
             "RealEnginePowerHp": 650,
@@ -7327,6 +7604,7 @@
 
     "MD Helicopters AH-6S (AH-6J flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "~2009",
             "RealMassKg": 1361,
             "RealEnginePowerHp": 425,
             "RealMaxSpeedKmh": 282,
@@ -7343,6 +7621,8 @@
 
     "Messerschmitt Bf 109 E-3": {
         "properties": {
+            "IssueDate": "1939",
+            "RetirementDate": "1949",
             "RealTurnRateDegPerSec": 32.25,
             "RealMassKg": 2340,
             "RealEnginePowerPS": 1175,
@@ -7388,6 +7668,8 @@
 
     "Messerschmitt Bf 109 fighter-bomber (Generic)": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "RealTurnRateDegPerSec": 32.07,
             "RealMassKg": 3100,
             "RealEnginePowerPS": 1475,
@@ -7425,8 +7707,20 @@
         ]
     },
 
+    "Messerschmitt Bf 109 G-6 Service Period": {
+        "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "bf109g6"
+        ]
+    },
+
     "Messerschmitt Bf 109 G-10": {
         "properties": {
+            "IssueDate": "~1944",
+            "RetirementDate": "1945",
             "RealTurnRateDegPerSec": 31.93,
             "RealMassKg": 3280,
             "RealEnginePowerPS": 1800,
@@ -7446,6 +7740,17 @@
         ]
     },
 
+    "Messerschmitt Bf 109 Service Period": {
+        "properties": {
+            "IssueDate": "1937",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "bf109",
+            "legacybf109"
+        ]
+    },
+
     "Messerschmitt Bf 109 T": {
         "properties": {
             "RealTurnRateDegPerSec": 28.73,
@@ -7459,6 +7764,17 @@
             "ReadWeaponsFromGunTypes": "true"
         },
         "items": [
+            "karlslandbf109"
+        ]
+    },
+
+    "Messerschmitt Bf 109 T Series Service Period": {
+        "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "~1944"
+        },
+        "items": [
+            "bf109t",
             "karlslandbf109"
         ]
     },
@@ -7619,8 +7935,28 @@
         ]
     },
 
+    "MH-6 Little Bird Service Period": {
+        "properties": {
+            "IssueDate": "~1981"
+        },
+        "items": [
+            "littlebird"
+        ]
+    },
+
+    "MH-6E Little Bird Service Period": {
+        "properties": {
+            "IssueDate": "~1982",
+            "RetirementDate": "~1993"
+        },
+        "items": [
+            "mh-6e"
+        ]
+    },
+
     "MiG I-225": {
         "properties": {
+            "IssueDate": "~1944",
             "RealTurnRateDegPerSec": 31.83,
             "RealMassKg": 4182,
             "RealEnginePowerHp": 2200,
@@ -7638,6 +7974,8 @@
 
     "Mikoyan MiG-27": {
         "properties": {
+            "IssueDate": "1975",
+            "RetirementDate": "2019-12",
             "RealTurnRateDegPerSec": 18.99,
             "RealMassKg": 18900,
             "RealEngineThrustKn": 112.7,
@@ -7660,6 +7998,7 @@
 
     "Mikoyan MiG-29A (9.12)": {
         "properties": {
+            "IssueDate": "1983",
             "RealTurnRateDegPerSec": 23.27,
             "RealMassKg": 14310,
             "RealEngineThrustKn": 162.6,
@@ -7705,6 +8044,7 @@
 
     "Mikoyan-Gurevich I-225": {
         "properties": {
+            "IssueDate": "~1944",
             "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 3530,
             "RealEnginePowerPS": 2200,
@@ -7763,6 +8103,8 @@
 
     "Mikoyan-Gurevich MiG-17AS": {
         "properties": {
+            "IssueDate": "1964",
+            "RetirementDate": "~1980",
             "RealTurnRateDegPerSec": 27.63,
             "RealMassKg": 5130,
             "RealEngineThrustKn": 33.1,
@@ -7785,6 +8127,7 @@
 
     "Mikoyan-Gurevich MiG-19PT (MiG-19S flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "~1965",
             "RealTurnRateDegPerSec": 29.47,
             "RealMassKg": 7350,
             "RealEngineThrustKn": 63.74,
@@ -7804,6 +8147,8 @@
 
     "Mikoyan-Gurevich MiG-19S": {
         "properties": {
+            "IssueDate": "~1956",
+            "RetirementDate": "~1972",
             "RealTurnRateDegPerSec": 29.47,
             "RealMassKg": 7350,
             "RealEngineThrustKn": 63.74,
@@ -7826,6 +8171,7 @@
 
     "Mikoyan-Gurevich MiG-21bis": {
         "properties": {
+            "IssueDate": "~1972",
             "RealTurnRateDegPerSec": 36.84,
             "RealMassKg": 8530,
             "RealEngineThrustKn": 97.1,
@@ -7849,6 +8195,8 @@
 
     "Mikoyan-Gurevich MiG-21F-13": {
         "properties": {
+            "IssueDate": "~1960",
+            "RetirementDate": "1986-01",
             "RealTurnRateDegPerSec": 36.84,
             "RealMassKg": 7240,
             "RealEngineThrustKn": 56.3,
@@ -8106,6 +8454,8 @@
 
     "Mitsubishi A5M4": {
         "properties": {
+            "IssueDate": "~1938",
+            "RetirementDate": "~1945",
             "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 1671,
             "RealEnginePowerPS": 710,
@@ -8149,6 +8499,8 @@
 
     "Mitsubishi A6M3 Model 22": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "~1944",
             "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 2544,
             "RealEnginePowerHp": 1130,
@@ -8185,6 +8537,8 @@
 
     "Mitsubishi A6M5 Model 52": {
         "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "1945",
             "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 2733,
             "RealEnginePowerHp": 1130,
@@ -8291,6 +8645,16 @@
         ]
     },
 
+    "Mitsubishi G3M Service Period": {
+        "properties": {
+            "IssueDate": "1937",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "g3m"
+        ]
+    },
+
     "Mitsubishi G4M1 Model 11": {
         "properties": {
             "IssueDate": "1941-04",
@@ -8346,6 +8710,16 @@
         },
         "items": [
             "j8m"
+        ]
+    },
+
+    "Mitsubishi Ki-21 Service Period": {
+        "properties": {
+            "IssueDate": "1938",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "ki21"
         ]
     },
 
@@ -8462,6 +8836,7 @@
 
     "Nakajima G8N1 Renzan": {
         "properties": {
+            "IssueDate": "~1943",
             "RealTurnRateDegPerSec": 9.78,
             "RealMassKg": 26800,
             "RealEnginePowerPS": 8000,
@@ -8494,6 +8869,16 @@
         },
         "items": [
             "ki27"
+        ]
+    },
+
+    "Nakajima Ki-43 Hayabusa Service Period": {
+        "properties": {
+            "IssueDate": "1941",
+            "RetirementDate": "1945"
+        },
+        "items": [
+            "ki43"
         ]
     },
 
@@ -8576,6 +8961,8 @@
 
     "Nanchang Q-5 Fantan": {
         "properties": {
+            "IssueDate": "1970",
+            "RetirementDate": "2017",
             "RealTurnRateDegPerSec": 27.35,
             "RealMassKg": 8110,
             "RealEngineThrustKn": 63.74,
@@ -8950,6 +9337,8 @@
 
     "North American P-51 fighter-bomber (Generic)": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 4175,
             "RealEnginePowerHp": 1490,
@@ -8962,6 +9351,20 @@
         },
         "items": [
             "fighter-bomber_mustang"
+        ]
+    },
+
+    "North American P-51 Mustang family Service Period": {
+        "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "1957"
+        },
+        "items": [
+            "legacymustang",
+            "ww2_plane_p51_1a",
+            "ww2_plane_p51_1b",
+            "ww2_plane_p51_1c",
+            "mustang"
         ]
     },
 
@@ -9010,6 +9413,18 @@
             "ww2_plane_p51_1c",
             "44_p51dmustang",
             "mustang",
+            "f-51d"
+        ]
+    },
+
+    "North American P-51D Mustang Service Period": {
+        "properties": {
+            "IssueDate": "1944",
+            "RetirementDate": "1957"
+        },
+        "items": [
+            "liberionp51d",
+            "44_p51dmustang",
             "f-51d"
         ]
     },
@@ -9442,6 +9857,8 @@
 
     "Piper J-3C-65 Cub": {
         "properties": {
+            "IssueDate": "1942",
+            "RetirementDate": "~1953",
             "RealTurnRateDegPerSec": 29.64,
             "RealMassKg": 550,
             "RealEnginePowerHp": 65,
@@ -9459,6 +9876,8 @@
 
     "Polikarpov I-16 Type 24": {
         "properties": {
+            "IssueDate": "~1939",
+            "RetirementDate": "~1943",
             "RealTurnRateDegPerSec": 35.37,
             "RealMassKg": 1941,
             "RealEnginePowerPS": 1100,
@@ -9495,6 +9914,8 @@
 
     "Polikarpov Po-2": {
         "properties": {
+            "IssueDate": "~1929",
+            "RetirementDate": "~1959",
             "RealTurnRateDegPerSec": 27.92,
             "RealMassKg": 1030,
             "RealEnginePowerKw": 93,
@@ -9718,6 +10139,15 @@
         ]
     },
 
+    "Republic P-47B Thunderbolt Service Period": {
+        "properties": {
+            "IssueDate": "1942-06"
+        },
+        "items": [
+            "p47b"
+        ]
+    },
+
     "Republic P-47D Thunderbolt": {
         "properties": {
             "RealTurnRateDegPerSec": 25.63,
@@ -9734,6 +10164,16 @@
             "p47silver",
             "44_p47d",
             "p47b"
+        ]
+    },
+
+    "Republic P-47D Thunderbolt Service Period": {
+        "properties": {
+            "IssueDate": "1943",
+            "RetirementDate": "~1953"
+        },
+        "items": [
+            "44_p47d"
         ]
     },
 
@@ -9879,6 +10319,16 @@
         ]
     },
 
+    "Savoia-Marchetti SM.79 Service Period": {
+        "properties": {
+            "IssueDate": "1936",
+            "RetirementDate": "~1952"
+        },
+        "items": [
+            "sparviero"
+        ]
+    },
+
     "Savoia-Marchetti SM.79-III Sparviero": {
         "properties": {
             "RealTurnRateDegPerSec": 15.76,
@@ -9954,6 +10404,7 @@
 
     "Shenyang FC-31 first RD-93 prototype": {
         "properties": {
+            "IssueDate": "~2012",
             "RealMassKg": 25000,
             "RealEngineThrustKn": 168,
             "RealMaxSpeedKmh": 2205,
@@ -9971,6 +10422,8 @@
 
     "Shenyang J-6 (MiG-19S airframe)": {
         "properties": {
+            "IssueDate": "1964",
+            "RetirementDate": "2010-06",
             "RealTurnRateDegPerSec": 28.83,
             "RealMassKg": 8832,
             "RealEngineThrustKn": 63.74,
@@ -10081,6 +10534,7 @@
 
     "Sikorsky AH-60L (UH-60L flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1995",
             "RealTurnRateDegPerSec": 16.21,
             "RealMassKg": 9980,
             "RealEnginePowerHp": 3780,
@@ -10200,6 +10654,7 @@
 
     "Sikorsky H-19C (H-19D flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1952",
             "RealTurnRateDegPerSec": 16.41,
             "RealMassKg": 3400,
             "RealEnginePowerHp": 700,
@@ -10216,6 +10671,8 @@
 
     "Sikorsky H-19D Chickasaw": {
         "properties": {
+            "IssueDate": "~1953",
+            "RetirementDate": "~1969",
             "RealTurnRateDegPerSec": 16.41,
             "RealMassKg": 3400,
             "RealEnginePowerHp": 700,
@@ -10429,6 +10886,8 @@
 
     "Sikorsky HRS-3 (H-19D flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1953",
+            "RetirementDate": "~1969",
             "RealTurnRateDegPerSec": 16.41,
             "RealMassKg": 3400,
             "RealEnginePowerHp": 700,
@@ -10532,6 +10991,8 @@
 
     "Sikorsky MH-60L (UH-60L flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1990",
+            "RetirementDate": "~2015",
             "RealTurnRateDegPerSec": 16.21,
             "RealMassKg": 9980,
             "RealEnginePowerHp": 3780,
@@ -10616,6 +11077,7 @@
 
     "Sikorsky R-5 Dragonfly": {
         "properties": {
+            "IssueDate": "1946",
             "RealTurnRateDegPerSec": 21.76,
             "RealMassKg": 2190,
             "RealEnginePowerHp": 450,
@@ -10775,6 +11237,7 @@
 
     "Sikorsky SH-34J (H-34A flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "~1958",
             "RealMassKg": 5383,
             "RealEnginePowerHp": 1525,
             "RealMaxSpeedKmh": 196,
@@ -10812,6 +11275,8 @@
 
     "Sikorsky UH-3A (SH-3D flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "~1971",
+            "RetirementDate": "~1994",
             "RealMassKg": 9300,
             "RealEnginePowerHp": 2500,
             "RealMaxSpeedKmh": 267,
@@ -10846,6 +11311,8 @@
 
     "Sikorsky UH-19B (H-19D flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "~1953",
+            "RetirementDate": "~1967",
             "RealTurnRateDegPerSec": 16.41,
             "RealMassKg": 3400,
             "RealEnginePowerHp": 700,
@@ -10914,6 +11381,7 @@
 
     "Sikorsky UH-60Q (UH-60L flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "1998",
             "RealTurnRateDegPerSec": 16.21,
             "RealMassKg": 9980,
             "RealEnginePowerHp": 3780,
@@ -10964,6 +11432,8 @@
 
     "Sikorsky VH-53D (CH-53D flight-profile surrogate)": {
         "properties": {
+            "IssueDate": "~1990",
+            "RetirementDate": "2004-09",
             "RealMassKg": 15195,
             "RealEnginePowerHp": 7850,
             "RealMaxSpeedKmh": 310,
@@ -11111,6 +11581,15 @@
         ]
     },
 
+    "Spitfire Mk IX Service Period": {
+        "properties": {
+            "IssueDate": "1942-07"
+        },
+        "items": [
+            "44_spitfire"
+        ]
+    },
+
     "Sukhoi Su-24M": {
         "properties": {
             "IssueDate": "1983",
@@ -11136,6 +11615,7 @@
 
     "Sukhoi Su-25": {
         "properties": {
+            "IssueDate": "1981",
             "RealTurnRateDegPerSec": 22.17,
             "RealMassKg": 14600,
             "RealEngineThrustKn": 88.36,
@@ -11294,6 +11774,7 @@
 
     "Sukhoi Su-37 Terminator (AL-37FU demonstrator)": {
         "properties": {
+            "IssueDate": "~1996",
             "RealMassKg": 34000,
             "RealEngineThrustKn": 284,
             "RealMaxSpeedKmh": 2500,
@@ -11311,6 +11792,7 @@
 
     "Sukhoi Su-39 (Su-25TM)": {
         "properties": {
+            "IssueDate": "~1995",
             "RealTurnRateDegPerSec": 18.42,
             "RealMassKg": 14700,
             "RealEngineThrustKn": 73.35,
@@ -11375,8 +11857,20 @@
         ]
     },
 
+    "Sukhoi Su-57 Service Period": {
+        "properties": {
+            "IssueDate": "~2020"
+        },
+        "items": [
+            "putin",
+            "gfs_su57"
+        ]
+    },
+
     "Supermarine Spitfire F Mk XIVe": {
         "properties": {
+            "IssueDate": "~1944",
+            "RetirementDate": "~1954",
             "RealTurnRateDegPerSec": 28.34,
             "RealMassKg": 3889,
             "RealEnginePowerHp": 2050,
@@ -11397,6 +11891,8 @@
 
     "Supermarine Spitfire fighter-bomber (Generic)": {
         "properties": {
+            "IssueDate": "WW2",
+            "RetirementDate": "WW2",
             "RealTurnRateDegPerSec": 28.35,
             "RealMassKg": 3004,
             "RealEnginePowerHp": 1470,
@@ -11506,6 +12002,8 @@
 
     "Tupolev Tu-4": {
         "properties": {
+            "IssueDate": "~1949",
+            "RetirementDate": "~1962",
             "RealTurnRateDegPerSec": 7.39,
             "RealMassKg": 47850,
             "RealEnginePowerKw": 7160,
@@ -11549,6 +12047,8 @@
 
     "Tupolev Tu-95 (early Bear)": {
         "properties": {
+            "IssueDate": "1956",
+            "RetirementDate": "~1985",
             "RealTurnRateDegPerSec": 5.3,
             "RealMassKg": 171000,
             "RealMaxSpeedKmh": 882,
@@ -12015,6 +12515,8 @@
 
     "Vought F4U-4 Corsair": {
         "properties": {
+            "IssueDate": "1945",
+            "RetirementDate": "~1957",
             "RealTurnRateDegPerSec": 25.47,
             "RealMassKg": 6654,
             "RealEnginePowerHp": 2380,
@@ -12316,6 +12818,7 @@
 
     "Yakovlev Yak-9": {
         "properties": {
+            "IssueDate": "1942-12",
             "RealTurnRateDegPerSec": 32.68,
             "RealMassKg": 2870,
             "RealEnginePowerHp": 1180,
@@ -12351,6 +12854,7 @@
 
     "Yakovlev Yak-9T": {
         "properties": {
+            "IssueDate": "1943",
             "RealTurnRateDegPerSec": 32.68,
             "RealMassKg": 2760,
             "RealEnginePowerPS": 1180,
@@ -12364,6 +12868,15 @@
         "items": [
             "yak9",
             "44_yak9"
+        ]
+    },
+
+    "Yakovlev Yak-9UT Service Period": {
+        "properties": {
+            "IssueDate": "~1945"
+        },
+        "items": [
+            "yak9ut"
         ]
     },
 
@@ -12408,6 +12921,7 @@
 
     "Yakovlev Yak-141": {
         "properties": {
+            "IssueDate": "~1975",
             "RealTurnRateDegPerSec": 26.01,
             "RealMassKg": 15330,
             "RealEngineThrustKn": 152.79,
@@ -12489,6 +13003,7 @@
 
     "Yokosuka R2Y2 Keiun Kai": {
         "properties": {
+            "IssueDate": "~1944",
             "RealTurnRateDegPerSec": 22.74,
             "RealMassKg": 5720,
             "RealEngineThrustKn": 26.5,

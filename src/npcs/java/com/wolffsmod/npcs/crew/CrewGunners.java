@@ -123,7 +123,7 @@ public final class CrewGunners
             for (Entity rider : vehicle.getPassengers())
             {
                 if (rider instanceof Player player)
-                    NpcCrew.mannedGun(player).ifPresent(mount ->
+                    NpcCrew.mannedGun(player).filter(mount -> NpcCrew.gunUsable(vehicle, mount)).ifPresent(mount ->
                     {
                         manning.add(player.getUUID());
                         man(context, player, mount);
@@ -164,8 +164,10 @@ public final class CrewGunners
             return Optional.empty();
         Optional<EntityNPCInterface> crew = NpcCrew.occupant(seating, mount.seat());
         if (crew.isPresent())
-            return options.enabled(Feature.MANNED_GUNS_FIRE) ? crew : Optional.empty();
-        return options.enabled(Feature.UNMANNED_GUNS_FIRE) && !NpcCrew.occupied(seating, mount.seat()) ? Optional.of(vehicle) : Optional.empty();
+            return options.enabled(Feature.MANNED_GUNS_FIRE) && NpcCrew.gunUsable(vehicle, mount) ? crew : Optional.empty();
+        // Nobody works the gun of a destroyed seat.
+        return options.enabled(Feature.UNMANNED_GUNS_FIRE) && !NpcCrew.occupied(seating, mount.seat()) && !NpcCrew.seatDestroyed(vehicle, mount) ? Optional.of(vehicle)
+            : Optional.empty();
     }
 
     /** Whether the vehicle has a target its seat guns may fire at at all. */

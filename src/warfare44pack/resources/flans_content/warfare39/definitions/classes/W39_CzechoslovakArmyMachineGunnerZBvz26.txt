@@ -1,0 +1,14 @@
+// Identity
+Name Machine Gunner (ZB vz. 26)
+ShortName W39_CzechoslovakArmyMachineGunnerZBvz26
+Description Squad light machine gunner with the ZB vz. 26 and an ammunition bag.
+
+// Availability
+UnlockLevel 0
+ClassLimitPercent 20
+
+// Items
+AddItem 44_Mg26t
+AddItem 44_Mg26tAmmo 6
+AddItem 44_AmmoBag
+AddItem 44_Bandage

@@ -4,6 +4,7 @@ import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.driveables.WeaponMount;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.sim.NpcParts;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataStats;
@@ -65,6 +66,7 @@ class NpcCrewRecruitmentTest
         when(((NpcCrewHolder) occupant).wolffsmodnpcsCrewSeat()).thenReturn(0);
         when(recruit.startRiding(vehicle, true)).thenReturn(true);
         NpcVehicleState state = mock(NpcVehicleState.class);
+        when(state.getParts()).thenReturn(new NpcParts());
         when(state.crewSeats(vehicle)).thenReturn(List.of(occupied.mount(), empty.mount(), blocked.mount()));
         NpcCrew.Recruiter recruiter = mock(NpcCrew.Recruiter.class);
         when(recruiter.recruit(level, vehicle, empty)).thenReturn(Optional.of(recruit));
@@ -96,6 +98,7 @@ class NpcCrewRecruitmentTest
         vehicle.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsCrew()).thenReturn(settings);
         NpcVehicleState state = mock(NpcVehicleState.class);
+        when(state.getParts()).thenReturn(new NpcParts());
         when(state.crewSeats(vehicle)).thenReturn(List.of(seat(3).mount(), seat(7).mount()));
         try (var states = mockStatic(NpcVehicleState.class))
         {
@@ -127,6 +130,7 @@ class NpcCrewRecruitmentTest
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsCrew()).thenReturn(settings);
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
         NpcVehicleState state = mock(NpcVehicleState.class);
+        when(state.getParts()).thenReturn(new NpcParts());
         when(state.crewSeats(vehicle)).thenReturn(List.of(seat(1).mount()));
         var model = mock(com.wolffsmod.npcs.model.FlanModelEntity.class);
         var type = new com.flansmodultimate.common.types.VehicleType();

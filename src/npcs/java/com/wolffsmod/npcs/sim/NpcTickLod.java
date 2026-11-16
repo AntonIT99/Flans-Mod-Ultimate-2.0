@@ -37,8 +37,12 @@ public final class NpcTickLod
         if (!(mob instanceof EntityNPCInterface npc) || mob.level().isClientSide || !NpcsCommonConfig.aiTickLod())
             return true;
         int period = period(npc);
-        // Spread by identity, so a formation does not decide in lockstep and leave every other tick empty.
-        return period <= 1 || Math.floorMod(npc.tickCount + npc.getId(), period) == 0;
+        if (period <= 1)
+            return true;
+        // Vanilla 1.21.1 starts new goals only on ticks where the mob's own tick count plus the id is even (1.20.1 counts
+        // server ticks). Counting the same way, an even period always decides on such a tick; counting any other clock,
+        // an NPC on the wrong parity would never start a goal. Spread by identity, so a formation does not decide in lockstep.
+        return Math.floorMod(npc.tickCount + npc.getId(), period) == 0;
     }
 
     /** @return ticks between the NPC's decisions */

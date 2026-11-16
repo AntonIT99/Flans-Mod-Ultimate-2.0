@@ -161,6 +161,12 @@ public final class GroundPropulsionProfiles
         }
 
         @Override
+        public double descentFactor(double descentDegrees)
+        {
+            return marine ? 1D : GroundSlopePhysics.descentFactor((float) -descentDegrees, 1F);
+        }
+
+        @Override
         public boolean realistic()
         {
             return true;

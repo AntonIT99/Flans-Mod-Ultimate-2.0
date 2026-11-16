@@ -12,9 +12,9 @@ RotateWheels True
 
 // Paintjobs
 AdvPaintJob Alternate legacymanuspanzer4a legacymanuspanzer4_alternate gray 8
-AdvPaintJob Kirby legacymanuspanzer4a legacymanuspanzer4_kirby pink 8
-AdvPaintJob AusfG legacymanuspanzer4a legacymanuspanzer4_ausfg gray 8
-AdvPaintJob English legacymanuspanzer4a legacymanuspanzer4_english gray 8
+AdvPaintJob Kirby legacymanuspanzer4a_kirby legacymanuspanzer4_kirby pink 8
+AdvPaintJob AusfG legacymanuspanzer4a_ausfg legacymanuspanzer4_ausfg gray 8
+AdvPaintJob English legacymanuspanzer4a_english legacymanuspanzer4_english gray 8
 
 // Recipe and Inventory
 FuelTankSize 2000

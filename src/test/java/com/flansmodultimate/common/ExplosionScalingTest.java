@@ -110,4 +110,27 @@ class ExplosionScalingTest
         assertTrue(strong.energyLength() > weak.energyLength());
         assertEquals(weak.peakDamage(), strong.peakDamage());
     }
+
+    @Test
+    void knockbackKeepsTheFlatPushWithoutAKnownCharge()
+    {
+        assertEquals(1D, ExplosionScaling.knockbackMultiplier(0F));
+        assertEquals(1D, ExplosionScaling.knockbackMultiplier(Float.NaN));
+        assertEquals(1D, ExplosionScaling.knockbackMultiplier(1F), 1.0E-9D);
+    }
+
+    @Test
+    void knockbackGrowsWithTheCubeRootOfTheCharge()
+    {
+        assertEquals(0.5D, ExplosionScaling.knockbackMultiplier(0.125F), 1.0E-6D);
+        assertEquals(2D, ExplosionScaling.knockbackMultiplier(8F), 1.0E-6D);
+        assertTrue(ExplosionScaling.knockbackMultiplier(0.18F) < ExplosionScaling.knockbackMultiplier(4.4F));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "27", "2250", "11000", "15000000", "3.4028235E38" })
+    void knockbackNeverExceedsItsCap(float charge)
+    {
+        assertEquals(ExplosionScaling.MAX_KNOCKBACK_MULTIPLIER, ExplosionScaling.knockbackMultiplier(charge), 1.0E-6D);
+    }
 }

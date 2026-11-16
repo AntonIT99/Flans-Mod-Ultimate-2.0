@@ -1,0 +1,13 @@
+// Identity
+Name Tank Crew
+ShortName W39_FrenchArmyTankCrew
+Description Crewman for the R35, H39, S35 and B1 with a MAS-38 and a repair tool.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_MAS38
+AddItem 44_MAS38Ammo 3
+AddItem 44_RepairTool
+AddItem 44_Bandage

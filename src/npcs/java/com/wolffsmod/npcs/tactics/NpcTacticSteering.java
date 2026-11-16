@@ -47,7 +47,7 @@ public final class NpcTacticSteering
         LivingEntity target = npc.getTarget();
         if (target == null)
             return;
-        if (NpcInfantryAirDefense.holdsPosition(npc, target))
+        if (NpcInfantryAirDefense.holdsPosition(npc, target) || NpcFiringPosition.leavesAircraft(npc, target))
         {
             npc.getNavigation().stop();
             return;

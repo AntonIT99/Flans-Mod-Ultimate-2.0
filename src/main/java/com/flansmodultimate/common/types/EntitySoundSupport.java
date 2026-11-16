@@ -2,12 +2,14 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.entity.EngineSound;
+import com.flansmodultimate.api.entity.FlansEntitySounds;
 import com.flansmodultimate.api.entity.SoundRange;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.SoundPriority;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketCancelSound;
+import com.flansmodultimate.network.client.effects.PacketEngineLoopSound;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +24,9 @@ import java.util.UUID;
 /** Sound transport shared by addon engine controllers. */
 public final class EntitySoundSupport
 {
+    /** Ticks a client keeps an engine loop after its last renewal, enough to ride out a couple of late ones. */
+    public static final int LOOP_LEASE_TICKS = 3 * FlansEntitySounds.ENGINE_LOOP_RENEW_TICKS;
+
     private EntitySoundSupport()
     {}
 
@@ -88,5 +93,22 @@ public final class EntitySoundSupport
     {
         if (source.level() instanceof ServerLevel level && level.getServer().isSameThread())
             PacketHandler.sendToDimension(level.dimension(), new PacketCancelSound(instance));
+    }
+
+    /** Starts or renews a client-side engine loop; only clients that know the source can play it. */
+    public static boolean loop(Entity source, EngineSound sound, boolean variablePitch)
+    {
+        ResourceLocation id = resolve(source, sound.sound(), sound.range());
+        if (id == null)
+            return false;
+        String name = FlansMod.FLANSMOD_ID.equals(id.getNamespace()) ? id.getPath() : id.toString();
+        PacketHandler.sendToTracking(new PacketEngineLoopSound(source, name, sound.range(), variablePitch), source);
+        return true;
+    }
+
+    public static void stopLoop(Entity source)
+    {
+        if (source.level() instanceof ServerLevel level && level.getServer().isSameThread())
+            PacketHandler.sendToTracking(new PacketEngineLoopSound(source, null, 0F, false), source);
     }
 }

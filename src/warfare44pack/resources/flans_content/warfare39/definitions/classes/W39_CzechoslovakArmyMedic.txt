@@ -1,0 +1,13 @@
+// Identity
+Name Medic
+ShortName W39_CzechoslovakArmyMedic
+Description Medic carrying a medical bag and bandages.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Kar98k
+AddItem 44_Kar98kAmmo 4
+AddItem 44_MedicalBag
+AddItem 44_Bandage 4

@@ -386,6 +386,7 @@ public final class ShootingHelper
 
         if (!level.isClientSide && !armourBlocked)
         {
+            Vec3 motionBefore = entity.getDeltaMovement();
             float damage = armoured.map(ModelArmourDamage.Result::damage).orElseGet(() -> ShootingHelper.getDamage(entity, bullet, shot));
             // The jet has already done the warhead's work on this part; its blast is left to the others.
             if (partHit != null && armoured.map(ModelArmourDamage.Result::shapedCharge).orElse(false))
@@ -401,6 +402,8 @@ public final class ShootingHelper
                 // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                 living.invulnerableTime = living.hurtDuration / 2;
             }
+            if (entity instanceof LivingEntity)
+                applyKnockbackModifier(entity, motionBefore, bulletType.getKnockbackModifier());
         }
 
         if (bulletType.isSetEntitiesOnFire() && !armourBlocked)
@@ -424,6 +427,24 @@ public final class ShootingHelper
             : partHit.getBody().armourDirectionToWorld(partHit.getPart(), result.armour().virtualNormal());
         ArmourImpactSounds.send(level, hit, shot.getBulletType(), result.penetration());
         ArmourImpactEffects.send(level, hit, shootingMotion, normal, shot.getProjectileMass(), result.armour(), result.blocked());
+    }
+
+    /**
+     * Keeps only the round's {@code KnockbackModifier} share of the push the hit just gave the target: 0 cancels it, 1 keeps vanilla knockback,
+     * more strengthens it. Above 2 the vertical part is softened to its square root so strong rounds shove rather than launch.
+     */
+    public static void applyKnockbackModifier(Entity entity, Vec3 motionBefore, float knockbackModifier)
+    {
+        Vec3 push = entity.getDeltaMovement().subtract(motionBefore);
+        if (push.lengthSqr() == 0D || knockbackModifier == 1F)
+            return;
+        Vec3 kept = push.scale(knockbackModifier);
+        if (knockbackModifier > 2F)
+        {
+            double vertical = Math.abs(kept.y);
+            kept = new Vec3(kept.x, Math.signum(kept.y) * Math.min(vertical, Math.sqrt(vertical)), kept.z);
+        }
+        entity.setDeltaMovement(motionBefore.add(kept));
     }
 
     /**

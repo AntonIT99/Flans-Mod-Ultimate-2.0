@@ -38,7 +38,7 @@ public final class DriveableMuzzleFlashes
     public static void bankFired(Driveable driveable, boolean secondary, int[] points, int[] barrels)
     {
         DriveableType type = driveable.getConfigType();
-        if (type == null || !type.isDefaultMuzzleFlash() || !hasMuzzleFlash(type.weaponType(secondary), type.isShellMuzzleFlash()))
+        if (type == null || !type.hasDefaultMuzzleFlash(secondary) || !hasMuzzleFlash(type.weaponType(secondary), type.isShellMuzzleFlash()))
             return;
         List<ShootPoint> shootPoints = type.shootPoints(secondary);
         for (int i = 0; i < points.length; i++)

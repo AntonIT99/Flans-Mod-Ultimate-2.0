@@ -12,8 +12,8 @@ AddDye 5 green 5 gray
 ModelScale 1.1
 
 // Paintjobs
-AdvPaintJob Sherman Fury fury_sherman green 8
-AdvPaintJob Fury Fury fury_fury green 8
+AdvPaintJob Sherman fury_sherman fury_sherman green 8
+AdvPaintJob Fury fury_fury fury_fury green 8
 
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat

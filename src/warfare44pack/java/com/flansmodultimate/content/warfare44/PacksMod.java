@@ -4,6 +4,8 @@ import com.flansmodultimate.PackagedContentPackApi;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 
+import java.util.Set;
+
 @Mod(PacksMod.MOD_ID)
 public class PacksMod
 {
@@ -12,6 +14,6 @@ public class PacksMod
     @SuppressWarnings("java:S1118")
     public PacksMod(ModContainer context)
     {
-        PackagedContentPackApi.register(context, MOD_ID, "flans_content", "flans_models");
+        PackagedContentPackApi.register(context, MOD_ID, "flans_content", "flans_models", Set.of("warfare44"));
     }
 }

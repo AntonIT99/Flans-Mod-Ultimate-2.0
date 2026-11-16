@@ -412,7 +412,7 @@ public class ModelVehicle extends ModelDriveable
     {
         Vec3 point = new Vec3(modelPixels.x * turretScale.x, modelPixels.y * turretScale.y, modelPixels.z * turretScale.z).add(turretTrans.x * 16D, turretTrans.y * 16D, turretTrans.z * 16D);
         Vector3f origin = driveable.getConfigType() == null ? null : driveable.getConfigType().getTurretOrigin();
-        Vec3 pivot = origin == null ? Vec3.ZERO : new Vec3(origin.x * 16D, origin.y * 16D, -origin.z * 16D);
+        Vec3 pivot = origin == null ? Vec3.ZERO : new Vec3(origin.x * 16D, origin.y * 16D, origin.z * 16D);
         return rotateY(point.subtract(pivot), -turretYaw * Mth.DEG_TO_RAD).add(pivot);
     }
 
@@ -552,10 +552,13 @@ public class ModelVehicle extends ModelDriveable
     {
         poseStack.pushPose();
         Vector3f turretOrigin = driveable.getConfigType() == null ? null : driveable.getConfigType().getTurretOrigin();
-        translateToModelPoint(poseStack, turretOrigin);
+        // Legacy renderers turned the turret round TurretOrigin as authored, without the Z flip of other model
+        // points: its lateral sign matches the seats and guns it carries, not the flipped model geometry.
+        if (turretOrigin != null)
+            poseStack.translate(turretOrigin.x, turretOrigin.y, turretOrigin.z);
         poseStack.mulPose(Axis.YP.rotationDegrees(-state.turretYaw()));
         if (turretOrigin != null)
-            poseStack.translate(-turretOrigin.x, -turretOrigin.y, turretOrigin.z);
+            poseStack.translate(-turretOrigin.x, -turretOrigin.y, -turretOrigin.z);
         poseStack.scale(turretScale.x, turretScale.y, turretScale.z);
         poseStack.translate(turretTrans.x, turretTrans.y, turretTrans.z);
         renderPart(turretModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);

@@ -148,6 +148,19 @@ public record ResolvedVehiclePhysics(EnumVehiclePhysicsMode mode, EnumVehicleCat
         return Math.max(legacy, maxSpeedBlocksPerTick(speedScale));
     }
 
+    /**
+     * Steepest terrain angle, in degrees, the suspension lets the vehicle follow. A complete ground profile follows
+     * terrain up to the grade it is down to a crawl on, so that a vehicle built for steep ground is not drawn flatter
+     * than the slope it climbs; everything else keeps the historical limit.
+     */
+    public float terrainAngleLimitDegrees()
+    {
+        if (!hasGroundPropulsion())
+            return SuspensionPhysics.DEFAULT_TERRAIN_ANGLE;
+        float crawl = GroundSlopePhysics.crawlAngle(powerToWeightKwPerKg, driveType);
+        return Math.max(SuspensionPhysics.DEFAULT_TERRAIN_ANGLE, Math.min(VehiclePhysicsConstants.SLOPE_MAX_TERRAIN_ANGLE_DEG, crawl));
+    }
+
     // ---------------------------------------------------- engine interaction
 
     /**

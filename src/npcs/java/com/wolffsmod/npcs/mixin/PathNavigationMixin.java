@@ -41,7 +41,8 @@ import java.util.Set;
  * <li>Worker searches: with {@link NpcPathWorkers} on, an NPC search is handed to a worker thread and its path taken up
  * on a later tick, so the NPC keeps the path it has instead of the server thread waiting for a new one. At most one
  * search of a navigator runs at a time, superseded requests are cancelled, and overload defers new work. A worker
- * failure keeps its synchronous fallback, under the path budget.</li>
+ * failure keeps its synchronous fallback, under the path budget. A move order that got no path while its search ran
+ * follows the path once it is found, even if nothing asks for it again; another path set meanwhile supersedes it.</li>
  * <li>Aircraft: a plane, and a helicopter that sees its goal, take a straight path to it instead of searching, which is
  * not a search either; see {@link NpcFlightPaths}.</li>
  * <li>Efficient path searches in the air: as on the ground, a search reaches only as far as its goal plus the detour
@@ -52,7 +53,7 @@ import java.util.Set;
 // The (Object) casts are required: the mixin class itself is unrelated to the navigator subclasses until merged, which
 // IntelliJ takes for an instanceof that can never hold.
 @SuppressWarnings({"AddedMixinMembersNamePattern", "java:S1905", "ConstantValue"})
-public abstract class PathNavigationMixin
+public abstract class PathNavigationMixin implements NpcPathWorkers.Navigator
 {
     @Unique
     private static final String WOLFFSMODNPCS_CREATE_PATH = "createPath(Ljava/util/Set;IZIF)Lnet/minecraft/world/level/pathfinder/Path;";
@@ -79,6 +80,9 @@ public abstract class PathNavigationMixin
      */
     @Unique @Nullable
     private NpcPathWorkers.Search wolffsmodnpcsPathSearch;
+    /** Speed of the move order waiting for {@link #wolffsmodnpcsPathSearch}, or NaN while nothing waits to move along it. */
+    @Unique
+    private double wolffsmodnpcsPendingSpeed = Double.NaN;
     /** Created on the first pursuit of an NPC in the air, so that other mobs' navigators carry none. */
     @Unique @Nullable
     private NpcPursuit wolffsmodnpcsPursuit;
@@ -128,6 +132,8 @@ public abstract class PathNavigationMixin
             return wolffsmodnpcsUntimed(null);
         NpcPathWorkers.Submission submitted = NpcPathWorkers.submit(finder, region, searcher, targets, followRange, accuracy, maxVisitedNodes, wolffsmodnpcsUrgentPath());
         wolffsmodnpcsPathSearch = submitted.search();
+        // Only a move order that follows this request waits for its path; a search asked for its own sake does not.
+        wolffsmodnpcsPendingSpeed = Double.NaN;
         // A search handed to a worker is timed and counted when it is taken up, not now.
         return wolffsmodnpcsPathSearch != null || submitted.deferred() ? wolffsmodnpcsPendingPath(targets) : finder.findPath(region, searcher, targets, followRange, accuracy, maxVisitedNodes);
     }
@@ -153,13 +159,53 @@ public abstract class PathNavigationMixin
     @Inject(method = "stop", at = @At("HEAD"))
     private void wolffsmodnpcsCancelPathSearch(CallbackInfo callback)
     {
+        wolffsmodnpcsCancelSearch();
+        wolffsmodnpcsPathWaitingSince = Long.MIN_VALUE;
+    }
+
+    @Unique
+    private void wolffsmodnpcsCancelSearch()
+    {
         if (wolffsmodnpcsPathSearch != null)
         {
             wolffsmodnpcsPathSearch.cancel();
             wolffsmodnpcsPathSearch = null;
         }
-        wolffsmodnpcsPathWaitingSince = Long.MIN_VALUE;
+        wolffsmodnpcsPendingSpeed = Double.NaN;
     }
+
+    /**
+     * A move order that got no path while its search runs waits for it at its speed; another path supersedes the search.
+     * Passing the path already followed is no other path: a pursuit keeps it while its next search runs.
+     */
+    @Inject(method = "moveTo(Lnet/minecraft/world/level/pathfinder/Path;D)Z", at = @At("HEAD"))
+    private void wolffsmodnpcsAwaitPathSearch(@Nullable Path requested, double speed, CallbackInfoReturnable<Boolean> callback)
+    {
+        if (wolffsmodnpcsPathSearch == null)
+            return;
+        if (requested == null)
+            wolffsmodnpcsPendingSpeed = speed;
+        else if (requested != path)
+            wolffsmodnpcsCancelSearch();
+    }
+
+    @Override
+    public void wolffsmodnpcsTakeUpPathSearch()
+    {
+        NpcPathWorkers.Search running = wolffsmodnpcsPathSearch;
+        if (running == null || !running.done() || Double.isNaN(wolffsmodnpcsPendingSpeed))
+            return;
+        double speed = wolffsmodnpcsPendingSpeed;
+        wolffsmodnpcsPathSearch = null;
+        wolffsmodnpcsPendingSpeed = Double.NaN;
+        // A failed worker leaves the destination to the next request, which searches on the server thread.
+        Path found = running.failed() ? null : running.path();
+        if (found != null)
+            moveTo(found, speed);
+    }
+
+    @Shadow
+    public abstract boolean moveTo(@Nullable Path path, double speed);
 
     /** Marks the call as no path search of this tick, so that nothing is timed, counted or recorded for it. */
     @Unique

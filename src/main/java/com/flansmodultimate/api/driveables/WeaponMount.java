@@ -39,17 +39,31 @@ import java.util.Optional;
  * @param gun
  *            the gun definition the seat mans, if any
  * @param turretOffset
- *            added to where the occupant sits and turned with the main turret whether or not the seat is on it, in the
- *            same frame as {@code position}: the seat's rotated offset, plus the turret origin offset for a seat on
- *            the turret
- * @param gunPivot
- *            the point the seat's gun model turns round as it aims, in the same frame as {@code position} with the
- *            turret at rest, when the model was measured; the gunner is carried round it as the gun traverses
+ *            the seat's rotated offset, added to where the occupant sits and turned with the main turret whether or not
+ *            the seat is on it, in the same frame as {@code position}; a seat on the barrel also elevates it with the gun
+ * @param originOffset
+ *            the turret origin offset of a seat on the turret, added to where the occupant sits and turned with the
+ *            turret but not elevated with the gun, in the same frame as {@code position}; zero for a seat on the hull
+ * @param part
+ *            short name of the part the seat sits in, such as {@code core}, {@code turret} or {@code turret3}: the
+ *            occupant is thrown out while it is destroyed and dies with it if it is a turret
  */
 @ApiStatus.Experimental
 public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun,
-    Vec3 turretOffset, Optional<Vec3> gunPivot)
+    Vec3 turretOffset, Vec3 originOffset, String part)
 {
+    /** Part a mount sits in when it names none: the main turret for one that turns with it, else the hull. */
+    private static final String HULL = "core";
+    private static final String MAIN_TURRET = "turret";
+    /** Part whose seats elevate with the main gun as well as turning with the turret. */
+    private static final String BARREL = "barrel";
+
+    public WeaponMount
+    {
+        if (part == null || part.isBlank())
+            part = onTurret ? MAIN_TURRET : HULL;
+    }
+
     public WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun)
     {
         this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, Vec3.ZERO);
@@ -58,39 +72,38 @@ public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim m
     public WeaponMount(int seat, boolean driver, boolean onTurret, MountAim minimum, MountAim maximum, float yawSpeed, float pitchSpeed, Vec3 position, Vec3 pivot, Optional<IContentType> gun,
         Vec3 turretOffset)
     {
-        this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, turretOffset, Optional.empty());
+        this(seat, driver, onTurret, minimum, maximum, yawSpeed, pitchSpeed, position, pivot, gun, turretOffset, Vec3.ZERO, null);
     }
 
     /**
      * @param turretYaw
      *            yaw of the main turret relative to the hull, in degrees, positive to the right
-     * @return where the occupant sits with the turret turned that far, in the same frame as {@code position}
+     * @return where the occupant sits with the turret turned that far and its gun level, in the same frame as
+     *         {@code position}
      */
     public Vec3 positionAt(float turretYaw)
     {
-        return seatedAt(position, turretYaw);
+        return positionAt(turretYaw, 0F);
     }
 
     /**
+     * Places the occupant as a driveable seats its rider: a seat on the turret is carried round the turret's pivot, and one
+     * on the barrel is also elevated with the gun round that pivot. The seat's own gun does not move the occupant.
+     *
      * @param turretYaw
      *            yaw of the main turret relative to the hull, in degrees, positive to the right
-     * @param gunYaw
-     *            yaw the seat's gun aims at, as {@link #minimum} and {@link #maximum} count it
-     * @return where the gunner sits with the turret and the gun turned that far: carried round the gun's pivot by the
-     *         gun's turn from its rest yaw, where the seat places it; as {@link #positionAt(float)} without a gun or pivot
+     * @param turretPitch
+     *            pitch of the main gun, in degrees, positive downwards as {@link MountAim} counts it
+     * @return where the occupant sits with the turret turned and the gun elevated that far, in the same frame as
+     *         {@code position}
      */
-    public Vec3 positionAt(float turretYaw, float gunYaw)
+    public Vec3 positionAt(float turretYaw, float turretPitch)
     {
-        if (driver || gun.isEmpty() || gunPivot.isEmpty())
-            return positionAt(turretYaw);
-        Vec3 gunAt = gunPivot.get();
-        return seatedAt(gunAt.add(turn(position.subtract(gunAt), gunYaw - restYaw())), turretYaw);
-    }
-
-    private Vec3 seatedAt(Vec3 seated, float turretYaw)
-    {
-        Vec3 turned = onTurret ? pivot.add(turn(seated.subtract(pivot), turretYaw)) : seated;
-        return turned.add(turn(turretOffset, turretYaw));
+        float pitch = BARREL.equals(part) ? turretPitch : 0F;
+        Vec3 offset = turn(elevate(turretOffset, pitch), turretYaw);
+        if (!onTurret)
+            return position.add(offset);
+        return pivot.add(turn(elevate(position.subtract(pivot), pitch).add(originOffset), turretYaw)).add(offset);
     }
 
     private static Vec3 turn(Vec3 vector, float yaw)
@@ -101,6 +114,17 @@ public record WeaponMount(int seat, boolean driver, boolean onTurret, MountAim m
         double cosine = Math.cos(radians);
         double sine = Math.sin(radians);
         return new Vec3(vector.x * cosine - vector.z * sine, vector.y, vector.x * sine + vector.z * cosine);
+    }
+
+    /** Pitches a vector about the width, a positive pitch carrying what lies ahead, along -Z, downwards. */
+    private static Vec3 elevate(Vec3 vector, float pitch)
+    {
+        if (pitch == 0F)
+            return vector;
+        double radians = Math.toRadians(pitch);
+        double cosine = Math.cos(radians);
+        double sine = Math.sin(radians);
+        return new Vec3(vector.x, vector.y * cosine + vector.z * sine, vector.z * cosine - vector.y * sine);
     }
 
     /** @return whether the mount can turn all the way round */

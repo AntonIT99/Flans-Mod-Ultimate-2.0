@@ -2,9 +2,7 @@ package com.flansmodultimate.client.input;
 
 import com.flansmod.client.model.*;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.AimPoseClient;
-import com.flansmodultimate.client.ModClient;
-import com.flansmodultimate.client.ProneClient;
+import com.flansmodultimate.client.*;
 import com.flansmodultimate.client.gui.GunAmmoSelectScreen;
 import com.flansmodultimate.client.gui.TeamsMenuScreen;
 import com.flansmodultimate.client.model.ModelCache;
@@ -121,7 +119,7 @@ public final class KeyInputHandler
     private static final KeyMapping controlModeKey = key("plane.control_mode", InputConstants.KEY_C, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping gearKey = key("plane.gear", InputConstants.KEY_G, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping airBrakeKey = key("plane.air_brake", InputConstants.KEY_V, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
-    private static final KeyMapping afterburnerKey = key("plane.afterburner", InputConstants.KEY_O, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping afterburnerKey = key("plane.afterburner", InputConstants.KEY_LALT, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping modeKey = key("plane.mode", InputConstants.KEY_J, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
     private static final KeyMapping driveablePlayerInventoryKey = key("driveable.player_inventory", InputConstants.KEY_Z, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
 

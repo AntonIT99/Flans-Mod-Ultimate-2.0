@@ -89,6 +89,12 @@
       "flansmod:brenshoot"
     ]
   },
+  "bullet": {
+    "category": "player",
+    "sounds": [
+      "flansmod:bullet"
+    ]
+  },
   "c96reload": {
     "category": "player",
     "sounds": [

@@ -60,8 +60,7 @@ ReadWeaponsFromGunTypes true
 // Health and armour
 SetupPart core 4000 -63 0 -28 107 50 56
 SetupPart nose 3000 44 0 -28 50 43 56
-SetupPart tail 2000 -222 11 -45 47 54 90
-SetupPart tail 2000 -174 7 -15 112 35 30
+SetupPart tail 2000 -222 2 -13 159 65 26
 SetupPart blades 1000 -164 59 -163 328 4 328
 BulletDetection 8
 UseRealisticVehicleHealth true

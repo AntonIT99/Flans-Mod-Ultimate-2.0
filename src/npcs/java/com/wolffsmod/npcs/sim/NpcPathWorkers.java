@@ -55,6 +55,16 @@ public final class NpcPathWorkers
     private static final AtomicLong sequence = new AtomicLong();
     private static final AtomicReference<ThreadPoolExecutor> workers = new AtomicReference<>();
 
+    /** A navigator whose worker search can be taken up without the path being asked for again. */
+    public interface Navigator
+    {
+        /**
+         * Starts following the path of a finished worker search that a move order is waiting for. A goal that asks for a path
+         * once, as Custom NPCs' wandering does, would otherwise never get it. Server thread, once a tick.
+         */
+        void wolffsmodnpcsTakeUpPathSearch();
+    }
+
     /** An unsupported search runs synchronously; overload waits instead of moving work back onto the server thread. */
     public record Submission(@Nullable Search search, boolean deferred)
     {
@@ -208,6 +218,9 @@ public final class NpcPathWorkers
             // the server just as a synchronous search would; its done() retains them but clears the search caches.
             original.prepare(region, mob);
             original.done();
+            // The worker is handed what that read of the NPC's vehicle model, instead of reading the NPC itself.
+            if (original instanceof NpcVehiclePaths.Evaluator read && isolated instanceof NpcVehiclePaths.Evaluator handed)
+                handed.wolffsmodnpcsPresetVehiclePath(read.wolffsmodnpcsVehiclePath());
         }
         else if (original.getClass() == FlyNodeEvaluator.class)
             isolated = new FlyNodeEvaluator();

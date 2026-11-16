@@ -66,6 +66,29 @@ class NpcFiringPositionTest
     }
 
     @Test
+    void aVehicleStopsChasingAnAircraftItsGunCannotRiseOnto()
+    {
+        // Sixty blocks up, with the gun rising twenty degrees: it would have to back off beyond its firing range.
+        assertTrue(NpcFiringPosition.unreachableAbove(10D, -60D, -20F, 64D));
+        // A gun fixed level to the hull never rises onto an aircraft, however far it backs away.
+        assertTrue(NpcFiringPosition.unreachableAbove(30D, -10D, 0F, 128D));
+        // A low aircraft is backed away from until the gun rises onto it, rather than left alone.
+        assertFalse(NpcFiringPosition.unreachableAbove(1D, -3D, -20F, 64D));
+        // Nothing below is out of reach above.
+        assertFalse(NpcFiringPosition.unreachableAbove(2D, 20D, 10F, 64D));
+    }
+
+    @Test
+    void aVehicleStopsChasingAnAircraftThatFliesFasterThanItDrives()
+    {
+        // A plane at 1.5 blocks a tick against a tank topping out at 0.4.
+        assertTrue(NpcFiringPosition.outruns(1.5D, 0.4D));
+        // A helicopter hovering, or one barely faster than the vehicle, is still chased.
+        assertFalse(NpcFiringPosition.outruns(0.05D, 0.4D));
+        assertFalse(NpcFiringPosition.outruns(0.45D, 0.4D));
+    }
+
+    @Test
     void aVehicleBacksAwayFromATargetUnderItsBarrelUntilTheTargetLiesBeyondTheMuzzle()
     {
         // Two blocks from the turret, under a barrel reaching three: it backs off to a margin beyond the muzzle.

@@ -1,0 +1,13 @@
+// Identity
+Name Tank Crew
+ShortName W39_CzechoslovakArmyTankCrew
+Description Crewman for the LT vz. 34, 35 and 38 with a pistol and a repair tool.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_PPk
+AddItem 44_PPkAmmo 3
+AddItem 44_RepairTool
+AddItem 44_Bandage

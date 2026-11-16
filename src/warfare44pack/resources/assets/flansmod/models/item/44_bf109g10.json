@@ -21,6 +21,12 @@
         "flansmod:paintjob": 3
       },
       "model": "flansmod:item/bf109g10_erichhartmann"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/44_bf109g10_g6"
     }
   ]
 }

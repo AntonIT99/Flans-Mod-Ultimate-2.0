@@ -9,6 +9,12 @@
         "flansmod:paintjob": 1
       },
       "model": "flansmod:item/44_sdkfz251hanomag_beige"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/44_sdkfz251hanomag_dunkelgelb"
     }
   ]
 }

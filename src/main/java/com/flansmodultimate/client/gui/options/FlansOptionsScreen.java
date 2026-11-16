@@ -73,7 +73,7 @@ public class FlansOptionsScreen extends Screen
             List.of(ModClientConfig.SHOW_FLANS_HUD, ModClientConfig.SHOW_AMMO_HUD, ModClientConfig.AMMO_HUD_LAYOUT, ModClientConfig.SHOW_ARMOR_DAMAGE_ABSORPTION_BAR,
                 ModClientConfig.SHOW_SHOOTABLE_DURABILITY_BARS, ModClientConfig.SHOW_FLASHES_WHEN_WOUNDED, ModClientConfig.KILL_FEED_LINES, ModClientConfig.KILL_FEED_SCALE,
                 ModClientConfig.BULLET_FLYBY_SOUNDS, ModClientConfig.BULLET_FLYBY_VOLUME, ModClientConfig.VEHICLE_HUD_LEFT_X, ModClientConfig.VEHICLE_HUD_LEFT_Y, ModClientConfig.VEHICLE_HUD_RIGHT_X,
-                ModClientConfig.VEHICLE_HUD_RIGHT_Y)),
+                ModClientConfig.VEHICLE_HUD_RIGHT_Y, ModClientConfig.VEHICLE_HUD_SCALE)),
         new QuickSection("crosshair",
             List.of(ModClientConfig.HIDE_CROSSHAIR_FOR_GUNS, ModClientConfig.SHOW_CROSSHAIR_WHILE_SCOPED, ModClientConfig.HIT_MARKER_STYLE, ModClientConfig.FANCY_HIT_MARKER,
                 ModClientConfig.MUZZLE_FLASH_STYLE)),

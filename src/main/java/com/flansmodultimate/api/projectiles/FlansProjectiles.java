@@ -268,6 +268,23 @@ public final class FlansProjectiles
     }
 
     /**
+     * Whether a weapon bank of an AA or driveable model fires where its turret or gun aims, rather than along the hull. A
+     * bank on a numbered ship turret aims though its muzzles stay where they are on the hull, so their movement as the
+     * turret turns does not tell. Either side after content loading.
+     *
+     * @param model
+     *            model definition
+     * @param secondary
+     *            selected weapon bank
+     * @return true for an AA gun and for a bank on the turret or a numbered turret; false for a bank fixed to the hull,
+     *         a model without that bank or another definition
+     */
+    public static boolean aimsWithTurret(IContentType model, boolean secondary)
+    {
+        return ExternalProjectileSupport.aimsWithTurret(model, secondary);
+    }
+
+    /**
      * Selects the muzzle of a seat's own gun on a vehicle, plane or mecha model, without creating a driveable entity. A
      * twin or quad seat gun fires its barrels in turn, so the trigger index picks one. A seat on the turret is carried round
      * with the turret; the seat gun's own aim does not move the muzzle, as it rests. Either side after content loading.

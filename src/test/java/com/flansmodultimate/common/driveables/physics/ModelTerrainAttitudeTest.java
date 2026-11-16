@@ -203,6 +203,7 @@ class ModelTerrainAttitudeTest
             when(type.getWheelSpringStrength()).thenReturn(0.5F);
             when(type.getWheelStepHeight()).thenReturn(1F);
             when(type.isCanRoll()).thenReturn(true);
+            when(type.getResolvedPhysics()).thenReturn(ResolvedVehiclePhysics.legacy(EnumVehicleCategory.GROUND, EnumDriveType.AWD));
             when(type.getWheelPositions()).thenReturn(List.of(wheel(2F, 1F), wheel(2F, -1F), wheel(-2F, 1F), wheel(-2F, -1F)));
             when(level.clip(any())).thenAnswer(call ->
             {

@@ -117,6 +117,55 @@ class GroundSlopeAndDraftPhysicsTest
     }
 
     @Test
+    void aHullWhoseFlightModelAppliesGravitySettlesOnItsWaterline()
+    {
+        // A plane-type ship: the legacy flight step takes 0.098 blocks per tick
+        // off before flotation runs, and the capped response alone cannot carry it.
+        double gravity = 0.098D;
+        double ceiling = 0.05D;
+        double carriedDepth = 0D;
+        double carriedVelocity = 0D;
+        double uncarriedDepth = 0D;
+        double uncarriedVelocity = 0D;
+        for (int tick = 0; tick < 400; tick++)
+        {
+            carriedVelocity = MarineDraftPhysics.waterlineVelocity(MarineDraftPhysics.carriedVelocity(carriedVelocity - gravity, gravity), carriedDepth, ceiling);
+            carriedDepth -= carriedVelocity;
+            uncarriedVelocity = MarineDraftPhysics.waterlineVelocity(uncarriedVelocity - gravity, uncarriedDepth, ceiling);
+            uncarriedDepth -= uncarriedVelocity;
+        }
+        assertEquals(0D, carriedDepth, 1.0E-3D);
+        assertTrue(uncarriedDepth > 10D, "weight left in must be what sank such hulls, depth was " + uncarriedDepth);
+    }
+
+    @Test
+    void aDraftDeeperThanTheModelsHullIsCappedToIt()
+    {
+        // Rainfire5's HMS Jervis: 4.7 m researched draft, 2.835 block scaled core box.
+        double capped = MarineDraftPhysics.modelDraft(4.7D, 2.835D);
+        assertTrue(capped < 2.835D, "the deck must stay above water, draft was " + capped);
+        assertEquals(2.835D * VehiclePhysicsConstants.MAX_DRAFT_HULL_FRACTION, capped, 1.0E-9D);
+    }
+
+    @Test
+    void aModelDrawnToScaleKeepsItsDraft()
+    {
+        // The official S100: 1.7 m draft, 5.25 block core box.
+        assertEquals(1.7D, MarineDraftPhysics.modelDraft(1.7D, 5.25D));
+        assertEquals(1.7D, MarineDraftPhysics.modelDraft(1.7D, 0D), "an unknown hull leaves the draft alone");
+        assertEquals(1.7D, MarineDraftPhysics.modelDraft(1.7D, Double.NaN));
+    }
+
+    @Test
+    void onlyAPositiveFiniteWeightIsCarried()
+    {
+        assertEquals(-0.1D, MarineDraftPhysics.carriedVelocity(-0.1D, 0D));
+        assertEquals(-0.1D, MarineDraftPhysics.carriedVelocity(-0.1D, -0.05D));
+        assertEquals(-0.1D, MarineDraftPhysics.carriedVelocity(-0.1D, Double.NaN));
+        assertEquals(0D, MarineDraftPhysics.carriedVelocity(-0.098D, 0.098D), 1.0E-12D);
+    }
+
+    @Test
     void theSurfaceProbeReachesTheDeepestAuthoredDraft()
     {
         assertTrue(VehiclePhysicsConstants.DRAFT_SURFACE_PROBE_BLOCKS >= 12);

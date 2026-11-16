@@ -67,6 +67,18 @@ public final class NpcWeaponOptions
         STEP_CLIMB(true),
         /** A ground vehicle model whose definition has a complete real-world profile slows down climbing steep grades, as the vehicle does. */
         SLOPE_PHYSICS(true),
+        /** A ground vehicle model is slowed by sand, snow, mud and similar soft ground under it, tracked layouts the least. Needs surface traction enabled in the Flan's mod config. */
+        SURFACE_TRACTION(true),
+        /**
+         * A ground vehicle model searches its paths as the vehicle it shows: through gaps its hull fits, up steps it
+         * climbs, and round steep grades and soft ground where a firm detour is quicker.
+         */
+        VEHICLE_PATHS(true),
+        /**
+         * A ground vehicle model brakes to a halt short of a drop deeper than it drives down, unless its path leads down
+         * there, instead of driving over the edge after a target it steers straight at.
+         */
+        AVOID_LEDGES(true),
         /** A plane or helicopter model flies at its definition's speeds, climb rate and control rates. */
         MODEL_FLIGHT(true),
         /** Timed maintenance, carrier servicing, buoyancy recovery and fuel-backed nanorepair; manual tool healing remains separate. */

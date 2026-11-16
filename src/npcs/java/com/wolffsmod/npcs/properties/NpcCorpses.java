@@ -13,7 +13,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
- * How long the body of a fallen NPC that does not respawn stays after its death animation. Teams bots follow the Teams
+ * How long the body of a fallen NPC that does not respawn stays after its death animation; a respawning one leaves a copy
+ * of its body that does not (see {@link NpcWrecks}). Teams bots follow the Teams
  * {@code corpses} and {@code corpseLife} rules; any other NPC its own Keep corpse switch and Corpse time. Vehicles keep
  * their own wreck handling, and a hidden body is never kept. Server thread only.
  */

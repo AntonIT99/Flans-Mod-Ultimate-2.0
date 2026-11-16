@@ -93,6 +93,11 @@ public final class NpcFlight
     static final float BANK_PER_TURN = 20F;
     static final float MAX_BANK = 45F;
     static final float ROLL_RATE = 3F;
+    /**
+     * Degrees a plane raises its nose or banks at most per block it is above the terrain. A plane taking off from the ground
+     * would otherwise swing its tail and wing tips into it, where its solid hull is held fast.
+     */
+    static final float ATTITUDE_PER_BLOCK = 2F;
     /** Ticks an orbiting plane circles its target before it turns in for a gun pass, and the longest a pass lasts. */
     static final int ORBIT_PASS_INTERVAL = 120;
     static final int MAX_PASS_TICKS = 300;
@@ -575,10 +580,12 @@ public final class NpcFlight
         }
         float before = yaw;
         yaw = MountMotion.turn(yaw, wanted, planeTurn(turnRate, speed, circle, model != null));
+        // Close to the ground it keeps its tail and wing tips out of it.
+        float lean = groundAttitude(npc.getY() - terrain);
         float wantedBank = Mth.clamp(Mth.wrapDegrees(yaw - before) * BANK_PER_TURN, -MAX_BANK, MAX_BANK);
         float rollRate = ROLL_RATE * authority(model == null ? 1D : model.rollAuthority());
         float pitchRate = PITCH_RATE * authority(model == null ? 1D : model.pitchAuthority());
-        bank += Mth.clamp(wantedBank - bank, -rollRate, rollRate);
+        bank = Mth.clamp(bank + Mth.clamp(wantedBank - bank, -rollRate, rollRate), -lean, lean);
         double climb = vertical;
         double horizontal = speed;
         if (target != null && attacks(npc, aim))
@@ -588,14 +595,24 @@ public final class NpcFlight
             float dive = Mth.clamp(MountMotion.relative(aim, yaw).pitch(), -MAX_CLIMB, MAX_DIVE);
             if (npc.getY() - terrain <= minimum + 1D)
                 dive = Math.min(dive, 0F);
-            pitch += Mth.clamp(dive - pitch, -pitchRate, pitchRate);
+            pitch = Math.max(pitch + Mth.clamp(dive - pitch, -pitchRate, pitchRate), -lean);
             climb = -speed * Math.sin(Math.toRadians(pitch));
             horizontal = speed * Math.cos(Math.toRadians(pitch));
         }
         else
-            pitch += Mth.clamp((float) -Math.toDegrees(Math.atan2(climb, speed)) - pitch, -pitchRate, pitchRate);
+            pitch = Math.max(pitch + Mth.clamp((float) -Math.toDegrees(Math.atan2(climb, speed)) - pitch, -pitchRate, pitchRate), -lean);
         Vec3 forward = Vec3.directionFromRotation(0F, yaw);
         npc.setDeltaMovement(forward.x * horizontal, climb, forward.z * horizontal);
+    }
+
+    /**
+     * @param height
+     *            blocks the plane is above the terrain under and ahead of it
+     * @return degrees it may raise its nose or bank that low: none standing on the ground, more with every block it gains
+     */
+    static float groundAttitude(double height)
+    {
+        return (float) Mth.clamp(height * ATTITUDE_PER_BLOCK, 0D, 90D);
     }
 
     private static Vec3 attackPoint(EntityNPCInterface npc, @Nullable LivingEntity target, NpcVehicleState state, Vec3 motion)

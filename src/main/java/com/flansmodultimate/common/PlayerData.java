@@ -5,6 +5,7 @@ import com.flansmodultimate.common.guns.EnumMeleeDirection;
 import com.flansmodultimate.common.guns.GunSoundPermissions;
 import com.flansmodultimate.common.guns.MeleeBlocking;
 import com.flansmodultimate.common.guns.MeleeSwing;
+import com.flansmodultimate.common.guns.MinigunSounds;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.guns.reload.PendingReload;
@@ -15,6 +16,7 @@ import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketCancelSound;
+import com.flansmodultimate.network.client.effects.PacketGunLoopSound;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.util.JomlUtils;
 import lombok.Getter;
@@ -106,11 +108,8 @@ public class PlayerData
     private final Map<InteractionHand, Integer> idleSoundDelays = new EnumMap<>(InteractionHand.class);
     private final Map<InteractionHand, ItemStack> idleSoundStacks = new EnumMap<>(InteractionHand.class);
 
-    /** Sound delay parameters */
-    @Getter @Setter
-    private int loopedSoundDelay;
-    @Getter @Setter
-    private boolean loopingSoundActive;
+    /** Warm-up, spin and cool-down sounds of the guns held with the trigger down; server only */
+    private final MinigunSounds minigunSounds = new MinigunSounds();
     /** Melee weapon custom hit simulation */
     @Getter @Setter
     private int meleeProgress;
@@ -380,6 +379,37 @@ public class PlayerData
     }
 
     /** Checks both hands before firing and on ticks without a held gun. Stack data mutations are not switches. */
+    /** Advances the warm-up, spin and cool-down sounds of a gun held in this hand; server only. */
+    public void updateMinigunSounds(Player player, InteractionHand hand, MinigunSounds.Sounds sounds)
+    {
+        minigunSounds.update(hand, sounds, isShootKeyPressed(hand), isReloading(hand), minigunSoundOutput(player));
+    }
+
+    private static MinigunSounds.Output minigunSoundOutput(Player player)
+    {
+        double range = ModCommonConfig.get().gunActionSoundRange();
+        return new MinigunSounds.Output()
+        {
+            @Override
+            public void playOnce(String sound)
+            {
+                PacketPlaySound.sendSoundPacket(player, range, sound, false);
+            }
+
+            @Override
+            public void loop(InteractionHand hand, String sound)
+            {
+                PacketGunLoopSound.send(player, hand, sound, range);
+            }
+
+            @Override
+            public void stopLoop(InteractionHand hand)
+            {
+                PacketGunLoopSound.send(player, hand, null, range);
+            }
+        };
+    }
+
     public void updateHeldGuns(Player player)
     {
         int selected = player.getInventory().selected;
@@ -414,14 +444,12 @@ public class PlayerData
         // Slow down minigun each tick
         minigunSpeed *= 0.9F;
 
-        if (loopedSoundDelay > 0)
-            loopedSoundDelay--;
-
         finishGunInputTick();
 
         if (!player.level().isClientSide)
         {
             tickIdleSounds((ServerPlayer) player);
+            minigunSounds.endTick(minigunSoundOutput(player));
             MeleeBlocking.tick(player);
             tickRespawnReload((ServerPlayer) player);
             if (spawnProtectionTicks > 0)
@@ -560,6 +588,8 @@ public class PlayerData
         heldGunStacks.clear();
         for (InteractionHand hand : InteractionHand.values())
             gunSoundPermissions.clear(hand);
+        // Clients stop the spin loop of a dead entity themselves.
+        minigunSounds.reset();
         // Nobody keeps aiming through their own death: the client stops sending scope
         // state once it is out of the world, so the end of it has to be assumed here.
         scoped = false;

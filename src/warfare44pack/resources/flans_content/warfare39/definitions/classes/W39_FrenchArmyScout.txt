@@ -1,0 +1,15 @@
+// Identity
+Name Scout
+ShortName W39_FrenchArmyScout
+Description Reconnaissance rifleman with a Berthier rifle and binoculars.
+
+// Availability
+UnlockLevel 0
+ClassLimit 2
+ClassLimitPercent 15
+
+// Items
+AddItem 44_Berthier
+AddItem 44_BerthierAmmo 6
+AddItem 44_Binoculars
+AddItem 44_Bandage

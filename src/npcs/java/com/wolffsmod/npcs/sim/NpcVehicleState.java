@@ -97,6 +97,12 @@ public final class NpcVehicleState
     /** Whether the hull points where the shot has to go, which guns fixed to the hull of a turreted model go by. */
     @Getter
     private boolean hullAligned = true;
+    /**
+     * Whether the turret's traverse is carried as the NPC's head yaw, as of the last tick, which the head must then be free
+     * to take all round the hull. Either side.
+     */
+    @Getter
+    private boolean turretInHead;
     /** Whether the main weapon drops bombs rather than firing at the target. */
     @Getter
     private boolean bombing;
@@ -217,6 +223,11 @@ public final class NpcVehicleState
     private float previousAttitudePitch;
     private float previousAttitudeBank;
     private float previousAttitudeLift;
+    /** The turret's and seat guns' aims as the last tick left them, which drawing turns from with the hull. */
+    private float previousTurretYaw;
+    private float previousTurretPitch;
+    private float[] previousSeatYaw = NO_SEATS;
+    private float[] previousSeatPitch = NO_SEATS;
 
     /**
      * A bomb let go now.
@@ -247,7 +258,8 @@ public final class NpcVehicleState
             WeaponMount driver = mounts.stream().filter(WeaponMount::driver).findFirst().orElse(null);
             List<WeaponMuzzle> rest = FlansProjectiles.getMuzzles(model, secondary, 0, false);
             List<WeaponMuzzle> turned = FlansProjectiles.getMuzzles(model, secondary, 0, false, new MountAim(90F, 0F));
-            boolean turreted = kind == FlanModelKind.AA_GUN;
+            // A gun on a numbered ship turret aims though its muzzles stay put as the turret turns.
+            boolean turreted = kind == FlanModelKind.AA_GUN || FlansProjectiles.aimsWithTurret(model, secondary);
             for (int index = 0; index < rest.size() && index < turned.size() && !turreted; index++)
                 turreted = rest.get(index).offset().distanceToSqr(turned.get(index).offset()) > 1.0E-6D;
             Optional<AABB> bounds = model instanceof IDriveableType driveable ? driveable.getBounds() : Optional.empty();
@@ -296,6 +308,23 @@ public final class NpcVehicleState
     public MountAim seatAim(int seat)
     {
         return seat >= 0 && seat < seatYaw.length ? new MountAim(seatYaw[seat], seatPitch[seat]) : MountAim.REST;
+    }
+
+    /**
+     * @return where the turret points, relative to the hull, between the last tick and this one. The hull is drawn turning
+     *         between ticks, so a turret drawn at its tick's aim would jitter against it. Client only.
+     */
+    public MountAim turretAim(float partialTick)
+    {
+        return new MountAim(Mth.rotLerp(partialTick, previousTurretYaw, turretYaw), Mth.lerp(partialTick, previousTurretPitch, turretPitch));
+    }
+
+    /** @return where a seat's own gun points between the last tick and this one. Client only. */
+    public MountAim seatAim(int seat, float partialTick)
+    {
+        if (seat < 0 || seat >= seatYaw.length || seat >= previousSeatYaw.length || seat >= previousSeatPitch.length)
+            return seatAim(seat);
+        return new MountAim(Mth.rotLerp(partialTick, previousSeatYaw[seat], seatYaw[seat]), Mth.lerp(partialTick, previousSeatPitch[seat], seatPitch[seat]));
     }
 
     public int seatCount()
@@ -375,12 +404,14 @@ public final class NpcVehicleState
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
         if (!hullKnown)
         {
-            hullYaw = npc.yBodyRot;
+            // A client starts from the server's hull: its body yaw starts at the head yaw, which is the turret's bearing.
+            hullYaw = npc.level().isClientSide && received ? targetHullYaw : npc.yBodyRot;
             lastHullYaw = hullYaw;
             lastPosition = npc.position();
             hullKnown = true;
         }
         boolean held = holdsHull(current, options);
+        turretInHead = turretFollowsHead(held);
         if (!held)
             hullYaw = npc.yBodyRot;
         if (npc.level().isClientSide)
@@ -415,6 +446,7 @@ public final class NpcVehicleState
         active = false;
         layout = null;
         hullKnown = false;
+        turretInHead = false;
         aligned = true;
         gunAligned = true;
         hullAligned = true;
@@ -479,6 +511,7 @@ public final class NpcVehicleState
         attitudePitch = 0F;
         attitudeBank = 0F;
         attitudeLift = 0F;
+        settleDrawnAims();
         sent = false;
         return created;
     }
@@ -1216,7 +1249,8 @@ public final class NpcVehicleState
 
     /**
      * @return the share of its propulsion a ground vehicle keeps on the grade it drives up, as its definition's real-world
-     *         profile has the vehicle bog down; 1 for anything else, downhill, or with the switch off. Server only.
+     *         profile has the vehicle bog down, or of its speed on the grade it drives down, where its driver holds it back
+     *         on the engine; 1 for anything else, on the level, or with the switch off. Server only.
      */
     public float climbFactor(EntityNPCInterface npc)
     {
@@ -1224,9 +1258,24 @@ public final class NpcVehicleState
             return 1F;
         double grade = grade(climbRise, climbRun);
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        if (grade <= 0D || !options.enabled(Feature.SLOPE_PHYSICS))
+        if (grade == 0D || !options.enabled(Feature.SLOPE_PHYSICS))
             return 1F;
-        return NpcDriving.propulsion(npc, options).map(propulsion -> (float) Mth.clamp(propulsion.climbFactor(grade), 0D, 1D)).orElse(1F);
+        return NpcDriving.propulsion(npc, options).map(propulsion -> (float) Mth.clamp(grade > 0D ? propulsion.climbFactor(grade) : propulsion.descentFactor(-grade), 0D, 1D)).orElse(1F);
+    }
+
+    /**
+     * @return the share of its speed the ground under a vehicle model leaves it: sand, snow, mud and similar soft
+     *         ground slow it down, tracked layouts the least; 1 for anything else, afloat, or with the switch off.
+     *         Server only.
+     */
+    public float surfaceFactor(EntityNPCInterface npc)
+    {
+        if (!active || layout == null || layout.kind() != FlanModelKind.VEHICLE || !npc.onGround() || npc.isInWater())
+            return 1F;
+        NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
+        if (!options.enabled(Feature.SURFACE_TRACTION))
+            return 1F;
+        return FlansEntityTypes.getSurfaceSpeedFactor(layout.model(), npc.getBlockStateOn());
     }
 
     /**
@@ -1349,7 +1398,7 @@ public final class NpcVehicleState
     public Optional<Vec3> seatOffset(EntityNPCInterface npc, WeaponMount seat)
     {
         FlanModelEntity model = NpcModels.flan(npc);
-        return !active || model == null ? Optional.empty() : Optional.of(NpcModels.local(npc, model, seat.positionAt(turretYaw, seatAim(seat.seat()).yaw()), hullYaw));
+        return !active || model == null ? Optional.empty() : Optional.of(NpcModels.local(npc, model, seat.positionAt(turretYaw, turretPitch), hullYaw));
     }
 
     /**
@@ -1392,6 +1441,13 @@ public final class NpcVehicleState
     {
         Layout current = layout;
         return active && current != null ? current.reach() * NpcModels.scale(npc) : 0D;
+    }
+
+    /** @return the definition of the ground vehicle model the NPC drives as; empty for any other model or none */
+    public Optional<IContentType> groundVehicleModel()
+    {
+        Layout current = layout;
+        return active && current != null && current.kind() == FlanModelKind.VEHICLE ? Optional.of(current.model()) : Optional.empty();
     }
 
     /**
@@ -1491,7 +1547,12 @@ public final class NpcVehicleState
             turretYawRate = Math.abs(Mth.wrapDegrees(packet.turretYaw() - targetTurretYaw)) / SYNC_INTERVAL;
         }
         else
+        {
+            // The first state is taken as it is, and drawn without turning to it from where the client guessed.
+            hullYaw = packet.hullYaw();
             turretYaw = packet.turretYaw();
+            previousTurretYaw = turretYaw;
+        }
         targetHullYaw = packet.hullYaw();
         targetTurretYaw = packet.turretYaw();
         targetTurretPitch = packet.turretPitch();
@@ -1529,6 +1590,7 @@ public final class NpcVehicleState
         previousAttitudePitch = attitudePitch;
         previousAttitudeBank = attitudeBank;
         previousAttitudeLift = attitudeLift;
+        settleDrawnAims();
         boolean headTurret = turretFollowsHead(held);
         if (!received)
         {
@@ -1554,6 +1616,21 @@ public final class NpcVehicleState
             seatPitch[seat] += (targetSeatPitch[seat] - seatPitch[seat]) / lerpSteps;
         }
         lerpSteps--;
+    }
+
+    /** Draws the turret and seat guns from where they point now, until the next tick turns them. */
+    private void settleDrawnAims()
+    {
+        previousTurretYaw = turretYaw;
+        previousTurretPitch = turretPitch;
+        if (previousSeatYaw.length != seatYaw.length)
+        {
+            previousSeatYaw = seatYaw.clone();
+            previousSeatPitch = seatPitch.clone();
+            return;
+        }
+        System.arraycopy(seatYaw, 0, previousSeatYaw, 0, seatYaw.length);
+        System.arraycopy(seatPitch, 0, previousSeatPitch, 0, Math.min(seatPitch.length, previousSeatPitch.length));
     }
 
     /**

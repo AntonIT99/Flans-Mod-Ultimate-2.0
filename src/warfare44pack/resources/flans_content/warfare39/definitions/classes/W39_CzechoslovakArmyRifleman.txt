@@ -1,0 +1,13 @@
+// Identity
+Name Rifleman
+ShortName W39_CzechoslovakArmyRifleman
+Description Infantryman with a vz. 24 pattern Mauser rifle, plentiful ammunition and two grenades.
+
+// Availability
+UnlockLevel 0
+
+// Items
+AddItem 44_Kar98k
+AddItem 44_Kar98kAmmo 8
+AddItem 44_Mk2Frag 2
+AddItem 44_Bandage

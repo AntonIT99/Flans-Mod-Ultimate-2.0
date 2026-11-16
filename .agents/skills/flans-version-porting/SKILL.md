@@ -24,7 +24,7 @@ not as text to translate mechanically.
 
 | Branch | Minecraft | Loader | Java | Build plugin |
 | --- | --- | --- | --- | --- |
-| `master` | 1.20.1 | Forge 47.4.x | 17 | ForgeGradle |
+| `master` | 1.20.1 | Forge 47.4.x | 17 | ModDevGradle Legacy |
 | `1.21.1` | 1.21.1 | NeoForge 21.1.x | 21 | ModDevGradle |
 | `26.1.2` | 26.1.2 | NeoForge 26.1.2.x | 25 | ModDevGradle |
 | `26.2` | 26.2 | NeoForge 26.2.x | 25 | ModDevGradle |

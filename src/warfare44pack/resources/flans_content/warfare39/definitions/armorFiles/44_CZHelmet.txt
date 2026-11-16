@@ -1,0 +1,8 @@
+Name Czechoslovak Helmet vz.32
+ShortName 44_CZHelmet
+Icon 44_CZHelmet
+Colour 255 255 255
+Type Helmet
+Defence 0.2
+Model NFS.44CZHelmet
+ArmourTexture Skin_Armor_44CZUniform

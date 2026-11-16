@@ -37,6 +37,8 @@ public final class NpcTypeProperties
      * due at least every twenty ticks regardless, so a round the NPC switches to is still inherited promptly.
      */
     private static final int AMMUNITION_INTERVAL = 4;
+    /** How much the most health may differ before a stats read counts as changing it. */
+    private static final float MAX_HEALTH_TOLERANCE = 1.0E-3F;
     /**
      * Switches that change nothing a model lends the NPC; there are more switches than bits in the signature, so theirs must
      * not stand for a model switch.
@@ -70,6 +72,8 @@ public final class NpcTypeProperties
     @Nullable
     private ReloadCycle cycle;
     private float loadingHealthFraction = -1F;
+    /** The most health the NPC had before its stats were read, to tell whether reading them changed it. */
+    private float loadingMaxHealth;
 
     public void refresh(EntityNPCInterface npc)
     {
@@ -330,14 +334,24 @@ public final class NpcTypeProperties
         lastFlags = -1L;
     }
 
+    /**
+     * Remembers the share of its health the NPC has before Custom NPCs reads its stats, which sets the most health
+     * without touching the health itself.
+     */
     public void beforeStatsLoad(EntityNPCInterface npc)
     {
-        loadingHealthFraction = values().containsKey(NpcTypeProperty.HEALTH) ? NpcTypeHealth.fraction(npc.getHealth(), npc.getMaxHealth()) : -1F;
+        loadingHealthFraction = npc.isKilled() ? -1F : NpcTypeHealth.fraction(npc.getHealth(), npc.getMaxHealth());
+        loadingMaxHealth = npc.getMaxHealth();
     }
 
+    /**
+     * Gives the NPC the same share of a changed maximum, whether the maximum is inherited or its own. Without this, a lower
+     * maximum for a moment, as while the model is resolved again or an editor sends the NPC's own value, would clamp the
+     * health, and the parts would hold that clamped value once the maximum came back.
+     */
     public void afterStatsLoad(EntityNPCInterface npc)
     {
-        if (loadingHealthFraction >= 0F)
+        if (loadingHealthFraction >= 0F && Math.abs(npc.getMaxHealth() - loadingMaxHealth) > MAX_HEALTH_TOLERANCE && !npc.isKilled())
             npc.setHealth(loadingHealthFraction * npc.getMaxHealth());
         loadingHealthFraction = -1F;
     }

@@ -38,11 +38,23 @@
         ]
     },
 
-    "TPR vehicle repair torches": {
-        "properties": {},
+    "TPR improved vehicle repair torches": {
+        "properties": {
+            "HealAmount": 200,
+            "ToolLife": 1000
+        },
         "items": [
-            "eliteblowtorch",
             "superblowtorch"
+        ]
+    },
+
+    "TPR divine vehicle repair torches": {
+        "properties": {
+            "HealAmount": 500,
+            "ToolLife": 2500
+        },
+        "items": [
+            "eliteblowtorch"
         ]
     }
 }

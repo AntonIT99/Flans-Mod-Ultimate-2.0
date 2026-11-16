@@ -212,6 +212,7 @@ public final class ModClientConfig
     public static final IntValue VEHICLE_HUD_LEFT_Y;
     public static final IntValue VEHICLE_HUD_RIGHT_X;
     public static final IntValue VEHICLE_HUD_RIGHT_Y;
+    public static final DoubleValue VEHICLE_HUD_SCALE;
     private static final int DEFAULT_VEHICLE_HUD_LEFT_X = 2;
     private static final int DEFAULT_VEHICLE_HUD_RIGHT_X = 12;
     private static final int DEFAULT_VEHICLE_HUD_TOP = 2;
@@ -470,6 +471,7 @@ public final class ModClientConfig
             .defineInRange("vehicleHudRightX", DEFAULT_VEHICLE_HUD_RIGHT_X, 0, MAX_VEHICLE_HUD_OFFSET);
         VEHICLE_HUD_RIGHT_Y = builder.comment("Distance in GUI pixels from the top screen edge to the vehicle HUD's right block.").defineInRange("vehicleHudRightY", DEFAULT_VEHICLE_HUD_TOP, 0,
             MAX_VEHICLE_HUD_OFFSET);
+        VEHICLE_HUD_SCALE = builder.comment("Scale of the vehicle, AA gun and deployed gun HUD text and its line spacing. 1.0 is full size.").defineInRange("vehicleHudScale", 0.75D, 0.25D, 2D);
         builder.pop();
 
         builder.push("Entity Rendering Settings");
@@ -480,7 +482,7 @@ public final class ModClientConfig
             "Video memory in MiB the GPU model cache may keep for vertex buffers; 0 selects it automatically: a sixteenth of dedicated video memory within 128-512 MiB, or 128 MiB when the driver does not report it. When visible meshes keep being evicted, the automatic value grows by quarters up to an eighth of video memory (at most 1 GiB) while 512 MiB of video memory stays free; it returns to its starting value on resource reload. It must hold every distinct model drawn in a frame, otherwise meshes are evicted and re-uploaded each frame; /flansrenderstats reports such evictions. Memory is used only as models are drawn. Values from 1 to 15 count as 16. No restart required.")
             .defineInRange("gpuModelCacheMegabytes", 0, 0, GpuModelCache.MAX_CONFIGURED_MEGABYTES);
         DRIVEABLE_RENDER_DISTANCE_MULTIPLIER = builder.comment(
-            "Multiplier of the size-based Minecraft entity render distance for vehicles, planes and mechas. Keeps collision-box proportionality and Minecraft Entity Distance scaling. Server tracking and view distance still limit visibility; Distant Horizons chunk-edge extension can override this cutoff.")
+            "Multiplier of the size-based Minecraft entity render distance for vehicles, planes and mechas. Keeps collision-box proportionality and Minecraft Entity Distance scaling. Above 1, driveables are also drawn beyond the loaded chunks, up to the server's driveable tracking range; Distant Horizons chunk-edge extension can override this cutoff.")
             .defineInRange("driveableRenderDistanceMultiplier", 1D, 0.25D, 4D);
         FLAN_NPC_RENDER_DISTANCE_MULTIPLIER = builder.comment(
             "Multiplier of the size-based Minecraft render distance for Flan-model NPCs and explicitly opted-in soldiers. Requires the NPC module. Server tracking and view distance still limit visibility; NPCs have no distant proxies.")
@@ -915,6 +917,12 @@ public final class ModClientConfig
     public static int killFeedLines()
     {
         return configSpec.isLoaded() ? KILL_FEED_LINES.get() : KILL_FEED_LINES.getDefault();
+    }
+
+    /** Read live, like the HUD offsets, so the readouts follow the options slider while it is dragged. */
+    public static float vehicleHudScale()
+    {
+        return (configSpec.isLoaded() ? VEHICLE_HUD_SCALE.get() : VEHICLE_HUD_SCALE.getDefault()).floatValue();
     }
 
     public static float killFeedScale()

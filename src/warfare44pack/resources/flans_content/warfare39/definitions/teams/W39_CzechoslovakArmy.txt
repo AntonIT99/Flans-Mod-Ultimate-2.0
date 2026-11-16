@@ -1,0 +1,26 @@
+// Identity
+Name Czechoslovak Army (1938)
+ShortName W39_CzechoslovakArmy
+
+// Appearance
+VictoryFlagTexture flag_team_czechoslovakia
+TextColour Red
+TeamColour 120 115 75
+Hat 44_CZHelmet
+Chest 44_CZUniform
+Legs 44_British40PatternPants
+Shoes 44_BritishBoots
+
+// Rounds: select opponents manually to keep scenarios coherent.
+AllowedForRoundsGenerator False
+
+// Infantry, machine guns, engineers, medics, command and tank crews of the 1938 mobilisation
+AddClass W39_CzechoslovakArmyRifleman
+AddClass W39_CzechoslovakArmyScout
+AddClass W39_CzechoslovakArmyMachineGunnerZBvz26
+AddClass W39_CzechoslovakArmyMachineGunnerZBvz37
+AddClass W39_CzechoslovakArmyAmmoBearer
+AddClass W39_CzechoslovakArmyEngineer
+AddClass W39_CzechoslovakArmyMedic
+AddClass W39_CzechoslovakArmySquadLeader
+AddClass W39_CzechoslovakArmyTankCrew

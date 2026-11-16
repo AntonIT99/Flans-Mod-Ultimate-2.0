@@ -12,7 +12,7 @@ RotateWheels true
 AddDye 10 gray
 
 // Paintjobs
-AdvPaintJob PanzerIVG legacypanzer164 legacypanzer164_panzerivg gray 8
+AdvPaintJob PanzerIVG legacypanzer164_panzerivg legacypanzer164_panzerivg gray 8
 
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat

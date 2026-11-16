@@ -29,6 +29,27 @@ public final class EntityDistancePolicy
         return isFlanNpc(entity) ? ModCommonConfig.flanNpcTrackingRange() : -1;
     }
 
+    /**
+     * Driveables and their proxies stay paired past the server view distance, up to their tracking range,
+     * so that a client can draw them beyond its loaded chunks.
+     */
+    public static boolean tracksBeyondViewDistance(Entity entity)
+    {
+        return entity instanceof Driveable || entity instanceof Seat || entity instanceof Wheel;
+    }
+
+    /** Whether the client draws this entity in chunks it has not loaded or built. */
+    public static boolean rendersBeyondChunks(Entity entity)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        return entity instanceof Driveable && config != null && extendsBeyondChunks(config.driveableRenderDistanceMultiplier);
+    }
+
+    static boolean extendsBeyondChunks(double multiplier)
+    {
+        return multiplier > 1D && multiplier <= 4D;
+    }
+
     public static double renderDistance(Entity entity, boolean npc)
     {
         ModClientConfig config = ModClientConfig.get();

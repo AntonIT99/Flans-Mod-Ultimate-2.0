@@ -37,6 +37,7 @@ import org.joml.Matrix4f;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -70,6 +71,19 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
      * replaces the projection with the shadow map's, which says nothing about on-screen size.
      */
     private static float viewProjectionPixels;
+
+    /**
+     * Renderers that cull entities by visible chunk section, such as Embeddium, reject everything outside
+     * the loaded chunks. A driveable drawn out there falls back to the plain distance and frustum test.
+     */
+    @Override
+    public boolean shouldRender(@NotNull T driveable, @NotNull Frustum frustum, double cameraX, double cameraY, double cameraZ)
+    {
+        if (super.shouldRender(driveable, frustum, cameraX, cameraY, cameraZ))
+            return true;
+        return EntityDistancePolicy.rendersBeyondChunks(driveable) && !driveable.level().hasChunkAt(driveable.blockPosition()) && driveable.shouldRender(cameraX, cameraY, cameraZ)
+            && frustum.isVisible(driveable.getBoundingBoxForCulling().inflate(0.5D));
+    }
 
     /**
      * Draws a driveable through the entity dispatcher for a menu preview.

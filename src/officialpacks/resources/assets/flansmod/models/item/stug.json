@@ -6,15 +6,9 @@
   "overrides": [
     {
       "predicate": {
-        "flansmod:paintjob": 1
-      },
-      "model": "flansmod:item/stug"
-    },
-    {
-      "predicate": {
         "flansmod:paintjob": 2
       },
-      "model": "flansmod:item/stug"
+      "model": "flansmod:item/stug_snow"
     }
   ]
 }

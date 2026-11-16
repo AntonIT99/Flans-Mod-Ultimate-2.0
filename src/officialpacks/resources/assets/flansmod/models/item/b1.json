@@ -8,7 +8,7 @@
       "predicate": {
         "flansmod:paintjob": 1
       },
-      "model": "flansmod:item/b1"
+      "model": "flansmod:item/b1_camouflage"
     }
   ]
 }

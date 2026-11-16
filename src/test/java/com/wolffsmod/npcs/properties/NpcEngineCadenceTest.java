@@ -11,15 +11,14 @@ class NpcEngineCadenceTest
     private static final EngineSound ENGINE = new EngineSound("engine", 96, 3);
 
     @Test
-    void automaticClipProgressFollowsChangingPlaybackPitch()
+    void briefPauseKeepsTheEngineMoving()
     {
-        NpcEngineCadence cadence = new NpcEngineCadence();
-        assertTrue(cadence.tick(ENGINE, true, 0.5F));
-        assertFalse(cadence.tick(ENGINE, true, 0.5F));
-        assertFalse(cadence.tick(ENGINE, true, 0.5F));
-        assertTrue(cadence.tick(ENGINE, true, 2F));
-        cadence.reset();
-        assertTrue(cadence.tick(ENGINE, true, 1F));
+        NpcEngineAudio audio = new NpcEngineAudio();
+        assertTrue(audio.holdMoving(true));
+        for (int tick = 1; tick < NpcEngineAudio.MOVING_HOLD_TICKS; tick++)
+            assertTrue(audio.holdMoving(false));
+        assertFalse(audio.holdMoving(false));
+        assertTrue(audio.holdMoving(true));
     }
 
     @Test

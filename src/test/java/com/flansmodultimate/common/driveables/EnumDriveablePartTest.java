@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EnumDriveablePartTest
 {
@@ -59,5 +61,39 @@ class EnumDriveablePartTest
     {
         assertEquals(EnumDriveablePart.TURRET_WEAK, EnumDriveablePart.getPart("turretWeak"));
         assertEquals(EnumDriveablePart.TURRET_WEAK_2, EnumDriveablePart.getPart("turretWeak2"));
+    }
+
+    @Test
+    void numberedTurretsStayOnTheHullButRemainTurretParts()
+    {
+        assertFalse(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET_3));
+        assertFalse(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET_16));
+        assertTrue(EnumDriveablePart.isTurretPart(EnumDriveablePart.TURRET_3));
+        assertTrue(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET));
+        assertTrue(EnumDriveablePart.isTurretMounted(EnumDriveablePart.BARREL));
+        assertTrue(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET_ARMOR));
+        assertTrue(EnumDriveablePart.isTurretMounted(EnumDriveablePart.TURRET_WEAK_2));
+        assertFalse(EnumDriveablePart.isTurretPart(EnumDriveablePart.CORE));
+    }
+
+    @Test
+    void mainTurretHoldsEverySeatMountedOnIt()
+    {
+        assertTrue(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.TURRET, EnumDriveablePart.TURRET));
+        assertTrue(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.BARREL, EnumDriveablePart.TURRET));
+        assertTrue(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.TURRET_ARMOR, EnumDriveablePart.TURRET));
+        assertFalse(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.CORE, EnumDriveablePart.TURRET));
+        assertFalse(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.TURRET_3, EnumDriveablePart.TURRET));
+    }
+
+    @Test
+    void numberedTurretHoldsOnlyItsOwnSeatsAndOtherPartsHoldNone()
+    {
+        assertTrue(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.TURRET_3, EnumDriveablePart.TURRET_3));
+        assertFalse(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.TURRET_4, EnumDriveablePart.TURRET_3));
+        assertFalse(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.TURRET, EnumDriveablePart.TURRET_3));
+        assertFalse(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.BARREL, EnumDriveablePart.BARREL));
+        assertFalse(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.TURRET_ARMOR, EnumDriveablePart.TURRET_ARMOR));
+        assertFalse(EnumDriveablePart.isSeatInTurret(EnumDriveablePart.CORE, EnumDriveablePart.CORE));
     }
 }

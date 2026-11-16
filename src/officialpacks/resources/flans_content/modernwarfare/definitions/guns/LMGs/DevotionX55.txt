@@ -59,9 +59,9 @@ AllowGripAttachments true
 NumGenericAttachmentSlots 1
 
 // Sounds
-WarmupSound DevotionX55Warmup
-SpinSound DevotionX55Spin
-CooldownSound DevotionX55Cooldown
+WarmupSound MinigunWarmup
+SpinSound MinigunSpin
+CooldownSound MinigunCooldown
 WarmupSoundLength 10
 SpinSoundLength 10
 ShootSound DevotionX55Shoot

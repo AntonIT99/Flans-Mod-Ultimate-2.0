@@ -108,6 +108,10 @@ public class PacketPlaySound implements IClientPacket
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         Entity source = sourceId != NO_SOURCE ? level.getEntity(sourceId) : null;
+        // A cancellable sound follows its source and fades out where this client stops tracking it. Unknown here, the
+        // source is past that edge, where the clip would otherwise play stationary and loud after a silent stretch.
+        if (cancellable && sourceId != NO_SOURCE && source == null)
+            return;
         ClientHooks.SOUND.playEngineClip(sound, new Vec3(posX, posY, posZ), range, distort, silenced, cancellable, instanceUUID, source, variableEnginePitch);
     }
 

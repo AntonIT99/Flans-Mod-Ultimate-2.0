@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.driveables.armor;
 
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.collision.DriveableCollisionProfile;
 
 import net.minecraft.world.phys.Vec3;
 
@@ -39,7 +38,7 @@ public final class VehicleArmorResolver
     private static ArmorPlate selectPlate(VehicleArmorSpec source, EnumDriveablePart part, EnumArmorFacing facing, ArmorPlate override)
     {
         ArmorPlate authored = override;
-        if (authored == null && DriveableCollisionProfile.isTurretMountedPart(part))
+        if (authored == null && EnumDriveablePart.isTurretPart(part))
             authored = source.turret().get(facing);
         if (authored == null)
             authored = source.hull().get(facing);

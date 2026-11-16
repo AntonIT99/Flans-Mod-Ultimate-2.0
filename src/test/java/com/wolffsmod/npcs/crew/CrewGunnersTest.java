@@ -12,6 +12,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.sim.NpcTuning;
+import com.wolffsmod.npcs.sim.NpcParts;
 import com.wolffsmod.npcs.sim.NpcVehicleState;
 import noppes.npcs.ai.selector.NPCAttackSelector;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -71,6 +72,7 @@ class CrewGunnersTest
         assertFalse(NpcCrewSettings.of(vehicle).isPassengersFire());
         Vec3 direction = new Vec3(0D, 0D, -1D);
         NpcVehicleState state = mock(NpcVehicleState.class, invocation -> invocation.getMethod().getReturnType() == Vec3.class ? direction : RETURNS_DEEP_STUBS.answer(invocation));
+        when(state.getParts()).thenReturn(new NpcParts());
         when(state.turretAim()).thenReturn(MountAim.REST);
         IContentType definition = mock(IContentType.class);
         IContentType weapon = mock(IContentType.class);
@@ -95,6 +97,7 @@ class CrewGunnersTest
             var types = mockStatic(FlansEntityTypes.class);
             var projectiles = mockStatic(FlansProjectiles.class))
         {
+            crew.when(() -> NpcCrew.gunUsable(any(), any())).thenReturn(true);
             models.when(() -> NpcModels.flan(vehicle)).thenReturn(model);
             models.when(() -> NpcModels.world(eq(vehicle), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
             states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
@@ -141,6 +144,7 @@ class CrewGunnersTest
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
         Vec3 direction = new Vec3(0D, 0D, -1D);
         NpcVehicleState state = mock(NpcVehicleState.class, invocation -> invocation.getMethod().getReturnType() == Vec3.class ? direction : RETURNS_DEEP_STUBS.answer(invocation));
+        when(state.getParts()).thenReturn(new NpcParts());
         when(state.turretAim()).thenReturn(MountAim.REST);
         IContentType definition = mock(IContentType.class);
         IContentType weapon = mock(IContentType.class);
@@ -161,6 +165,7 @@ class CrewGunnersTest
             var types = mockStatic(FlansEntityTypes.class);
             var projectiles = mockStatic(FlansProjectiles.class))
         {
+            crew.when(() -> NpcCrew.gunUsable(any(), any())).thenReturn(true);
             models.when(() -> NpcModels.flan(vehicle)).thenReturn(model);
             models.when(() -> NpcModels.world(eq(vehicle), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
             states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
@@ -221,6 +226,7 @@ class CrewGunnersTest
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
         Vec3 barrel = new Vec3(0D, 0D, -1D);
         NpcVehicleState state = mock(NpcVehicleState.class, invocation -> invocation.getMethod().getReturnType() == Vec3.class ? barrel : RETURNS_DEEP_STUBS.answer(invocation));
+        when(state.getParts()).thenReturn(new NpcParts());
         when(state.turretAim()).thenReturn(MountAim.REST);
         IContentType definition = mock(IContentType.class);
         IContentType weapon = mock(IContentType.class);
@@ -240,6 +246,7 @@ class CrewGunnersTest
             var projectiles = mockStatic(FlansProjectiles.class);
             var equipment = mockStatic(FlansEquipment.class))
         {
+            crew.when(() -> NpcCrew.gunUsable(any(), any())).thenReturn(true);
             models.when(() -> NpcModels.flan(vehicle)).thenReturn(model);
             models.when(() -> NpcModels.world(eq(vehicle), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
             states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);
@@ -376,6 +383,7 @@ class CrewGunnersTest
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
         when(((NpcWeaponSettings) vehicle.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
         NpcVehicleState state = mock(NpcVehicleState.class, RETURNS_DEEP_STUBS);
+        when(state.getParts()).thenReturn(new NpcParts());
         when(state.turretAim()).thenReturn(MountAim.REST);
         IContentType definition = mock(IContentType.class);
         IContentType weapon = mock(IContentType.class);
@@ -396,6 +404,7 @@ class CrewGunnersTest
             var projectiles = mockStatic(FlansProjectiles.class);
             var ignored = mockConstruction(NPCAttackSelector.class, (selector, context) -> when(selector.isEntityApplicable(any())).thenReturn(true)))
         {
+            crew.when(() -> NpcCrew.gunUsable(any(), any())).thenReturn(true);
             models.when(() -> NpcModels.flan(vehicle)).thenReturn(model);
             models.when(() -> NpcModels.world(eq(vehicle), eq(model), any(), anyFloat())).thenReturn(Vec3.ZERO);
             states.when(() -> NpcVehicleState.of(vehicle)).thenReturn(state);

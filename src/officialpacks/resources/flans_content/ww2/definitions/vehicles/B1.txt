@@ -11,7 +11,7 @@ AddDye 10 gray
 ModelScale 1.1
 
 // Paintjobs
-AdvPaintJob Camouflage B1 b1_camouflage green 8
+AdvPaintJob Camouflage b1_camouflage b1_camouflage green 8
 
 // Recipe
 AddRecipeParts turret 1 mediumTankTurret 1 vehicleSeat

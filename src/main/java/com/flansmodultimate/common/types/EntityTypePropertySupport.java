@@ -114,19 +114,19 @@ public final class EntityTypePropertySupport
         float yawSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().x), 0.25F, 45F);
         float pitchSpeed = Mth.clamp(Math.abs(seat.getAimingSpeed().y), 0.25F, 45F);
         boolean onTurret = EnumDriveablePart.isTurretMounted(seat.getPart());
+        boolean plane = driveable instanceof PlaneType;
         Vec3 position = LegacyDriveableCoordinates.toLocal(seat.getPosition());
         // As Driveable seats a rider: RotatedOffset always turns with the turret, TurretOriginOffset only for turret seats.
         Vec3 turretOffset = LegacyDriveableCoordinates.toLocal(seat.getRotatedOffset());
-        if (onTurret && driveable.getTurretOriginOffset() != null)
-            turretOffset = turretOffset.add(LegacyDriveableCoordinates.toLocal(driveable.getTurretOriginOffset()));
+        // Driveable takes TurretOrigin and TurretOriginOffset through the same basis as seats, so the mount frame does too.
+        Vec3 originOffset = onTurret && driveable.getTurretOriginOffset() != null ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOriginOffset()) : Vec3.ZERO;
         // Seats state pitch positive upwards, as the seat clamps it; a mount's pitch is positive downwards. An aircraft's
         // seats state yaw positive to the left, as its model turns its seat guns; a mount's yaw is positive to the right.
-        boolean left = driveable instanceof PlaneType;
-        float minimumYaw = left ? -seat.getMaxYaw() : seat.getMinYaw();
-        float maximumYaw = left ? -seat.getMinYaw() : seat.getMaxYaw();
+        float minimumYaw = plane ? -seat.getMaxYaw() : seat.getMinYaw();
+        float maximumYaw = plane ? -seat.getMinYaw() : seat.getMaxYaw();
         return new WeaponMount(seat.getId(), seat.isDriver(), onTurret, new MountAim(minimumYaw, -seat.getMaxPitch()), new MountAim(maximumYaw, -seat.getMinPitch()), yawSpeed, pitchSpeed, position,
-            onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType()), turretOffset,
-            Optional.ofNullable(seat.getGunPivot()).map(LegacyDriveableCoordinates::toLocal));
+            onTurret ? LegacyDriveableCoordinates.toLocal(driveable.getTurretOrigin()) : position, Optional.ofNullable(seat.getGunType()), turretOffset, originOffset,
+            seat.getPart() == null ? null : seat.getPart().getShortName());
     }
 
     public static Optional<EngineSound> engineSound(IContentType type)

@@ -8,13 +8,13 @@
       "predicate": {
         "flansmod:paintjob": 1
       },
-      "model": "flansmod:item/fury"
+      "model": "flansmod:item/fury_sherman"
     },
     {
       "predicate": {
         "flansmod:paintjob": 2
       },
-      "model": "flansmod:item/fury"
+      "model": "flansmod:item/fury_fury"
     }
   ]
 }

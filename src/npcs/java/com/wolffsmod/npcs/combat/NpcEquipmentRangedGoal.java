@@ -33,6 +33,9 @@ import java.util.Optional;
  */
 public final class NpcEquipmentRangedGoal extends Goal
 {
+    /** How long a hand that found nothing to load its gun with waits before trying again outside a fight. */
+    private static final int IDLE_RELOAD_RETRY_TICKS = 100;
+
     private final EntityNPCInterface npc;
     private final Hand main = new Hand(InteractionHand.MAIN_HAND);
     private final Hand off = new Hand(InteractionHand.OFF_HAND);
@@ -55,6 +58,8 @@ public final class NpcEquipmentRangedGoal extends Goal
         private int reloading;
         /** A finished reload loaded nothing; stop cycling reloads until the weapon changes or the goal restarts. */
         private boolean reloadFailed;
+        /** Game time before which a hand out of ammunition does not try again to load its gun outside a fight. */
+        private long idleRetryAt;
 
         private Hand(InteractionHand side)
         {
@@ -108,7 +113,8 @@ public final class NpcEquipmentRangedGoal extends Goal
     @Override
     public boolean canUse()
     {
-        return !npc.isKilled() && (main.reloading > 0 || off.reloading > 0 || !main.cadence.ready() || !off.cadence.ready() || engages(npc));
+        return !npc.isKilled() && (main.reloading > 0 || off.reloading > 0 || !main.cadence.ready() || !off.cadence.ready() || engages(npc) || !idleReloadWeapon(main).isEmpty()
+            || !idleReloadWeapon(off).isEmpty());
     }
 
     @Override
@@ -157,8 +163,9 @@ public final class NpcEquipmentRangedGoal extends Goal
         if (target == null || !engages(npc))
         {
             cancelUse();
-            continueReload(main);
-            continueReload(off);
+            // An empty gun is loaded as soon as the NPC holds it, such as after spawning, rather than when an enemy shows up.
+            idleReload(main);
+            idleReload(off);
             return;
         }
         main.spinSpeed *= 0.9F;
@@ -375,10 +382,50 @@ public final class NpcEquipmentRangedGoal extends Goal
             hand.reset();
     }
 
+    /** Carries on a reload, or else starts one for an empty gun the hand holds, while the NPC has no target to fight. */
+    private void idleReload(Hand hand)
+    {
+        if (hand.reloading > 0)
+        {
+            continueReload(hand);
+            return;
+        }
+        ItemStack weapon = idleReloadWeapon(hand);
+        if (weapon.isEmpty())
+            return;
+        if (weapon != hand.lastWeapon)
+        {
+            hand.reset();
+            hand.lastWeapon = weapon;
+            hand.lastItem = weapon.getItem();
+            hand.lastThrowable = false;
+        }
+        reload(hand, weapon);
+    }
+
+    /**
+     * @return the gun the hand would load outside a fight: a Flan gun it holds and fires, with no round loaded and no failed
+     *         attempt to load it pending; otherwise empty
+     */
+    private ItemStack idleReloadWeapon(Hand hand)
+    {
+        if (hand.reloadFailed || npc.level().getGameTime() < hand.idleRetryAt || NpcCrew.holdsFire(npc))
+            return ItemStack.EMPTY;
+        boolean fires = hand == main ? NpcEquipment.ranged(npc) && !NpcEquipment.offHandPrimary(npc) : NpcEquipment.offHandFires(npc);
+        if (!fires)
+            return ItemStack.EMPTY;
+        ItemStack weapon = npc.getItemInHand(hand.side);
+        boolean gun = FlansEquipment.getWeaponKind(weapon).filter(kind -> kind.ranged() && !kind.throwable() && !kind.shield()).isPresent();
+        return gun && !FlansEquipment.hasLoadedRound(weapon) ? weapon : ItemStack.EMPTY;
+    }
+
     /** The reload loaded nothing. The main hand may take another weapon, which the next tick finds there. */
     private void outOfAmmunition(Hand hand)
     {
         hand.reloadFailed = hand != main || !NpcAmmunition.switchWeapon(npc);
+        // Stopping the goal forgets the failure, so outside a fight the hand would otherwise try again every few ticks.
+        if (hand.reloadFailed)
+            hand.idleRetryAt = npc.level().getGameTime() + IDLE_RELOAD_RETRY_TICKS;
     }
 
     private void aim(LivingEntity target)

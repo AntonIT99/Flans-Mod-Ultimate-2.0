@@ -342,6 +342,17 @@ public final class ExternalProjectileSupport
         return getMuzzles(model, secondary, sequence, alternate, MountAim.REST);
     }
 
+    /** @return whether the bank fires where the turret or AA gun aims rather than along the hull, as a driven driveable fires it */
+    public static boolean aimsWithTurret(IContentType model, boolean secondary)
+    {
+        if (model instanceof AAGunType)
+            return true;
+        if (!(model instanceof DriveableType type))
+            return false;
+        List<ShootPoint> points = type.shootPoints(secondary);
+        return !points.isEmpty() && EnumDriveablePart.isTurretPart(points.get(0).getRootPos().getPart());
+    }
+
     public static List<WeaponMuzzle> getMuzzles(IContentType model, boolean secondary, int sequence, boolean alternate, MountAim aim)
     {
         if (model instanceof AAGunType aa)
@@ -550,7 +561,7 @@ public final class ExternalProjectileSupport
         GunType gun = muzzle.weapon().orElse(null) instanceof GunType type ? type : null;
         if (gun != null && gun.hasMuzzleFlashModel())
             return true;
-        if (!(platform instanceof DriveableType type) || !type.isDefaultMuzzleFlash())
+        if (!(platform instanceof DriveableType type) || !type.hasDefaultMuzzleFlash(secondary))
             return false;
         EnumWeaponType bank = type.weaponType(secondary);
         return gun != null || bank == EnumWeaponType.GUN || bank == EnumWeaponType.SHELL;

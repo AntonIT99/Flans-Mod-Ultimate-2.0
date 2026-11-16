@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.driveables;
 
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -274,10 +275,42 @@ public enum EnumDriveablePart
         return BOILER_ROOMS;
     }
 
-    /** Parts whose authored boxes rotate with the main turret and use turret armour defaults. */
-    public static boolean isTurretMounted(EnumDriveablePart part)
+    /**
+     * Parts that turn with the main turret: their boxes, seats, shoot points and emitters follow its aim. Numbered turrets
+     * are not among them.
+     */
+    public static boolean isTurretMounted(@Nullable EnumDriveablePart part)
     {
-        return part == TURRET || part == BARREL || part == MORE_TURRET_ARMOR || part != null && part.name().startsWith("TURRET_");
+        return part == TURRET || part == BARREL || part == MORE_TURRET_ARMOR || part != null && part.name().startsWith("TURRET_") && !isNumberedTurret(part);
+    }
+
+    /**
+     * One of a ship's numbered turrets: a gun mount fixed to the hull with its own hit points, whose gun aims from the
+     * passenger seat on it rather than with the main turret, as in the content packs that use them.
+     */
+    public static boolean isNumberedTurret(@Nullable EnumDriveablePart part)
+    {
+        return part != null && part.name().matches("TURRET_\\d+");
+    }
+
+    /**
+     * A turret or part of one, turning with the main turret or not: it takes turret armour defaults, is damaged as a turret,
+     * and the driver's guns on it fire where the driver aims.
+     */
+    public static boolean isTurretPart(@Nullable EnumDriveablePart part)
+    {
+        return isTurretMounted(part) || isNumberedTurret(part);
+    }
+
+    /**
+     * @return whether a seat on {@code seatPart} sits inside {@code turret}, so that its occupant dies when that turret is
+     *         destroyed: the main turret holds every seat mounted on it, a numbered turret only the seats on itself
+     */
+    public static boolean isSeatInTurret(@Nullable EnumDriveablePart seatPart, @Nullable EnumDriveablePart turret)
+    {
+        if (turret == TURRET)
+            return isTurretMounted(seatPart);
+        return isNumberedTurret(turret) && seatPart == turret;
     }
 
     public static boolean isWheel(EnumDriveablePart part)
