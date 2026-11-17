@@ -10,9 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 /** Client-only snapshot store. Server snapshots remain the sole source of truth. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -68,7 +66,11 @@ public final class TeamsClientState
     {
         Minecraft minecraft = Minecraft.getInstance();
         Player viewer = minecraft.player;
-        if (!hasActiveRound() || viewer == null || renderedPlayer == viewer || isTeamsSpectator(viewer))
+        if (!hasActiveRound() || viewer == null || renderedPlayer == viewer)
+            return false;
+        if (snapshot.isHidePlayerNameplatesFromOutsiders() && isOutsider(viewer))
+            return true;
+        if (isTeamsSpectator(viewer))
             return false;
         if (snapshot.isHideAllNameplates() || isTeamsSpectator(renderedPlayer))
             return true;
@@ -115,6 +117,19 @@ public final class TeamsClientState
     {
         Player viewer = Minecraft.getInstance().player;
         return hasActiveRound() && viewer != null && !isTeamsSpectator(viewer) && findTeam(viewer).isPresent();
+    }
+
+    /** Whether the running round hides the name tags of bots and other mobs from the local player, who watches it or plays on no team. */
+    public static boolean shouldHideBotNameTags()
+    {
+        Player viewer = Minecraft.getInstance().player;
+        return hasActiveRound() && viewer != null && snapshot.isHideBotNameplatesFromOutsiders() && isOutsider(viewer);
+    }
+
+    /** Whether the local player watches the running round or builds outside it, on no team. */
+    private static boolean isOutsider(Player viewer)
+    {
+        return viewer.isSpectator() || findTeam(viewer).map("spectators"::equals).orElse(true);
     }
 
     private static boolean hasActiveRound()

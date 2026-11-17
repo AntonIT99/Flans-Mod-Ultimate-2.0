@@ -7,6 +7,7 @@ import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.eras.EraClientState;
+import com.flansmodultimate.client.eras.EraClientViews;
 import com.flansmodultimate.client.gui.TeamsDeployScreen;
 import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
@@ -38,7 +39,6 @@ import com.flansmodultimate.network.server.driveable.PacketRequestDismount;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.client.ContentMismatchScreens;
 import com.flansmodultimate.util.ModUtils;
-import com.flansmodultimate.client.eras.EraClientViews;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
@@ -624,7 +624,7 @@ public final class ClientEventHandler
             ClientPlatform.hideNameTag(event);
             return;
         }
-        if (event.getEntity() instanceof Player player && TeamsClientState.shouldHideNameTag(player))
+        if (event.getEntity() instanceof Player player ? TeamsClientState.shouldHideNameTag(player) : event.getEntity() instanceof Mob && TeamsClientState.shouldHideBotNameTags())
             ClientPlatform.hideNameTag(event);
     }
 

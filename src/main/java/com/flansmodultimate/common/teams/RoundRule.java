@@ -6,9 +6,7 @@ import lombok.Getter;
 
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /** The configurable round rules, shared by validation, commands and the command centre. */
@@ -22,7 +20,8 @@ public enum RoundRule
                     128), HOME_BASE_NO_ENTRY("homeBaseNoEntry"), HOME_BASE_NO_DAMAGE("homeBaseNoDamage"), WARMUP_SECONDS("warmupSeconds", 0, 0, 300), MINIMUM_PLAYERS("minimumPlayers", 0, 0,
                         100), REQUIRE_READY("requireReady"), TEAM_SWITCH_SECONDS("teamSwitchSeconds", 0, 0, 3600), PREVENT_LEADING_SIDE_JOIN("preventLeadingSideJoin"), FLAG_NO_VEHICLES(
                             "flagNoVehicles"), FLAG_NO_FLIGHT("flagNoFlight"), FLAG_BANNED_ITEMS("flagBannedItems", Kind.ITEMS, ""), SHOW_ENEMY_NAMEPLATES(
-                                "showEnemyNameplates"), HIDE_ALL_NAMEPLATES("hideAllNameplates"), HIDE_KILL_MESSAGES("hideKillMessages"), RESTRICT_SPECTATORS("restrictSpectators"), ERA_WINDOW("eraWindow", Kind.ERA, "");
+                                "showEnemyNameplates"), HIDE_ALL_NAMEPLATES("hideAllNameplates"), HIDE_PLAYER_NAMEPLATES_FROM_OUTSIDERS("hidePlayerNameplatesFromOutsiders"), HIDE_BOT_NAMEPLATES_FROM_OUTSIDERS(
+                                    "hideBotNameplatesFromOutsiders"), HIDE_KILL_MESSAGES("hideKillMessages"), RESTRICT_SPECTATORS("restrictSpectators"), ERA_WINDOW("eraWindow", Kind.ERA, "");
 
     public enum Kind
     {

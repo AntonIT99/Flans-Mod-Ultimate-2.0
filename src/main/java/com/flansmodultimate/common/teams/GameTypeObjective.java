@@ -43,7 +43,7 @@ public abstract class GameTypeObjective extends GameTypeTDM
     private final String settingsPrefix;
     private final int defaultCaptureTicks;
     private boolean friendlyFire;
-    private boolean autoBalance = true;
+    private boolean autoBalance;
     /** Ticks one player needs to take a neutral point alone. */
     protected int captureTicks;
     private final Map<UUID, UUID> preferredSpawns = new HashMap<>();
@@ -344,7 +344,7 @@ public abstract class GameTypeObjective extends GameTypeTDM
     public void loadSettings(CompoundTag tag)
     {
         friendlyFire = tag.getBoolean(key("friendly_fire"));
-        autoBalance = !tag.contains(key(SETTING_AUTO_BALANCE)) || tag.getBoolean(key(SETTING_AUTO_BALANCE));
+        autoBalance = tag.getBoolean(key(SETTING_AUTO_BALANCE));
         captureTicks = readInt(tag, "capture_ticks", defaultCaptureTicks, 1);
     }
 
