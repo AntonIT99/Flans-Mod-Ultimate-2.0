@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
+import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
@@ -184,6 +185,17 @@ public final class NpcDrivers
             boolean ship = seat.getDriveableType().map(IDriveableType::isShip).orElse(false);
             return new PathSize(pathWidth(hullWidth(driveable), ship), pathSize(driveable.getBbHeight()));
         });
+    }
+
+    /**
+     * @return the definition of the ground vehicle the NPC sits at the wheel of, whose engine and running gear decide what
+     *         grades and soft ground cost its path; empty while it walks or crews, and for a ship, an aircraft or a mecha
+     */
+    public static Optional<IContentType> drivenGroundVehicle(EntityNPCInterface npc)
+    {
+        if (npc.level().isClientSide || !enabled(npc))
+            return Optional.empty();
+        return drivenSeat(npc).flatMap(ISeat::getDriveableType).filter(type -> type.getDriveableKind() == DriveableKind.VEHICLE && !type.isShip()).map(IContentType.class::cast);
     }
 
     /**

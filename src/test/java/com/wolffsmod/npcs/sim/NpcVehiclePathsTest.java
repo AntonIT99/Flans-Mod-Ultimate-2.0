@@ -206,4 +206,36 @@ class NpcVehiclePathsTest
         assertTrue(4F * NpcVehiclePaths.surfaceCost(0.5F) >= 4F);
         assertTrue(NpcVehiclePaths.surfaceCost(0.85F) < 1F);
     }
+
+    @Test
+    void aPathKeepsClearOfWhereTheVehicleGotStuckForAWhile()
+    {
+        NpcVehiclePaths.StuckPlaces places = new NpcVehiclePaths.StuckPlaces();
+        assertTrue(places.current(0L).isEmpty());
+        places.add(10D, 64D, 0D, 3D, 100L);
+        var known = places.current(100L);
+        assertEquals(NpcVehiclePaths.STUCK_COST, NpcVehiclePaths.stuckCost(known, 12D, 64D, 0D));
+        assertEquals(NpcVehiclePaths.STUCK_COST, NpcVehiclePaths.stuckCost(known, 10D, 66D, 2.9D));
+        assertEquals(0F, NpcVehiclePaths.stuckCost(known, 14D, 64D, 0D), "the way round is not dearer");
+        assertEquals(0F, NpcVehiclePaths.stuckCost(known, 10D, 70D, 0D), "a bridge over the place is another place");
+        assertFalse(places.current(100L + NpcVehiclePaths.STUCK_TICKS - 1L).isEmpty());
+        assertTrue(places.current(100L + NpcVehiclePaths.STUCK_TICKS).isEmpty(), "the place is forgotten once whatever stood there may be gone");
+    }
+
+    @Test
+    void theSamePlaceIsRememberedOnceAndOnlyTheLatestPlacesAreKept()
+    {
+        NpcVehiclePaths.StuckPlaces places = new NpcVehiclePaths.StuckPlaces();
+        places.add(0D, 64D, 0D, 0.5D, 0L);
+        assertEquals(NpcVehiclePaths.MIN_STUCK_RADIUS, places.current(0L).get(0).radius(), "a small hull still keeps a path's width clear");
+        places.add(1D, 64D, 0D, 3D, 50L);
+        var known = places.current(50L);
+        assertEquals(1, known.size(), "getting stuck there again renews the place");
+        assertEquals(50L + NpcVehiclePaths.STUCK_TICKS, known.get(0).until());
+        for (int index = 1; index <= NpcVehiclePaths.MAX_STUCK_PLACES + 1; index++)
+            places.add(index * 100D, 64D, 0D, 3D, 60L);
+        known = places.current(60L);
+        assertEquals(NpcVehiclePaths.MAX_STUCK_PLACES, known.size());
+        assertEquals(0F, NpcVehiclePaths.stuckCost(known, 1D, 64D, 0D), "the oldest place made room");
+    }
 }

@@ -536,7 +536,7 @@ public final class NpcDriving
         double ledge = ledgeDistance(npc, state, hullYaw, route, settings.stoppingDistance(speed, topSpeed), options);
         Command command = drive(new Situation(hullYaw, wanted, route.goalDistance(), route.cornerAngle(), route.cornerDistance(), lookahead, speed, limit, route.haltDistance(), topSpeed, ledge),
             settings, tuning.get(Value.STEERING_RESPONSE), tuning.get(Value.STATIONARY_TURN) != 0);
-        watchProgress(npc, Mth.wrapDegrees(wanted - command.hullYaw()), settings.accelerationAt(speed, topSpeed));
+        watchProgress(npc, state, command.hullYaw(), Mth.wrapDegrees(wanted - command.hullYaw()), settings.accelerationAt(speed, topSpeed));
         return command;
     }
 
@@ -676,7 +676,7 @@ public final class NpcDriving
      * @param accelerate
      *            throttle the vehicle gains per tick, which decides how long it needs to back up
      */
-    private void watchProgress(EntityNPCInterface npc, float off, float accelerate)
+    private void watchProgress(EntityNPCInterface npc, NpcVehicleState state, float hullYaw, float off, float accelerate)
     {
         circling = Math.abs(off) > 45F && Math.abs(throttle) > 0.1F ? circling + 1 : 0;
         boolean stuck = false;
@@ -690,6 +690,14 @@ public final class NpcDriving
             stuck = anchor.distanceToSqr(npc.position()) < STUCK_DISTANCE * STUCK_DISTANCE;
             anchor = npc.position();
             anchorTick = npc.tickCount;
+        }
+        if (stuck)
+        {
+            // The search after backing up sees terrain only, and would find the same path into whatever stopped the hull:
+            // it is told of the place just past the end the vehicle was driving with.
+            double reach = (throttle < 0F ? -1D : 1D) * (state.reach(npc) + 1D);
+            Vec3 place = npc.position().add(Vec3.directionFromRotation(0F, hullYaw).scale(reach));
+            state.getStuckPlaces().add(place.x, place.y, place.z, Math.min(NpcVehiclePaths.MAX_HALF_WIDTH, state.reach(npc)) + 1D, npc.level().getGameTime());
         }
         if (stuck || circling > CIRCLING_TICKS)
         {

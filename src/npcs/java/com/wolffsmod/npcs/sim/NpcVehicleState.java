@@ -158,6 +158,9 @@ public final class NpcVehicleState
     private final TargetMotion motion = new TargetMotion();
     @Getter
     private final NpcDriving driving = new NpcDriving();
+    /** Where the NPC got stuck driving, as a vehicle or at the wheel of one, which its path searches keep clear of for a while. */
+    @Getter
+    private final NpcVehiclePaths.StuckPlaces stuckPlaces = new NpcVehiclePaths.StuckPlaces();
     @Getter
     private final NpcFlight flight = new NpcFlight();
     @Getter

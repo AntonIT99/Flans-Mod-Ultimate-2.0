@@ -19,6 +19,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.pathfinder.*;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,11 +29,18 @@ import java.util.Optional;
  * <li>Terrain profile: a ground vehicle does not enter water deeper than it wades, and a watercraft accepts nothing but
  * water deep enough to float in.</li>
  * <li>Driveable paths: an NPC at the wheel of a Flan's vehicle or mecha searches a path as wide and high as the driveable,
- * rather than one it would fit along on foot, and climbs onto walls and ledges only where it cannot drive around them.</li>
+ * rather than one it would fit along on foot, and climbs onto walls and ledges only where it cannot drive around them. A
+ * ground vehicle pays for steep grades and soft ground what they slow it down by, as it would under a player.</li>
  * <li>Vehicle paths: an NPC driving as a ground vehicle model searches a path its hull fits along on either side of it,
  * takes no step higher than the vehicle climbs, and pays for steep grades and soft ground what they slow it down by; see
- * {@link NpcVehiclePaths}. A worker search is handed the profile the server thread read.</li>
+ * {@link NpcVehiclePaths}.</li>
+ * <li>Stuck places: a path keeps clear of where the vehicle lately got stuck, where it can, so that the search after
+ * backing up finds the way round instead of the same path again.</li>
  * </ul>
+ *
+ * <p>
+ * A worker search is handed the routing the server thread read.
+ * </p>
  */
 @Mixin(value = NpcWalkNodeEvaluator.class, remap = false)
 @SuppressWarnings({"UnresolvedMixinReference", "AddedMixinMembersNamePattern"})
@@ -46,13 +54,12 @@ public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator implem
     /** Whether the current search is for a driveable, read once as it is prepared. */
     @Unique
     private boolean wolffsmodnpcsDriveable;
-    /** How the current search routes a ground vehicle model; null for any other searcher. */
+    /** How the current search routes a vehicle: a model's profile, a driven vehicle's costs and the places it got stuck at. */
     @Unique
-    @Nullable
-    private NpcVehiclePaths.Profile wolffsmodnpcsVehiclePath;
-    /** Whether the profile was handed over for a worker search, which then does not read the NPC itself. */
+    private NpcVehiclePaths.Routing wolffsmodnpcsRouting = NpcVehiclePaths.Routing.NONE;
+    /** Whether the routing was handed over for a worker search, which then does not read the NPC itself. */
     @Unique
-    private boolean wolffsmodnpcsVehiclePathPreset;
+    private boolean wolffsmodnpcsRoutingPreset;
     /** Where the search started: the hull may overlap blocks around it, so that a vehicle against a wall can drive off. */
     @Unique
     private int wolffsmodnpcsStartX;
@@ -103,9 +110,9 @@ public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator implem
             entityHeight = Math.max(entityHeight, size.height());
         });
         wolffsmodnpcsHullRoom.clear();
-        if (!wolffsmodnpcsVehiclePathPreset)
-            wolffsmodnpcsVehiclePath = wolffsmodnpcsDriveable ? null : NpcVehiclePaths.of(mob).orElse(null);
-        NpcVehiclePaths.Profile profile = wolffsmodnpcsVehiclePath;
+        if (!wolffsmodnpcsRoutingPreset)
+            wolffsmodnpcsRouting = NpcVehiclePaths.routing(mob, wolffsmodnpcsDriveable);
+        NpcVehiclePaths.Profile profile = wolffsmodnpcsRouting.model();
         if (profile != null)
         {
             entityHeight = Math.max(entityHeight, profile.height());
@@ -114,50 +121,105 @@ public abstract class NpcWalkNodeEvaluatorMixin extends WalkNodeEvaluator implem
         }
     }
 
-    /**
-     * Makes a driveable's path step up onto a wall or ledge only where there is no way around: a climb onto ground that
-     * drops away again within {@value NpcVehiclePaths#RIDGE_REACH} blocks ahead costs as much as a detour of
-     * {@value NpcVehiclePaths#RIDGE_MALUS} blocks.
-     */
     @Override
     public int getNeighbors(@NotNull Node[] neighbors, @NotNull Node node)
     {
         int count = super.getNeighbors(neighbors, node);
-        NpcVehiclePaths.Profile profile = wolffsmodnpcsVehiclePath;
-        if (profile != null)
-            return wolffsmodnpcsVehicleNeighbors(profile, neighbors, node, count);
-        if (!wolffsmodnpcsDriveable)
-            return count;
+        NpcVehiclePaths.Routing routing = wolffsmodnpcsRouting;
+        if (routing.model() != null)
+            count = wolffsmodnpcsVehicleNeighbors(routing.model(), neighbors, node, count);
+        else if (wolffsmodnpcsDriveable)
+            wolffsmodnpcsDriveableNeighbors(routing.driven(), neighbors, node, count);
+        if (!routing.stuck().isEmpty())
+            wolffsmodnpcsAvoidStuckPlaces(routing.stuck(), neighbors, count);
+        return count;
+    }
+
+    /**
+     * Makes a driveable's path step up onto a wall or ledge only where there is no way around: a climb onto ground that
+     * drops away again within {@value NpcVehiclePaths#RIDGE_REACH} blocks ahead costs as much as a detour of
+     * {@value NpcVehiclePaths#RIDGE_MALUS} blocks. A ground vehicle's path is also as dear as the grade up to a node and
+     * the ground on it slow that vehicle down, so that it takes the road round a steep hill or a bog where one leads on.
+     *
+     * @param costs
+     *            what grades and soft ground cost the vehicle; null for a driveable they do not slow
+     */
+    @Unique
+    private void wolffsmodnpcsDriveableNeighbors(@Nullable NpcVehiclePaths.Profile costs, Node[] neighbors, Node node, int count)
+    {
+        double floor = costs == null ? 0D : getFloorLevel(wolffsmodnpcsProbe.set(node.x, node.y, node.z));
         for (int index = 0; index < count; index++)
         {
             Node next = neighbors[index];
-            if (next != null && next.y > node.y && NpcVehiclePaths.ridge(this::wolffsmodnpcsSolid, next.x, next.y, next.z, Integer.signum(next.x - node.x), Integer.signum(next.z - node.z)))
-                next.costMalus = Math.max(next.costMalus, NpcVehiclePaths.RIDGE_MALUS);
+            if (next == null)
+                continue;
+            float cost = costs == null ? 0F : wolffsmodnpcsSurfaceCost(costs, next);
+            if (next.y > node.y)
+                cost = wolffsmodnpcsClimbCost(costs, node, next, floor, cost);
+            if (cost > 0F)
+                next.costMalus = Math.max(next.costMalus, cost);
         }
-        return count;
+    }
+
+    /**
+     * @param floor
+     *            level of the ground at the node climbed from
+     * @param cost
+     *            what the ground on the node climbed onto costs
+     * @return that cost with the grade up to the node added, and no less than a wall or ledge costs where it is one
+     */
+    @Unique
+    private float wolffsmodnpcsClimbCost(@Nullable NpcVehiclePaths.Profile costs, Node node, Node next, double floor, float cost)
+    {
+        int dx = Integer.signum(next.x - node.x);
+        int dz = Integer.signum(next.z - node.z);
+        float climbed = cost;
+        if (costs != null)
+            climbed += costs.gradeCost(costs.grade(this::wolffsmodnpcsSolid, next.x, next.y, next.z, dx, dz, getFloorLevel(wolffsmodnpcsProbe.set(next.x, next.y, next.z)) - floor));
+        return NpcVehiclePaths.ridge(this::wolffsmodnpcsSolid, next.x, next.y, next.z, dx, dz) ? Math.max(climbed, NpcVehiclePaths.RIDGE_MALUS) : climbed;
+    }
+
+    // Stuck places
+
+    /**
+     * Makes the nodes at a place the vehicle got stuck at as dear as a detour of {@value NpcVehiclePaths#STUCK_COST}
+     * blocks each. A node stands for the corner of the room searched for, so the middle of that room is what is measured.
+     */
+    @Unique
+    private void wolffsmodnpcsAvoidStuckPlaces(List<NpcVehiclePaths.StuckPlace> places, Node[] neighbors, int count)
+    {
+        double middle = entityWidth * 0.5D;
+        for (int index = 0; index < count; index++)
+        {
+            Node next = neighbors[index];
+            if (next == null)
+                continue;
+            float cost = NpcVehiclePaths.stuckCost(places, next.x + middle, next.y, next.z + middle);
+            if (cost > 0F)
+                next.costMalus = Math.max(next.costMalus, Math.max(0F, mob.getPathfindingMalus(next.type)) + cost);
+        }
     }
 
     // Vehicle paths
 
     @Override
-    @Nullable
-    public NpcVehiclePaths.Profile wolffsmodnpcsVehiclePath()
+    public NpcVehiclePaths.Routing wolffsmodnpcsVehicleRouting()
     {
-        return wolffsmodnpcsVehiclePath;
+        return wolffsmodnpcsRouting;
     }
 
     @Override
-    public void wolffsmodnpcsPresetVehiclePath(@Nullable NpcVehiclePaths.Profile profile)
+    public void wolffsmodnpcsPresetVehicleRouting(NpcVehiclePaths.Routing routing)
     {
-        wolffsmodnpcsVehiclePath = profile;
-        wolffsmodnpcsVehiclePathPreset = true;
+        wolffsmodnpcsRouting = routing;
+        wolffsmodnpcsRoutingPreset = true;
     }
 
     /** @return whether a position the search would otherwise stand the NPC on leaves its vehicle's hull no room */
     @Unique
     private boolean wolffsmodnpcsHullBlocked(int x, int y, int z, BlockPathTypes type)
     {
-        NpcVehiclePaths.Profile profile = wolffsmodnpcsVehiclePath;
+        NpcVehiclePaths.Profile profile = wolffsmodnpcsRouting.model();
         // Open air is dropped through to the ground below, which is asked about in its turn.
         if (profile == null || type == BlockPathTypes.BLOCKED || type == BlockPathTypes.OPEN)
             return false;
