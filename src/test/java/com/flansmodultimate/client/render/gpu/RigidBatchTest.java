@@ -386,6 +386,20 @@ class RigidBatchTest
     }
 
     @Test
+    void substitutedBufferSourcesDrawOnlyOpaqueMeshesInsideAWorldRender()
+    {
+        // The vanilla source is flushed around every draw, so it takes any scope anywhere.
+        assertTrue(GpuModelCache.drawsCachedMeshes(true, true, true, false));
+        assertTrue(GpuModelCache.drawsCachedMeshes(true, true, false, false));
+        // A render mod's subclass is never flushed: only depth-tested opaque geometry may go ahead of what it holds back.
+        assertTrue(GpuModelCache.drawsCachedMeshes(false, true, false, true));
+        assertFalse(GpuModelCache.drawsCachedMeshes(false, true, true, true));
+        assertFalse(GpuModelCache.drawsCachedMeshes(false, true, false, false));
+        // Anything that is not a buffer source at all cannot be handed vertices the cache falls back to.
+        assertFalse(GpuModelCache.drawsCachedMeshes(false, false, false, true));
+    }
+
+    @Test
     void budgetFollowsConfigurationOrVideoMemory()
     {
         long mib = 1024L * 1024, gibKiB = 1024L * 1024;

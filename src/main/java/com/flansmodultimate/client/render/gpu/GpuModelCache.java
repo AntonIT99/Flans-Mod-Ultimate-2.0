@@ -88,6 +88,8 @@ public final class GpuModelCache
     private static final int[] samplerTextures = {-1, -1, -1};
     private static long uploadTick = Long.MIN_VALUE;
     private static long uploadedBytes;
+    /** World renders in progress; cached meshes draw through a substituted buffer source only inside one. */
+    private static int levelPasses;
 
     private GpuModelCache()
     {}
@@ -322,9 +324,46 @@ public final class GpuModelCache
     /** Once per rendered frame, before the world: marks meshes in use and counts recorded frames. */
     public static void beginFrame()
     {
+        // A world render that threw never reported its end.
+        levelPasses = 0;
         meshes.nextFrame();
         RenderDiagnostics.countFrame();
         growIfThrashing();
+    }
+
+    /** The world renderer starts drawing a level; render thread only. */
+    public static void beginLevelPass()
+    {
+        levelPasses++;
+    }
+
+    /** The world renderer finished the level it last started. */
+    public static void endLevelPass()
+    {
+        if (levelPasses > 0)
+            levelPasses--;
+    }
+
+    /**
+     * Whether a scope may draw cached meshes itself rather than through the buffer source.
+     *
+     * <p>
+     * The vanilla source draws as buffers change, so the cache flushes it before each of its own draws and keeps the
+     * order of submission. ImmediatelyFast, Iris and Oculus substitute a subclass that holds everything back for later;
+     * flushing it would undo that and its pending buffers cannot be told apart. Opaque meshes need no flush there: they
+     * are depth tested, so drawing them ahead of buffered geometry gives the same picture. That holds only inside a
+     * world render, where everything else is depth tested as well. Translucent scopes blend in order and keep the
+     * buffered path.
+     * </p>
+     *
+     * @param vanillaSource
+     *            the source is exactly the vanilla class
+     * @param bufferSource
+     *            the source is the vanilla class or a subclass of it
+     */
+    static boolean drawsCachedMeshes(boolean vanillaSource, boolean bufferSource, boolean translucent, boolean levelPass)
+    {
+        return vanillaSource || bufferSource && !translucent && levelPass;
     }
 
     public static void clear()
@@ -362,7 +401,8 @@ public final class GpuModelCache
     /**
      * A shader pack replaces vanilla programs and vertex formats and masks writes from shaders it does not know
      * while it renders the world, including its shadow pass. Installed without an active pack, Oculus and Iris keep
-     * the vanilla pipeline, so the cache stays available.
+     * the vanilla pipeline, so the cache stays available; they still substitute the buffer source, see
+     * {@link #drawsCachedMeshes}.
      */
     private static boolean incompatibleRenderer()
     {
@@ -414,7 +454,9 @@ public final class GpuModelCache
             contexts.add(new Context());
         Context context = contexts.get(depth);
         // The renderer cannot draw cached meshes here, but the scope still gains the rigid submission paths.
-        if (shader == null || failed || translucent && !config.enableFastTranslucentRendering || source.getClass() != MultiBufferSource.BufferSource.class
+        boolean vanillaSource = source.getClass() == MultiBufferSource.BufferSource.class;
+        if (shader == null || failed || translucent && !config.enableFastTranslucentRendering
+            || !drawsCachedMeshes(vanillaSource, source instanceof MultiBufferSource.BufferSource, translucent, levelPasses > 0)
             || Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS || incompatibleRenderer())
         {
             if (RenderDiagnostics.enabled)
@@ -426,6 +468,7 @@ public final class GpuModelCache
         }
         RenderType gpu = armor ? CustomRenderType.gpuArmorModel(texture, translucent, cull) : CustomRenderType.gpuModel(texture, translucent, cull);
         context.source = (MultiBufferSource.BufferSource) source;
+        context.holdsBack = !vanillaSource;
         context.vanilla = vanilla;
         context.gpu = gpu;
         context.batch.begin(context);
@@ -477,6 +520,8 @@ public final class GpuModelCache
         /** The consumer this nesting depth handed out: the batch, or the direct sink. */
         private VertexConsumer active;
         private MultiBufferSource.BufferSource source;
+        /** The source is a render mod's subclass, which draws later and is never flushed from here; see {@link #drawsCachedMeshes}. */
+        private boolean holdsBack;
         private RenderType vanilla;
         private RenderType gpu;
         private ShaderInstance previousShader;
@@ -516,7 +561,7 @@ public final class GpuModelCache
                 return false;
             // Consecutive GPU batches have no intervening buffered vertices. Only
             // initial entry, fallback vertices and reentrant boundaries need this.
-            if (flushPending || !(source instanceof BufferSourceAccessor buffers) || !buffers.flansmodultimateStartedBuffers().isEmpty())
+            if (!holdsBack && (flushPending || !(source instanceof BufferSourceAccessor buffers) || !buffers.flansmodultimateStartedBuffers().isEmpty()))
             {
                 endDraws();
                 source.endBatch();
@@ -602,7 +647,8 @@ public final class GpuModelCache
         public void flushFallback()
         {
             endDraws();
-            source.endBatch(vanilla);
+            if (!holdsBack)
+                source.endBatch(vanilla);
         }
 
         @Override
