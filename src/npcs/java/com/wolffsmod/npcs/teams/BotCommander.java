@@ -104,7 +104,33 @@ final class BotCommander
                 Doctrine.plan(new Doctrine.Battlefield(side, attacking, points, enemies, enemySpawns, naval, flagViews, ground.mayCapture(side), ground.front().orElse(null), armour), views)
                     .forEach((squadId, task) -> Optional.ofNullable(battle.getSquads().get(squadId)).ifPresent(squad -> squad.setTask(task)));
             approaches(level, battle, views, new BotSquadTactics.Field(groundEnemies, homes, posts, routes, points, side));
+            minefields(level, battle, side, views, new BotMinefields.Field(groundEnemies, armour, enemySpawns, routes, posts));
         }
+    }
+
+    /** Lays out where the side's infantry mines the approaches to the objectives it holds; off switches the belts away. */
+    private static void minefields(ServerLevel level, BotBattle battle, int side, List<Doctrine.SquadView> views, BotMinefields.Field field)
+    {
+        if (!battle.getSettings().isMinefields())
+        {
+            battle.getMinefields().clear();
+            return;
+        }
+        List<BotMinefields.Held> held = new ArrayList<>();
+        for (Doctrine.SquadView view : views)
+        {
+            BotSquad squad = battle.getSquads().get(view.id());
+            SquadTask task = squad == null ? null : squad.getTask();
+            if (task != null && view.role() == BotRole.INFANTRY && holds(task.kind()))
+                held.add(new BotMinefields.Held(task.target(), task.radius(), view.strength()));
+        }
+        battle.getMinefields().update(side, level.getGameTime(), held, field);
+    }
+
+    /** Whether a task keeps its squad on one place long enough to prepare it. */
+    static boolean holds(SquadTask.Kind kind)
+    {
+        return kind == SquadTask.Kind.DEFEND || kind == SquadTask.Kind.GUARD || kind == SquadTask.Kind.HOLD || kind == SquadTask.Kind.OVERWATCH;
     }
 
     private static List<Vec3> homePositions(Battleground ground, int side, List<TeamsCapturePoint> points)

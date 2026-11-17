@@ -66,7 +66,9 @@ public final class FlansGrenadeDevices
     /**
      * Places a supported device on the top of a solid block within 4.5 blocks of the operator.
      * Validates loaded terrain, free space and finite coordinates. Facing is a world-space direction.
-     * Does not consume the stack; the caller consumes one item after success. Server thread only.
+     * Does not consume the stack; the caller consumes one item after success. A device placed for a living entity that is
+     * no player never answers to allies its owner's fire spares, whatever the server allows for proximity friendly fire, so
+     * that the friendly fire rules of its own side decide alone. Server thread only.
      *
      * @return the placed entity, or empty when placement is refused
      */

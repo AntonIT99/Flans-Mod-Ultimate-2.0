@@ -28,6 +28,8 @@ final class BotBattle
     private final Map<UUID, Integer> slotOfEntity = new HashMap<>();
     /** Strategic reports are deliberately not persisted or reconstructed from hidden enemies after a restart. */
     private final BotIntelligence intelligence = new BotIntelligence();
+    /** Where each side lays its mines; worked out again from its reports, never saved. */
+    private final BotMinefields minefields = new BotMinefields();
     private final Deque<Integer> queue = new ArrayDeque<>();
     private final BotSpawnerWaves spawnerWaves = new BotSpawnerWaves();
     /** Tickets each side has left, by side; absent while no ticket limit is set. */

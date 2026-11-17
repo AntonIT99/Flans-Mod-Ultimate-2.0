@@ -12,6 +12,8 @@ import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.sim.NpcRepairs;
 import com.wolffsmod.npcs.sim.TacticKind;
 import com.wolffsmod.npcs.tactics.NpcCombatMovement;
+import com.wolffsmod.npcs.teams.BotTag;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,8 +31,10 @@ import java.util.*;
 
 /**
  * Plants carried mines and remote charges in the enemy's approach, withdraws beyond their blast, and detonates owned
- * charges only around a visible enemy with the thrower and allies clear. Deploys needed supply bags and visits friendly
- * bags for healing, effects or finite ammunition. Never loads chunks or ignores explicit movement restrictions.
+ * charges only around a visible enemy with the thrower and allies clear. Between fights it also prepares the ground it
+ * holds: a battle bot mines the belt its side laid out across the approach to its objective, and any other soldier mines
+ * the way to its post from where it last met the enemy. Deploys needed supply bags and visits friendly bags for healing,
+ * effects or finite ammunition. Never loads chunks or ignores explicit movement restrictions.
  */
 public final class NpcGrenadeDeviceGoal extends Goal
 {
@@ -39,10 +43,22 @@ public final class NpcGrenadeDeviceGoal extends Goal
     /** Ticks between two helpings from a bag, which is also how long a bag left behind is passed over. */
     private static final int SUPPLY_TICKS = 20;
     private static final int ACTION_TICKS = 160;
+    /** Ticks a soldier is given to reach a prepared spot, which lies farther off than anything else it walks to here. */
+    private static final int SITE_TICKS = 400;
     private static final double SEARCH = 32D;
     private static final double BAG_SEARCH = 24D;
     private static final double PLANT_DISTANCE = 3D;
     private static final int MAX_MINES = 3;
+    /** Blocks from a prepared spot within which the soldier lays its mine instead of walking on. */
+    private static final double SITE_REACH = 2.5D;
+    /** Fewest blocks between a prepared spot and a device that already stands there. */
+    private static final double SITE_SPACING = 6D;
+    /** Blocks from its post a soldier that is no battle bot mines, tried from the farthest in. */
+    private static final double[] POST_STANDOFFS = {9D, 6D, 4D};
+    /** Ticks a soldier that is no battle bot keeps mining towards where it last met the enemy. */
+    private static final long THREAT_TICKS = 6000L;
+    /** Degrees between the approaches two soldiers of one post mine, so that they do not walk to one spot together. */
+    private static final double POST_SPREAD = 12D;
 
     private final EntityNPCInterface npc;
     private long nextScan;
@@ -55,6 +71,14 @@ public final class NpcGrenadeDeviceGoal extends Goal
     private Vec3 escape;
     @Nullable
     private BlockPos support;
+    /** The prepared spot the soldier walks to before it lays the mine it keeps for it. */
+    @Nullable
+    private Vec3 site;
+    private ItemStack sited = ItemStack.EMPTY;
+    /** Where the enemy was last met, which is the way a soldier that is no battle bot mines. */
+    @Nullable
+    private Vec3 threat;
+    private long threatUntil;
     private ItemStack planting = ItemStack.EMPTY;
     private final Map<UUID, Long> refused = new HashMap<>();
 
@@ -80,12 +104,13 @@ public final class NpcGrenadeDeviceGoal extends Goal
             return false;
         nextScan = now + SCAN_TICKS;
         refused.values().removeIf(time -> time <= now);
+        rememberThreat(now);
         List<Entity> devices = FlansGrenadeDevices.find(npc.level(), npc.getBoundingBox().inflate(SEARCH));
         detonateCharges(devices);
         clearPlan();
         if (avoidMine(devices) || seekBag(devices, now) || now >= nextDeploy && planDeployment(devices, now))
         {
-            until = now + ACTION_TICKS;
+            until = now + (site == null ? ACTION_TICKS : SITE_TICKS);
             return true;
         }
         return false;
@@ -94,7 +119,8 @@ public final class NpcGrenadeDeviceGoal extends Goal
     @Override
     public boolean canContinueToUse()
     {
-        return enabled() && npc.level().getGameTime() < until && (bag != null && !bag.isRemoved() && NpcDeviceSupplies.needs(npc, bag) || !planting.isEmpty() || escape != null);
+        return enabled() && npc.level().getGameTime() < until
+            && (bag != null && !bag.isRemoved() && NpcDeviceSupplies.needs(npc, bag) || !planting.isEmpty() || site != null && npc.getTarget() == null || escape != null);
     }
 
     @Override
@@ -109,6 +135,11 @@ public final class NpcGrenadeDeviceGoal extends Goal
         if (!planting.isEmpty())
         {
             deploy();
+            return;
+        }
+        if (site != null)
+        {
+            walkToSite(site);
             return;
         }
         if (bag != null)
@@ -142,6 +173,55 @@ public final class NpcGrenadeDeviceGoal extends Goal
             bag = null;
             until = 0L;
         }
+    }
+
+    /** Remembers roughly where the enemy comes from, which is all a soldier outside a battle has to prepare against. */
+    private void rememberThreat(long now)
+    {
+        LivingEntity enemy = npc.getTarget() != null ? npc.getTarget() : npc.getLastHurtByMob();
+        if (enemy != null && enemy.isAlive() && enemy.level() == npc.level())
+        {
+            threat = enemy.position();
+            threatUntil = now + THREAT_TICKS;
+        }
+        else if (now > threatUntil)
+            threat = null;
+    }
+
+    /** Walks to the prepared spot, then lays the mine there and withdraws, giving the spot up when it no longer serves. */
+    private void walkToSite(Vec3 point)
+    {
+        if (npc.getTarget() != null)
+        {
+            clearPlan();
+            return;
+        }
+        if (npc.position().distanceToSqr(point) > SITE_REACH * SITE_REACH)
+        {
+            move(point);
+            return;
+        }
+        double hazard = Math.max(NpcThrowing.hazard(sited), trigger(sited));
+        Vec3 back = npc.position().subtract(point).multiply(1D, 0D, 1D);
+        if (back.horizontalDistanceSqr() < 0.01D)
+            back = npc.getLookAngle().multiply(-1D, 0D, -1D);
+        Vec3 withdrawal = point.add(back.normalize().scale(hazard + 3D));
+        if (alliesInDanger(point, hazard + 2D) || !ground(point) || !reachable(withdrawal))
+        {
+            // The spot turned out not to serve after the walk; leave it to another soldier and look again in a while.
+            TeamsBots.releaseMinePost(npc);
+            clearPlan();
+            nextDeploy = npc.level().getGameTime() + SCAN_TICKS * 5L;
+            return;
+        }
+        planting = sited;
+        escape = withdrawal;
+        site = null;
+    }
+
+    private static double trigger(ItemStack stack)
+    {
+        return FlansGrenadeDevices.properties(stack).map(value -> Math.max(value.livingTrigger(), value.driveableTrigger())).orElse(0D);
     }
 
     private void move(Vec3 destination)
@@ -198,8 +278,78 @@ public final class NpcGrenadeDeviceGoal extends Goal
                 planting = stack;
                 return true;
             }
+            if (!properties.get().supplyBag() && planPost(stack, properties.get(), devices))
+            {
+                sited = stack;
+                return true;
+            }
         }
         return false;
+    }
+
+    /**
+     * Prepares the ground the soldier holds while it has nobody to fight: a battle bot takes a spot of the belt its side
+     * laid out across its objective's approach, and any other soldier mines the way to its post from where it last met the
+     * enemy. Remote charges are kept for a fight, where their operator detonates them himself.
+     */
+    private boolean planPost(ItemStack stack, GrenadeDeviceProperties properties, List<Entity> devices)
+    {
+        if (npc.getTarget() != null || npc.ais.onAttack != 0 || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc) || properties.remote() || !properties.mine())
+            return false;
+        double radius = NpcThrowing.hazard(stack);
+        double trigger = Math.max(properties.livingTrigger(), properties.driveableTrigger());
+        if (radius <= 0D || laid(devices, properties) >= MAX_MINES || !armsInTime(properties, trigger))
+            return false;
+        // A mine that answers to vehicles alone belongs on the way armour takes, every other on the infantry approach.
+        Vec3 point = post(properties.livingTrigger() <= 0D).orElse(null);
+        if (point == null || !NpcCombatMovement.permits(npc, point) || devices.stream().anyMatch(device -> device.position().distanceToSqr(point) < SITE_SPACING * SITE_SPACING)
+            || alliesInDanger(point, Math.max(radius, trigger) + 2D) || !reachable(point))
+            return false;
+        site = point;
+        return true;
+    }
+
+    /** @return the spot to mine: a spot of its side's belt for a battle bot, the way to its post for any other soldier */
+    private Optional<Vec3> post(boolean armour)
+    {
+        if (BotTag.isBot(npc))
+            return TeamsBots.minePost(npc, armour);
+        if (threat == null)
+            return Optional.empty();
+        Vec3 anchor = NpcCombatMovement.anchor(npc);
+        Vec3 axis = threat.subtract(anchor).multiply(1D, 0D, 1D);
+        if (axis.horizontalDistanceSqr() < 1.0E-4D)
+            return Optional.empty();
+        Vec3 bearing = turn(axis.normalize(), (npc.getUUID().hashCode() % 5 - 2) * POST_SPREAD);
+        for (double standoff : POST_STANDOFFS)
+        {
+            Vec3 point = anchor.add(bearing.scale(standoff));
+            if (NpcCombatMovement.permits(npc, point))
+                return Optional.of(point);
+        }
+        return Optional.empty();
+    }
+
+    /** Turns a horizontal unit vector by an angle in degrees. */
+    private static Vec3 turn(Vec3 bearing, double degrees)
+    {
+        double radians = Math.toRadians(degrees);
+        double cos = Math.cos(radians);
+        double sin = Math.sin(radians);
+        return new Vec3(bearing.x * cos - bearing.z * sin, 0D, bearing.x * sin + bearing.z * cos);
+    }
+
+    /** @return how many devices of the same kind the soldier already has standing nearby */
+    private long laid(List<Entity> devices, GrenadeDeviceProperties properties)
+    {
+        return devices.stream().filter(device -> FlansGrenadeDevices.ownedBy(device, npc))
+            .filter(device -> FlansGrenadeDevices.properties(device).map(value -> properties.remote() ? value.remote() : value.mine()).orElse(false)).count();
+    }
+
+    /** Whether the device arms late enough for the soldier to walk clear of a trigger that reaches past its own spot. */
+    private static boolean armsInTime(GrenadeDeviceProperties properties, double trigger)
+    {
+        return trigger < PLANT_DISTANCE - 0.5D || properties.armingTicks() >= 20D + (trigger - PLANT_DISTANCE + 1D) / 0.15D;
     }
 
     private boolean planBag(ItemStack stack, List<Entity> devices, long now)
@@ -219,13 +369,12 @@ public final class NpcGrenadeDeviceGoal extends Goal
         if (target == null || !target.isAlive() || npc.ais.onAttack != 0 || NpcDrivers.holdsFire(npc) || NpcCrew.holdsFire(npc) || !npc.hasLineOfSight(target) || !target.onGround()
             || !targetForMine(properties, target))
             return false;
-        long existing = devices.stream().filter(device -> FlansGrenadeDevices.ownedBy(device, npc))
-            .filter(device -> FlansGrenadeDevices.properties(device).map(value -> properties.remote() ? value.remote() : value.mine()).orElse(false)).count();
+        long existing = laid(devices, properties);
         double radius = NpcThrowing.hazard(stack);
         if (existing >= (properties.remote() ? 1 : MAX_MINES) || npc.distanceTo(target) < radius + 10D || npc.distanceTo(target) > SEARCH || radius <= 0D)
             return false;
         double trigger = Math.max(properties.livingTrigger(), properties.driveableTrigger());
-        if (trigger >= PLANT_DISTANCE - 0.5D && properties.armingTicks() < 20D + (trigger - PLANT_DISTANCE + 1D) / 0.15D)
+        if (!armsInTime(properties, trigger))
             return false;
         Vec3 direction = target.position().subtract(npc.position()).multiply(1D, 0D, 1D).normalize();
         Vec3 point = npc.position().add(direction.scale(PLANT_DISTANCE));
@@ -294,6 +443,8 @@ public final class NpcGrenadeDeviceGoal extends Goal
         }
         if (NpcEquipment.enabled(npc, Feature.CONSUME_AMMO))
             NpcAmmunition.consume(npc, stack);
+        if (trap)
+            TeamsBots.mineLaid(npc, point);
         if (!trap && NpcDeviceSupplies.use(npc, placed.get()))
             nextSupply = npc.level().getGameTime() + SUPPLY_TICKS;
         npc.swing(InteractionHand.MAIN_HAND);
@@ -343,6 +494,8 @@ public final class NpcGrenadeDeviceGoal extends Goal
         support = null;
         escape = null;
         bag = null;
+        site = null;
+        sited = ItemStack.EMPTY;
     }
 
     @Override
@@ -350,6 +503,8 @@ public final class NpcGrenadeDeviceGoal extends Goal
     {
         if (bag != null)
             refused.put(bag.getUUID(), npc.level().getGameTime() + SUPPLY_TICKS);
+        if (site != null)
+            TeamsBots.releaseMinePost(npc);
         clearPlan();
         npc.getNavigation().stop();
     }

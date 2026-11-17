@@ -75,6 +75,9 @@ public final class BotSettingsPresets implements ISettingsPresets
         // Presets exported before emplacement support inherit its default-on switch.
         if (!settings.contains("emplacements"))
             settings.putBoolean("emplacements", true);
+        // Presets exported before minefields inherit their default-on switch.
+        if (!settings.contains("minefields"))
+            settings.putBoolean("minefields", true);
         if (!settings.contains("player_seat_deployment"))
             settings.putBoolean("player_seat_deployment", true);
         for (String key : List.of("drive_real_vehicles", "gun_real_vehicles", "ride_real_vehicles"))
