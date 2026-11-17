@@ -190,7 +190,7 @@ class NpcGrenadeDeviceGoalTest
         ItemStack stack = new ItemStack(Items.STICK);
         Entity existing = mock(Entity.class);
         when(existing.position()).thenReturn(new Vec3(10D, 0D, 0D));
-        when(npc.distanceToSqr(existing)).thenReturn(100D);
+        when(npc.distanceToSqr(existing)).thenReturn(400D);
         try (var devices = mockStatic(FlansGrenadeDevices.class);
             var equipment = mockStatic(NpcEquipment.class);
             var kinds = mockStatic(TacticKind.class);
@@ -212,7 +212,63 @@ class NpcGrenadeDeviceGoalTest
             NpcGrenadeDeviceGoal goal = new NpcGrenadeDeviceGoal(npc);
             assertFalse(goal.canUse());
             when(level.getGameTime()).thenReturn(20L);
-            when(npc.distanceToSqr(existing)).thenReturn(145D);
+            when(npc.distanceToSqr(existing)).thenReturn(625D);
+            assertTrue(goal.canUse());
+        }
+    }
+
+    @Test
+    void aDeployedBagIsEmptiedHelpingByHelpingBeforeAnotherIsLaidOut() throws ReflectiveOperationException
+    {
+        ServerLevel level = mock(ServerLevel.class);
+        EntityNPCInterface npc = npc(level);
+        when(npc.getLookAngle()).thenReturn(new Vec3(1D, 0D, 0D));
+        when(level.clip(any())).thenReturn(new BlockHitResult(new Vec3(1.5D, 0D, 0.5D), Direction.UP, new BlockPos(1, -1, 0), false));
+        Entity existing = mock(Entity.class);
+        when(existing.position()).thenReturn(new Vec3(2D, 0D, 0D));
+        when(npc.distanceToSqr(existing)).thenReturn(4D);
+        when(npc.hasLineOfSight(existing)).thenReturn(true);
+        ItemStack stack = new ItemStack(Items.STICK);
+        GrenadeDeviceProperties bag = new GrenadeDeviceProperties(0D, 0D, 0, false, true);
+        try (var devices = mockStatic(FlansGrenadeDevices.class);
+            var equipment = mockStatic(NpcEquipment.class);
+            var kinds = mockStatic(TacticKind.class);
+            var drivers = mockStatic(NpcDrivers.class);
+            var crew = mockStatic(NpcCrew.class);
+            var platform = mockStatic(CustomNpcsPlatform.class);
+            var movement = mockStatic(NpcCombatMovement.class);
+            var ammunition = mockStatic(NpcAmmunition.class);
+            var supplies = mockStatic(NpcDeviceSupplies.class))
+        {
+            enabled(equipment, kinds, npc);
+            ammunition.when(() -> NpcAmmunition.supplies(npc)).thenReturn(List.of(stack));
+            devices.when(() -> FlansGrenadeDevices.find(eq(level), any())).thenReturn(List.of(existing));
+            devices.when(() -> FlansGrenadeDevices.properties(existing)).thenReturn(Optional.of(bag));
+            devices.when(() -> FlansGrenadeDevices.properties(stack)).thenReturn(Optional.of(bag));
+            devices.when(() -> FlansGrenadeDevices.ownedBy(existing, npc)).thenReturn(true);
+            supplies.when(() -> NpcDeviceSupplies.needs(npc, stack)).thenReturn(true);
+            supplies.when(() -> NpcDeviceSupplies.needs(npc, existing)).thenReturn(true);
+            supplies.when(() -> NpcDeviceSupplies.use(npc, existing)).thenReturn(true);
+            NpcGrenadeDeviceGoal goal = new NpcGrenadeDeviceGoal(npc);
+            // The deployed bag is visited instead of another being laid out, and emptied one helping at a time.
+            assertTrue(goal.canUse());
+            goal.tick();
+            goal.tick();
+            supplies.verify(() -> NpcDeviceSupplies.use(npc, existing), times(1));
+            assertTrue(goal.canContinueToUse());
+            when(level.getGameTime()).thenReturn(20L);
+            goal.tick();
+            supplies.verify(() -> NpcDeviceSupplies.use(npc, existing), times(2));
+            supplies.when(() -> NpcDeviceSupplies.needs(npc, existing)).thenReturn(false);
+            when(level.getGameTime()).thenReturn(40L);
+            goal.tick();
+            supplies.verify(() -> NpcDeviceSupplies.use(npc, existing), times(3));
+            assertFalse(goal.canContinueToUse());
+            // A helping just taken still counts, so the carried bag stays packed until the next one is due.
+            devices.when(() -> FlansGrenadeDevices.find(eq(level), any())).thenReturn(List.of());
+            assertFalse(goal.canUse());
+            devices.verify(() -> FlansGrenadeDevices.place(eq(npc), eq(stack), any(), any(), anyBoolean()), never());
+            when(level.getGameTime()).thenReturn(60L);
             assertTrue(goal.canUse());
         }
     }

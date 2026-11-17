@@ -36,10 +36,11 @@ public final class NpcGrenadeDeviceGoal extends Goal
 {
     private static final int SCAN_TICKS = 20;
     private static final int DEPLOY_TICKS = 600;
-    private static final int SUPPLY_TICKS = 100;
+    /** Ticks between two helpings from a bag, which is also how long a bag left behind is passed over. */
+    private static final int SUPPLY_TICKS = 20;
     private static final int ACTION_TICKS = 160;
     private static final double SEARCH = 32D;
-    private static final double BAG_SEARCH = 12D;
+    private static final double BAG_SEARCH = 24D;
     private static final double PLANT_DISTANCE = 3D;
     private static final int MAX_MINES = 3;
 
@@ -82,7 +83,7 @@ public final class NpcGrenadeDeviceGoal extends Goal
         List<Entity> devices = FlansGrenadeDevices.find(npc.level(), npc.getBoundingBox().inflate(SEARCH));
         detonateCharges(devices);
         clearPlan();
-        if (avoidMine(devices) || seekBag(devices, now) || now >= nextDeploy && planDeployment(devices))
+        if (avoidMine(devices) || seekBag(devices, now) || now >= nextDeploy && planDeployment(devices, now))
         {
             until = now + ACTION_TICKS;
             return true;
@@ -113,13 +114,7 @@ public final class NpcGrenadeDeviceGoal extends Goal
         if (bag != null)
         {
             if (npc.distanceToSqr(bag) <= 9D && npc.hasLineOfSight(bag))
-            {
-                if (NpcDeviceSupplies.use(npc, bag))
-                    npc.swing(InteractionHand.MAIN_HAND);
-                nextSupply = npc.level().getGameTime() + SUPPLY_TICKS;
-                bag = null;
-                until = 0L;
-            }
+                take(bag);
             else
                 move(bag.position());
             return;
@@ -130,6 +125,22 @@ public final class NpcGrenadeDeviceGoal extends Goal
                 escape = null;
             else
                 move(escape);
+        }
+    }
+
+    /** Takes a helping from the bag it stands at, and stays for the next one while the bag still has what it needs. */
+    private void take(Entity target)
+    {
+        long now = npc.level().getGameTime();
+        if (now < nextSupply)
+            return;
+        if (NpcDeviceSupplies.use(npc, target))
+            npc.swing(InteractionHand.MAIN_HAND);
+        nextSupply = now + SUPPLY_TICKS;
+        if (target.isRemoved() || !NpcDeviceSupplies.needs(npc, target))
+        {
+            bag = null;
+            until = 0L;
         }
     }
 
@@ -175,14 +186,14 @@ public final class NpcGrenadeDeviceGoal extends Goal
         return FlansGrenadeDevices.ownedBy(device, npc) || FlansGrenadeDevices.owner(device).filter(owner -> NpcDrivers.ally(npc, owner)).isPresent();
     }
 
-    private boolean planDeployment(List<Entity> devices)
+    private boolean planDeployment(List<Entity> devices, long now)
     {
         for (ItemStack stack : NpcAmmunition.supplies(npc))
         {
             Optional<GrenadeDeviceProperties> properties = FlansGrenadeDevices.properties(stack);
             if (properties.isEmpty())
                 continue;
-            if (properties.get().supplyBag() ? planBag(stack, devices) : planTrap(stack, properties.get(), devices))
+            if (properties.get().supplyBag() ? planBag(stack, devices, now) : planTrap(stack, properties.get(), devices))
             {
                 planting = stack;
                 return true;
@@ -191,8 +202,11 @@ public final class NpcGrenadeDeviceGoal extends Goal
         return false;
     }
 
-    private boolean planBag(ItemStack stack, List<Entity> devices)
+    private boolean planBag(ItemStack stack, List<Entity> devices, long now)
     {
+        // A bag just taken from still supplies, so wait for the next visit instead of laying out one bag a scratch.
+        if (now < nextSupply)
+            return false;
         if (devices.stream().anyMatch(device -> npc.distanceToSqr(device) <= BAG_SEARCH * BAG_SEARCH && friendly(device) && NpcDeviceSupplies.needs(npc, device)))
             return false;
         // Nearby allies may be moving away or fighting, so deploy for a recipient that will actually use the bag.
