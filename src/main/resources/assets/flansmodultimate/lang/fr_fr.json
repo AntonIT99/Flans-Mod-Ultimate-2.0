@@ -668,7 +668,7 @@
   "options.flansmodultimate.flakParticlesRange": "Portée des particules antiaériennes",
   "options.flansmodultimate.flanExplosionsDropBlocks": "Les explosions de Flan lâchent des blocs",
   "options.flansmodultimate.flanNpcRenderDistanceMultiplier": "Distance de rendu des PNJ Flan",
-  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Multiplie la distance fondée sur la boîte des PNJ à modèle Flan et des soldats inscrits. Module PNJ requis ; aucun modèle distant de PNJ.",
+  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Multiplie la distance fondée sur la boîte des PNJ à modèle Flan et des soldats inscrits. Module PNJ requis ; avec Distant Horizons, les PNJ affichés comme véhicules apparaissent au-delà sous forme simplifiée.",
   "options.flansmodultimate.flanNpcTrackingRange": "Portée de suivi des PNJ Flan",
   "options.flansmodultimate.flanNpcTrackingRange.tooltip": "Portée serveur en blocs pour modèles Flan et soldats inscrits. Application sans redémarrage ; module PNJ requis.",
   "options.flansmodultimate.forceAllowAllAttachments": "Forcer l’autorisation de tous les accessoires",

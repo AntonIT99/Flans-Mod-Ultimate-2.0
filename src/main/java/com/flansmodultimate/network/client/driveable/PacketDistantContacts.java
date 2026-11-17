@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The driveables a player is too far away to track, sent every few ticks to players who draw far terrain, so
- * their client can show them as simplified shapes. Display data only: it carries no state the client may
+ * The driveables a player is too far away to track, and the entities standing in for one, sent every few ticks to
+ * players who draw far terrain, so their client can show them as simplified shapes. Display data only: it carries no state the client may
  * act on, and every send replaces the previous one.
  */
 @NoArgsConstructor
@@ -27,13 +27,19 @@ public class PacketDistantContacts implements IClientPacket
     private static final int MAX_SHORT_NAME_LENGTH = 256;
 
     /**
-     * One distant driveable. Angles are the driveable's own yaw, pitch and roll in degrees, in the legacy model
-     * basis; velocity is in blocks per tick.
+     * One distant driveable, or one entity wearing the parts of a driveable type. Angles are in degrees and velocity is
+     * in blocks per tick. A driveable gives its own yaw, pitch and roll in the legacy model basis and its position. A
+     * stand-in gives the pose of its part body: the model origin, the vanilla yaw its model faces, and its scale.
+     *
+     * @param standIn
+     *            whether this is an entity wearing the parts rather than a driveable
+     * @param scale
+     *            factor a stand-in's model is drawn larger or smaller by; 1 for a driveable
      */
     // Plain data carrier that is never compared or used as a key.
     @SuppressWarnings("java:S6218")
     public record Contact(int entityId, String shortName, int paintjobId, double x, double y, double z, float velocityX, float velocityY, float velocityZ, float yaw, float pitch, float roll,
-        int[] destroyedParts)
+        int[] destroyedParts, boolean standIn, float scale)
     {}
 
     /** Ticks until the server sends the next update, which bounds how far the client extrapolates. */
@@ -70,6 +76,8 @@ public class PacketDistantContacts implements IClientPacket
             data.writeVarInt(contact.destroyedParts().length);
             for (int part : contact.destroyedParts())
                 data.writeVarInt(part);
+            data.writeBoolean(contact.standIn());
+            data.writeFloat(contact.scale());
         }
     }
 
@@ -102,7 +110,9 @@ public class PacketDistantContacts implements IClientPacket
             int[] destroyed = new int[destroyedCount];
             for (int part = 0; part < destroyedCount; part++)
                 destroyed[part] = data.readVarInt();
-            decoded.add(new Contact(entityId, shortName, paintjobId, x, y, z, velocityX, velocityY, velocityZ, yaw, pitch, roll, destroyed));
+            boolean standIn = data.readBoolean();
+            float scale = data.readFloat();
+            decoded.add(new Contact(entityId, shortName, paintjobId, x, y, z, velocityX, velocityY, velocityZ, yaw, pitch, roll, destroyed, standIn, scale));
         }
         contacts = List.copyOf(decoded);
     }

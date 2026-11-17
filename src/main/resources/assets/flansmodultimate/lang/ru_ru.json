@@ -668,7 +668,7 @@
   "options.flansmodultimate.flakParticlesRange": "Дальность частиц зенитного огня",
   "options.flansmodultimate.flanExplosionsDropBlocks": "Выпадение блоков при взрывах Flan",
   "options.flansmodultimate.flanNpcRenderDistanceMultiplier": "Дальность отрисовки NPC Flan",
-  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Множитель дальности по размеру NPC с моделью Flan и подключённых солдат. Нужен модуль NPC; дальние заместители NPC отсутствуют.",
+  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Множитель дальности по размеру NPC с моделью Flan и подключённых солдат. Нужен модуль NPC; с Distant Horizons NPC в виде техники дальше отображаются упрощёнными фигурами.",
   "options.flansmodultimate.flanNpcTrackingRange": "Дальность отслеживания NPC Flan",
   "options.flansmodultimate.flanNpcTrackingRange.tooltip": "Серверная дальность в блоках для моделей Flan и подключённых солдат. Без перезапуска; нужен модуль NPC.",
   "options.flansmodultimate.forceAllowAllAttachments": "Принудительно разрешить все модули",

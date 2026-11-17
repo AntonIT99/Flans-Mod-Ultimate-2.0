@@ -54,6 +54,8 @@ public final class PartBody implements IPartBody
     private final Vec3 turretOffset;
     @Getter
     private PartBodyPose pose = PartBodyPose.REST;
+    /** Where the wearer stood when the body was last posed; the pose origin for a body without a wearer. */
+    private Vec3 poseAnchor = Vec3.ZERO;
     /** World directions of the model-local axes at the current yaw, pitch and roll. */
     private Vec3 axisX = Vec3.ZERO;
     private Vec3 axisY = Vec3.ZERO;
@@ -365,6 +367,36 @@ public final class PartBody implements IPartBody
         return toWorld(DriveableProjectileCollision.partPointToHullLocal(local, part.getType(), pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset));
     }
 
+    /**
+     * Offset in blocks from the model origin of a point of a part given in the model-local frame: turned with the body and
+     * its turret, as hits are, but not scaled.
+     */
+    public Vec3 partPointToOffset(EnumDriveablePart part, Vec3 modelLocal)
+    {
+        return directionToWorld(DriveableProjectileCollision.partPointToHullLocal(modelLocal, part, pose.turret().yaw(), pose.turret().pitch(), turretPivot, turretOffset));
+    }
+
+    /**
+     * @return blocks from the wearer's position to the model origin when the body was last posed, which holds while the
+     *         wearer moves on without posing it; zero for a body without a wearer
+     */
+    public Vec3 originOffset()
+    {
+        return pose.origin().subtract(poseAnchor);
+    }
+
+    /** @return the parts with a box that no longer stand: the broken ones and those switched off */
+    public Set<EnumDriveablePart> missingParts()
+    {
+        Set<EnumDriveablePart> missing = EnumSet.noneOf(EnumDriveablePart.class);
+        for (DriveablePart part : parts.values())
+        {
+            if (!enabled(part) || part.isDestroyed())
+                missing.add(part.getType());
+        }
+        return missing;
+    }
+
     // Health
 
     @Override
@@ -550,6 +582,7 @@ public final class PartBody implements IPartBody
     public void setPose(PartBodyPose pose)
     {
         this.pose = pose == null ? PartBodyPose.REST : pose;
+        poseAnchor = owner == null ? this.pose.origin() : owner.position();
         // The model faces the vanilla yaw a quarter turn on from the yaw driveables simulate with.
         float driveableYaw = this.pose.yaw() - 90F;
         float pitch = this.pose.pitch();
@@ -645,7 +678,8 @@ public final class PartBody implements IPartBody
         return new Vec3(-vector.x, vector.y, vector.z);
     }
 
-    private static AABB partBoxModelLocal(DriveablePart part)
+    /** The box of a part in the model-local frame, with the turret at rest. */
+    public static AABB partBoxModelLocal(DriveablePart part)
     {
         AABB bounds = Objects.requireNonNull(part.getBox()).asAabb();
         return new AABB(mirror(new Vec3(bounds.minX, bounds.minY, bounds.minZ)), mirror(new Vec3(bounds.maxX, bounds.maxY, bounds.maxZ)));

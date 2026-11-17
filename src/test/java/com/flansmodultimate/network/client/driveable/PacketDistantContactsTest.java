@@ -18,8 +18,8 @@ class PacketDistantContactsTest
     @Test
     void contactsSurviveARoundTrip()
     {
-        PacketDistantContacts.Contact plane = new PacketDistantContacts.Contact(42, "spitfire", 3, 1500.25D, 180D, -320.5D, 2.5F, -0.125F, 0.75F, 91F, -12.5F, 30F, new int[]{4, 9});
-        PacketDistantContacts.Contact tank = new PacketDistantContacts.Contact(7, "tiger", 0, -800D, 64D, 2048D, 0F, 0F, 0F, 180F, 0F, 0F, new int[0]);
+        PacketDistantContacts.Contact plane = new PacketDistantContacts.Contact(42, "spitfire", 3, 1500.25D, 180D, -320.5D, 2.5F, -0.125F, 0.75F, 91F, -12.5F, 30F, new int[]{4, 9}, false, 1F);
+        PacketDistantContacts.Contact tank = new PacketDistantContacts.Contact(7, "tiger", 0, -800D, 64D, 2048D, 0F, 0F, 0F, 180F, 0F, 0F, new int[0], true, 1.5F);
         PacketDistantContacts original = new PacketDistantContacts(5, List.of(plane, tank));
 
         byte[] bytes = encode(original);
@@ -36,7 +36,12 @@ class PacketDistantContactsTest
         assertEquals(-0.125F, first.velocityY());
         assertEquals(30F, first.roll());
         assertArrayEquals(new int[]{4, 9}, first.destroyedParts());
-        assertEquals(0, decoded.getContacts().get(1).destroyedParts().length);
+        assertFalse(first.standIn());
+        assertEquals(1F, first.scale());
+        PacketDistantContacts.Contact second = decoded.getContacts().get(1);
+        assertEquals(0, second.destroyedParts().length);
+        assertTrue(second.standIn());
+        assertEquals(1.5F, second.scale());
         assertArrayEquals(bytes, encode(decoded));
     }
 

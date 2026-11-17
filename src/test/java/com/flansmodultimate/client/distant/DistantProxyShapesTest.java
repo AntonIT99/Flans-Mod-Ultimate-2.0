@@ -1,13 +1,21 @@
 package com.flansmodultimate.client.distant;
 
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.parts.PartBodyPose;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -79,6 +87,37 @@ class DistantProxyShapesTest
         for (int i = 0; i < 40; i++)
             DistantProxyShapes.appendPart(boxes, EnumDriveablePart.CORE, FUSELAGE, (part, local) -> local, COLOR);
         assertEquals(DistantProxyShapes.MAX_BOXES, boxes.size());
+    }
+
+    @Test
+    void aWornBodyIsShapedFromItsStandingPartsAtItsScaleAndOffset()
+    {
+        Map<EnumDriveablePart, CollisionBox> parts = new EnumMap<>(EnumDriveablePart.class);
+        parts.put(EnumDriveablePart.CORE, CollisionBox.inWorldUnits(100F, -1F, 0F, -1F, 2F, 2F, 2F, 1F, 0F));
+        parts.put(EnumDriveablePart.LEFT_TRACK, CollisionBox.inWorldUnits(50F, 2F, 0F, -1F, 1F, 1F, 2F, 1F, 0F));
+        PartBody body = new PartBody(null, parts, Vec3.ZERO, Vec3.ZERO);
+        // A body without a wearer is anchored at its own origin, wherever that is.
+        body.setPose(new PartBodyPose(new Vec3(100D, 64D, 100D), 0F, 2F, MountAim.REST));
+        assertEquals(Vec3.ZERO, body.originOffset());
+
+        // The hull is one box; the track, twice as long as it is wide, is cut in two.
+        assertEquals(3, DistantProxyShapes.forBody(body, Vec3.ZERO, Set.of(), COLOR).size());
+
+        List<DistantBox> boxes = DistantProxyShapes.forBody(body, new Vec3(0D, 0.5D, 0D), Set.of(EnumDriveablePart.LEFT_TRACK), COLOR);
+        assertEquals(1, boxes.size());
+        DistantBox core = boxes.get(0);
+        // The cube is turned a quarter turn with the model, which leaves its bounds alone, then doubled and lifted.
+        assertEquals(-2F, core.minX(), 1.0E-4F);
+        assertEquals(2F, core.maxX(), 1.0E-4F);
+        assertEquals(0.5F, core.minY(), 1.0E-4F);
+        assertEquals(4.5F, core.maxY(), 1.0E-4F);
+        assertEquals(-2F, core.minZ(), 1.0E-4F);
+        assertEquals(2F, core.maxZ(), 1.0E-4F);
+
+        String track = body.getParts().get(1).name();
+        body.setEnabled(track, false);
+        assertEquals(Set.of(EnumDriveablePart.LEFT_TRACK), body.missingParts());
+        assertEquals(1, DistantProxyShapes.forBody(body, Vec3.ZERO, Set.of(), COLOR).size());
     }
 
     @Test

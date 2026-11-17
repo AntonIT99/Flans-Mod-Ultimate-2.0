@@ -989,7 +989,7 @@
   "options.flansmodultimate.flakParticlesRange": "Zasięg cząsteczek ognia przeciwlotniczego",
   "options.flansmodultimate.flanExplosionsDropBlocks": "Wybuchy Flan upuszczają bloki",
   "options.flansmodultimate.flanNpcRenderDistanceMultiplier": "Odległość renderowania NPC Flan",
-  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Skaluje odległość renderowania opartą na bryle ograniczającej dla NPC z modelami Flan i żołnierzy objętych tą opcją. Wymaga modułu NPC; brak zastępczych modeli odległych NPC.",
+  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Skaluje odległość renderowania opartą na bryle ograniczającej dla NPC z modelami Flan i żołnierzy objętych tą opcją. Wymaga modułu NPC; z Distant Horizons NPC wyświetlani jako pojazdy są dalej pokazywani jako uproszczone kształty.",
   "options.flansmodultimate.flanNpcTrackingRange": "Zasięg śledzenia NPC Flan",
   "options.flansmodultimate.flanNpcTrackingRange.tooltip": "Zasięg śledzenia serwera w blokach dla NPC z modelami Flan i żołnierzy objętych tą opcją. Działa od razu bez ponownego uruchamiania; wymaga modułu NPC.",
   "options.flansmodultimate.forceAllowAllAttachments": "Wymuś zezwolenie na wszystkie dodatki",

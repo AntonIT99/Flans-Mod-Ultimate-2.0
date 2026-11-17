@@ -1,14 +1,20 @@
 package com.flansmodultimate.common.distant;
 
+import com.flansmodultimate.api.parts.PartBodyPose;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.parts.PartBodies;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.EntityDistancePolicy;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.driveable.PacketDistantContacts;
 import com.flansmodultimate.network.client.effects.PacketDistantExplosion;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -22,7 +28,7 @@ import java.util.*;
 /**
  * Server side of the far-terrain integration. Players whose client draws far terrain with Distant Horizons
  * ask for it with a {@link com.flansmodultimate.network.server.driveable.PacketDistantSubscription}; they are then sent
- * the driveables beyond their entity tracking range and the large explosions beyond the range of explosion
+ * the driveables beyond their entity tracking range, the entities standing in for one, and the large explosions beyond the range of explosion
  * particles, so their client can show them on the far terrain. Display data only: nothing here changes
  * gameplay. Runs on the server thread.
  */
@@ -82,7 +88,7 @@ public final class DistantSync
         int maxCount = ModCommonConfig.distantContactMaxCount();
         boolean enabled = ModCommonConfig.distantContactsEnabled() && range > 0D && maxCount > 0;
         // Vanilla tracks a driveable while it is within the view distance, less one chunk, horizontally
-        double trackedRadius = Math.max(0D, (server.getPlayerList().getViewDistance() - 1) * 16D - TRACKING_OVERLAP);
+        double viewRadius = (server.getPlayerList().getViewDistance() - 1) * 16D;
 
         for (ServerLevel level : server.getAllLevels())
         {
@@ -96,35 +102,64 @@ public final class DistantSync
             if (receivers.isEmpty())
                 continue;
 
-            List<Driveable> driveables = enabled
-                ? new ArrayList<>(level.getEntities(EntityTypeTest.forClass(Driveable.class), driveable -> driveable.isAlive() && !driveable.isWreck() && driveable.getConfigType() != null))
-                : List.of();
-            Map<Driveable, PacketDistantContacts.Contact> contacts = new HashMap<>();
+            Map<Entity, Double> shown = enabled ? shownEntities(level, viewRadius) : Map.of();
+            Map<Entity, Optional<PacketDistantContacts.Contact>> contacts = new HashMap<>();
             for (ServerPlayer player : receivers)
             {
                 List<PacketDistantContacts.Contact> selected = new ArrayList<>();
-                for (Driveable driveable : nearest(player, driveables, trackedRadius, range, maxCount))
-                    selected.add(contacts.computeIfAbsent(driveable, DistantSync::toContact));
+                for (Entity entity : nearest(player, shown, range, maxCount))
+                    contacts.computeIfAbsent(entity, key -> Optional.ofNullable(toContact(key))).ifPresent(selected::add);
                 send(player, interval, selected);
             }
         }
     }
 
-    private static List<Driveable> nearest(ServerPlayer player, List<Driveable> driveables, double trackedRadius, double range, int maxCount)
+    /** The driveables of a level and the entities standing in for one, each with the horizontal distance its contacts start from. */
+    private static Map<Entity, Double> shownEntities(ServerLevel level, double viewRadius)
+    {
+        Map<Entity, Double> shown = new LinkedHashMap<>();
+        double driveableRadius = Math.max(0D, viewRadius - TRACKING_OVERLAP);
+        for (Driveable driveable : level.getEntities(EntityTypeTest.forClass(Driveable.class), driveable -> driveable.isAlive() && !driveable.isWreck() && driveable.getConfigType() != null))
+            shown.put(driveable, driveableRadius);
+        for (Entity wearer : PartBodies.wearers(level))
+        {
+            PartBody body = PartBodies.of(wearer);
+            if (wearer instanceof Driveable || body == null || !(body.getType() instanceof DriveableType))
+                continue;
+            shown.put(wearer, standInTrackedRadius(viewRadius, EntityDistancePolicy.trackingRange(wearer), wearer.getType().clientTrackingRange() * 16));
+        }
+        return shown;
+    }
+
+    /**
+     * A stand-in is tracked like any entity of its kind: within its own range and never past the view distance.
+     *
+     * @param configuredRange
+     *            the tracking range the mod gives the entity in blocks, or negative when vanilla decides
+     * @param vanillaRange
+     *            the tracking range of the entity's type in blocks
+     */
+    static double standInTrackedRadius(double viewRadius, int configuredRange, int vanillaRange)
+    {
+        return Math.max(0D, Math.min(viewRadius, configuredRange < 0 ? vanillaRange : configuredRange) - TRACKING_OVERLAP);
+    }
+
+    private static List<Entity> nearest(ServerPlayer player, Map<Entity, Double> shown, double range, int maxCount)
     {
         Entity ownVehicle = player.getRootVehicle();
-        double trackedSquared = trackedRadius * trackedRadius;
         double rangeSquared = range * range;
-        List<Driveable> candidates = new ArrayList<>();
-        for (Driveable driveable : driveables)
+        List<Entity> candidates = new ArrayList<>();
+        for (Map.Entry<Entity, Double> entry : shown.entrySet())
         {
-            double dx = driveable.getX() - player.getX();
-            double dz = driveable.getZ() - player.getZ();
-            if (driveable == ownVehicle || dx * dx + dz * dz <= trackedSquared || driveable.distanceToSqr(player) > rangeSquared)
+            Entity entity = entry.getKey();
+            double trackedRadius = entry.getValue();
+            double dx = entity.getX() - player.getX();
+            double dz = entity.getZ() - player.getZ();
+            if (entity == ownVehicle || dx * dx + dz * dz <= trackedRadius * trackedRadius || entity.distanceToSqr(player) > rangeSquared)
                 continue;
-            candidates.add(driveable);
+            candidates.add(entity);
         }
-        candidates.sort(Comparator.comparingDouble(driveable -> driveable.distanceToSqr(player)));
+        candidates.sort(Comparator.comparingDouble(entity -> entity.distanceToSqr(player)));
         return candidates.size() > maxCount ? candidates.subList(0, maxCount) : candidates;
     }
 
@@ -142,12 +177,30 @@ public final class DistantSync
         PacketHandler.sendTo(new PacketDistantContacts(interval, contacts), player);
     }
 
-    private static PacketDistantContacts.Contact toContact(Driveable driveable)
+    /** @return what a client is shown of the entity, or null for a stand-in that took its body off after it was listed */
+    @Nullable
+    private static PacketDistantContacts.Contact toContact(Entity entity)
     {
-        Vec3 position = driveable.position();
-        Vec3 velocity = position.subtract(driveable.xo, driveable.yo, driveable.zo);
+        Vec3 velocity = entity.position().subtract(entity.xo, entity.yo, entity.zo);
         if (velocity.lengthSqr() > MAX_EXTRAPOLATED_SPEED * MAX_EXTRAPOLATED_SPEED)
             velocity = Vec3.ZERO;
+        if (entity instanceof Driveable driveable)
+            return toContact(driveable, velocity);
+
+        PartBody body = PartBodies.of(entity);
+        if (body == null || !(body.getType() instanceof DriveableType type))
+            return null;
+        // The body may have been posed some ticks ago, so its origin is taken from where the wearer stands now.
+        Vec3 origin = entity.position().add(body.originOffset());
+        PartBodyPose pose = body.getPose();
+        // Paintjob 0: the server does not know the skin a stand-in is drawn with.
+        return new PacketDistantContacts.Contact(entity.getId(), type.getShortName(), 0, origin.x, origin.y, origin.z, (float) velocity.x, (float) velocity.y, (float) velocity.z, pose.yaw(),
+            pose.pitch(), pose.roll(), body.missingParts().stream().mapToInt(Enum::ordinal).toArray(), true, pose.scale());
+    }
+
+    private static PacketDistantContacts.Contact toContact(Driveable driveable, Vec3 velocity)
+    {
+        Vec3 position = driveable.position();
 
         List<Integer> destroyed = new ArrayList<>();
         if (driveable.getDriveableData() != null)
@@ -160,7 +213,7 @@ public final class DistantSync
         }
 
         return new PacketDistantContacts.Contact(driveable.getId(), driveable.getShortName(), driveable.getPaintjobId(), position.x, position.y, position.z, (float) velocity.x, (float) velocity.y,
-            (float) velocity.z, driveable.getYaw(), driveable.getPitch(), driveable.getRoll(), destroyed.stream().mapToInt(Integer::intValue).toArray());
+            (float) velocity.z, driveable.getYaw(), driveable.getPitch(), driveable.getRoll(), destroyed.stream().mapToInt(Integer::intValue).toArray(), false, 1F);
     }
 
     /**

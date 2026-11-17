@@ -668,7 +668,7 @@
   "options.flansmodultimate.flakParticlesRange": "Distanza delle particelle antiaeree",
   "options.flansmodultimate.flanExplosionsDropBlocks": "Le esplosioni di Flan rilasciano blocchi",
   "options.flansmodultimate.flanNpcRenderDistanceMultiplier": "Distanza di rendering degli NPC Flan",
-  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Moltiplica la distanza basata sul volume degli NPC con modello Flan e dei soldati abilitati. Richiede il modulo NPC; nessun modello distante degli NPC.",
+  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Moltiplica la distanza basata sul volume degli NPC con modello Flan e dei soldati abilitati. Richiede il modulo NPC; con Distant Horizons gli NPC mostrati come veicoli appaiono oltre come forme semplificate.",
   "options.flansmodultimate.flanNpcTrackingRange": "Raggio di tracciamento degli NPC Flan",
   "options.flansmodultimate.flanNpcTrackingRange.tooltip": "Raggio del server in blocchi per modelli Flan e soldati abilitati. Si applica senza riavvio; richiede il modulo NPC.",
   "options.flansmodultimate.forceAllowAllAttachments": "Forza autorizzazione di tutti gli accessori",

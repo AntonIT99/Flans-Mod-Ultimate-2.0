@@ -989,7 +989,7 @@
   "options.flansmodultimate.flakParticlesRange": "Reichweite Flakpartikel",
   "options.flansmodultimate.flanExplosionsDropBlocks": "Flan-Explosionen lassen Blöcke fallen",
   "options.flansmodultimate.flanNpcRenderDistanceMultiplier": "Flan-NPC-Sichtweite",
-  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Skaliert die Sichtweite anhand der Begrenzungsbox für Flan-Modelle und aktivierte Soldaten. Benötigt das NPC-Modul; keine entfernten NPC-Ersatzmodelle.",
+  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Skaliert die Sichtweite anhand der Begrenzungsbox für Flan-Modelle und aktivierte Soldaten. Benötigt das NPC-Modul; mit Distant Horizons erscheinen als Fahrzeug dargestellte NPCs dahinter als vereinfachte Formen.",
   "options.flansmodultimate.flanNpcTrackingRange": "Flan-NPC-Trackingreichweite",
   "options.flansmodultimate.flanNpcTrackingRange.tooltip": "Server-Trackingreichweite für Flan-Modelle und aktivierte Soldaten in Blöcken. Wirkt ohne Neustart; benötigt das NPC-Modul.",
   "options.flansmodultimate.forceAllowAllAttachments": "Alle Aufsätze erzwingen",
