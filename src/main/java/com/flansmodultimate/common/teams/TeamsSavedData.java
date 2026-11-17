@@ -29,6 +29,7 @@ public final class TeamsSavedData extends FlanSavedData
     final List<TeamsRound> rounds = new ArrayList<>();
     final Map<UUID, PlayerStats> stats = new LinkedHashMap<>();
     final TeamsBlockJournal blockJournal = new TeamsBlockJournal();
+    final TeamsEntityJournal entityJournal = new TeamsEntityJournal();
     final CompoundTag runtime = new CompoundTag();
 
     public Collection<PlayerStats> getStats()
@@ -53,6 +54,7 @@ public final class TeamsSavedData extends FlanSavedData
         tag.put(NBT_STATS, statList);
         tag.put(NBT_RUNTIME, runtime.copy());
         tag.put("block_journal", blockJournal.save());
+        tag.put("entity_journal", entityJournal.save());
         return tag;
     }
 
@@ -74,6 +76,7 @@ public final class TeamsSavedData extends FlanSavedData
         if (tag.contains(NBT_RUNTIME, Tag.TAG_COMPOUND))
             result.runtime.merge(tag.getCompound(NBT_RUNTIME));
         result.blockJournal.load(tag.getList("block_journal", Tag.TAG_COMPOUND));
+        result.entityJournal.load(tag.getList("entity_journal", Tag.TAG_COMPOUND));
         return result;
     }
 }
