@@ -10,6 +10,7 @@ import com.wolffsmod.npcs.crew.NpcCrew;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.sim.NpcModels;
 import com.wolffsmod.npcs.tactics.NpcCombatMovement;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -192,10 +193,12 @@ public final class NpcEmplacementGoal extends Goal
             || target.getBoundingBox().inflate(0.25D).clip(origin, origin.add(direction.scale(origin.distanceTo(point) + 2D))).isPresent();
     }
 
+    /** Only allies the rounds would really hurt hold the gun's fire; friendly fire that is off leaves the line clear. */
     private boolean clearOfAllies(Vec3 origin, Vec3 point)
     {
-        return npc.level().getEntities(npc, new AABB(origin, point).inflate(0.5D), entity -> entity instanceof LivingEntity && NpcDrivers.ally(npc, entity)).stream()
-            .noneMatch(ally -> ally.getBoundingBox().inflate(0.2D).clip(origin, point).isPresent());
+        return npc.level()
+            .getEntities(npc, new AABB(origin, point).inflate(0.5D), entity -> entity instanceof LivingEntity && NpcDrivers.ally(npc, entity) && FriendlyFire.harms(entity, npc))
+            .stream().noneMatch(ally -> ally.getBoundingBox().inflate(0.2D).clip(origin, point).isPresent());
     }
 
     private void board(IEmplacement emplacement)

@@ -72,6 +72,8 @@ class NpcGrenadeDeviceGoalTest
     private static void enabled(MockedStatic<NpcEquipment> equipment, MockedStatic<TacticKind> kinds, EntityNPCInterface npc)
     {
         equipment.when(() -> NpcEquipment.enabled(eq(npc), any())).thenReturn(true);
+        // The soldier keeps clear of its own charges, as an unedited one does; the immunity switch is the opt-in exception.
+        equipment.when(() -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.OWN_BLAST_IMMUNE)).thenReturn(false);
         kinds.when(() -> TacticKind.of(npc)).thenReturn(TacticKind.STANDARD);
     }
 
@@ -139,12 +141,18 @@ class NpcGrenadeDeviceGoalTest
             when(npc.distanceTo(charge)).thenReturn(3F);
             goal.canUse();
             devices.verify(() -> FlansGrenadeDevices.detonate(charge, npc), times(1));
+            // One immune to its own blast fires the same charge from where it stands.
+            equipment.when(() -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.OWN_BLAST_IMMUNE)).thenReturn(true);
             when(level.getGameTime()).thenReturn(40L);
+            goal.canUse();
+            devices.verify(() -> FlansGrenadeDevices.detonate(charge, npc), times(2));
+            equipment.when(() -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.OWN_BLAST_IMMUNE)).thenReturn(false);
+            when(level.getGameTime()).thenReturn(60L);
             when(npc.distanceTo(charge)).thenReturn(8F);
             LivingEntity ally = mock(LivingEntity.class);
             when(level.getEntities(eq(npc), any(AABB.class), any())).thenReturn(List.of(ally));
             goal.canUse();
-            devices.verify(() -> FlansGrenadeDevices.detonate(charge, npc), times(1));
+            devices.verify(() -> FlansGrenadeDevices.detonate(charge, npc), times(2));
         }
     }
 

@@ -6,6 +6,7 @@ import com.wolffsmod.npcs.combat.NpcCombatSettings.Knockback;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.platform.NpcPlatform;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.Resistances;
@@ -26,14 +27,15 @@ public final class NpcProtection
     }
 
     /**
-     * Whether the hit is ignored outright: the NPC is invulnerable, or the hit is weaker than the minimum for its kind.
-     * Damage that bypasses invulnerability, such as {@code /kill} and the void, always applies.
+     * Whether the hit is ignored outright: the NPC is invulnerable, it is its own blast and it ignores those, or the hit is
+     * weaker than the minimum for its kind. Damage that bypasses invulnerability, such as {@code /kill} and the void, always
+     * applies.
      */
     public static boolean ignores(EntityNPCInterface npc, DamageSource source, float amount)
     {
         if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY))
             return false;
-        if (NpcEquipment.enabled(npc, Feature.INVULNERABLE))
+        if (NpcEquipment.enabled(npc, Feature.INVULNERABLE) || ownBlast(npc, source))
             return true;
         NpcDamageCategory category = NpcDamageCategory.of(source);
         float minimum = settings(npc).minimumHit(category);
@@ -41,6 +43,15 @@ public final class NpcProtection
             && model.getInfoType() instanceof IDriveableType type)
             minimum = type.getMeleeDamageThreshold();
         return belowMinimum(minimum, amount);
+    }
+
+    /**
+     * @return whether the hit is an explosion the NPC itself set off, which it shrugs off while it ignores its own blast:
+     *         its own grenade, rocket, bomb or charge. Another's explosion still hurts it, as does its own fire or gunfire.
+     */
+    static boolean ownBlast(EntityNPCInterface npc, DamageSource source)
+    {
+        return NpcBlastSafety.ignoresOwnBlast(npc) && NpcDamageCategory.of(source) == NpcDamageCategory.EXPLOSION && FriendlyFire.attacker(source) == npc;
     }
 
     /** Normalize melee before thresholds, editor resistances and damage scripts, using the striking hand's weapon. */

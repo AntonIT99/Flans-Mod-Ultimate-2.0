@@ -13,6 +13,7 @@ import com.wolffsmod.npcs.sim.NpcRepairs;
 import com.wolffsmod.npcs.sim.TacticKind;
 import com.wolffsmod.npcs.tactics.NpcCombatMovement;
 import com.wolffsmod.npcs.teams.BotTag;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import com.wolffsmod.npcs.teams.TeamsBots;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.jetbrains.annotations.Nullable;
@@ -466,7 +467,7 @@ public final class NpcGrenadeDeviceGoal extends Goal
         if (!FlansGrenadeDevices.canDetonate(device, npc))
             return false;
         double radius = hazard(device);
-        if (radius <= 0D || npc.distanceTo(device) < radius + 2D || alliesInDanger(device.position(), radius + 2D))
+        if (radius <= 0D || !NpcBlastSafety.ignoresOwnBlast(npc) && npc.distanceTo(device) < radius + 2D || alliesInDanger(device.position(), radius + 2D))
             return false;
         return !npc.level().getEntitiesOfClass(LivingEntity.class, device.getBoundingBox().inflate(Math.min(radius, 8D)),
             other -> other.isAlive() && other.distanceToSqr(device) <= radius * radius && NpcDrivers.hostile(npc, other) && npc.hasLineOfSight(other)).isEmpty();
@@ -478,9 +479,10 @@ public final class NpcGrenadeDeviceGoal extends Goal
             other -> other.isAlive() && other.getBoundingBox().inflate(radius).contains(point) && friendlyOccupant(other)).isEmpty();
     }
 
+    /** An ally the blast would pass by harmlessly, friendly fire holding it back, is no reason to leave the charge unfired. */
     private boolean friendlyOccupant(Entity entity)
     {
-        return NpcDrivers.ally(npc, entity) || entity.getPassengers().stream().anyMatch(this::friendlyOccupant);
+        return NpcDrivers.ally(npc, entity) && FriendlyFire.harms(entity, npc) || entity.getPassengers().stream().anyMatch(this::friendlyOccupant);
     }
 
     private static double hazard(Entity device)

@@ -163,7 +163,13 @@ public final class NpcWeaponOptions
          * Holds where it was placed, firing from there, until it carries the start signal's entity tag, and fights by its
          * tactic from then on. Teams bots follow their squad's orders instead.
          */
-        WAIT_FOR_SIGNAL(false);
+        WAIT_FOR_SIGNAL(false),
+        /**
+         * The NPC's own explosions pass it by: nothing it sets off itself, a grenade, a rocket, a bomb or a charge of its
+         * own, can hurt it, and it therefore stops keeping out of their reach. Another's explosion, and every other kind of
+         * damage, still lands as before.
+         */
+        OWN_BLAST_IMMUNE(false);
 
         /** Whether the switch is on for an NPC whose save does not mention it. */
         @Getter

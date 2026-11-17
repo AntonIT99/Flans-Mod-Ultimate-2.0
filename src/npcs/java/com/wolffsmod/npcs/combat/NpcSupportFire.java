@@ -4,6 +4,7 @@ import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.NpcCombatants;
 import com.wolffsmod.npcs.sim.TacticKind;
 import com.wolffsmod.npcs.tactics.NpcInfantryRole;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -12,7 +13,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
-/** Support fire uses visible targets and ordinary ammunition, with a conservative corridor for advancing allies. */
+/**
+ * Support fire uses visible targets and ordinary ammunition, with a conservative corridor for advancing allies. Allies
+ * friendly fire spares stand in no corridor: rounds pass through them without harm, so they never hold the fire back.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class NpcSupportFire
 {
@@ -31,7 +35,8 @@ final class NpcSupportFire
         for (int index = 0; index < entities.size(); index++)
         {
             var ally = entities.get(index);
-            if (ally.entity() != npc && ally.entity() != target && ally.entity().isAlive() && NpcDrivers.ally(npc, ally.entity()) && ally.bounds().inflate(0.5D).clip(from, to).isPresent())
+            if (ally.entity() != npc && ally.entity() != target && ally.entity().isAlive() && NpcDrivers.ally(npc, ally.entity()) && FriendlyFire.harms(ally.entity(), npc)
+                && ally.bounds().inflate(0.5D).clip(from, to).isPresent())
                 return false;
         }
         return true;

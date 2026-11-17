@@ -14,6 +14,7 @@ import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Throwing;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import com.wolffsmod.npcs.sim.TacticKind;
+import com.wolffsmod.npcs.teams.FriendlyFire;
 import com.wolffsmod.npcs.teams.NpcSuppression;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -34,8 +35,8 @@ import java.util.stream.Stream;
  * Which throwables an NPC uses and when, by the strategy chosen for each kind: Flan grenades, throwable Flan guns and native
  * throwables. The projectile slot holds the item of a kind the NPC prefers, and the inventory supplies the rest. A kind thrown
  * as the main weapon is thrown whenever the NPC holds no ranged weapon in hand; the other strategies throw it now and then
- * beside the NPC's other attacks, through {@link NpcThrowGoal}, and only from far enough off that the throw harms neither the
- * NPC nor its allies. Only an NPC without a content-pack model chooses: a model fires its projectile slot as it always has.
+ * beside the NPC's other attacks, through {@link NpcThrowGoal}, and only from far enough off that the throw catches neither the
+ * NPC nor an ally friendly fire would let it hurt. Only an NPC without a content-pack model chooses: a model fires its projectile slot as it always has.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcThrowing
@@ -238,7 +239,7 @@ public final class NpcThrowing
     /** @return whether the target is too close to throw the grenade at without the thrower being caught in it */
     public static boolean tooClose(EntityNPCInterface npc, LivingEntity target, ItemStack grenade)
     {
-        return npc.getEyePosition().distanceTo(target.getEyePosition()) < safeDistance(grenade);
+        return !NpcBlastSafety.ignoresOwnBlast(npc) && npc.getEyePosition().distanceTo(target.getEyePosition()) < safeDistance(grenade);
     }
 
     /** Whether a hand-thrown grenade is unsuitable or endangers its thrower or nearby allies. Server thread. */
@@ -363,13 +364,17 @@ public final class NpcThrowing
         };
     }
 
-    /** @return whether the NPC is beyond the reach of the item where it lands, and no ally of the NPC is within it */
+    /**
+     * @return whether the NPC is beyond the reach of the item where it lands, and no ally the blast would really hurt is
+     *         within it; allies friendly fire spares are no reason to hold the throw back, since the blast passes them by,
+     *         and a thrower immune to its own blast keeps no distance of its own
+     */
     private static boolean keepsClear(EntityNPCInterface npc, LivingEntity target, ItemStack stack, double distance, boolean cautious)
     {
-        if (distance < (cautious ? cautiousDistance(stack) : safeDistance(stack)))
+        if (!NpcBlastSafety.ignoresOwnBlast(npc) && distance < (cautious ? cautiousDistance(stack) : safeDistance(stack)))
             return false;
         double hazard = cautious && FlansProjectiles.isGrenade(stack) ? fullHazard(stack) : hazard(stack);
-        return hazard <= 0D || around(npc, target, hazard, other -> other != npc && NpcDrivers.ally(npc, other)) == 0;
+        return hazard <= 0D || around(npc, target, hazard, other -> other != npc && NpcDrivers.ally(npc, other) && FriendlyFire.harms(other, npc)) == 0;
     }
 
     /** @return how many enemies a grenade must be able to catch together to be worth throwing at a target that is not tough */

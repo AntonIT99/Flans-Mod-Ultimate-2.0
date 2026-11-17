@@ -17,7 +17,8 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * How far from its target an NPC has to be before it fires an explosive round at it. Healthy infantry tolerate the edge
- * of their own blast; wounded infantry keep closer to its boundary to minimize splash damage. Vehicles keep the full blast margin. The round's reach is read from what the
+ * of their own blast; wounded infantry keep closer to its boundary to minimize splash damage. An NPC immune to its own
+ * blast keeps no distance at all. Vehicles keep the full blast margin. The round's reach is read from what the
  * weapon has loaded. The distance takes up no further than most of its firing range, or a weapon whose blast outreaches its range would never
  * fire at all. Whoever fires asks here before it pulls the trigger, and whatever moves the NPC asks before it closes in.
  * Server side.
@@ -86,13 +87,22 @@ public final class NpcBlastSafety
      */
     public static double standoff(EntityNPCInterface npc, double reach)
     {
-        if (!((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.BLAST_STANDOFF))
+        if (ignoresOwnBlast(npc) || !((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(Feature.BLAST_STANDOFF))
             return 0D;
         double margin = NpcTuning.of(npc).get(Value.BLAST_MARGIN);
         double range = NpcWeaponRange.firing(npc);
         if (!npc.isPassenger() && TacticKind.of(npc) == TacticKind.STANDARD)
             return infantryStandoff(reach, margin, range, npc.getHealth() / Math.max(1D, npc.getMaxHealth()));
         return standoff(reach, margin, range);
+    }
+
+    /**
+     * @return whether the NPC's own explosions pass it by, so that it neither takes their damage nor keeps out of their
+     *         reach: it fires and throws at any distance, and {@link NpcProtection} drops the damage its own blast would do
+     */
+    public static boolean ignoresOwnBlast(EntityNPCInterface npc)
+    {
+        return NpcEquipment.enabled(npc, Feature.OWN_BLAST_IMMUNE);
     }
 
     /**

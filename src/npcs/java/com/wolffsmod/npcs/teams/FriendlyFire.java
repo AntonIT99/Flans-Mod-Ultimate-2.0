@@ -104,6 +104,18 @@ public final class FriendlyFire
         return kind.isEmpty() || enabled(kind.get(), factionOf(victim, attacker), victim.getServer());
     }
 
+    /**
+     * Whether what the attacker sets off would really hurt the entity, which an NPC asks before it holds a shot or a blast
+     * back for a friend: with friendly fire off there is nothing to spare it from, and nothing to hold back for.
+     *
+     * @return whether the hit lands; true for anything that is no living entity, an allied driveable among them, since
+     *         friendly fire covers only living entities
+     */
+    public static boolean harms(Entity entity, LivingEntity attacker)
+    {
+        return !(entity instanceof LivingEntity living) || lands(living, attacker);
+    }
+
     /** The living entity responsible for some damage: whoever caused it, or the owner of the projectile that dealt it. */
     @Nullable
     public static LivingEntity attacker(DamageSource source)

@@ -79,6 +79,28 @@ class NpcBlastSafetyTest
     }
 
     @Test
+    void anNpcImmuneToItsOwnBlastKeepsNoDistanceFromIt()
+    {
+        EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        when(npc.getHealth()).thenReturn(20F);
+        when(npc.getMaxHealth()).thenReturn(20F);
+        npc.stats = mock(DataStats.class, withSettings().extraInterfaces(NpcWeaponSettings.class));
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions()).thenReturn(options);
+        when(((NpcWeaponSettings) npc.stats).wolffsmodnpcsTuning()).thenReturn(new NpcTuning());
+        try (var kinds = mockStatic(TacticKind.class); var range = mockStatic(NpcWeaponRange.class))
+        {
+            kinds.when(() -> TacticKind.of(npc)).thenReturn(TacticKind.VEHICLE);
+            range.when(() -> NpcWeaponRange.firing(npc)).thenReturn((int) RANGE);
+            assertFalse(NpcBlastSafety.ignoresOwnBlast(npc));
+            assertEquals(10D, NpcBlastSafety.standoff(npc, 6D), "the full margin while its own blast can catch it");
+            options.set(NpcWeaponOptions.Feature.OWN_BLAST_IMMUNE, true);
+            assertTrue(NpcBlastSafety.ignoresOwnBlast(npc));
+            assertEquals(0D, NpcBlastSafety.standoff(npc, 6D), "nothing to keep clear of, so it fires at any distance");
+        }
+    }
+
+    @Test
     void infantryBecomeMoreCautiousAsTheyLoseHealth()
     {
         assertEquals(5.1D, NpcBlastSafety.infantryStandoff(6D, MARGIN, RANGE, 1D), 1.0E-9D);
