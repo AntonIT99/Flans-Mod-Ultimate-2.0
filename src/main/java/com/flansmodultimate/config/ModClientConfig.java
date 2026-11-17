@@ -485,7 +485,7 @@ public final class ModClientConfig
             "Multiplier of the size-based Minecraft entity render distance for vehicles, planes and mechas. Keeps collision-box proportionality and Minecraft Entity Distance scaling. Above 1, driveables are also drawn beyond the loaded chunks, up to the server's driveable tracking range; Distant Horizons chunk-edge extension can override this cutoff.")
             .defineInRange("driveableRenderDistanceMultiplier", 1D, 0.25D, 4D);
         FLAN_NPC_RENDER_DISTANCE_MULTIPLIER = builder.comment(
-            "Multiplier of the size-based Minecraft render distance for Flan-model NPCs and explicitly opted-in soldiers. Requires the NPC module. Server tracking and view distance still limit visibility; NPCs have no distant proxies.")
+            "Multiplier of the size-based Minecraft render distance for Flan-model NPCs and explicitly opted-in soldiers. Requires the NPC module. Server tracking and view distance still limit visibility. With Distant Horizons, NPCs drawn as driveables are shown beyond it as distant shapes.")
             .defineInRange("flanNpcRenderDistanceMultiplier", 1D, 0.25D, 4D);
         BULLET_RENDER_DISTANCE = builder.comment("Client-side render distance in blocks for bullets.").defineInRange("bulletRenderDistance", 128, 1, 4096);
         GRENADE_RENDER_DISTANCE = builder.comment("Client-side render distance in blocks for grenades.").defineInRange("grenadeRenderDistance", 64, 1, 4096);

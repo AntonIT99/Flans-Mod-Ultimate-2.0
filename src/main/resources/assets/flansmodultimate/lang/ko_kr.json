@@ -668,7 +668,7 @@
   "options.flansmodultimate.flakParticlesRange": "대공포 입자 범위",
   "options.flansmodultimate.flanExplosionsDropBlocks": "Flan 폭발로 블록 아이템 드롭",
   "options.flansmodultimate.flanNpcRenderDistanceMultiplier": "Flan NPC 렌더 거리",
-  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Flan 모델 NPC와 활성화한 병사의 상자 크기에 따른 렌더 배율입니다. NPC 모듈이 필요하며 원거리 NPC 대리 표시는 없습니다.",
+  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Flan 모델 NPC와 활성화한 병사의 상자 크기에 따른 렌더 배율입니다. NPC 모듈이 필요합니다. Distant Horizons를 사용하면 차량으로 표시되는 NPC는 그 너머에서 단순한 형태로 표시됩니다.",
   "options.flansmodultimate.flanNpcTrackingRange": "Flan NPC 추적 범위",
   "options.flansmodultimate.flanNpcTrackingRange.tooltip": "Flan 모델과 활성화한 병사의 서버 추적 범위입니다. 재시작이 필요 없으며 NPC 모듈이 필요합니다.",
   "options.flansmodultimate.forceAllowAllAttachments": "모든 부착물 강제 허용",

@@ -7,6 +7,7 @@ import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.platform.NativeImage;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -24,6 +25,8 @@ public final class DistantTextureColors
 {
     /** Olive grey, for a skin that cannot be read. */
     private static final int FALLBACK = 0xFF5E6150;
+    /** Remembered for a skin that cannot be read, so that it is not opened again; no average is transparent. */
+    private static final int UNREADABLE = 0;
     /** Pixels sampled along each side of a skin. */
     private static final int SAMPLES_PER_SIDE = 64;
     private static final Map<ResourceLocation, Integer> colors = new HashMap<>();
@@ -33,7 +36,23 @@ public final class DistantTextureColors
     {
         Paintjob paintjob = type.getPaintjob(paintjobId);
         ResourceLocation texture = paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
-        return texture == null || FlansModTextures.FALLBACK_TEXTURE.equals(texture) ? FALLBACK : colors.computeIfAbsent(texture, DistantTextureColors::read);
+        return texture == null || FlansModTextures.FALLBACK_TEXTURE.equals(texture) ? FALLBACK : sample(texture, FALLBACK);
+    }
+
+    /**
+     * Opaque average colour of the skin an entity standing in for a driveable of this type is drawn with: the type's own
+     * skin when the entity has none or its skin cannot be read, as one downloaded at run time.
+     */
+    public static int of(DriveableType type, @Nullable ResourceLocation skin)
+    {
+        int own = of(type, 0);
+        return skin == null ? own : sample(skin, own);
+    }
+
+    private static int sample(ResourceLocation texture, int unreadable)
+    {
+        int color = colors.computeIfAbsent(texture, DistantTextureColors::read);
+        return color == UNREADABLE ? unreadable : color;
     }
 
     public static void clear()
@@ -45,7 +64,7 @@ public final class DistantTextureColors
     {
         Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(texture);
         if (resource.isEmpty())
-            return FALLBACK;
+            return UNREADABLE;
 
         try (InputStream stream = resource.get().open(); NativeImage image = NativeImage.read(stream))
         {
@@ -70,13 +89,13 @@ public final class DistantTextureColors
                 }
             }
             if (count == 0)
-                return FALLBACK;
+                return UNREADABLE;
             return 0xFF000000 | (int) (red / count) << 16 | (int) (green / count) << 8 | (int) (blue / count);
         }
         catch (Exception exception)
         {
             FlansLog.log.debug("Could not read {} for its distant colour", texture, exception);
-            return FALLBACK;
+            return UNREADABLE;
         }
     }
 }

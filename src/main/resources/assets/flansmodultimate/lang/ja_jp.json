@@ -668,7 +668,7 @@
   "options.flansmodultimate.flakParticlesRange": "対空砲パーティクルの範囲",
   "options.flansmodultimate.flanExplosionsDropBlocks": "Flanの爆発でブロックをドロップ",
   "options.flansmodultimate.flanNpcRenderDistanceMultiplier": "Flan NPC の描画距離",
-  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Flan モデルの NPC と有効化した兵士のボックスに応じた描画倍率です。NPC モジュールが必要です。遠距離 NPC 代理表示はありません。",
+  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Flan モデルの NPC と有効化した兵士のボックスに応じた描画倍率です。NPC モジュールが必要です。Distant Horizons 使用時、乗り物として描画される NPC はその先で簡略な形状として表示されます。",
   "options.flansmodultimate.flanNpcTrackingRange": "Flan NPC の追跡範囲",
   "options.flansmodultimate.flanNpcTrackingRange.tooltip": "Flan モデルと有効化した兵士のサーバー追跡範囲です。再起動不要。NPC モジュールが必要です。",
   "options.flansmodultimate.forceAllowAllAttachments": "すべてのアタッチメントを強制許可",

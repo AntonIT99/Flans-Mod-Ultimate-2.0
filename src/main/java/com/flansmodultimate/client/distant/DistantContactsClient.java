@@ -1,7 +1,11 @@
 package com.flansmodultimate.client.distant;
 
+import com.flansmodultimate.api.driveables.MountAim;
+import com.flansmodultimate.api.parts.PartBodyPose;
 import com.flansmodultimate.client.render.thermal.ThermalVision;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.parts.PartBodies;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
@@ -12,6 +16,8 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
@@ -19,7 +25,8 @@ import java.util.*;
 
 /**
  * Driveables shown as simplified shapes because they are too far away to be drawn as entities: those the
- * client tracks but no longer draws, and those only the server reports, beyond the tracking range. Each is
+ * client tracks but no longer draws, and those only the server reports, beyond the tracking range. An entity
+ * that wears the part boxes of a driveable type, as an NPC drawn as one does, is shown the same way. Each is
  * drawn by the far-terrain renderer beyond the vanilla chunks and by {@link DistantBoxRenderer} within them.
  * Render thread.
  */
@@ -66,11 +73,22 @@ public final class DistantContactsClient
         // Tracked, but too far away to be drawn as entities
         for (Entity entity : level.entitiesForRendering())
         {
-            if (entity instanceof Driveable driveable && driveable.isAlive() && !driveable.isWreck() && driveable != ownVehicle && driveable.getConfigType() != null
-                && !driveable.shouldRender(camera.x, camera.y, camera.z))
+            if (entity == ownVehicle || !entity.isAlive() || entity.shouldRender(camera.x, camera.y, camera.z))
+                continue;
+            if (entity instanceof Driveable driveable)
             {
+                if (driveable.isWreck() || driveable.getConfigType() == null)
+                    continue;
                 proxies.computeIfAbsent(driveable.getId(), Proxy::new).follow(driveable);
                 live.add(driveable.getId());
+                continue;
+            }
+            // An entity standing in for a driveable, as an NPC drawn as one, is shown by the part boxes it wears
+            PartBody body = PartBodies.of(entity);
+            if (body != null && body.getType() instanceof DriveableType wornType)
+            {
+                proxies.computeIfAbsent(entity.getId(), Proxy::new).follow(entity, body, wornType);
+                live.add(entity.getId());
             }
         }
 
@@ -79,7 +97,7 @@ public final class DistantContactsClient
         for (Reported entry : reported.values())
         {
             int id = entry.contact().entityId();
-            if (ticks - entry.receivedTick() > staleAfter || live.contains(id) || level.getEntity(id) instanceof Driveable)
+            if (ticks - entry.receivedTick() > staleAfter || live.contains(id) || level.getEntity(id) != null)
                 continue;
             if (!(InfoType.getInfoType(entry.contact().shortName()) instanceof DriveableType type))
                 continue;
@@ -121,8 +139,18 @@ public final class DistantContactsClient
     private static final class Proxy implements IDistantBoxGroup.Origin
     {
         private final int id;
+        /** The tracked entity: a driveable, or the wearer of {@link #worn}. */
         @Nullable
-        private Driveable entity;
+        private Entity entity;
+        /** The part body of a tracked entity that stands in for a driveable. */
+        @Nullable
+        private PartBody worn;
+        /** The skin a stand-in was last seen with, kept for when only the server reports it. */
+        @Nullable
+        private ResourceLocation skin;
+        /** The proxy's own body, posed from the reports of a stand-in the client does not track. */
+        @Nullable
+        private PartBody reportedBody;
         @Nullable
         private Reported report;
         @Nullable
@@ -141,15 +169,36 @@ public final class DistantContactsClient
         private void follow(Driveable driveable)
         {
             entity = driveable;
+            worn = null;
+            skin = null;
             report = null;
             type = driveable.getConfigType();
+        }
+
+        private void follow(Entity wearer, PartBody body, DriveableType wornType)
+        {
+            entity = wearer;
+            worn = body;
+            skin = skinOf(wearer);
+            report = null;
+            type = wornType;
         }
 
         private void follow(Reported reported, DriveableType reportedType)
         {
             entity = null;
+            worn = null;
             report = reported;
             type = reportedType;
+        }
+
+        /** The texture the entity's renderer draws it with, which for a stand-in is the skin of its driveable model. */
+        @Nullable
+        @SuppressWarnings({"unchecked", "rawtypes"}) // The dispatcher hands out the renderer registered for the entity's own type.
+        private static ResourceLocation skinOf(Entity wearer)
+        {
+            EntityRenderer renderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(wearer);
+            return renderer.getTextureLocation(wearer);
         }
 
         @Override
@@ -171,10 +220,24 @@ public final class DistantContactsClient
             if (type == null)
                 return;
 
-            if (entity != null)
+            if (entity instanceof Driveable driveable)
             {
-                int color = thermal ? THERMAL_COLOR : DistantTextureColors.of(type, entity.getPaintjobId());
-                boxes = DistantProxyShapes.forEntity(entity, color);
+                int color = thermal ? THERMAL_COLOR : DistantTextureColors.of(type, driveable.getPaintjobId());
+                boxes = DistantProxyShapes.forEntity(driveable, color);
+            }
+            else if (entity != null && worn != null)
+            {
+                int color = thermal ? THERMAL_COLOR : DistantTextureColors.of(type, skin);
+                boxes = DistantProxyShapes.forBody(worn, worn.originOffset(), Set.of(), color);
+            }
+            else if (report != null && report.contact().standIn())
+            {
+                PacketDistantContacts.Contact contact = report.contact();
+                int color = thermal ? THERMAL_COLOR : DistantTextureColors.of(type, skin);
+                if (reportedBody == null || reportedBody.getType() != type)
+                    reportedBody = PartBody.of(type);
+                reportedBody.setPose(new PartBodyPose(Vec3.ZERO, contact.yaw(), contact.pitch(), contact.roll(), contact.scale(), MountAim.REST));
+                boxes = DistantProxyShapes.forBody(reportedBody, Vec3.ZERO, destroyedParts(contact), color);
             }
             else if (report != null)
             {

@@ -668,7 +668,7 @@
   "options.flansmodultimate.flakParticlesRange": "高射炮粒子范围",
   "options.flansmodultimate.flanExplosionsDropBlocks": "Flan爆炸掉落方块",
   "options.flansmodultimate.flanNpcRenderDistanceMultiplier": "Flan NPC 渲染距离",
-  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "按包围盒大小缩放 Flan 模型 NPC 和已启用士兵的渲染距离。需要 NPC 模块；不支持远距离 NPC 代理。",
+  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "按包围盒大小缩放 Flan 模型 NPC 和已启用士兵的渲染距离。需要 NPC 模块；安装 Distant Horizons 时，以载具模型显示的 NPC 在此距离之外显示为简化形状。",
   "options.flansmodultimate.flanNpcTrackingRange": "Flan NPC 追踪范围",
   "options.flansmodultimate.flanNpcTrackingRange.tooltip": "Flan 模型 NPC 和已启用士兵的服务器追踪范围，单位为格。无需重启；需要 NPC 模块。",
   "options.flansmodultimate.forceAllowAllAttachments": "强制允许所有配件",

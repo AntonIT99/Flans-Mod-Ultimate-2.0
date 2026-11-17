@@ -3,6 +3,7 @@ package com.flansmodultimate.client.distant;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import com.flansmodultimate.common.driveables.collision.DriveableProjectileCollision;
+import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import lombok.AccessLevel;
@@ -87,6 +88,34 @@ public final class DistantProxyShapes
                 appendPart(boxes, part.getType(), driveable.partBoxModelLocal(box), transform, argb);
         }
         return boxes;
+    }
+
+    /**
+     * The shape of an entity that wears the parts of a driveable, with its turret turned.
+     *
+     * @param originOffset
+     *            blocks from the point the boxes are given from to the body's model origin
+     * @param dropped
+     *            parts left out besides those the body holds broken, as reported for a wearer the client does not track
+     */
+    public static List<DistantBox> forBody(PartBody body, Vec3 originOffset, Set<EnumDriveablePart> dropped, int argb)
+    {
+        List<DistantBox> boxes = new ArrayList<>();
+        for (DriveablePart part : body.enabledParts())
+        {
+            if (part.getBox() != null && !part.isDestroyed() && !dropped.contains(part.getType()))
+                appendPart(boxes, part.getType(), PartBody.partBoxModelLocal(part), body::partPointToOffset, argb);
+        }
+        // Pieces are sized against their unscaled bounds, so the wearer's scale comes last.
+        float scale = body.getPose().scale();
+        boxes.replaceAll(box -> placed(box, scale, originOffset));
+        return boxes;
+    }
+
+    static DistantBox placed(DistantBox box, float scale, Vec3 offset)
+    {
+        return new DistantBox((float) (box.minX() * scale + offset.x), (float) (box.minY() * scale + offset.y), (float) (box.minZ() * scale + offset.z), (float) (box.maxX() * scale + offset.x),
+            (float) (box.maxY() * scale + offset.y), (float) (box.maxZ() * scale + offset.z), box.argb());
     }
 
     /** Adds the pieces of one part, given in the model-local frame, until the shape holds {@link #MAX_BOXES}. */

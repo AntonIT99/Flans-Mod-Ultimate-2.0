@@ -989,7 +989,7 @@
   "options.flansmodultimate.flakParticlesRange": "Flak Particles Range",
   "options.flansmodultimate.flanExplosionsDropBlocks": "Flan Explosions Drop Blocks",
   "options.flansmodultimate.flanNpcRenderDistanceMultiplier": "Flan NPC Render Distance",
-  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Scales the bounding-box-based render distance for Flan-model NPCs and opted-in soldiers. Requires the NPC module; no distant NPC proxies are available.",
+  "options.flansmodultimate.flanNpcRenderDistanceMultiplier.tooltip": "Scales the bounding-box-based render distance for Flan-model NPCs and opted-in soldiers. Requires the NPC module; with Distant Horizons, NPCs drawn as driveables appear beyond it as distant shapes.",
   "options.flansmodultimate.flanNpcTrackingRange": "Flan NPC Tracking Range",
   "options.flansmodultimate.flanNpcTrackingRange.tooltip": "Server tracking range in blocks for Flan-model NPCs and opted-in soldiers. Applies live without a restart; requires the NPC module.",
   "options.flansmodultimate.forceAllowAllAttachments": "Force Allow All Attachments",
