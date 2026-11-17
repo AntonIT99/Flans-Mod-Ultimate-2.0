@@ -16,6 +16,7 @@ import net.minecraft.server.MinecraftServer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /** Ordinary editable Custom NPCs factions associated with Flan teams, independently of hidden Teams-round factions. Server thread only. */
 public final class TeamFactions extends NpcSavedData
@@ -49,6 +50,12 @@ public final class TeamFactions extends NpcSavedData
         factions.put(team.getShortName(), faction.id);
         setDirty();
         return faction;
+    }
+
+    /** @return the short name of the team whose faction this is, or empty for any other faction */
+    public Optional<String> teamOf(int factionId)
+    {
+        return factions.entrySet().stream().filter(entry -> entry.getValue() == factionId).map(Map.Entry::getKey).findFirst();
     }
 
     public void apply(EntityNPCInterface npc, ITeam team)
