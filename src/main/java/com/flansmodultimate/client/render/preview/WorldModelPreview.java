@@ -68,9 +68,9 @@ public final class WorldModelPreview
             return false;
         var config = ModClientConfig.get();
         boolean shadow = ShaderPlatform.isRenderingShadowPass();
+        // The model cache checks for itself whether it can batch into the source.
         boolean world = !DriveableRenderer.isRenderingPreview() && !VehicleThermalRenderer.isRenderingMask() && (shadow || perspectiveProjection(RenderSystem.getProjectionMatrix()))
-            // Render mods substitute a subclass for the world buffer source; the model cache checks for itself whether it can batch.
-            && buffers instanceof MultiBufferSource.BufferSource;
+            && worldSource(buffers, entity);
         float projectionPixels = viewProjectionPixels;
         if (world && !shadow)
         {
@@ -238,6 +238,16 @@ public final class WorldModelPreview
         pose.mulPose(Axis.YP.rotationDegrees(-Mth.rotLerp(partialTick, visual.getPrevTurretYaw(), visual.getTurretYaw())));
         model.renderGun(visual, Mth.lerp(partialTick, visual.getPrevTurretPitch(), visual.getTurretPitch()), pose, vertices, light, overlay, red, green, blue, alpha, scale, pass);
         pose.popPose();
+    }
+
+    /**
+     * Whether geometry an entity sends to this source joins the ordinary world pass rather than an outline. Render mods substitute a
+     * subclass for the world buffer source. A shader pack goes further and hands every entity renderer a wrapper that tags its render
+     * types, around the world source and the outline source alike, so an outline is then told from its entity.
+     */
+    public static boolean worldSource(MultiBufferSource buffers, Entity entity)
+    {
+        return buffers instanceof MultiBufferSource.BufferSource || ShaderPlatform.isShaderPackInUse() && !Minecraft.getInstance().shouldEntityAppearGlowing(entity);
     }
 
     /** Whether the matrix projects perspectively: an ordinary world pass rather than a menu's orthographic one. */

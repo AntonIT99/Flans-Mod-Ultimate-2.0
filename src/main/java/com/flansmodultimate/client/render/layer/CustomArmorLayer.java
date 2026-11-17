@@ -126,7 +126,7 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
         float ageInTicks, float netHeadYaw, float headPitch)
     {
         int overlay = LivingEntityRenderer.getOverlayCoords(entity, 0F);
-        boolean world = isWorldPass(buffer);
+        boolean world = isWorldPass(buffer, entity);
         float minimumPartPixels = beginCulling(entity, partialTicks, world);
         PieceScope scope = new PieceScope(buffer, world);
         try
@@ -152,12 +152,12 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
 
     /**
      * Whether this is an ordinary world pass, which the level-of-detail measurements and the batch both need: a menu
-     * preview supplies no world camera, and a heat silhouette or an outline draws through a buffer of its own. Render mods
-     * substitute a subclass for the world buffer source, which still counts; the batch itself checks whether it can draw.
+     * preview supplies no world camera, and a heat silhouette or an outline draws through a buffer of its own. The source a
+     * render mod or a shader pack puts in the world source's place still counts; the batch itself checks whether it can draw.
      */
-    private static boolean isWorldPass(MultiBufferSource buffer)
+    private static boolean isWorldPass(MultiBufferSource buffer, LivingEntity entity)
     {
-        return !DriveableRenderer.isRenderingPreview() && !VehicleThermalRenderer.isRenderingMask() && buffer instanceof MultiBufferSource.BufferSource
+        return !DriveableRenderer.isRenderingPreview() && !VehicleThermalRenderer.isRenderingMask() && WorldModelPreview.worldSource(buffer, entity)
             && (ShaderPlatform.isRenderingShadowPass() || WorldModelPreview.perspectiveProjection(RenderSystem.getProjectionMatrix()));
     }
 
