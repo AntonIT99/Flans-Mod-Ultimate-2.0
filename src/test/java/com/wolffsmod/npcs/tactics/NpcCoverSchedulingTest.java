@@ -169,7 +169,8 @@ class NpcCoverSchedulingTest
             fixture.sight.when(() -> NpcSight.clear(eq(fixture.level), any(), any(), eq(0), eq(fixture.npc))).thenAnswer(call ->
             {
                 fixture.rays++;
-                traced.add(call.getArgument(2));
+                // A line is looked along from the position weighed, towards the firing position.
+                traced.add(call.getArgument(1));
                 return true;
             });
             for (int tick = 0; tick < 30; tick++)

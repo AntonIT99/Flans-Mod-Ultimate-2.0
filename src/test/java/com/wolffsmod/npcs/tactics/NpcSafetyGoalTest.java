@@ -2,13 +2,27 @@ package com.wolffsmod.npcs.tactics;
 
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class NpcSafetyGoalTest
 {
+    @Test
+    void coverToFightFromLeadsTheShortlistAndTheRestKeepItsOrder()
+    {
+        BlockPos nearest = new BlockPos(1, 64, 0);
+        BlockPos second = new BlockPos(2, 64, 0);
+        BlockPos third = new BlockPos(3, 64, 0);
+        List<BlockPos> shortlist = List.of(nearest, second, third);
+        assertSame(shortlist, NpcSafetyGoal.leading(shortlist, 0));
+        assertEquals(List.of(third, nearest, second), NpcSafetyGoal.leading(shortlist, 2));
+    }
+
     @Test
     void aLauncherRetreatsPastItsBlastMargin()
     {
