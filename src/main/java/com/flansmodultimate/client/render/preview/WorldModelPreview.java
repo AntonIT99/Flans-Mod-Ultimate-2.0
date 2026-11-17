@@ -69,7 +69,8 @@ public final class WorldModelPreview
         var config = ModClientConfig.get();
         boolean shadow = ShaderPlatform.isRenderingShadowPass();
         boolean world = !DriveableRenderer.isRenderingPreview() && !VehicleThermalRenderer.isRenderingMask() && (shadow || perspectiveProjection(RenderSystem.getProjectionMatrix()))
-            && buffers.getClass() == MultiBufferSource.BufferSource.class;
+            // Render mods substitute a subclass for the world buffer source; the model cache checks for itself whether it can batch.
+            && buffers instanceof MultiBufferSource.BufferSource;
         float projectionPixels = viewProjectionPixels;
         if (world && !shadow)
         {
