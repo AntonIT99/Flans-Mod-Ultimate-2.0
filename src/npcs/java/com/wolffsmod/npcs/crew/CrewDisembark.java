@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.crew;
 
+import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.sim.*;
 import com.wolffsmod.npcs.teams.SquadTransports;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
@@ -19,7 +20,8 @@ import java.util.function.Predicate;
  * out beside it once it has closed with a target on the ground, or, since it often fights from further off than that, once
  * it has been in action against one for a while and stands still enough for them to get out safely. An aircraft high above
  * the ground drops those who carry a parachute over its target in quick waves of several at once, as sticks of paratroopers;
- * the others stay aboard until it is on the ground. Each takes the vehicle's target as its own. Server thread.
+ * the others stay aboard until it is on the ground. An aircraft too badly damaged to be brought home drops those who carry
+ * a parachute at once, before it goes down with them. Each takes the vehicle's target as its own. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CrewDisembark
@@ -51,6 +53,12 @@ public final class CrewDisembark
                 NpcCrew.abandonFalling(vehicle);
             return;
         }
+        // One still flying, but too badly damaged to be brought home, drops whoever carries a parachute before it is lost.
+        if (failing(vehicle) && height(vehicle) > JUMP_HEIGHT)
+        {
+            NpcCrew.abandonFailing(vehicle);
+            return;
+        }
         LivingEntity target = vehicle.getTarget();
         // A target in the air, such as an aircraft the vehicle fights, is none for soldiers on foot.
         boolean onFoot = target != null && target.isAlive() && target.level() == vehicle.level() && height(target) <= JUMP_HEIGHT;
@@ -68,6 +76,12 @@ public final class CrewDisembark
         else if (vehicle.onGround()
             && deploys(vehicle.distanceTo(target), state.getContact().heldFor(vehicle.tickCount), vehicle.getDeltaMovement().horizontalDistance(), delay(vehicle)))
             leaving.forEach(member -> getOut(vehicle, member, target));
+    }
+
+    /** @return whether an aircraft has taken so much damage that it will not be brought home, and is as good as lost */
+    static boolean failing(EntityNPCInterface vehicle)
+    {
+        return NpcFlight.type(vehicle) != NpcTuning.Flight.NORMAL && vehicle.getHealth() < vehicle.getMaxHealth() * NpcDrivers.BAIL_OUT_HEALTH;
     }
 
     /** @return ticks the vehicle fights a target further off than it closes to before it puts the crew it carries down */

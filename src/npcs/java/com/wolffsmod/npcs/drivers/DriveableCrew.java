@@ -24,7 +24,8 @@ import java.util.Optional;
  * a gun seat before a passenger seat, and gets out again when its owner does. Any other takes a free gun seat of a
  * driveable an ally of it drives, and gets out once the driveable has gone without a driver for a while. A gunner mans
  * its seat's gun against its target and leaves its own weapons be; a passenger fights on with its own. Teams bots use the same gun controller, with battle rules for recruitment and transport
- * unloading. Server thread.
+ * unloading. Crew of an aircraft about to be lost get out of it while there is height left to open a parachute, as its
+ * pilot does. Server thread.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class DriveableCrew
@@ -51,14 +52,15 @@ final class DriveableCrew
     }
 
     /**
-     * Whether the NPC may crew the seat: a free seat that is no driver's, of a driveable that is no wreck, that the NPC did
-     * not give up on and that no enemy of it rides; one of its owner's driveable, or a gun seat of one an ally drives.
+     * Whether the NPC may crew the seat: a free seat that is no driver's, of a driveable that is no wreck and not about to
+     * be lost, that the NPC did not give up on and that no enemy of it rides; one of its owner's driveable, or a gun seat of
+     * one an ally drives.
      */
     static boolean crewable(EntityNPCInterface npc, ISeat seat, long now)
     {
         Entity driveable = seat.getDriveable();
         if (seat.isDriverSeat() || seat.getRiddenByEntity() != null || driveable == null || !driveable.isAlive() || FlansEntityTypes.isWreck(driveable)
-            || NpcDriver.of(npc).refuses(driveable.getUUID(), now) || !NpcDrivers.permitted(npc, driveable) || !BotDriveables.mayUse(npc, seat))
+            || NpcDrivers.failing(driveable) || NpcDriver.of(npc).refuses(driveable.getUUID(), now) || !NpcDrivers.permitted(npc, driveable) || !BotDriveables.mayUse(npc, seat))
             return false;
         if (npc.getOwner() != null)
             return ownerRides(npc, driveable);
@@ -83,11 +85,13 @@ final class DriveableCrew
     /**
      * Crews for one tick: mans the seat's gun, and keeps track of whether the NPC still has a reason to be aboard.
      *
-     * @return whether the NPC stays: its owner still rides along, or the driveable has not gone without a driver too long
+     * @return whether the NPC stays: the aircraft is not going down under it, its owner still rides along, and the driveable
+     *         has not gone without a driver too long
      */
     static boolean tick(EntityNPCInterface npc, ISeat seat, Entity driveable, NpcDriver driver)
     {
-        if (!BotDriveables.mayUse(npc, seat) || BotDriveables.unload(npc, seat))
+        // A crippled aircraft is left before it goes in, whatever the crew member was aboard for.
+        if (NpcDrivers.abandons(npc, seat, driveable) || !BotDriveables.mayUse(npc, seat) || BotDriveables.unload(npc, seat))
             return false;
         Entity operator = NpcDrivers.driverOf(driveable);
         if (operator != null && !NpcDrivers.ally(npc, operator))

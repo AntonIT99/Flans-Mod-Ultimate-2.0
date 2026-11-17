@@ -648,6 +648,18 @@ public final class NpcCrew
         crew(vehicle).stream().filter(member -> member.isAlive() && !member.isKilled()).forEach(member -> bailOut(vehicle, member, false));
     }
 
+    /**
+     * Drops the crew who carry a parachute out of an aircraft too badly damaged to be brought home, while it still flies:
+     * they jump at once rather than riding a lost aircraft down. Those without a parachute stay aboard, as they have nothing
+     * to jump with; they leave with everyone else once it is actually going down.
+     */
+    public static void abandonFailing(EntityNPCInterface vehicle)
+    {
+        if (vehicle.level().isClientSide || NpcCrewSettings.of(vehicle).getDestroyed() != NpcCrewSettings.Destroyed.BAIL_OUT)
+            return;
+        crew(vehicle).stream().filter(member -> member.isAlive() && !member.isKilled() && NpcParachutes.carries(member)).forEach(member -> bailOut(vehicle, member, false));
+    }
+
     /** Deals with the crew of a vehicle that has just been destroyed, as its settings say. Runs as it dies. */
     public static void destroyed(EntityNPCInterface vehicle)
     {
