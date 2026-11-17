@@ -1,15 +1,22 @@
 package com.wolffsmod.npcs.teams;
 
+import com.flansmodultimate.api.teams.FlansTeams;
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class FriendlyFireTest
 {
@@ -60,6 +67,31 @@ class FriendlyFireTest
         loaded.put(FriendlyFire.Kind.PLAYERS, FriendlyFire.Setting.ON);
         FriendlyFire.load(tag, loaded);
         assertTrue(loaded.isEmpty());
+    }
+
+    @Test
+    void anAllyFriendlyFireSparesIsNoReasonToHoldFire() throws ReflectiveOperationException
+    {
+        EntityTestBootstrap.initialize();
+        LivingEntity ally = mock(LivingEntity.class);
+        LivingEntity npc = mock(LivingEntity.class);
+        Level level = mock(Level.class);
+        when(ally.level()).thenReturn(level);
+        try (var teams = mockStatic(FlansTeams.class))
+        {
+            teams.when(() -> FlansTeams.mayHarm(ally, npc)).thenReturn(Optional.of(false));
+            assertFalse(FriendlyFire.harms(ally, npc), "a hit that is held back cannot hurt the ally");
+            teams.when(() -> FlansTeams.mayHarm(ally, npc)).thenReturn(Optional.of(true));
+            assertTrue(FriendlyFire.harms(ally, npc), "a hit that lands still has to be kept off the ally");
+        }
+    }
+
+    @Test
+    void whatFriendlyFireDoesNotCoverIsAlwaysTakenAsHurt() throws ReflectiveOperationException
+    {
+        // A driveable is no living entity, so no rule spares it and a blast still counts against it.
+        EntityTestBootstrap.initialize();
+        assertTrue(FriendlyFire.harms(mock(Entity.class), mock(LivingEntity.class)));
     }
 
     @Test

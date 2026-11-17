@@ -61,6 +61,8 @@ public final class DetachedPieces
     private static final int BURN_TICKS = 160;
     /** Ticks over which a piece sinks into the ground at the end of its life. */
     private static final int SETTLE_TICKS = 40;
+    /** Ticks between the looks a piece lying still takes at the ground under it, which seldom goes. */
+    private static final int RESTING_CHECK_INTERVAL = 5;
     private static final int MIN_LIFETIME = 300;
     private static final int LIFETIME_SPREAD = 120;
     /** How thin a piece has to be against its span, and how wide, to fall like a plate: a wing, a tailplane, a blade. */
@@ -325,7 +327,8 @@ public final class DetachedPieces
         if (piece.burning && piece.age < BURN_TICKS)
             smoke(level, piece, centre);
         PieceGrounding.Surface surface = (point, ceiling) -> groundBelow(level, point, ceiling);
-        if (piece.resting && isSupported(piece, centre, surface))
+        // Pieces differ in age, so a field of wreckage spreads its looks over the ticks between them.
+        if (piece.resting && (piece.age % RESTING_CHECK_INTERVAL != 0 || isSupported(piece, centre, surface)))
             return;
         piece.resting = false;
         boolean water = level.getFluidState(BlockPos.containing(centre)).is(FluidTags.WATER);

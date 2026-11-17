@@ -2,6 +2,8 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.api.projectiles.IProximityTarget;
 import com.flansmodultimate.common.types.GrenadeType;
+import com.flansmodultimate.config.CommonConfigSnapshot;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.flansmodultimate.util.ModUtils;
 import org.junit.jupiter.api.BeforeAll;
@@ -67,5 +69,45 @@ class GrenadeProximityTest
         mine.handleDetonationConditions(level);
         verify(mine, never()).handleEntityInProximityTriggerRange(any(), any());
         verify(mine, never()).detonate(any());
+    }
+
+    @Test
+    void aDeviceLaidForSomebodyOtherThanAPlayerLeavesAllyTriggeringToTheFriendlyFireRules()
+    {
+        Shootable mine = mock(Shootable.class, CALLS_REAL_METHODS);
+        GrenadeType type = mock(GrenadeType.class);
+        ServerLevel level = mock(ServerLevel.class);
+        LivingEntity owner = mock(LivingEntity.class);
+        LivingEntity ally = mock(LivingEntity.class);
+        CommonConfigSnapshot config = mock(CommonConfigSnapshot.class);
+        doReturn(type).when(mine).getConfigType();
+        doReturn(Optional.of(owner)).when(mine).getOwner();
+        doReturn(new AABB(0D, 0D, 0D, 1D, 1D, 1D)).when(mine).getBoundingBox();
+        doReturn(true).when(mine).handleEntityInProximityTriggerRange(level, ally);
+        when(type.getLivingProximityTrigger()).thenReturn(3F);
+        when(type.getDriveableProximityTrigger()).thenReturn(-1F);
+        when(ally.distanceToSqr(mine)).thenReturn(0.5D);
+        when(config.shootableProximityTriggerFriendlyFire()).thenReturn(true);
+        mine.tickCount = 100;
+        try (var entities = mockStatic(ModUtils.class);
+            var common = mockStatic(ModCommonConfig.class);
+            var rules = mockStatic(FriendlyFireRules.class))
+        {
+            entities.when(() -> ModUtils.queryEntities(eq(level), eq(mine), any())).thenReturn(List.of(ally));
+            common.when(ModCommonConfig::get).thenReturn(config);
+            rules.when(() -> FriendlyFireRules.spares(ally, owner)).thenReturn(true);
+            // A device a player laid follows the server setting, which here lets an ally set it off.
+            mine.handleDetonationConditions(level);
+            verify(mine).detonate(level);
+            clearInvocations(mine);
+            // One laid for a soldier leaves it to the rules of its own side, which spare the ally.
+            mine.setSparesAllies(true);
+            mine.handleDetonationConditions(level);
+            verify(mine, never()).detonate(level);
+            // Where that side has friendly fire switched on, the rules let the ally through again.
+            rules.when(() -> FriendlyFireRules.spares(ally, owner)).thenReturn(false);
+            mine.handleDetonationConditions(level);
+            verify(mine).detonate(level);
+        }
     }
 }

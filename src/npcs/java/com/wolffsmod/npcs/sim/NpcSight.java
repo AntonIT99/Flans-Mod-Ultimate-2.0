@@ -6,8 +6,10 @@ import com.wolffsmod.npcs.sim.NpcTuning.Value;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.entity.EntityNPCInterface;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -15,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -76,9 +79,9 @@ public final class NpcSight
         if (transparent <= 0 || muzzle.distanceToSqr(target) > range() * range())
             return muzzle;
         Set<BlockPos> crossed = new LinkedHashSet<>();
-        Level level = npc.level();
+        Chunks chunks = new Chunks(npc.level());
         ClipContext context = new ClipContext(muzzle, target, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, npc);
-        Boolean blocked = BlockGetter.traverseBlocks(muzzle, target, context, (clip, position) -> blocks(level, clip, position, transparent, crossed) ? Boolean.TRUE : null, clip -> Boolean.FALSE);
+        Boolean blocked = BlockGetter.traverseBlocks(muzzle, target, context, (clip, position) -> blocks(chunks, clip, position, transparent, crossed) ? Boolean.TRUE : null, clip -> Boolean.FALSE);
         if (Boolean.TRUE.equals(blocked) || crossed.isEmpty())
             return muzzle;
         BlockPos last = null;
@@ -98,17 +101,19 @@ public final class NpcSight
     public static boolean clear(Level level, Vec3 from, Vec3 to, int transparent, Entity viewer)
     {
         Set<BlockPos> crossed = transparent > 0 ? new HashSet<>() : Set.of();
+        Chunks chunks = new Chunks(level);
         ClipContext context = new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, viewer);
-        Boolean blocked = BlockGetter.traverseBlocks(from, to, context, (clip, position) -> blocks(level, clip, position, transparent, crossed) ? Boolean.TRUE : null, clip -> Boolean.FALSE);
+        Boolean blocked = BlockGetter.traverseBlocks(from, to, context, (clip, position) -> blocks(chunks, clip, position, transparent, crossed) ? Boolean.TRUE : null, clip -> Boolean.FALSE);
         return !Boolean.TRUE.equals(blocked);
     }
 
-    private static boolean blocks(Level level, ClipContext context, BlockPos position, int transparent, Set<BlockPos> crossed)
+    private static boolean blocks(Chunks chunks, ClipContext context, BlockPos position, int transparent, Set<BlockPos> crossed)
     {
+        Level level = chunks.level;
         // What cannot be looked at without loading it counts as a wall.
-        if (!level.isLoaded(position))
+        BlockState state = chunks.state(position);
+        if (state == null)
             return true;
-        BlockState state = level.getBlockState(position);
         if (state.isAir())
             return false;
         VoxelShape shape = context.getBlockShape(state, level, position);
@@ -120,6 +125,43 @@ public final class NpcSight
             return crossed.size() > transparent;
         }
         return true;
+    }
+
+    /**
+     * The blocks along one line. A line stays in a chunk for many blocks, so the chunk is looked up when the line enters it
+     * rather than twice for every block.
+     */
+    private static final class Chunks
+    {
+        private final Level level;
+        private boolean entered;
+        private int chunkX;
+        private int chunkZ;
+        @Nullable
+        private LevelChunk chunk;
+
+        private Chunks(Level level)
+        {
+            this.level = level;
+        }
+
+        /** @return the block at the position, or null where it is outside the world or its chunk is not loaded */
+        @Nullable
+        private BlockState state(BlockPos position)
+        {
+            if (level.isOutsideBuildHeight(position))
+                return null;
+            int x = SectionPos.blockToSectionCoord(position.getX());
+            int z = SectionPos.blockToSectionCoord(position.getZ());
+            if (!entered || x != chunkX || z != chunkZ)
+            {
+                entered = true;
+                chunkX = x;
+                chunkZ = z;
+                chunk = level.getChunkSource().hasChunk(x, z) ? level.getChunk(x, z) : null;
+            }
+            return chunk == null ? null : chunk.getBlockState(position);
+        }
     }
 
     /** Held apart so that the geometry above can be used, and tested, before the game's registries exist. */

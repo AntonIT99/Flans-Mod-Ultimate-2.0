@@ -123,4 +123,47 @@ class NpcTacticStateTest
         state.weaponProperties(6L, rifle, round, measure);
         assertEquals(4, read[0]);
     }
+
+    @Test
+    void aReadingOutlastsItsTickWhileTheWeaponAndRoundStayAsTheyWere()
+    {
+        NpcTacticState state = new NpcTacticState();
+        ItemStack rifle = mock(ItemStack.class);
+        ItemStack round = mock(ItemStack.class);
+        int[] read = new int[1];
+        boolean[] fired = new boolean[1];
+        Optional<EquippedWeaponProperties> properties = Optional.of(mock(EquippedWeaponProperties.class));
+        Supplier<Optional<EquippedWeaponProperties>> measure = () ->
+        {
+            read[0]++;
+            return properties;
+        };
+        // Stands for a copy of the stack that no longer equals it once the rifle has fired.
+        NpcTacticState.StackMemory memory = new NpcTacticState.StackMemory()
+        {
+            @Override
+            public ItemStack remember(ItemStack stack)
+            {
+                return stack;
+            }
+
+            @Override
+            public boolean unchanged(ItemStack remembered, ItemStack current)
+            {
+                return current != rifle || !fired[0];
+            }
+        };
+        state.weaponProperties(5L, rifle, round, measure, memory);
+        assertSame(properties, state.weaponProperties(6L, rifle, round, measure, memory));
+        state.weaponProperties(5L + NpcTacticState.WEAPON_READING_LIFETIME - 1L, rifle, round, measure, memory);
+        assertEquals(1, read[0], "an unchanged weapon is not read again");
+        state.weaponProperties(5L + NpcTacticState.WEAPON_READING_LIFETIME, rifle, round, measure, memory);
+        assertEquals(2, read[0], "a reading is taken again once it is old");
+        fired[0] = true;
+        state.weaponProperties(6L + NpcTacticState.WEAPON_READING_LIFETIME, rifle, round, measure, memory);
+        assertEquals(3, read[0], "a weapon whose data changed is read again");
+        fired[0] = false;
+        state.weaponProperties(7L + NpcTacticState.WEAPON_READING_LIFETIME, rifle, round, measure, memory);
+        assertEquals(3, read[0]);
+    }
 }

@@ -2,15 +2,8 @@ package com.flansmodultimate.client.gui.centre;
 
 import com.flansmodultimate.api.client.commandcentre.ICommandCentreView;
 import com.flansmodultimate.client.eras.EraClientState;
-import com.flansmodultimate.common.eras.Era;
-import com.flansmodultimate.common.eras.EraCatalog;
-import com.flansmodultimate.common.eras.EraRestriction;
-import com.flansmodultimate.common.eras.EraRestriction.BoundaryMode;
-import com.flansmodultimate.common.eras.EraRestriction.MatchMode;
-import com.flansmodultimate.common.eras.EraRestriction.RetirementPolicy;
-import com.flansmodultimate.common.eras.EraVerdicts;
-import com.flansmodultimate.common.eras.ServiceDate;
-import com.flansmodultimate.common.eras.ServicePeriod;
+import com.flansmodultimate.common.eras.*;
+import com.flansmodultimate.common.eras.EraRestriction.*;
 import com.flansmodultimate.common.types.InfoType;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,10 +12,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Gives the server, a dimension, the round defaults or a round its era window: a boundary mode, one or two dates in the
@@ -52,7 +42,7 @@ final class ErasPage extends TeamsPage
 
     ErasPage()
     {
-        super("eras", Items.CLOCK, 420);
+        super("eras", Items.BRUSH, 420);
     }
 
     /** Opens the page on a target, as the timeline does. */

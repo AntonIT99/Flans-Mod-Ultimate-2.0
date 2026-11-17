@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.drivers;
 
+import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.api.equipment.FlansEquipment;
@@ -39,7 +40,8 @@ import java.util.*;
  * NPCs that drive Flan's driveables, a switch of each NPC. Such an NPC walks to the free driver seat of a vehicle, mecha
  * or aircraft nearby that no enemy of it rides, gets in, and drives or flies it wherever it would otherwise walk. It
  * fights with the driveable's weapons rather than its own, and gets out again when its switch is turned off or the
- * driveable stays stuck, by parachute from high in the air, as it does from an aircraft about to be lost. Aircraft that
+ * driveable stays stuck, by parachute from high in the air, as it does from an aircraft about to be lost, which its gunners
+ * and passengers leave with it. Aircraft that
  * fly freely in six degrees and ships built on planes are left to players. An NPC drawn as a Flan model is a vehicle itself
  * and drives no other, and a crew member keeps its seat. Server thread.
  */
@@ -60,8 +62,8 @@ public final class NpcDrivers
     /** Blocks above the ground from which an NPC getting out opens a parachute, and ticks it floats down without one. */
     private static final double JUMP_HEIGHT = 4D;
     private static final int FALL_TICKS = 30 * 20;
-    /** Share of its hit points under which a driveable is about to be lost: none boards it, and an aircraft's pilot bails out. */
-    private static final double BAIL_OUT_HEALTH = 0.2D;
+    /** Share of its hit points under which a driveable is about to be lost: none boards it, and an aircraft's crew bail out. */
+    public static final double BAIL_OUT_HEALTH = 0.2D;
     /** Speed under which a driveable on the ground has stopped, in blocks a tick. */
     private static final double STOPPED = 0.05D;
     /**
@@ -183,6 +185,17 @@ public final class NpcDrivers
             boolean ship = seat.getDriveableType().map(IDriveableType::isShip).orElse(false);
             return new PathSize(pathWidth(hullWidth(driveable), ship), pathSize(driveable.getBbHeight()));
         });
+    }
+
+    /**
+     * @return the definition of the ground vehicle the NPC sits at the wheel of, whose engine and running gear decide what
+     *         grades and soft ground cost its path; empty while it walks or crews, and for a ship, an aircraft or a mecha
+     */
+    public static Optional<IContentType> drivenGroundVehicle(EntityNPCInterface npc)
+    {
+        if (npc.level().isClientSide || !enabled(npc))
+            return Optional.empty();
+        return drivenSeat(npc).flatMap(ISeat::getDriveableType).filter(type -> type.getDriveableKind() == DriveableKind.VEHICLE && !type.isShip()).map(IContentType.class::cast);
     }
 
     /**
@@ -357,7 +370,7 @@ public final class NpcDrivers
     }
 
     /** @return blocks the entity is above the ground under it */
-    private static double height(Entity entity)
+    static double height(Entity entity)
     {
         return entity.getY() - entity.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, entity.getBlockX(), entity.getBlockZ());
     }
@@ -375,10 +388,20 @@ public final class NpcDrivers
     }
 
     /** Whether a driveable has so few hit points left that it is about to be lost. */
-    private static boolean failing(Entity driveable)
+    static boolean failing(Entity driveable)
     {
         // An aircraft that has lost a wing, its tail or its rotor is lost however many hit points it has left.
         return FlansEntityTypes.getHealthShare(driveable).orElse(1D) < BAIL_OUT_HEALTH || FlansAircraftCrashes.crashMode(driveable).map(CrashMode::falling).orElse(false);
+    }
+
+    /**
+     * @return whether whoever rides the seat gets out now: an aircraft about to be lost, with height left under it to open a
+     *         parachute. Its pilot leaves by the same rule, so that a crippled aircraft is emptied while there is still time
+     *         rather than carrying its gunners and passengers into the crash.
+     */
+    static boolean abandons(EntityNPCInterface npc, ISeat seat, Entity driveable)
+    {
+        return seat.getDriveableType().map(type -> type.getDriveableKind() == DriveableKind.PLANE).orElse(false) && failing(driveable) && height(npc) > JUMP_HEIGHT;
     }
 
     // Boarding

@@ -104,6 +104,18 @@ public final class FriendlyFire
         return kind.isEmpty() || enabled(kind.get(), factionOf(victim, attacker), victim.getServer());
     }
 
+    /**
+     * Whether what the attacker sets off would really hurt the entity, which an NPC asks before it holds a shot or a blast
+     * back for a friend: with friendly fire off there is nothing to spare it from, and nothing to hold back for.
+     *
+     * @return whether the hit lands; true for anything that is no living entity, an allied driveable among them, since
+     *         friendly fire covers only living entities
+     */
+    public static boolean harms(Entity entity, LivingEntity attacker)
+    {
+        return !(entity instanceof LivingEntity living) || lands(living, attacker);
+    }
+
     /** The living entity responsible for some damage: whoever caused it, or the owner of the projectile that dealt it. */
     @Nullable
     public static LivingEntity attacker(DamageSource source)
@@ -131,7 +143,7 @@ public final class FriendlyFire
     static Optional<Kind> relation(LivingEntity victim, LivingEntity attacker)
     {
         if (victim instanceof EntityNPCInterface npc && attacker instanceof EntityNPCInterface other)
-            return friends(npc.faction, other.faction) ? Optional.of(Kind.NPCS) : Optional.empty();
+            return friends(npc.faction, other.faction, victim.getServer()) ? Optional.of(Kind.NPCS) : Optional.empty();
         if (victim instanceof EntityNPCInterface npc && attacker instanceof Player player)
             return friendlyTo(npc, player);
         if (victim instanceof Player player && attacker instanceof EntityNPCInterface npc)
@@ -139,10 +151,14 @@ public final class FriendlyFire
         return Optional.empty();
     }
 
-    /** Whether NPCs of the two factions are friends: of one faction, or of allied factions. */
-    static boolean friends(@Nullable Faction faction, @Nullable Faction other)
+    /**
+     * Whether NPCs of the two factions are friends: of one faction, of allied factions, or, while a Teams round runs, a
+     * bot faction of the round and the editable faction of the same or an allied team.
+     */
+    static boolean friends(@Nullable Faction faction, @Nullable Faction other, @Nullable MinecraftServer server)
     {
-        return faction != null && other != null && (faction.id == other.id || FactionRelations.allied(faction, other));
+        return faction != null && other != null
+            && (faction.id == other.id || FactionRelations.allied(faction, other) || server != null && BotFactions.sharesSide(server, faction.id, other.id));
     }
 
     /** Whether friendly fire of the kind is on for the faction, as the faction, then the world, then the configuration say. */

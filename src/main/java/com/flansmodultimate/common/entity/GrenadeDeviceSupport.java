@@ -104,6 +104,8 @@ public final class GrenadeDeviceSupport
         grenade.stuck = true;
         grenade.stuckPos = support.immutable();
         grenade.setStationaryPlacement(true);
+        // A soldier lays its mines under the friendly fire rules of its own side, not under what a server permits players.
+        grenade.setSparesAllies(!(operator instanceof Player));
         return level.addFreshEntity(grenade) ? Optional.of(grenade) : Optional.empty();
     }
 

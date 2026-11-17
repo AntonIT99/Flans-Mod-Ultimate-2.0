@@ -39,6 +39,8 @@ public final class NpcCover
     private static final double INDOOR_PREFERENCE = 48D;
     /** Rings a firing search keeps looking for a window or doorway after finding cover outdoors. */
     private static final int INDOOR_EXTRA_RINGS = 2;
+    /** Ticks a search for a safe place goes on with the allies it found near the NPC before it looks for them again. */
+    private static final int ALLY_REFRESH_TICKS = 10;
 
     /** A pending search is distinct from a completed search that found no cover. */
     public record Result<T>(boolean complete, @Nullable T value)
@@ -107,6 +109,9 @@ public final class NpcCover
         private final List<BlockPos> accepted = new ArrayList<>();
         /** Positions already weighed, so that angles that round to the same block are not traced again. */
         private final Set<BlockPos> considered = new HashSet<>();
+        /** Where the allies near the NPC stand or are headed, and when they were last looked for. */
+        private List<Vec3> nearbyAllies = List.of();
+        private long alliesAt = Long.MIN_VALUE;
         private int sample;
         private int validated;
         private boolean sorted;
@@ -155,7 +160,14 @@ public final class NpcCover
         {
             if (sample >= 128)
                 return true;
-            List<Vec3> allies = allies(npc);
+            // A search runs over several ticks, in which the allies it keeps clear of hardly move.
+            long now = npc.level().getGameTime();
+            if (alliesAt == Long.MIN_VALUE || now < alliesAt || now - alliesAt >= ALLY_REFRESH_TICKS)
+            {
+                nearbyAllies = allies(npc);
+                alliesAt = now;
+            }
+            List<Vec3> allies = nearbyAllies;
             int checked = 0;
             while (sample < 128 && checked++ < 16)
             {
@@ -280,15 +292,23 @@ public final class NpcCover
         return !NpcSight.clear(npc.level(), eyes, eyes.add(0D, 12D, 0D), 0, npc);
     }
 
-    /** Cover must protect both chest and head from every known firing position, including another attacker. */
+    /**
+     * Cover must protect both chest and head from every known firing position, including another attacker. The lines are
+     * looked along from the place towards the firing position: what hides a place stands beside it, so a line that is
+     * blocked ends after a block or two instead of after the whole way from the enemy.
+     */
     public static boolean hidden(EntityNPCInterface npc, List<Vec3> sources, Vec3 stand)
     {
+        if (sources.isEmpty())
+            return false;
+        Vec3 head = stand.add(0D, npc.getEyeHeight(), 0D);
+        Vec3 chest = stand.add(0D, npc.getBbHeight() * 0.5D, 0D);
         for (Vec3 source : sources)
         {
-            if (NpcSight.clear(npc.level(), source, stand.add(0D, npc.getEyeHeight(), 0D), 0, npc) || NpcSight.clear(npc.level(), source, stand.add(0D, npc.getBbHeight() * 0.5D, 0D), 0, npc))
+            if (NpcSight.clear(npc.level(), head, source, 0, npc) || NpcSight.clear(npc.level(), chest, source, 0, npc))
                 return false;
         }
-        return !sources.isEmpty();
+        return true;
     }
 
     @Nullable
@@ -478,7 +498,7 @@ public final class NpcCover
             {
                 if (!slice.reserve(1))
                     return Result.pending();
-                if (NpcSight.clear(level, target.getEyePosition(), eyes(found.stand(), eyeHeight), 0, npc))
+                if (NpcSight.clear(level, eyes(found.stand(), eyeHeight), target.getEyePosition(), 0, npc))
                     found = null;
             }
             return new Result<>(true, found);
@@ -510,7 +530,8 @@ public final class NpcCover
             index++;
             blockTests++;
             budget--;
-            if (NpcSight.clear(level, target.getEyePosition(), eyes(stand, eyeHeight), 0, npc))
+            // From the place towards the target, as hidden() looks: cover beside the place ends the line at once.
+            if (NpcSight.clear(level, eyes(stand, eyeHeight), target.getEyePosition(), 0, npc))
                 return true;
             BlockPos peek = firing ? peek(stand) : stand;
             if (peek != null)
@@ -557,7 +578,7 @@ public final class NpcCover
     /** @return whether the target can see into the cover any more */
     public static boolean exposed(EntityNPCInterface npc, LivingEntity target, Cover cover)
     {
-        return NpcSight.clear(npc.level(), target.getEyePosition(), eyes(cover.stand(), npc.getEyeHeight()), 0, npc);
+        return NpcSight.clear(npc.level(), eyes(cover.stand(), npc.getEyeHeight()), target.getEyePosition(), 0, npc);
     }
 
     private static Vec3 eyes(BlockPos stand, double eyeHeight)

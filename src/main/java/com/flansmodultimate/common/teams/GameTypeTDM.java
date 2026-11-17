@@ -17,7 +17,7 @@ public class GameTypeTDM extends GameType
     private static final String NBT_AUTO_BALANCE = "tdm_auto_balance";
 
     private boolean friendlyFire;
-    private boolean autoBalance = true;
+    private boolean autoBalance;
 
     GameTypeTDM()
     {
@@ -124,7 +124,7 @@ public class GameTypeTDM extends GameType
     public void loadSettings(CompoundTag tag)
     {
         friendlyFire = tag.getBoolean(NBT_FRIENDLY_FIRE);
-        autoBalance = !tag.contains(NBT_AUTO_BALANCE) || tag.getBoolean(NBT_AUTO_BALANCE);
+        autoBalance = tag.getBoolean(NBT_AUTO_BALANCE);
     }
 
     @Override

@@ -290,10 +290,27 @@ public final class NpcDriver
                 courseBlockedUntil = now + COURSE_BLOCKED_TICKS;
             if (!startRecovery(controls, now, !straight))
                 return false;
+            rememberStuck(npc, driveable, heading, controls, mecha, now);
         }
         report(mecha, route.steer(), controls, off, route.distance(), speed);
         act(npc, seat, driveable, mecha, controls, off);
         return true;
+    }
+
+    /**
+     * Tells the NPC's path searches where the driveable ran into something: just past the end of the hull it was driving
+     * with. The search sees terrain only, so a wreck, a parked vehicle or a gap that looked wide enough stops the vehicle
+     * on every path it finds until the search keeps clear of the place.
+     */
+    private void rememberStuck(EntityNPCInterface npc, Entity driveable, Vec3 heading, Set<DriveControl> controls, boolean mecha, long now)
+    {
+        Vec3 forward = heading.multiply(1D, 0D, 1D);
+        // A course of its own is given up instead, and a mecha steps or jumps over what a vehicle has to go round.
+        if (straight || mecha || forward.lengthSqr() < 1.0E-6D)
+            return;
+        double reach = (controls.contains(DriveControl.BACKWARD) ? -1D : 1D) * (driveable.getBbWidth() * 0.5D + 1D);
+        Vec3 place = driveable.position().add(forward.normalize().scale(reach));
+        NpcVehicleState.of(npc).getStuckPlaces().add(place.x, place.y, place.z, NpcDrivers.hullWidth(driveable) * 0.5D + 1D, now);
     }
 
     private void resetClearedObstruction(EntityNPCInterface npc)

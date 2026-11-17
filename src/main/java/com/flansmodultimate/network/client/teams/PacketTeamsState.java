@@ -3,9 +3,7 @@ package com.flansmodultimate.network.client.teams;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.teams.*;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.PlayerClass;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
@@ -87,6 +85,10 @@ public final class PacketTeamsState implements IClientPacket
     @Getter
     private boolean showEnemyNameplates;
     @Getter
+    private boolean hidePlayerNameplatesFromOutsiders;
+    @Getter
+    private boolean hideBotNameplatesFromOutsiders;
+    @Getter
     private boolean requireReady;
     @Getter
     private boolean ready;
@@ -149,6 +151,8 @@ public final class PacketTeamsState implements IClientPacket
         packet.enabled = manager.isEnabled();
         var roundRules = manager.getRoundRuleRuntime();
         packet.showEnemyNameplates = roundRules.rules().enabled(RoundRule.SHOW_ENEMY_NAMEPLATES);
+        packet.hidePlayerNameplatesFromOutsiders = roundRules.rules().enabled(RoundRule.HIDE_PLAYER_NAMEPLATES_FROM_OUTSIDERS);
+        packet.hideBotNameplatesFromOutsiders = roundRules.rules().enabled(RoundRule.HIDE_BOT_NAMEPLATES_FROM_OUTSIDERS);
         packet.hideAllNameplates = roundRules.rules().enabled(com.flansmodultimate.common.teams.RoundRule.HIDE_ALL_NAMEPLATES);
         packet.requireReady = roundRules.rules().enabled(com.flansmodultimate.common.teams.RoundRule.REQUIRE_READY);
         packet.ready = roundRules.isReady(viewer);
@@ -307,6 +311,8 @@ public final class PacketTeamsState implements IClientPacket
         data.writeBoolean(enabled);
         data.writeBoolean(hideAllNameplates);
         data.writeBoolean(showEnemyNameplates);
+        data.writeBoolean(hidePlayerNameplatesFromOutsiders);
+        data.writeBoolean(hideBotNameplatesFromOutsiders);
         data.writeBoolean(requireReady);
         data.writeBoolean(ready);
         data.writeBoolean(staging);
@@ -422,6 +428,8 @@ public final class PacketTeamsState implements IClientPacket
         enabled = data.readBoolean();
         hideAllNameplates = data.readBoolean();
         showEnemyNameplates = data.readBoolean();
+        hidePlayerNameplatesFromOutsiders = data.readBoolean();
+        hideBotNameplatesFromOutsiders = data.readBoolean();
         requireReady = data.readBoolean();
         ready = data.readBoolean();
         staging = data.readBoolean();

@@ -49,6 +49,7 @@ public final class BotSettings
     private static final String NBT_RALLY = "rally_points";
     private static final String NBT_VEHICLE_CREWS = "vehicle_crews";
     private static final String NBT_EMPLACEMENTS = "emplacements";
+    private static final String NBT_MINEFIELDS = "minefields";
     private static final String NBT_PLAYER_SEAT_DEPLOYMENT = "player_seat_deployment";
     private static final String NBT_DRIVE_REAL_VEHICLES = "drive_real_vehicles";
     private static final String NBT_GUN_REAL_VEHICLES = "gun_real_vehicles";
@@ -220,6 +221,8 @@ public final class BotSettings
     private boolean vehicleCrews = true;
     /** Whether soldiers place and man deployable and AA guns. */
     private boolean emplacements = true;
+    /** Whether soldiers mine the approaches to the objectives their side holds, instead of only trapping enemies they see. */
+    private boolean minefields = true;
     /** Whether allied players may deploy into NPC-occupied seats in real vehicles and AA guns. */
     private boolean playerSeatDeployment = true;
     /** Whether soldiers drive, gun or travel in real Flan driveables, independently of generated vehicle NPCs. */
@@ -667,6 +670,7 @@ public final class BotSettings
         tag.putBoolean(NBT_RALLY, rallyPoints);
         tag.putBoolean(NBT_VEHICLE_CREWS, vehicleCrews);
         tag.putBoolean(NBT_EMPLACEMENTS, emplacements);
+        tag.putBoolean(NBT_MINEFIELDS, minefields);
         tag.putBoolean(NBT_PLAYER_SEAT_DEPLOYMENT, playerSeatDeployment);
         tag.putBoolean(NBT_DRIVE_REAL_VEHICLES, driveRealVehicles);
         tag.putBoolean(NBT_GUN_REAL_VEHICLES, gunRealVehicles);
@@ -712,6 +716,7 @@ public final class BotSettings
         settings.rallyPoints = !tag.contains(NBT_RALLY) || tag.getBoolean(NBT_RALLY);
         settings.vehicleCrews = !tag.contains(NBT_VEHICLE_CREWS) || tag.getBoolean(NBT_VEHICLE_CREWS);
         settings.emplacements = !tag.contains(NBT_EMPLACEMENTS) || tag.getBoolean(NBT_EMPLACEMENTS);
+        settings.minefields = enabledByDefault(tag, NBT_MINEFIELDS);
         settings.playerSeatDeployment = !tag.contains(NBT_PLAYER_SEAT_DEPLOYMENT) || tag.getBoolean(NBT_PLAYER_SEAT_DEPLOYMENT);
         settings.driveRealVehicles = enabledByDefault(tag, NBT_DRIVE_REAL_VEHICLES);
         settings.gunRealVehicles = enabledByDefault(tag, NBT_GUN_REAL_VEHICLES);

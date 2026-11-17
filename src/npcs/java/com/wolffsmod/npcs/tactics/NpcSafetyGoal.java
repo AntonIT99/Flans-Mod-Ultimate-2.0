@@ -608,13 +608,49 @@ public final class NpcSafetyGoal extends Goal
         if (alternatives.isEmpty())
             return false;
         alternative = 0;
+        BlockPos peek = !fight.outmatched() && target != null && npc.isInRange(target, NpcWeaponRange.firing(npc)) ? leadWithFiringCover(target) : null;
         BlockPos stand = alternatives.get(0);
         if (!TeamsBots.claimCover(npc, stand, now))
             return false;
-        BlockPos peek = !fight.outmatched() && target != null && npc.isInRange(target, NpcWeaponRange.firing(npc)) ? NpcCover.peek(npc, stand, target) : null;
         state.setCover(peek == null ? null : new NpcCover.Cover(stand, peek));
         order(Action.HIDE, Vec3.atBottomCenterOf(stand), 100L);
         return true;
+    }
+
+    /**
+     * Cover to fight from beats nearer cover that only hides: the first place on the shortlist with a step out to the target
+     * is put at its head. A pinned soldier takes the nearest cover there is.
+     *
+     * @return where the NPC steps out to from the place now leading the shortlist, or null when it leads as it did and
+     *         has no such step
+     */
+    @Nullable
+    private BlockPos leadWithFiringCover(LivingEntity target)
+    {
+        int places = NpcSuppression.isPinned(npc) ? 1 : alternatives.size();
+        for (int index = 0; index < places; index++)
+        {
+            BlockPos peek = NpcCover.peek(npc, alternatives.get(index), target);
+            if (peek != null)
+            {
+                alternatives = leading(alternatives, index);
+                return peek;
+            }
+        }
+        return null;
+    }
+
+    /** @return the places with the one at the index moved to the front, the others keeping their order */
+    static List<BlockPos> leading(List<BlockPos> places, int index)
+    {
+        if (index == 0)
+            return places;
+        List<BlockPos> ordered = new ArrayList<>(places.size());
+        ordered.add(places.get(index));
+        for (int other = 0; other < places.size(); other++)
+            if (other != index)
+                ordered.add(places.get(other));
+        return ordered;
     }
 
     /**

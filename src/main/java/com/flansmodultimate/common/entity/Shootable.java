@@ -13,6 +13,7 @@ import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,6 +38,7 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
     public static final String NBT_TYPE_NAME = "type";
     public static final String NBT_SMOKE_TIME = "smoke_time";
     public static final String NBT_DETONATED = "detonated";
+    public static final String NBT_SPARES_ALLIES = "spares_allies";
 
     protected static final EntityDataAccessor<String> DATA_SHOOTABLE_TYPE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);
@@ -49,6 +51,14 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
     protected boolean detonated;
     /** Remaining server-side lifetime of the smoke source after detonation. */
     protected int smokeTime;
+    /**
+     * Whether allies of the owner never set off this one's proximity trigger, whatever the server allows for proximity
+     * friendly fire. Devices placed on behalf of a living entity by an addon, such as a soldier laying a mine, are set this
+     * way so that the owner's own friendly fire rules decide alone.
+     */
+    @Getter
+    @Setter
+    protected boolean sparesAllies;
 
     protected Shootable(EntityType<?> entityType, Level level)
     {
@@ -170,6 +180,7 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
         smokeTime = tag.getInt(NBT_SMOKE_TIME);
         entityData.set(DATA_SMOKING, smokeTime > 0);
         detonated = tag.getBoolean(NBT_DETONATED) || smokeTime > 0;
+        sparesAllies = tag.getBoolean(NBT_SPARES_ALLIES);
     }
 
     @Override
@@ -180,6 +191,8 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
             tag.putInt(NBT_SMOKE_TIME, smokeTime);
         if (detonated)
             tag.putBoolean(NBT_DETONATED, true);
+        if (sparesAllies)
+            tag.putBoolean(NBT_SPARES_ALLIES, true);
     }
 
     protected boolean isSmoking()
@@ -308,12 +321,13 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
 
     /**
      * Whether proximity rules permit triggering: allies the owner's fire spares and driveables carrying them are excluded
-     * unless proximity friendly fire is enabled.
+     * unless proximity friendly fire is enabled. A device that {@link #sparesAllies} keeps them excluded even then, so that
+     * the owner's friendly fire rules alone decide.
      */
     private boolean permitsProximityTrigger(Entity entity)
     {
         LivingEntity owner = getOwner().orElse(null);
-        if (owner == null || ModCommonConfig.get().shootableProximityTriggerFriendlyFire())
+        if (owner == null || ModCommonConfig.get().shootableProximityTriggerFriendlyFire() && !sparesAllies)
             return true;
         if (entity instanceof LivingEntity living)
             return !FriendlyFireRules.spares(living, owner);

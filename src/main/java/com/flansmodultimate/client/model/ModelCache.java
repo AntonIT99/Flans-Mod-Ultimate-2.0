@@ -22,6 +22,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelCache
@@ -133,8 +134,9 @@ public final class ModelCache
     @Nullable
     public static IModelBase getOrLoadTypeModel(ArmorType type)
     {
-        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName(), type.getContentPack().getName()), type, new ModelDefaultArmor(type.getArmorItemType()),
-            type.getTexture());
+        // A type without a model class is cached under the default model's class, which loadModel builds on a miss.
+        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName(), type.getContentPack().getName()), type, ModelDefaultArmor.class,
+            () -> new ModelDefaultArmor(type.getArmorItemType()), type.getTexture());
     }
 
     @Nullable
@@ -184,18 +186,12 @@ public final class ModelCache
     @Nullable
     public static ModelMuzzleFlash getOrLoadMuzzleFlashModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null, gunType.getContentPack().getName()), gunType, new ModelDefaultMuzzleFlash(),
-            null) instanceof ModelMuzzleFlash modelMuzzleFlash)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null, gunType.getContentPack().getName()), gunType, ModelDefaultMuzzleFlash.class,
+            ModelDefaultMuzzleFlash::new, null) instanceof ModelMuzzleFlash modelMuzzleFlash)
         {
             return modelMuzzleFlash;
         }
         return null;
-    }
-
-    @Nullable
-    private static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable IModelBase defaultModel)
-    {
-        return getOrLoadModel(modelCacheKey, type, defaultModel, type.getTexture());
     }
 
     /**
@@ -206,10 +202,25 @@ public final class ModelCache
     @Nullable
     private static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable IModelBase defaultModel, @Nullable ResourceLocation texture)
     {
+        return getOrLoadModel(modelCacheKey, type, defaultModel == null ? null : defaultModel.getClass(), () -> defaultModel, texture);
+    }
+
+    /**
+     * @param defaultClass
+     *            the class of the model drawn when the type names none or its own cannot be loaded, or null for no such
+     *            model. A type that names none is cached under this class.
+     * @param defaultModel
+     *            builds that model. Renderers ask for their models every frame, so it is built only when the cache holds
+     *            nothing for the key, rather than for every lookup.
+     */
+    @Nullable
+    private static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable Class<? extends IModelBase> defaultClass, Supplier<? extends IModelBase> defaultModel,
+        @Nullable ResourceLocation texture)
+    {
         if (StringUtils.isBlank(modelCacheKey.modelClassName()))
         {
-            if (defaultModel != null)
-                modelCacheKey = new ModelCacheKey(defaultModel.getClass().getName(), modelCacheKey.typeShortName(), modelCacheKey.contentPackName());
+            if (defaultClass != null)
+                modelCacheKey = new ModelCacheKey(defaultClass.getName(), modelCacheKey.typeShortName(), modelCacheKey.contentPackName());
             else
                 return null;
         }
@@ -217,7 +228,7 @@ public final class ModelCache
         String modelClassName = modelCacheKey.modelClassName();
         return cache.getOrLoad(modelCacheKey, () ->
         {
-            IModelBase model = loadModel(modelClassName, type, defaultModel);
+            IModelBase model = loadModel(modelClassName, type, defaultClass == null ? null : defaultModel.get());
             ModelTextureFitter.fitToTexture(model, texture);
             return model;
         });

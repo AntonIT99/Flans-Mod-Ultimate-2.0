@@ -188,6 +188,9 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         // If this can be remotely detonated, add it to the players detonate list
         if (grenadeType.isRemote() && thrower instanceof Player player)
             PlayerData.getInstance(player).getRemoteExplosives().add(this);
+        // A device placed while a Teams round runs belongs to that round and goes with it when it ends.
+        if (!level.isClientSide)
+            FlansMod.teamsManager.stampRoundDevice(this);
     }
 
     /**

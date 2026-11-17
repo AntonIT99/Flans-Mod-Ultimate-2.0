@@ -12,12 +12,15 @@ import com.wolffsmod.npcs.drivers.NpcDrivers;
 import com.wolffsmod.npcs.platform.CustomNpcsPlatform;
 import com.wolffsmod.npcs.sim.TacticKind;
 import com.wolffsmod.npcs.tactics.NpcCombatMovement;
+import com.wolffsmod.npcs.teams.BotTag;
+import com.wolffsmod.npcs.teams.TeamsBots;
 import noppes.npcs.api.item.IItemStack;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataAI;
 import noppes.npcs.entity.data.DataInventory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 import net.minecraft.core.BlockPos;
@@ -69,6 +72,8 @@ class NpcGrenadeDeviceGoalTest
     private static void enabled(MockedStatic<NpcEquipment> equipment, MockedStatic<TacticKind> kinds, EntityNPCInterface npc)
     {
         equipment.when(() -> NpcEquipment.enabled(eq(npc), any())).thenReturn(true);
+        // The soldier keeps clear of its own charges, as an unedited one does; the immunity switch is the opt-in exception.
+        equipment.when(() -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.OWN_BLAST_IMMUNE)).thenReturn(false);
         kinds.when(() -> TacticKind.of(npc)).thenReturn(TacticKind.STANDARD);
     }
 
@@ -136,12 +141,18 @@ class NpcGrenadeDeviceGoalTest
             when(npc.distanceTo(charge)).thenReturn(3F);
             goal.canUse();
             devices.verify(() -> FlansGrenadeDevices.detonate(charge, npc), times(1));
+            // One immune to its own blast fires the same charge from where it stands.
+            equipment.when(() -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.OWN_BLAST_IMMUNE)).thenReturn(true);
             when(level.getGameTime()).thenReturn(40L);
+            goal.canUse();
+            devices.verify(() -> FlansGrenadeDevices.detonate(charge, npc), times(2));
+            equipment.when(() -> NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.OWN_BLAST_IMMUNE)).thenReturn(false);
+            when(level.getGameTime()).thenReturn(60L);
             when(npc.distanceTo(charge)).thenReturn(8F);
             LivingEntity ally = mock(LivingEntity.class);
             when(level.getEntities(eq(npc), any(AABB.class), any())).thenReturn(List.of(ally));
             goal.canUse();
-            devices.verify(() -> FlansGrenadeDevices.detonate(charge, npc), times(1));
+            devices.verify(() -> FlansGrenadeDevices.detonate(charge, npc), times(2));
         }
     }
 
@@ -190,7 +201,7 @@ class NpcGrenadeDeviceGoalTest
         ItemStack stack = new ItemStack(Items.STICK);
         Entity existing = mock(Entity.class);
         when(existing.position()).thenReturn(new Vec3(10D, 0D, 0D));
-        when(npc.distanceToSqr(existing)).thenReturn(100D);
+        when(npc.distanceToSqr(existing)).thenReturn(400D);
         try (var devices = mockStatic(FlansGrenadeDevices.class);
             var equipment = mockStatic(NpcEquipment.class);
             var kinds = mockStatic(TacticKind.class);
@@ -212,7 +223,63 @@ class NpcGrenadeDeviceGoalTest
             NpcGrenadeDeviceGoal goal = new NpcGrenadeDeviceGoal(npc);
             assertFalse(goal.canUse());
             when(level.getGameTime()).thenReturn(20L);
-            when(npc.distanceToSqr(existing)).thenReturn(145D);
+            when(npc.distanceToSqr(existing)).thenReturn(625D);
+            assertTrue(goal.canUse());
+        }
+    }
+
+    @Test
+    void aDeployedBagIsEmptiedHelpingByHelpingBeforeAnotherIsLaidOut() throws ReflectiveOperationException
+    {
+        ServerLevel level = mock(ServerLevel.class);
+        EntityNPCInterface npc = npc(level);
+        when(npc.getLookAngle()).thenReturn(new Vec3(1D, 0D, 0D));
+        when(level.clip(any())).thenReturn(new BlockHitResult(new Vec3(1.5D, 0D, 0.5D), Direction.UP, new BlockPos(1, -1, 0), false));
+        Entity existing = mock(Entity.class);
+        when(existing.position()).thenReturn(new Vec3(2D, 0D, 0D));
+        when(npc.distanceToSqr(existing)).thenReturn(4D);
+        when(npc.hasLineOfSight(existing)).thenReturn(true);
+        ItemStack stack = new ItemStack(Items.STICK);
+        GrenadeDeviceProperties bag = new GrenadeDeviceProperties(0D, 0D, 0, false, true);
+        try (var devices = mockStatic(FlansGrenadeDevices.class);
+            var equipment = mockStatic(NpcEquipment.class);
+            var kinds = mockStatic(TacticKind.class);
+            var drivers = mockStatic(NpcDrivers.class);
+            var crew = mockStatic(NpcCrew.class);
+            var platform = mockStatic(CustomNpcsPlatform.class);
+            var movement = mockStatic(NpcCombatMovement.class);
+            var ammunition = mockStatic(NpcAmmunition.class);
+            var supplies = mockStatic(NpcDeviceSupplies.class))
+        {
+            enabled(equipment, kinds, npc);
+            ammunition.when(() -> NpcAmmunition.supplies(npc)).thenReturn(List.of(stack));
+            devices.when(() -> FlansGrenadeDevices.find(eq(level), any())).thenReturn(List.of(existing));
+            devices.when(() -> FlansGrenadeDevices.properties(existing)).thenReturn(Optional.of(bag));
+            devices.when(() -> FlansGrenadeDevices.properties(stack)).thenReturn(Optional.of(bag));
+            devices.when(() -> FlansGrenadeDevices.ownedBy(existing, npc)).thenReturn(true);
+            supplies.when(() -> NpcDeviceSupplies.needs(npc, stack)).thenReturn(true);
+            supplies.when(() -> NpcDeviceSupplies.needs(npc, existing)).thenReturn(true);
+            supplies.when(() -> NpcDeviceSupplies.use(npc, existing)).thenReturn(true);
+            NpcGrenadeDeviceGoal goal = new NpcGrenadeDeviceGoal(npc);
+            // The deployed bag is visited instead of another being laid out, and emptied one helping at a time.
+            assertTrue(goal.canUse());
+            goal.tick();
+            goal.tick();
+            supplies.verify(() -> NpcDeviceSupplies.use(npc, existing), times(1));
+            assertTrue(goal.canContinueToUse());
+            when(level.getGameTime()).thenReturn(20L);
+            goal.tick();
+            supplies.verify(() -> NpcDeviceSupplies.use(npc, existing), times(2));
+            supplies.when(() -> NpcDeviceSupplies.needs(npc, existing)).thenReturn(false);
+            when(level.getGameTime()).thenReturn(40L);
+            goal.tick();
+            supplies.verify(() -> NpcDeviceSupplies.use(npc, existing), times(3));
+            assertFalse(goal.canContinueToUse());
+            // A helping just taken still counts, so the carried bag stays packed until the next one is due.
+            devices.when(() -> FlansGrenadeDevices.find(eq(level), any())).thenReturn(List.of());
+            assertFalse(goal.canUse());
+            devices.verify(() -> FlansGrenadeDevices.place(eq(npc), eq(stack), any(), any(), anyBoolean()), never());
+            when(level.getGameTime()).thenReturn(60L);
             assertTrue(goal.canUse());
         }
     }
@@ -260,6 +327,115 @@ class NpcGrenadeDeviceGoalTest
             assertEquals(1, mine.getCount());
             assertSame(wrapped, npc.inventory.drops.get(0));
             assertFalse(goal.canContinueToUse());
+        }
+    }
+
+    @Test
+    void aSoldierOnItsPostMinesTheWayItLastMetTheEnemy() throws ReflectiveOperationException
+    {
+        ServerLevel level = mock(ServerLevel.class);
+        EntityNPCInterface npc = npc(level);
+        when(npc.getLookAngle()).thenReturn(new Vec3(1D, 0D, 0D));
+        LivingEntity enemy = mock(LivingEntity.class);
+        when(enemy.isAlive()).thenReturn(true);
+        when(enemy.level()).thenReturn(level);
+        when(enemy.position()).thenReturn(new Vec3(40D, 0D, 0D));
+        when(npc.getTarget()).thenReturn(enemy);
+        PathNavigation navigation = mock(PathNavigation.class);
+        Path path = mock(Path.class);
+        when(npc.getNavigation()).thenReturn(navigation);
+        when(navigation.createPath(any(BlockPos.class), anyInt())).thenReturn(path);
+        when(path.canReach()).thenReturn(true);
+        when(navigation.moveTo(anyDouble(), anyDouble(), anyDouble(), anyDouble())).thenReturn(true);
+        ItemStack mine = new ItemStack(Items.STICK);
+        Entity placed = mock(Entity.class);
+        try (var devices = mockStatic(FlansGrenadeDevices.class);
+            var equipment = mockStatic(NpcEquipment.class);
+            var kinds = mockStatic(TacticKind.class);
+            var drivers = mockStatic(NpcDrivers.class);
+            var crew = mockStatic(NpcCrew.class);
+            var platform = mockStatic(CustomNpcsPlatform.class);
+            var movement = mockStatic(NpcCombatMovement.class);
+            var ammunition = mockStatic(NpcAmmunition.class);
+            var projectiles = mockStatic(FlansProjectiles.class);
+            var tags = mockStatic(BotTag.class);
+            var bots = mockStatic(TeamsBots.class))
+        {
+            enabled(equipment, kinds, npc);
+            tags.when(() -> BotTag.isBot(npc)).thenReturn(false);
+            movement.when(() -> NpcCombatMovement.permits(eq(npc), any())).thenReturn(true);
+            movement.when(() -> NpcCombatMovement.anchor(npc)).thenReturn(Vec3.ZERO);
+            ammunition.when(() -> NpcAmmunition.supplies(npc)).thenReturn(List.of(mine));
+            devices.when(() -> FlansGrenadeDevices.properties(mine)).thenReturn(Optional.of(new GrenadeDeviceProperties(2D, 0D, 40, false, false)));
+            projectiles.when(() -> FlansProjectiles.isProjectile(mine)).thenReturn(true);
+            projectiles.when(() -> FlansProjectiles.getDetonationRadii(mine)).thenReturn(Optional.of(new DetonationRadii(0D, 4D, 0D, 0D)));
+            NpcGrenadeDeviceGoal goal = new NpcGrenadeDeviceGoal(npc);
+            // While it has somebody to fight it prepares nothing; the fight only tells it where the enemy comes from.
+            assertFalse(goal.canUse());
+            when(npc.getTarget()).thenReturn(null);
+            when(level.getGameTime()).thenReturn(20L);
+            assertTrue(goal.canUse());
+            goal.tick();
+            ArgumentCaptor<Double> x = ArgumentCaptor.forClass(Double.class);
+            ArgumentCaptor<Double> z = ArgumentCaptor.forClass(Double.class);
+            verify(navigation).moveTo(x.capture(), anyDouble(), z.capture(), anyDouble());
+            Vec3 site = new Vec3(x.getValue(), 0D, z.getValue());
+            assertEquals(9D, site.horizontalDistance(), 0.001D, "the spot lies out on the approach to its post");
+            assertTrue(site.x > 0D, "and towards where the enemy was met");
+            // Standing on the spot, it lays the mine there.
+            when(npc.position()).thenReturn(site);
+            when(level.clip(any())).thenReturn(new BlockHitResult(site, Direction.UP, BlockPos.containing(site).below(), false));
+            devices.when(() -> FlansGrenadeDevices.place(eq(npc), eq(mine), any(), any(), anyBoolean())).thenReturn(Optional.of(placed));
+            goal.tick();
+            goal.tick();
+            devices.verify(() -> FlansGrenadeDevices.place(eq(npc), eq(mine), eq(BlockPos.containing(site).below()), any(), anyBoolean()));
+        }
+    }
+
+    @Test
+    void aBattleBotTakesTheSpotItsSideLaidOutAndGivesItUpWhenItIsDrawnIntoAFight() throws ReflectiveOperationException
+    {
+        ServerLevel level = mock(ServerLevel.class);
+        EntityNPCInterface npc = npc(level);
+        Vec3 spot = new Vec3(0D, 0D, 12D);
+        PathNavigation navigation = mock(PathNavigation.class);
+        Path path = mock(Path.class);
+        when(npc.getNavigation()).thenReturn(navigation);
+        when(navigation.createPath(any(BlockPos.class), anyInt())).thenReturn(path);
+        when(path.canReach()).thenReturn(true);
+        when(navigation.moveTo(anyDouble(), anyDouble(), anyDouble(), anyDouble())).thenReturn(true);
+        ItemStack mine = new ItemStack(Items.STICK);
+        try (var devices = mockStatic(FlansGrenadeDevices.class);
+            var equipment = mockStatic(NpcEquipment.class);
+            var kinds = mockStatic(TacticKind.class);
+            var drivers = mockStatic(NpcDrivers.class);
+            var crew = mockStatic(NpcCrew.class);
+            var platform = mockStatic(CustomNpcsPlatform.class);
+            var movement = mockStatic(NpcCombatMovement.class);
+            var ammunition = mockStatic(NpcAmmunition.class);
+            var projectiles = mockStatic(FlansProjectiles.class);
+            var tags = mockStatic(BotTag.class);
+            var bots = mockStatic(TeamsBots.class))
+        {
+            enabled(equipment, kinds, npc);
+            tags.when(() -> BotTag.isBot(npc)).thenReturn(true);
+            // An anti-tank mine asks for a spot on the way armour takes, never for the infantry belt.
+            bots.when(() -> TeamsBots.minePost(npc, true)).thenReturn(Optional.of(spot));
+            movement.when(() -> NpcCombatMovement.permits(eq(npc), any())).thenReturn(true);
+            ammunition.when(() -> NpcAmmunition.supplies(npc)).thenReturn(List.of(mine));
+            devices.when(() -> FlansGrenadeDevices.properties(mine)).thenReturn(Optional.of(new GrenadeDeviceProperties(0D, 3D, 100, false, false)));
+            projectiles.when(() -> FlansProjectiles.isProjectile(mine)).thenReturn(true);
+            projectiles.when(() -> FlansProjectiles.getDetonationRadii(mine)).thenReturn(Optional.of(new DetonationRadii(0D, 5D, 0D, 0D)));
+            NpcGrenadeDeviceGoal goal = new NpcGrenadeDeviceGoal(npc);
+            assertTrue(goal.canUse());
+            goal.tick();
+            verify(navigation).moveTo(eq(spot.x), anyDouble(), eq(spot.z), anyDouble());
+            // A fight comes first: the spot is handed back for another soldier of its side.
+            LivingEntity enemy = mock(LivingEntity.class);
+            when(npc.getTarget()).thenReturn(enemy);
+            assertFalse(goal.canContinueToUse());
+            goal.stop();
+            bots.verify(() -> TeamsBots.releaseMinePost(npc));
         }
     }
 }

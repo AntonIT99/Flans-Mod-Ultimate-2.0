@@ -34,6 +34,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
@@ -106,6 +110,7 @@ public final class TeamsManager
     private static final String NBT_QUEUED_ROUND = "queued_round";
     private static final String NBT_ROUND_INSTANCE = "round_instance";
     private static final String NBT_WRECK_ROUND = "flansmodultimate_wreck_round";
+    private static final String NBT_DEVICE_ROUND = "flansmodultimate_device_round";
     private static final String NBT_PACIFISM = "pacifism";
     private static final String NBT_MOVIE_PROP = "movie_prop";
     private static final String NBT_BLOOD_EFFECTS = "blood_effects";
@@ -1005,11 +1010,13 @@ public final class TeamsManager
         announceRoundEnded(null);
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         restoreRoundBlocks();
+        restoreRoundEntities();
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
         getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
         // The wrecks of the round that was played last do not carry over into this one.
         clearMapWrecks();
+        clearRoundDevices();
         rotationIndex = index;
         currentRoundId = next.getId();
         roundInstanceId = UUID.randomUUID();
@@ -1035,6 +1042,7 @@ public final class TeamsManager
         liveBases.values().stream().filter(this::isBaseInCurrentMap).forEach(ITeamBase::startRound);
         roundRuleRuntime.start(next, roundRuleDefaults);
         updateActiveChunkTickets(true);
+        captureRoundEntities();
 
         for (ServerPlayer player : getServer().getPlayerList().getPlayers())
         {
@@ -1236,10 +1244,12 @@ public final class TeamsManager
         announceRoundEnded(null);
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         restoreRoundBlocks();
+        restoreRoundEntities();
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
         getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
         clearMapWrecks();
+        clearRoundDevices();
         roundRunning = false;
         roundRuleRuntime.clear();
         EraRestrictions.restrictionsChanged(getServer());
@@ -1277,6 +1287,114 @@ public final class TeamsManager
                 wrecks.add(entity);
         }
         wrecks.forEach(Entity::discard);
+    }
+
+    /**
+     * Takes away the grenade devices placed while the round that is ending ran: its mines, bags and remote charges go
+     * with it, while anything the map already carried stays where it was.
+     */
+    private void clearRoundDevices()
+    {
+        TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
+        if (server == null || map == null || roundInstanceId == null)
+            return;
+        ServerLevel level = server.getLevel(map.getDimension());
+        if (level == null)
+            return;
+        List<Entity> placed = new ArrayList<>();
+        for (Entity entity : level.getAllEntities())
+        {
+            if (entity instanceof Grenade && roundInstanceId.equals(roundOf(entity)) && (map.getBounds() == null || map.getBounds().contains(entity.position())))
+                placed.add(entity);
+        }
+        placed.forEach(Entity::discard);
+    }
+
+    /**
+     * Remembers the grenade devices, vehicles and AA guns the map already carried, so the round can give back
+     * whatever it uses up, destroys, damages or moves. Wrecks and the vehicles a team spawner owns are left out:
+     * neither is part of the map, and the spawners keep their own.
+     */
+    private void captureRoundEntities()
+    {
+        TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
+        if (server == null || savedData == null || map == null)
+            return;
+        ServerLevel level = server.getLevel(map.getDimension());
+        if (level == null)
+            return;
+        for (Entity entity : level.getAllEntities())
+        {
+            if (map.getBounds() == null ? belongsToMap(entity, false) : map.getBounds().contains(entity.position()) && belongsToMap(entity, true))
+                savedData.entityJournal.capture(level, entity);
+        }
+        savedData.setDirty();
+    }
+
+    /**
+     * Whether an entity is part of the map itself, rather than something a round or a team spawner brought in.
+     *
+     * @param bounded
+     *            whether the map says where it ends, in which case every other creature and object standing inside it,
+     *            vanilla or modded, counts as the map's too; a map without bounds keeps to its own equipment, so that
+     *            a round cannot adopt a whole dimension
+     */
+    private static boolean belongsToMap(Entity entity, boolean bounded)
+    {
+        if (roundOf(entity) != null || entity.getPersistentData().hasUUID(SpawnerVehicles.SPAWNER) || isPassingThrough(entity))
+            return false;
+        if (entity instanceof Driveable driveable)
+            return !driveable.isWreck();
+        if (entity instanceof AAGun aaGun)
+            return !aaGun.isWreck();
+        if (entity instanceof Shootable)
+            return GrenadeDeviceSupport.properties(entity).isPresent();
+        return bounded;
+    }
+
+    /**
+     * Whether an entity is one no round is expected to hand back: the objects the map's own teams play with, and
+     * anything that is there for a moment, such as drops, projectiles or falling blocks. Players, riders and the
+     * entities a level never saves drop out on their own, since there is nothing to snapshot them with.
+     */
+    private static boolean isPassingThrough(Entity entity)
+    {
+        return entity instanceof ITeamObject || entity instanceof ItemEntity || entity instanceof ExperienceOrb || entity instanceof Projectile || entity instanceof FallingBlockEntity
+            || entity instanceof PrimedTnt || entity instanceof Parachute;
+    }
+
+    /** Puts what was there before the round back as the map had it, touched during the round or not. */
+    private void restoreRoundEntities()
+    {
+        if (savedData == null || server == null)
+            return;
+        savedData.entityJournal.restore(server);
+        savedData.setDirty();
+    }
+
+    /** The round a grenade device was placed in, or null when it was not placed during a round. */
+    @Nullable
+    private static UUID roundOf(Entity device)
+    {
+        CompoundTag data = device.getPersistentData();
+        return data.hasUUID(NBT_DEVICE_ROUND) ? data.getUUID(NBT_DEVICE_ROUND) : null;
+    }
+
+    /** Marks a grenade device with the round it is placed in, so that round can take it away once it is over. */
+    public void stampRoundDevice(Entity device)
+    {
+        if (server != null && roundRunning && roundInstanceId != null && device.level() == getCurrentLevel())
+            device.getPersistentData().putUUID(NBT_DEVICE_ROUND, roundInstanceId);
+    }
+
+    /**
+     * Whether a grenade device belongs to a round that is over: it was placed in one, and the round now running (if
+     * any) is another. Used for devices that sat in unloaded chunks while the round was cleared.
+     */
+    public boolean isStaleRoundDevice(Entity device)
+    {
+        UUID round = roundOf(device);
+        return savedData != null && round != null && !round.equals(roundInstanceId);
     }
 
     /** Marks a vehicle that has just become a wreck with the round it belongs to, so it can be removed once that round is over. */
@@ -1442,8 +1560,10 @@ public final class TeamsManager
         roundRunning = false;
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         restoreRoundBlocks();
+        restoreRoundEntities();
         // The battlefield is cleared as the round ends, as it is when an operator stops it.
         clearMapWrecks();
+        clearRoundDevices();
         awardRoundStats();
         voteOptionIds.clear();
         intermissionPhase = IntermissionPhase.NONE;

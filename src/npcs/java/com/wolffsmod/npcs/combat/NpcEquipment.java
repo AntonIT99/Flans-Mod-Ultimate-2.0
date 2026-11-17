@@ -226,8 +226,9 @@ public final class NpcEquipment
     }
 
     /**
-     * What the weapon fires, read once a tick per NPC. Every repeated reading within one tick, by a goal, a search or a
-     * readout, is answered from {@link NpcTacticState#weaponProperties} instead of working the statistics out again.
+     * What the weapon fires, read once per NPC for as long as the weapon and its round stay as they are. Every repeated
+     * reading, by a goal, a search or a readout, is answered from {@link NpcTacticState#weaponProperties} instead of working
+     * the statistics out again.
      *
      * @param ammunition
      *            the round to measure the weapon with when it holds none; may be empty

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import noppes.npcs.controllers.FactionController;
 import noppes.npcs.controllers.data.Faction;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.LinkedHashMap;
@@ -98,5 +99,29 @@ public final class BotFactions
             return Optional.of(Stance.NEUTRAL);
         boolean allied = FlansTeams.getRunningRound().map(round -> round.getRound().areTeamsAllied(playerTeam.get(), factionTeam.get())).orElse(false);
         return Optional.of(allied ? Stance.FRIENDLY : Stance.HOSTILE);
+    }
+
+    /**
+     * Whether a bot faction of the round being played and the editable faction of a team fight on one side: the faction a
+     * builder gave an NPC for the same team, or for a team allied to it. Either faction may come first.
+     */
+    public static boolean sharesSide(MinecraftServer server, int factionId, int otherId)
+    {
+        return sharesSideOrdered(server, factionId, otherId) || sharesSideOrdered(server, otherId, factionId);
+    }
+
+    private static boolean sharesSideOrdered(MinecraftServer server, int botFactionId, int teamFactionId)
+    {
+        String botTeam = TEAM_OF_FACTION.get(botFactionId);
+        if (botTeam == null)
+            return false;
+        Optional<String> ownTeam = TeamFactions.get(server).teamOf(teamFactionId);
+        if (ownTeam.isEmpty())
+            return false;
+        if (botTeam.equals(ownTeam.get()))
+            return true;
+        Optional<ITeam> first = FlansModApi.getTeam(botTeam);
+        Optional<ITeam> second = FlansModApi.getTeam(ownTeam.get());
+        return first.isPresent() && second.isPresent() && FlansTeams.getRunningRound().map(round -> round.getRound().areTeamsAllied(first.get(), second.get())).orElse(false);
     }
 }

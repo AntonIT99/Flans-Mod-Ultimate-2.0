@@ -1,6 +1,10 @@
 package com.wolffsmod.npcs.crew;
 
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import com.wolffsmod.npcs.sim.NpcFlight;
+import com.wolffsmod.npcs.sim.NpcTuning;
 import com.wolffsmod.npcs.sim.NpcTuning.Value;
+import noppes.npcs.entity.EntityNPCInterface;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -8,6 +12,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class CrewDisembarkTest
 {
@@ -22,6 +29,24 @@ class CrewDisembarkTest
     private static final double DRIVING = 0.4D;
     /** The delay as an unedited NPC has it, in ticks. */
     private static final int DELAY = Value.DISEMBARK_DELAY.fallback() * TICKS_PER_SECOND;
+
+    @Test
+    void anAircraftShotToPiecesIsAbandonedBeforeItGoesDown() throws ReflectiveOperationException
+    {
+        EntityTestBootstrap.initialize();
+        EntityNPCInterface vehicle = mock(EntityNPCInterface.class);
+        when(vehicle.getMaxHealth()).thenReturn(100F);
+        try (var flight = mockStatic(NpcFlight.class))
+        {
+            flight.when(() -> NpcFlight.type(vehicle)).thenReturn(NpcTuning.Flight.PLANE);
+            when(vehicle.getHealth()).thenReturn(50F);
+            assertFalse(CrewDisembark.failing(vehicle), "damage it can still fly home with");
+            when(vehicle.getHealth()).thenReturn(10F);
+            assertTrue(CrewDisembark.failing(vehicle), "too far gone to be brought home");
+            flight.when(() -> NpcFlight.type(vehicle)).thenReturn(NpcTuning.Flight.NORMAL);
+            assertFalse(CrewDisembark.failing(vehicle), "a crippled ground vehicle is no reason to jump");
+        }
+    }
 
     @Test
     void aVehicleThatHasClosedWithItsTargetLetsItsCrewOutAtOnce()

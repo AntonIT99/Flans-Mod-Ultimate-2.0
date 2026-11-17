@@ -1,7 +1,11 @@
 package com.wolffsmod.npcs.drivers;
 
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.driveables.DriveableKind;
+import com.flansmodultimate.api.driveables.FlansAircraftCrashes;
+import com.flansmodultimate.api.driveables.IDriveableType;
 import com.flansmodultimate.api.driveables.ISeat;
+import com.flansmodultimate.api.entity.FlansEntityTypes;
 import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
@@ -15,6 +19,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -50,6 +55,36 @@ class DriveableCrewTest
             verify(seat, atLeastOnce()).setAutomatedTriggers(false, false);
             bots.when(() -> BotDriveables.mayUse(npc, seat)).thenReturn(false);
             assertFalse(DriveableCrew.tick(npc, seat, vehicle, new NpcDriver()));
+        }
+    }
+
+    @Test
+    void gunnersLeaveAnAircraftAboutToBeLostWhileThereIsHeightToJump() throws ReflectiveOperationException
+    {
+        EntityTestBootstrap.initialize();
+        EntityNPCInterface npc = mock(EntityNPCInterface.class);
+        ServerLevel level = mock(ServerLevel.class);
+        Entity plane = mock(Entity.class);
+        Entity seatEntity = mock(Entity.class, withSettings().extraInterfaces(ISeat.class));
+        ISeat seat = (ISeat) seatEntity;
+        IDriveableType type = mock(IDriveableType.class);
+        when(type.getDriveableKind()).thenReturn(DriveableKind.PLANE);
+        when(seat.getDriveableType()).thenReturn(Optional.of(type));
+        when(npc.level()).thenReturn(level);
+        when(npc.getY()).thenReturn(100D);
+        when(level.getHeight(any(), anyInt(), anyInt())).thenReturn(64);
+        try (var types = mockStatic(FlansEntityTypes.class); var crashes = mockStatic(FlansAircraftCrashes.class))
+        {
+            crashes.when(() -> FlansAircraftCrashes.crashMode(plane)).thenReturn(Optional.empty());
+            types.when(() -> FlansEntityTypes.getHealthShare(plane)).thenReturn(OptionalDouble.of(0.5D));
+            assertFalse(NpcDrivers.abandons(npc, seat, plane), "an aircraft still worth flying keeps its gunners");
+            types.when(() -> FlansEntityTypes.getHealthShare(plane)).thenReturn(OptionalDouble.of(0.1D));
+            assertTrue(NpcDrivers.abandons(npc, seat, plane), "one about to be lost is left while there is height");
+            when(npc.getY()).thenReturn(66D);
+            assertFalse(NpcDrivers.abandons(npc, seat, plane), "too low for a parachute to open");
+            when(npc.getY()).thenReturn(100D);
+            when(type.getDriveableKind()).thenReturn(DriveableKind.VEHICLE);
+            assertFalse(NpcDrivers.abandons(npc, seat, plane), "a ground vehicle's crew ride it out");
         }
     }
 }

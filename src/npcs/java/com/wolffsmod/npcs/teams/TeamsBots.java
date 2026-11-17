@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -51,6 +52,8 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
     private static final int RETRY_TICKS = 200;
     /** Blocks from where its duty sends it within which a bot counts as there. */
     private static final double DUTY_ARRIVAL = 2D;
+    /** Blocks beyond the objective it holds within which a soldier prepares its side's minefield. */
+    private static final double MINE_RANGE = 32D;
 
     @Nullable
     private BotBattle round;
@@ -222,6 +225,59 @@ public final class TeamsBots implements ITeamsListener, ITeamsSpawnProvider
             }
             return current;
         }).orElse(current);
+    }
+
+    /**
+     * A spot of its side's minefield for a soldier holding an objective, which it keeps until it lays its mine there or
+     * gives it up. Only infantry bots of a battle whose minefields are switched on prepare one, and only while they hold
+     * ground they have reached; a spot in unloaded terrain is passed over rather than loading it.
+     *
+     * @param armour
+     *            whether the soldier carries a mine that answers to vehicles alone
+     * @return the spot, or empty while the soldier should lay no prepared mine
+     */
+    public static Optional<Vec3> minePost(EntityNPCInterface npc, boolean armour)
+    {
+        if (!(npc.level() instanceof ServerLevel level) || !BotTag.isBot(npc))
+            return Optional.empty();
+        BotCommander.Order order = orderFor(npc).orElse(null);
+        if (order == null || order.role() != BotRole.INFANTRY || !BotCommander.holds(order.kind()))
+            return Optional.empty();
+        double reach = order.radius() + MINE_RANGE;
+        if (npc.position().subtract(order.centre()).horizontalDistanceSqr() > reach * reach)
+            return Optional.empty();
+        return battleMinefields(npc).flatMap(minefields -> minefields.claim(sideOf(npc), npc.getUUID(), armour, npc.position(), level.getGameTime())).flatMap(spot -> onGround(level, spot));
+    }
+
+    /** Records a mine a soldier laid, so that its side lays no second one on the same spot. Server thread. */
+    public static void mineLaid(EntityNPCInterface npc, Vec3 spot)
+    {
+        battleMinefields(npc).ifPresent(minefields -> minefields.laid(sideOf(npc), npc.getUUID(), spot, npc.level().getGameTime()));
+    }
+
+    /** Gives up a spot a soldier did not mine, so that another soldier of its side may take it. Server thread. */
+    public static void releaseMinePost(EntityNPCInterface npc)
+    {
+        battleMinefields(npc).ifPresent(minefields -> minefields.release(npc.getUUID()));
+    }
+
+    private static Optional<BotMinefields> battleMinefields(EntityNPCInterface npc)
+    {
+        return BotTag.isBot(npc) ? BotBattles.of(npc).filter(battle -> battle.getSettings().isMinefields()).map(BotBattle::getMinefields) : Optional.empty();
+    }
+
+    private static int sideOf(EntityNPCInterface npc)
+    {
+        return BotBattles.of(npc).map(battle -> BotBattles.slotOf(battle, npc).map(slot -> battle.sideOf(slot.getTeam())).orElse(-1)).orElse(-1);
+    }
+
+    /** @return the spot on the surface below or above it, or empty where the terrain is not loaded */
+    private static Optional<Vec3> onGround(ServerLevel level, Vec3 spot)
+    {
+        BlockPos position = BlockPos.containing(spot);
+        if (!level.hasChunkAt(position))
+            return Optional.empty();
+        return Optional.of(new Vec3(spot.x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, position.getX(), position.getZ()), spot.z));
     }
 
     /** A battle order or ordinary NPC duty retained by the shared infantry combat movement. Server thread. */

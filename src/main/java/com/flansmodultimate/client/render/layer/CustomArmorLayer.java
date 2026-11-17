@@ -18,6 +18,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
@@ -32,6 +33,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.Objects;
 
 /**
  * Draws the Flan armour a living entity wears.
@@ -61,6 +64,52 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     /** Whether the parent is the slim-armed player model, whose arms hang lower than the ones the sleeves are shaped for. */
     private final boolean slimArms;
 
+    /**
+     * The model scope the pieces of one wearer draw through. A uniform's pieces usually share a texture, and then their
+     * ordinary pass stays in one scope: a scope of its own for every piece sets the render state up, draws and restores it
+     * four times a soldier. The pieces are drawn one after the other with nothing in between, so the order of what reaches
+     * the screen stays the same; a piece with another texture or state, or a glow pass, closes the scope first.
+     */
+    private static final class PieceScope
+    {
+        private final MultiBufferSource buffer;
+        private final boolean world;
+        @Nullable
+        private VertexConsumer consumer;
+        @Nullable
+        private ResourceLocation texture;
+        private boolean translucent;
+        private boolean cull;
+
+        private PieceScope(MultiBufferSource buffer, boolean world)
+        {
+            this.buffer = buffer;
+            this.world = world;
+        }
+
+        private VertexConsumer begin(EnumRenderPass pass, ResourceLocation pieceTexture, boolean pieceTranslucent, boolean pieceCull)
+        {
+            // An open scope is always one of the ordinary pass: every other pass is closed as soon as it is drawn.
+            if (consumer != null && pass == EnumRenderPass.DEFAULT && Objects.equals(texture, pieceTexture) && translucent == pieceTranslucent && cull == pieceCull)
+                return consumer;
+            end();
+            texture = pieceTexture;
+            translucent = pieceTranslucent;
+            cull = pieceCull;
+            consumer = GpuModelCache.begin(buffer, pass, pieceTexture, pieceTranslucent, pieceCull, world, true);
+            return consumer;
+        }
+
+        private void end()
+        {
+            if (consumer == null)
+                return;
+            VertexConsumer open = consumer;
+            consumer = null;
+            GpuModelCache.end(open);
+        }
+    }
+
     public CustomArmorLayer(RenderLayerParent<T, M> parent)
     {
         this(parent, false);
@@ -79,12 +128,20 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
         int overlay = LivingEntityRenderer.getOverlayCoords(entity, 0F);
         boolean world = isWorldPass(buffer);
         float minimumPartPixels = beginCulling(entity, partialTicks, world);
+        PieceScope scope = new PieceScope(buffer, world);
         try
         {
-            renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.HEAD, packedLight, overlay, world);
-            renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.LEGS, packedLight, overlay, world);
-            renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.FEET, packedLight, overlay, world);
-            renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.CHEST, packedLight, overlay, world);
+            try
+            {
+                renderArmorPiece(poseStack, scope, entity, EquipmentSlot.HEAD, packedLight, overlay);
+                renderArmorPiece(poseStack, scope, entity, EquipmentSlot.LEGS, packedLight, overlay);
+                renderArmorPiece(poseStack, scope, entity, EquipmentSlot.FEET, packedLight, overlay);
+                renderArmorPiece(poseStack, scope, entity, EquipmentSlot.CHEST, packedLight, overlay);
+            }
+            finally
+            {
+                scope.end();
+            }
         }
         finally
         {
@@ -145,7 +202,7 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     }
 
     @SuppressWarnings("unchecked")
-    private void renderArmorPiece(PoseStack poseStack, MultiBufferSource buffer, T entity, EquipmentSlot slot, int packedLight, int overlay, boolean world)
+    private void renderArmorPiece(PoseStack poseStack, PieceScope scope, T entity, EquipmentSlot slot, int packedLight, int overlay)
     {
         ItemStack itemStack = entity.getItemBySlot(slot);
         Item item = itemStack.getItem();
@@ -170,15 +227,11 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
             boolean cull = ModClientConfig.get().useCullingRendering(armorType);
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
             {
-                VertexConsumer consumer = GpuModelCache.begin(buffer, renderPass, texture, translucent, cull, world, true);
-                try
-                {
-                    model.renderToBuffer(poseStack, consumer, packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
-                }
-                finally
-                {
-                    GpuModelCache.end(consumer);
-                }
+                VertexConsumer consumer = scope.begin(renderPass, texture, translucent, cull);
+                model.renderToBuffer(poseStack, consumer, packedLight, overlay, 1F, 1F, 1F, 1F, renderPass);
+                // Only the ordinary pass is shared with the next piece; glow draws at once, in its place.
+                if (renderPass != EnumRenderPass.DEFAULT)
+                    scope.end();
             }
         }
     }

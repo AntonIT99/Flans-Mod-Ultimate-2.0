@@ -3,6 +3,7 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.event.GunFiredEvent;
 import lombok.AccessLevel;
@@ -71,6 +72,12 @@ public final class RoundRulesEventHandler
         Entity entity = event.getEntity();
         // A wreck of a finished round that sat in an unloaded chunk when the round was stopped is dropped as it loads back in.
         if ((entity instanceof Driveable driveable && driveable.isWreck() || entity instanceof AAGun aaGun && aaGun.isWreck()) && TeamsManager.getInstance().isStaleWreck(entity))
+        {
+            event.setCanceled(true);
+            return;
+        }
+        // The same for a grenade device placed during a round that is over.
+        if (entity instanceof Grenade && TeamsManager.getInstance().isStaleRoundDevice(entity))
         {
             event.setCanceled(true);
             return;
