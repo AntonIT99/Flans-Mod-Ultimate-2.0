@@ -1,6 +1,7 @@
 package com.wolffsmod.npcs.tactics;
 
 import com.flansmodultimate.api.equipment.EquippedWeaponProperties;
+import com.wolffsmod.npcs.platform.NpcPlatform;
 import com.wolffsmod.npcs.sim.NpcTuning.Tactic;
 import com.wolffsmod.npcs.tactics.NpcCover.Cover;
 import lombok.Getter;
@@ -45,6 +46,12 @@ public final class NpcTacticState
         ATTACK
     }
 
+    /**
+     * Ticks a reading of an unchanged weapon stays in use, after which it is taken again: what a weapon fires also follows
+     * settings that are not part of the stack.
+     */
+    static final int WEAPON_READING_LIFETIME = 100;
+
     @Getter
     private Tactic tactic = Tactic.CUSTOM_NPCS;
     private int targetId = -1;
@@ -86,7 +93,7 @@ public final class NpcTacticState
     /** The firing range the NPC's weapon gives it, and the tick it was worked out in. */
     private int weaponRange;
     private long weaponRangeTick = Long.MIN_VALUE;
-    /** Readings of the weapons the NPC asks about within one tick: both hands, each with and without its spare round. */
+    /** Readings of the weapons the NPC asks about: both hands, each with and without its spare round. */
     private final HeldWeapon[] heldWeapons = {new HeldWeapon(), new HeldWeapon(), new HeldWeapon(), new HeldWeapon()};
     private final List<Threat> threats = new ArrayList<>();
     @Getter
@@ -109,31 +116,76 @@ public final class NpcTacticState
     {}
 
     /**
-     * One reading of what a held weapon fires, for the tick it was read in. The stacks are held by identity: an NPC keeps
-     * the same stack objects while it carries them, and any swap or reload puts another stack in their place.
+     * One reading of what a held weapon fires. The stacks are held by identity: an NPC keeps the same stack objects while it
+     * carries them, and a swap puts another stack in their place. A reading outlasts its tick for as long as both stacks
+     * still hold what they held when it was taken, which a copy of each tells: firing, reloading, a fire mode or an
+     * attachment all change the stack's data.
      */
     private static final class HeldWeapon
     {
+        /** The tick the reading last answered in, and the one it was taken in. */
         private long tick = Long.MIN_VALUE;
+        private long readAt = Long.MIN_VALUE;
         @Nullable
         private ItemStack weapon;
         @Nullable
         private ItemStack ammunition;
+        /** What the two stacks held when they were read. */
+        @Nullable
+        private ItemStack weaponThen;
+        @Nullable
+        private ItemStack ammunitionThen;
         private Optional<EquippedWeaponProperties> properties = Optional.empty();
 
-        private boolean matches(long now, ItemStack held, ItemStack round)
+        private boolean matches(long now, ItemStack held, ItemStack round, StackMemory memory)
         {
-            return tick == now && weapon == held && ammunition == round;
+            if (weapon != held || ammunition != round)
+                return false;
+            if (tick == now)
+                return true;
+            if (now < readAt || now - readAt >= WEAPON_READING_LIFETIME || !memory.unchanged(weaponThen, held) || !memory.unchanged(ammunitionThen, round))
+                return false;
+            tick = now;
+            return true;
         }
 
-        private Optional<EquippedWeaponProperties> read(long now, ItemStack held, ItemStack round, Optional<EquippedWeaponProperties> value)
+        private Optional<EquippedWeaponProperties> read(long now, ItemStack held, ItemStack round, StackMemory memory, Optional<EquippedWeaponProperties> value)
         {
             tick = now;
+            readAt = now;
             weapon = held;
             ammunition = round;
+            weaponThen = memory.remember(held);
+            ammunitionThen = memory.remember(round);
             properties = value;
             return value;
         }
+    }
+
+    /** Tells whether a stack still holds what it held when a reading was taken of it. */
+    interface StackMemory
+    {
+        /** The stacks themselves, compared by item and data. */
+        StackMemory STACKS = new StackMemory()
+        {
+            @Override
+            public ItemStack remember(ItemStack stack)
+            {
+                return stack.copy();
+            }
+
+            @Override
+            public boolean unchanged(@Nullable ItemStack remembered, ItemStack current)
+            {
+                return remembered != null && NpcPlatform.isSameItemSameData(remembered, current);
+            }
+        };
+
+        /** @return what to keep of the stack to compare it with later */
+        ItemStack remember(ItemStack stack);
+
+        /** @return whether the stack still holds what was remembered of it */
+        boolean unchanged(@Nullable ItemStack remembered, ItemStack current);
     }
 
     /** Starts the tactic over when it or the target changes. */
@@ -269,23 +321,29 @@ public final class NpcTacticState
     /**
      * Reading a Flan weapon's statistics copies the stack and works out its damage, muzzle velocity, spread, cadence and
      * reload time with its attachments and ammunition, which a target search, a firing goal and a range measurement would
-     * each repeat within one tick.
+     * each repeat within one tick, and every tick after it although nothing about the weapon changed.
      *
      * @param measure
-     *            reads the weapon, asked only when this tick has no reading of that weapon and round yet
+     *            reads the weapon, asked only when there is no reading of that weapon and round as they now are, or the
+     *            reading is older than {@link #WEAPON_READING_LIFETIME}
      * @return what the weapon fires, or empty for an item that is not a Flan weapon
      */
     public Optional<EquippedWeaponProperties> weaponProperties(long now, ItemStack weapon, ItemStack ammunition, Supplier<Optional<EquippedWeaponProperties>> measure)
     {
+        return weaponProperties(now, weapon, ammunition, measure, StackMemory.STACKS);
+    }
+
+    Optional<EquippedWeaponProperties> weaponProperties(long now, ItemStack weapon, ItemStack ammunition, Supplier<Optional<EquippedWeaponProperties>> measure, StackMemory memory)
+    {
         HeldWeapon oldest = heldWeapons[0];
         for (HeldWeapon held : heldWeapons)
         {
-            if (held.matches(now, weapon, ammunition))
+            if (held.matches(now, weapon, ammunition, memory))
                 return held.properties;
             if (held.tick < oldest.tick)
                 oldest = held;
         }
-        return oldest.read(now, weapon, ammunition, measure.get());
+        return oldest.read(now, weapon, ammunition, memory, measure.get());
     }
 
     public static NpcTacticState of(EntityNPCInterface npc)

@@ -202,6 +202,9 @@ class NpcEquipmentHookContractTest
         assertEquals("net/minecraft/world/entity/ai/navigation/GroundPathNavigation", navigator.superName);
         assertFalse(declares(navigator, "(Lnet/minecraft/world/entity/Entity;D)Z", "m_5624_", "moveTo"));
         assertFalse(declares(navigator, "(Ljava/util/Set;IZIF)Lnet/minecraft/world/level/pathfinder/Path;", "m_148222_", "createPath"));
+        // The look for a shortcut the mixin holds back is the only one path following makes.
+        MethodNode follow = method(navigator, "()V", "m_7636_", "followThePath");
+        assertEquals(1, calls(follow, "noppes/npcs/ai/NpcGroundPathNavigator", "isDirectPathBetweenPoints", "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;III)Z"));
         ClassNode goal = read("noppes/npcs/ai/target/NpcNearestAttackableTargetGoal");
         assertEquals("net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal", goal.superName);
         assertFalse(declares(goal, "()Z", "m_8036_", "canUse"));
