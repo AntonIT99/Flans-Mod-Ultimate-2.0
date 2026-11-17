@@ -34,6 +34,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
@@ -1321,22 +1325,42 @@ public final class TeamsManager
             return;
         for (Entity entity : level.getAllEntities())
         {
-            if (belongsToMap(entity) && (map.getBounds() == null || map.getBounds().contains(entity.position())))
+            if (map.getBounds() == null ? belongsToMap(entity, false) : map.getBounds().contains(entity.position()) && belongsToMap(entity, true))
                 savedData.entityJournal.capture(level, entity);
         }
         savedData.setDirty();
     }
 
-    /** Whether an entity is part of the map itself, rather than something a round or a team spawner brought in. */
-    private static boolean belongsToMap(Entity entity)
+    /**
+     * Whether an entity is part of the map itself, rather than something a round or a team spawner brought in.
+     *
+     * @param bounded
+     *            whether the map says where it ends, in which case every other creature and object standing inside it,
+     *            vanilla or modded, counts as the map's too; a map without bounds keeps to its own equipment, so that
+     *            a round cannot adopt a whole dimension
+     */
+    private static boolean belongsToMap(Entity entity, boolean bounded)
     {
-        if (roundOf(entity) != null || entity.getPersistentData().hasUUID(SpawnerVehicles.SPAWNER))
+        if (roundOf(entity) != null || entity.getPersistentData().hasUUID(SpawnerVehicles.SPAWNER) || isPassingThrough(entity))
             return false;
         if (entity instanceof Driveable driveable)
             return !driveable.isWreck();
         if (entity instanceof AAGun aaGun)
             return !aaGun.isWreck();
-        return GrenadeDeviceSupport.properties(entity).isPresent();
+        if (entity instanceof Shootable)
+            return GrenadeDeviceSupport.properties(entity).isPresent();
+        return bounded;
+    }
+
+    /**
+     * Whether an entity is one no round is expected to hand back: the objects the map's own teams play with, and
+     * anything that is there for a moment, such as drops, projectiles or falling blocks. Players, riders and the
+     * entities a level never saves drop out on their own, since there is nothing to snapshot them with.
+     */
+    private static boolean isPassingThrough(Entity entity)
+    {
+        return entity instanceof ITeamObject || entity instanceof ItemEntity || entity instanceof ExperienceOrb || entity instanceof Projectile || entity instanceof FallingBlockEntity
+            || entity instanceof PrimedTnt || entity instanceof Parachute;
     }
 
     /** Puts what was there before the round back as the map had it, touched during the round or not. */

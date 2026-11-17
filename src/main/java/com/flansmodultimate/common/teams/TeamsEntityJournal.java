@@ -19,9 +19,10 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * The grenade devices, vehicles and AA guns a map already carried when a round started, persisted alongside the round.
- * A round takes away only what was placed while it ran, so anything it used up, destroyed, damaged or moved is put
- * back the way the map had it once the round is over.
+ * What a map already carried when a round started, persisted alongside the round: its grenade devices, vehicles and
+ * AA guns, and, where the map says where it ends, the other creatures and objects standing inside it. A round takes
+ * away only what was placed while it ran, so anything it used up, destroyed, damaged or moved is put back the way the
+ * map had it once the round is over.
  */
 final class TeamsEntityJournal
 {
@@ -30,6 +31,7 @@ final class TeamsEntityJournal
     private static final String NBT_ENTITY = "entity";
     /** Dropped from a snapshot before it is placed again, so the replacement cannot clash with the entity it replaces. */
     private static final String NBT_UUID = "UUID";
+    private static final String NBT_PASSENGERS = "Passengers";
 
     private record Key(ResourceKey<Level> dimension, UUID entity)
     {}
@@ -68,11 +70,23 @@ final class TeamsEntityJournal
                 discard(present);
             }
             CompoundTag tag = entry.getValue().copy();
-            tag.remove(NBT_UUID);
-            EntityType.create(tag, level).ifPresent(level::addFreshEntity);
+            renew(tag);
+            EntityType.loadEntityRecursive(tag, level, placed ->
+            {
+                level.addFreshEntity(placed);
+                return placed;
+            });
         }
         // Keep entries for temporarily unavailable dimensions rather than silently losing them.
         entities.keySet().removeIf(key -> server.getLevel(key.dimension()) != null);
+    }
+
+    /** Lets a snapshot and everything riding in it come back under new identities, clear of the ones being replaced. */
+    private static void renew(CompoundTag tag)
+    {
+        tag.remove(NBT_UUID);
+        for (Tag passenger : tag.getList(NBT_PASSENGERS, Tag.TAG_COMPOUND))
+            renew((CompoundTag) passenger);
     }
 
     /** Takes an entity away to make room for its snapshot, without letting the removal spill its contents. */
