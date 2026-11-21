@@ -72,6 +72,11 @@ if (!project.hasProperty('withoutMinecraftMcp') && (mcpJar.get().asFile.isFile()
         canBeResolved = false
     }
     dependencies.add(obfuscation.createRemappingConfiguration(mcpRuntime).name, mcpDependency)
+    def mcpRuntimeClasspath = configurations.create('mcpRuntimeClasspath') {
+        canBeConsumed = false
+        canBeResolved = true
+        extendsFrom mcpRuntime
+    }
     // Keep the normal client plain; this sibling uses the same account, packs and world directory with MCP.
     String mcpGameTestNamespace = mod_id
     legacyForge.runs.create('clientMcp') {
@@ -89,7 +94,9 @@ if (!project.hasProperty('withoutMinecraftMcp') && (mcpJar.get().asFile.isFile()
         if (run.name == 'clientMcp' || mcpOnEveryClient && run.name.startsWith('client'))
         {
             // Only these runs put the MCP mod on their classpath; servers and the plain client never see it.
-            run.additionalRuntimeClasspathConfiguration.extendsFrom(mcpRuntime)
+            // Forge discovers mods on the game classpath only; the legacy classpath carries plain libraries.
+            String runTask = 'run' + run.name.capitalize()
+            tasks.matching { it.name == runTask }.configureEach { it.classpathProvider.from(mcpRuntimeClasspath) }
             boolean second = run.name == 'client2'
             systemProperty 'mcp.port', (second ? mcpTarget.secondPort : mcpTarget.port).toString()
             systemProperty 'mcp.background_input', 'true'

@@ -54,6 +54,9 @@ On Forge 1.20.1, setup must prepare the jar before launching with MCP.
 ModDevGradle Legacy remaps that verified jar through a `mod*` remapping
 configuration attached only to the MCP client runs; adding the production
 jar directly to the development classpath causes SRG-method startup errors.
+The remapped jar goes on those runs' game classpath, where Forge discovers mods;
+on the legacy classpath it loads as a plain library and the log reports
+`mcpmod` as missing while only the companion answers.
 NeoForge uses the downloaded jar through `localRuntime`.
 
 Both versions may run simultaneously. The adapter verifies the expected Minecraft
@@ -178,6 +181,8 @@ and other-version limitations still require their own checks.
 | Setup piped through `tail` or another filter never returns | The Gradle daemon that `prepareMinecraftMcp` starts inherits the pipe and keeps it open. Run setup unpiped, then check that `build/minecraft-mcp` holds the verified jar instead of waiting for the shell. |
 | Offline status while Gradle is still starting Minecraft | Poll the pinned status endpoint and active log with a deadline. Run live preflight after the title screen is ready; investigate startup errors instead of treating them as gameplay failures. |
 | Forge warns that `mcpDev` has no valid resource pack info | Keep `src/mcpDev/resources/pack.mcmeta` with the branch's pack format. Restart the owned client and verify the warning is gone; do not merely dismiss it. |
+| `execute_command` fails with "no command method found" | The remapped upstream mod cannot find its command method on Forge 1.20.1. Use `open_chat`, then `type_text` with `press_enter`, and confirm the `[CHAT]` reply in the active log. |
+| `press_key key.keyboard.escape` opens the inventory instead | Pass `ESCAPE` to close a screen. In game it does not open the pause menu, number keys may apply late, and the `F3,T` hotkey is not delivered: hold items with `/item replace entity @s weapon.mainhand with ...` and stop an owned disposable client through its Gradle task. |
 | Upstream labels are blank or widget IDs repeat | Use mapped `ui_state` labels, translation keys and snapshot/widget references. Do not guess from a stale button index. |
 | A menu action returns success but the expected page is absent | Use `ui_click` with a resulting screen, plus widget/value assertions for changes within `GuiWolffsMod`. Refresh state after changes; old snapshots are deliberately rejected. |
 | NPC editor opens with every control disabled | The fixture needs the server's editing NPC and the CustomNPCs wand in hand. `fixture_editor` supplies both; wait for enabled hub controls before testing. |
