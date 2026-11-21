@@ -1,6 +1,8 @@
 package com.flansmodultimate.compat.sable.platform;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.driveables.physics.VehicleDeckContact;
+import com.flansmodultimate.compat.sable.SableVehicleContact;
 import com.flansmodultimate.common.entity.geometry.EmplacementFrame;
 import com.flansmodultimate.compat.sable.SableEmplacementFrame;
 import com.flansmodultimate.common.raytracing.Raytracer;
@@ -23,6 +25,7 @@ public final class SableSetup
         if (ModList.get().isLoaded("sable"))
             event.enqueueWork(() ->
             {
+                VehicleDeckContact.setResolver(SableVehicleContact::apply);
                 Raytracer.setMovingBlockClipper(SableShotClipper::nearest);
                 EmplacementFrame.Lookup.setResolver(SableEmplacementFrame::at);
             });

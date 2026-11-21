@@ -13,6 +13,7 @@ import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.driveables.damage.*;
 import com.flansmodultimate.common.driveables.physics.*;
+import com.flansmodultimate.common.entity.geometry.EmplacementFrame;
 import com.flansmodultimate.common.driveables.visual.DriveableVisual;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
@@ -7349,6 +7350,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         WheelTerrainSampler sampler = new WheelTerrainSampler(this::clipWheelTerrain,
             new WheelTerrainSampler.Reach(step + 0.6D, poseProbeDroop + 0.45D, wheelGroundClearance(), maximumCompression, poseProbeDroop, suspensionDroop), wheelPrediction(velocity, resolvedPhysics),
             false);
+        BlockPos support = null;
         for (int index = 0; index < configType.getWheelPositions().size(); index++)
         {
             DriveablePosition definition = configType.getWheelPosition(index);
@@ -7359,11 +7361,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 definition.getPosition().y);
             if (carrying != null)
             {
+                if (support == null)
+                    support = carrying.getBlockPos();
                 SurfaceTraction.Sample wheelSample = SurfaceTraction.sample(SurfaceTraction.classify(level().getBlockState(carrying.getBlockPos())), surfaceDriveType);
                 surfaceGripSum += wheelSample.grip();
                 surfaceSpeedSum += wheelSample.speedFactor();
             }
         }
+        if (support != null && this instanceof Vehicle vehicle)
+            VehicleDeckContact.apply(vehicle, support);
         groundedWheelCount = sampler.grounded();
         if (groundedWheelCount == 0)
             return velocity;
@@ -7420,7 +7426,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     private BlockHitResult clipWheelTerrain(Vec3 from, Vec3 to)
     {
         BlockHitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-        return hit.getType() == HitResult.Type.BLOCK ? hit : null;
+        if (hit.getType() != HitResult.Type.BLOCK)
+            return null;
+        if (this instanceof Vehicle)
+        {
+            EmplacementFrame frame = EmplacementFrame.at(level(), hit.getBlockPos());
+            if (frame != EmplacementFrame.TERRAIN)
+                return new BlockHitResult(frame.worldPosition(hit.getLocation()), hit.getDirection(), hit.getBlockPos(), hit.isInside());
+        }
+        return hit;
     }
 
     /** See {@link DriveableType#getWheelGroundClearance()}. */
