@@ -237,6 +237,12 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE;
     private static final Supplier<Double> LOCK_ON_RANGE;
     private static final Supplier<Integer> RICOCHET_SPARK_COUNT;
+    private static final Supplier<Boolean> PROJECTILE_CHUNK_LOADING;
+    private static final Supplier<Boolean> REALISTIC_PROJECTILE_DRAG;
+    private static final Supplier<Double> PROJECTILE_DRAG_SCALE;
+    private static final Supplier<Integer> PROJECTILE_CHUNK_TICKETS_PER_PLAYER;
+    private static final Supplier<Integer> PROJECTILE_CHUNK_TICKETS_PER_SERVER;
+    private static final Supplier<Integer> PROJECTILE_CHUNK_LOADING_DISTANCE;
     private static final Supplier<Integer> FLAK_PARTICLES_RANGE;
     private static final Supplier<Double> ENTITY_HIT_PARTICLE_RANGE;
     private static final Supplier<Double> BLOCK_HIT_PARTICLE_RANGE;
@@ -584,6 +590,22 @@ public final class ModCommonConfig
         SHOOTABLE_DEFAULT_RESPAWN_TIME = builder.comment("Max despawn time in ticks (0.05s). 0 means no despawn time.").defineInRange("shootableDefaultRespawnTime", 0, 0, Integer.MAX_VALUE);
         LOCK_ON_RANGE = builder.comment("Range in blocks used by lock-on missiles when searching for targets.").defineInRange("lockOnRange", 128.0, 1.0, 4096.0);
         RICOCHET_SPARK_COUNT = builder.comment("Base number of star particles spawned by a ricochet, scaled by projectile size.").defineInRange("ricochetSparkCount", 4, 0, 64);
+        REALISTIC_PROJECTILE_DRAG = builder
+            .comment("Give rounds with a projectile mass air drag that grows with their speed and falls with their mass, instead of losing the same share of their speed every tick.",
+                "Their kinetic damage and armour penetration then follow the speed they keep at the target's range. Off keeps the constant drag for every round.")
+            .define("realisticProjectileDrag", true);
+        PROJECTILE_DRAG_SCALE = builder.comment("Multiplies the speed-dependent drag of every round. At 1, a 4 g rifle bullet keeps 70% of its speed over 300 m.")
+            .defineInRange("projectileDragScale", 1.0, 0.0, 10.0);
+        PROJECTILE_CHUNK_LOADING = builder
+            .comment("Let ammunition with ProjectileChunkLoading true keep the chunks ahead of it loaded while it flies, so long-range missiles and shells are not lost",
+                "when they leave the area around players. Other ammunition is unaffected.")
+            .define("projectileChunkLoading", true);
+        PROJECTILE_CHUNK_TICKETS_PER_PLAYER = builder.comment("Chunk-loading projectiles one player may have in flight at once. Further rounds fly without loading chunks.")
+            .defineInRange("projectileChunkTicketsPerPlayer", 4, 0, 64);
+        PROJECTILE_CHUNK_TICKETS_PER_SERVER = builder.comment("Chunk-loading projectiles the whole server may have in flight at once. Further rounds fly without loading chunks.")
+            .defineInRange("projectileChunkTicketsPerServer", 64, 0, 1024);
+        PROJECTILE_CHUNK_LOADING_DISTANCE = builder.comment("Distance in blocks from its launch point beyond which a projectile stops loading chunks.")
+            .defineInRange("projectileChunkLoadingDistance", 4096, 16, 30000);
         FLAK_PARTICLES_RANGE = builder.comment("Range in blocks for sending flak particle packets to clients.").defineInRange("flakParticlesRange", 256, 1, 4096);
         ENTITY_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending entity-hit particle packets to clients.").defineInRange("entityHitParticleRange", 64.0, 1.0, 4096.0);
         BLOCK_HIT_PARTICLE_RANGE = builder.comment("Range in blocks for sending block-hit particle packets to clients.").defineInRange("blockHitParticleRange", 64.0, 1.0, 4096.0);
@@ -1588,6 +1610,36 @@ public final class ModCommonConfig
     public static int ricochetSparkCount()
     {
         return RICOCHET_SPARK_COUNT.get();
+    }
+
+    public static boolean realisticProjectileDrag()
+    {
+        return REALISTIC_PROJECTILE_DRAG.get();
+    }
+
+    public static double projectileDragScale()
+    {
+        return PROJECTILE_DRAG_SCALE.get();
+    }
+
+    public static boolean projectileChunkLoading()
+    {
+        return PROJECTILE_CHUNK_LOADING.get();
+    }
+
+    public static int projectileChunkTicketsPerPlayer()
+    {
+        return PROJECTILE_CHUNK_TICKETS_PER_PLAYER.get();
+    }
+
+    public static int projectileChunkTicketsPerServer()
+    {
+        return PROJECTILE_CHUNK_TICKETS_PER_SERVER.get();
+    }
+
+    public static int projectileChunkLoadingDistance()
+    {
+        return PROJECTILE_CHUNK_LOADING_DISTANCE.get();
     }
 
     public static int flakParticlesRange()

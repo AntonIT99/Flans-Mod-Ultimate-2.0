@@ -368,6 +368,9 @@ class DriveableProjectileCarryoverTest
             when(bullet.getDamage()).thenReturn(damage);
             when(shot.getBulletType()).thenReturn(bullet);
             when(shot.getPenetrationAt100m()).thenReturn(100F);
+            // No drag at these ranges: the round keeps its rating and its muzzle velocity.
+            when(shot.getPenetrationAt(any(), any())).thenAnswer(call -> shot.getPenetrationAt100m());
+            when(shot.getImpactVelocity(any(), any())).thenAnswer(call -> shot.getMuzzleVelocity());
             when(shot.getExplosiveMass()).thenReturn(1F);
             armor(Map.of());
         }

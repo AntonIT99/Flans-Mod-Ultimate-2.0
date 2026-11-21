@@ -94,8 +94,10 @@ public final class ModelArmourDamage
         boolean normalizedHealth = type.getResolvedHealth().enabled();
         float fixedDamage = bulletType.getDamage().getDamageAgainstEntity(target);
         float selectedFixedDamage = normalizedHealth ? fixedDamage : fixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
-        float p100 = shot.getPenetrationAt100m();
-        VehicleProjectileDamageResolver.Result resolved = VehicleProjectileDamageResolver.resolve(normalizedHealth, shot.getProjectileMass(), selectedFixedDamage, shot.getMuzzleVelocity(), armour,
+        Vec3 reached = target.getBoundingBox().getCenter();
+        float p100 = shot.getPenetrationAt(target.level(), reached);
+        VehicleProjectileDamageResolver.Result resolved = VehicleProjectileDamageResolver.resolve(normalizedHealth, shot.getProjectileMass(), selectedFixedDamage,
+            shot.getImpactVelocity(target.level(), reached), armour,
             p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? Driveable.shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean blocked = resolved.penetration().armourGateRequired() && !resolved.penetration().penetrated();
         float resistance = Math.max(1F, partResistance);

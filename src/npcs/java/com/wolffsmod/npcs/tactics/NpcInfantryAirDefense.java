@@ -204,7 +204,7 @@ public final class NpcInfantryAirDefense
             return true;
         var shot = FlansProjectiles.prepare(npc, ammo, ItemStack.EMPTY, null, null, false, new ProjectileParameters(0, false, 0F, 0F, (float) speed));
         return shot.map(value -> value.dropped() || !plausibleShot(target.getEyePosition().subtract(npc.getEyePosition()), velocity(NpcVehicleThreats.platform(target)), value.speed(),
-            value.gravity(), value.drag())).orElseGet(() -> !plausibleShot(target.getEyePosition().subtract(npc.getEyePosition()), velocity(NpcVehicleThreats.platform(target)), speed, 0.03D, 0.99D));
+            value.gravity(), value.drag(npc.getEyePosition().distanceTo(target.getEyePosition())))).orElseGet(() -> !plausibleShot(target.getEyePosition().subtract(npc.getEyePosition()), velocity(NpcVehicleThreats.platform(target)), speed, 0.03D, 0.99D));
     }
 
     public static boolean canEngage(EntityNPCInterface npc, LivingEntity target)
@@ -240,7 +240,8 @@ public final class NpcInfantryAirDefense
             new ProjectileParameters(FlansEquipment.getLoadedRoundIndex(weapon), inherited, 0F, 0F, inherited ? 1F : (float) NpcEquipment.speed(npc.stats.ranged.getSpeed())));
         if (shot.isEmpty() || shot.get().dropped())
             return false;
-        return plausibleShot(target.getEyePosition().subtract(npc.getEyePosition()), velocity(NpcVehicleThreats.platform(target)), shot.get().speed(), shot.get().gravity(), shot.get().drag());
+        return plausibleShot(target.getEyePosition().subtract(npc.getEyePosition()), velocity(NpcVehicleThreats.platform(target)), shot.get().speed(), shot.get().gravity(),
+            shot.get().drag(npc.getEyePosition().distanceTo(target.getEyePosition())));
     }
 
     private static boolean blockedByArmor(EntityNPCInterface npc, LivingEntity target, ItemStack weapon, ItemStack ammo)

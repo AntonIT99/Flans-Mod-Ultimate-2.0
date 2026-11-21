@@ -263,7 +263,7 @@ public final class NpcRangedAttack
             boolean arc = options.enabled(Feature.BALLISTIC_AIM);
             Vec3 displacement = NpcVehicleState.aimPoint(aimed).subtract(from);
             double gravity = arc ? shot.gravity() : 0D;
-            double drag = arc ? shot.drag() : 1D;
+            double drag = arc ? shot.drag(displacement.length()) : 1D;
             // The lead the NPC's own limits allow for is already in what the state works out.
             return state.lead(npc, displacement, aimed, options, shot.speed(), gravity, drag, highArc);
         }

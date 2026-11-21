@@ -308,6 +308,9 @@ public abstract class ShootableItem extends FlanItem
             IFlanItem.appendDamageStats(tooltipComponents, configType.getDamage(), TooltipKeys.DAMAGE, weaponDamage);
         }
 
+        if (bulletType != null && bulletType.hasLongRangeDamage())
+            appendLongRangeDamage(tooltipComponents, bulletType, context);
+
         if (bulletType != null && bulletType.isHeat())
         {
             appendPerRound(tooltipComponents, TooltipKeys.VS_VEHICLES, rounds,
@@ -425,6 +428,24 @@ public abstract class ShootableItem extends FlanItem
             return;
         tooltip.add(Component.translatable(labelKey).append(":").withStyle(ChatFormatting.BLUE));
         tooltip.addAll(lines);
+    }
+
+    /**
+     * The damage the round keeps against soft targets once it has flown past its long-range delay. Authored damage shows the
+     * value itself; kinetic damage, which depends on the round, shows the factor it is scaled by.
+     */
+    protected static void appendLongRangeDamage(List<Component> tooltip, BulletType type, @Nullable AmmoStatContext context)
+    {
+        Component label = Component.translatable(TooltipKeys.LONG_RANGE_SOFT_DAMAGE, IFlanItem.formatFloat(type.getDynamicBulletDelay() / 20F, 2));
+        if (!type.useKineticDamageSystem())
+        {
+            float weaponDamage = context != null ? context.fireable(type).getDamage() : 1F;
+            tooltip.add(IFlanItem.statLine(label, IFlanItem.formatFloat(type.getDynamicDamage() * weaponDamage, 1)));
+        }
+        else if (type.getDamage().getDamageVsLiving() > 0F)
+        {
+            tooltip.add(IFlanItem.statLine(label, "x" + IFlanItem.formatFloat(type.getDynamicDamage() / type.getDamage().getDamageVsLiving(), 2)));
+        }
     }
 
     protected static float projectileMass(BulletType type, int shot, @Nullable AmmoStatContext context)

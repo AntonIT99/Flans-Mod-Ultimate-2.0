@@ -4720,8 +4720,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (weapon == EnumWeaponType.BOMB)
             return new WeaponBallistics(0D, gravity, drag, true);
         LivingEntity attacker = getControllingEntity() instanceof LivingEntity living ? living : null;
-        float speed = new FiredShot(resolveFireableGun(selection, secondary), bullet, this, attacker, ShootableItem.getRoundsFired(selection.stack())).getMuzzleVelocity(false);
-        return new WeaponBallistics(Math.max(0F, speed), gravity, drag, false);
+        FiredShot shot = new FiredShot(resolveFireableGun(selection, secondary), bullet, this, attacker, ShootableItem.getRoundsFired(selection.stack()));
+        float speed = shot.getMuzzleVelocity(false);
+        // A round with speed-dependent drag has no constant air drag besides it, as Bullet.applyDragAndGravity flies it.
+        double quadraticDrag = shot.getQuadraticDrag(level());
+        return new WeaponBallistics(Math.max(0F, speed), gravity, quadraticDrag > 0D ? 1D : drag, false, quadraticDrag);
     }
 
     /**

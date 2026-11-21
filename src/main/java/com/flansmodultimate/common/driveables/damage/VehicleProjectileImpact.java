@@ -13,6 +13,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -133,8 +134,9 @@ public final class VehicleProjectileImpact
         boolean normalized = target.type().getResolvedHealth().enabled();
         if (!normalized)
             fixedDamage *= Mth.clamp(previousPower, 0.1F, 1F);
-        float p100 = shot == null ? bulletType.getPenetrationAt100m(shotIndex) : shot.getPenetrationAt100m();
-        float velocity = shot == null ? ShootingHelper.getMuzzleVelocity(bulletType, shotIndex, null) : shot.getMuzzleVelocity();
+        Level level = hit.getEntity().level();
+        float p100 = shot == null ? bulletType.getPenetrationAt100m(shotIndex) : shot.getPenetrationAt(level, hit.getHitPosition());
+        float velocity = shot == null ? ShootingHelper.getMuzzleVelocity(bulletType, shotIndex, null) : shot.getImpactVelocity(level, hit.getHitPosition());
         float mass = shot == null ? bulletType.getMass(shotIndex) : shot.getProjectileMass();
         VehicleProjectileDamageResolver.Result damage = VehicleProjectileDamageResolver.resolve(normalized, mass, fixedDamage, velocity, armor,
             p100 > 0F && Float.isFinite(p100) ? p100 : null, bulletType.isHeat() ? Driveable.shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());

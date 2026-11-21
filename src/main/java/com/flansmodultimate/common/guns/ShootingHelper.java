@@ -157,6 +157,8 @@ public final class ShootingHelper
     {
         boolean instant = !firedShot.getBulletType().isDepthCharge() && firedShot.getMuzzleVelocity(false) <= 0F;
 
+        if (firedShot.getLaunchOrigin() == null)
+            firedShot.setLaunchOrigin(shootingOrigin);
         for (int i = 0; i < numBullets; i++)
         {
             if (instant)
@@ -627,12 +629,15 @@ public final class ShootingHelper
             return getKineticDamage(projectileMass, shootable.getDeltaMovement().length());
         }
 
-        // Regular projectiles use their authored muzzle velocity so entity bullets
+        float baseDamage = type.getDamage().getDamageAgainstEntity(entity);
+
+        // Regular projectiles use their muzzle velocity less the drag over the target's range, so entity bullets
         // and raytraced shots remain on the same kinetic-damage scale.
         if (projectileMass > 0F)
-            return getKineticDamage(projectileMass, firedShot.getMuzzleVelocity());
+            return getKineticDamage(projectileMass, firedShot.getImpactVelocity(entity.level(), entity.getBoundingBox().getCenter()))
+                * LongRangeDamage.kineticFactor(firedShot, shootable, entity, baseDamage);
 
-        float baseDamage = type.getDamage().getDamageAgainstEntity(entity);
+        baseDamage = LongRangeDamage.authoredDamage(type, shootable, firedShot, entity, baseDamage);
 
         if (shootable instanceof Grenade)
             return (float) (baseDamage * shootable.getDeltaMovement().lengthSqr() * 3.0);

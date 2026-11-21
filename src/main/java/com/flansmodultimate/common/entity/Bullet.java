@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.content.IContentType;
+import com.flansmodultimate.api.projectiles.BallisticDrag;
 import com.flansmodultimate.api.projectiles.IBullet;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
@@ -106,6 +107,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     /** Ticks the raytrace looks back in time, to where the shooting player saw its targets; 0 for a shot aimed on the server */
     protected int rewindTicks;
 
+    /** Speed-dependent air drag in inverse blocks, decided by the server at launch and sent with the spawn data */
+    @Getter
+    protected double quadraticDrag;
+
     /** For homing missiles */
     protected Entity lockedOnTo; // For homing missiles
     protected double prevDistanceToEntity;
@@ -145,6 +150,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         initialPenetratingPower = ShootingHelper.getInitialPenetratingPower(firedShot);
         penetratingPower = initialPenetratingPower;
         setPos(origin);
+        if (firedShot.getLaunchOrigin() == null)
+            firedShot.setLaunchOrigin(origin);
+        quadraticDrag = level.isClientSide ? 0D : firedShot.getQuadraticDrag(level);
         // The ammunition's own muzzle velocity decides how fast the round flies, exactly as it decides
         // the kinetic damage it lands with. The weapon is only the fallback.
         setArrowHeading(direction, firedShot.getSpread(), firedShot.getMuzzleVelocity(), firedShot.getSpreadPattern());
@@ -313,6 +321,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         buf.writeInt(impactY);
         buf.writeInt(impactZ);
         ParticleNameCodec.write(buf, roundTracerParticle);
+        buf.writeDouble(quadraticDrag);
     }
 
     @Override
@@ -329,6 +338,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             impactY = buf.readInt();
             impactZ = buf.readInt();
             roundTracerParticle = ParticleNameCodec.read(buf);
+            quadraticDrag = buf.readDouble();
 
             Level level = level();
             Entity shooter = null;
@@ -446,6 +456,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         Level level = level();
         try
         {
+            if (configType != null && configType.isProjectileChunkLoading() && level instanceof ServerLevel serverLevel)
+                ProjectileChunkLoader.tick(serverLevel, this, velocity, chunkLoadingOwner());
             if (isLeavingEntityTickingArea(level))
             {
                 discard();
@@ -505,6 +517,15 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         }
     }
 
+    /** The player a chunk-loading round counts against: the one who fired it, or the one controlling what fired it. */
+    @Nullable
+    private UUID chunkLoadingOwner()
+    {
+        if (firedShot.getAttacker().orElse(null) instanceof Player player)
+            return player.getUUID();
+        return firedShot.getCausingEntity().map(Entity::getControllingPassenger).filter(Player.class::isInstance).map(Entity::getUUID).orElse(null);
+    }
+
     /**
      * Entities outside the simulation distance stop ticking, which would leave the bullet frozen in mid-air
      * with no drag, gravity, hit detection or lifetime. Remove it before it gets stuck there.
@@ -512,6 +533,12 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected boolean isLeavingEntityTickingArea(Level level)
     {
         return level instanceof ServerLevel serverLevel && !serverLevel.isPositionEntityTicking(BlockPos.containing(position().add(velocity)));
+    }
+
+    /** Whether the round is homing on a target; on the client, as far as spawn data told it. */
+    public boolean hasLockOnTarget()
+    {
+        return lockedOnTo != null;
     }
 
     /** Bullets are transient: never write them to chunk data, where they would come back frozen after a reload */
@@ -754,9 +781,32 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         nearMissRecipients = NearMissHandler.dispatch(level, firedShot, origin, origin.add(traceMotion.scale(feedbackProgress)), directHitPlayers, nearMissRecipients);
     }
 
-    /** Posts the hit event, and leaves the deflection of a raised block to the server, which decides and tells the clients */
+    /**
+     * A guided round flown level just above natural ground skims over it instead of striking it: the descent is cancelled and
+     * the block hit dropped. Both sides trace the same hit, so they agree without a packet.
+     */
+    private boolean trySkimGround(BulletHit bulletHit)
+    {
+        float tolerance = configType.getMissileGroundSkimTolerance();
+        if (!(bulletHit instanceof BlockHit hit) || tolerance <= 0F || !MissileFlightProfile.isGuided(configType, lockedOnTo != null))
+            return false;
+        BlockHitResult result = hit.getHitResult();
+        double heightAboveSurface = getY() - (result.getBlockPos().getY() + 1D);
+        if (!MissileFlightProfile.shouldSkim(tolerance, result.getDirection(), MissileFlightProfile.isSkimmableGround(hit.getBlockstate()), heightAboveSurface, velocity))
+            return false;
+        velocity = MissileFlightProfile.skimVelocity(velocity, tolerance);
+        setDeltaMovement(velocity);
+        return true;
+    }
+
+    /**
+     * Skips a block the round skims over, posts the hit event, and leaves the deflection of a raised block to the server, which
+     * decides and tells the clients
+     */
     private boolean isHitIgnored(Level level, BulletHit bulletHit)
     {
+        if (trySkimGround(bulletHit))
+            return true;
         BulletHitEvent bulletHitEvent = new BulletHitEvent(this, bulletHit);
         PlatformEvents.post(bulletHitEvent);
         return bulletHitEvent.isCanceled() || level.isClientSide && isDeflectingBlockHit(bulletHit);
@@ -873,7 +923,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             return;
 
         double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed(), level());
-        float drag = ProjectileDrag.factor(this, configType.getDragInAir(), configType.getDragInWater());
+        // In air a round with speed-dependent drag loses it instead of a constant share; water and lava keep theirs.
+        double drag = quadraticDrag > 0D && !isInWater() && !isInLava() ? BallisticDrag.retention(quadraticDrag, velocity.length())
+            : ProjectileDrag.factor(this, configType.getDragInAir(), configType.getDragInWater());
         velocity = velocity.scale(drag).add(0, -gravity, 0);
         setDeltaMovement(velocity);
     }

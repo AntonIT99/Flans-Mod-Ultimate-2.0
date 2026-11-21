@@ -152,6 +152,7 @@ class NpcInfantryAirObservationTest
         ProjectileShot shot = mock(ProjectileShot.class);
         when(shot.speed()).thenReturn(5F);
         when(shot.drag()).thenReturn(0.99D);
+        when(shot.drag(anyDouble())).thenCallRealMethod();
         when(npc.position()).thenReturn(Vec3.ZERO);
         when(npc.getEyePosition()).thenReturn(Vec3.ZERO);
         when(aircraft.getEyePosition()).thenReturn(new Vec3(0D, 25D, 60D));

@@ -34,6 +34,8 @@ public class BulletType extends ShootableType
     protected final Map<String, Integer> ammoModelTypeByGun = new HashMap<>();
     public static final float DEFAULT_BULLET_SPEED = 3F;
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
+    private static final int LEGACY_UNUSED_DYNAMIC_DELAY = 8999;
+    public static final float DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43F;
 
     /** {@code mass} in grams, {@code explosiveMass} in kg TNT equivalent, {@code bulletSpeed} in blocks per tick. */
     public record RoundStats(float mass, float explosiveMass, float bulletSpeed, float penetrationAt100m)
@@ -182,6 +184,18 @@ public class BulletType extends ShootableType
 
     @Getter
     protected float dragInAir = AIR_DEFAULT_DRAG;
+    /** Whether the definition sets {@code DragInAir} itself, which keeps the constant-retention drag it describes. */
+    @Getter
+    protected boolean explicitDragInAir;
+    /** {@code QuadraticDrag}: unset follows the projectile's mass, true forces speed-dependent drag, false turns it off. */
+    @Nullable
+    protected Boolean quadraticDrag;
+    /** Scales the speed-dependent drag coefficient, for shapes far from a typical round: above 1 for blunt shells, below for long rods. */
+    @Getter
+    protected float quadraticDragMultiplier = 1F;
+    /** How steeply armour penetration follows impact speed: 1.43 after de Marre, about 1 for long rods, 0 for blast-only ratings. */
+    @Getter
+    protected float penetrationVelocityExponent = DEFAULT_PENETRATION_VELOCITY_EXPONENT;
     @Getter
     protected float dragInWater = WATER_DEFAULT_DRAG;
     @Getter
@@ -224,6 +238,32 @@ public class BulletType extends ShootableType
     protected int depthChargeSeaLevel = Integer.MIN_VALUE;
     @Getter
     protected boolean laserGuidance;
+
+    // Missile flight presentation and terrain following
+    /** Guided missiles roll about their flight axis while rendering. */
+    @Getter
+    protected boolean missileTwirl = true;
+    /** Roll rate in degrees per tick. */
+    @Getter
+    protected float missileTwirlSpeed = 28F;
+    /** Amplitude in degrees of the irregular roll added on top of the steady rate. */
+    @Getter
+    protected float missileTwirlWobble = 4F;
+    /** Height in blocks above natural ground within which a level guided missile skims instead of striking the surface; 0 disables. */
+    @Getter
+    protected float missileGroundSkimTolerance = 0.12F;
+
+    // Long-range soft-target performance
+    /** Flight time in ticks after which {@link #dynamicDamage} replaces the round's damage against living targets; negative disables. */
+    @Getter
+    protected int dynamicBulletDelay = -1;
+    /** Damage against living targets once the round has flown longer than {@link #dynamicBulletDelay}. */
+    @Getter
+    protected float dynamicDamage = 1F;
+
+    /** Keeps the chunks ahead of the projectile loaded while it flies, within the server's projectile ticket limits. */
+    @Getter
+    protected boolean projectileChunkLoading;
 
     // Submunitions
     @Getter
@@ -306,6 +346,43 @@ public class BulletType extends ShootableType
         proNavGain = Math.max(0F, Math.min(10F, proNavGain));
     }
 
+    private void readMissileFlightProfile(TypeFile file)
+    {
+        missileTwirl = readValue("ATGMTwirl", missileTwirl, file);
+        missileTwirl = readValue("MissileTwirl", missileTwirl, file);
+        missileTwirlSpeed = finiteOr(readValue("MissileTwirlSpeed", readValue("ATGMTwirlSpeed", missileTwirlSpeed, file), file), 28F);
+        missileTwirlWobble = finiteOr(readValue("MissileTwirlWobble", readValue("ATGMTwirlWobble", missileTwirlWobble, file), file), 4F);
+        float skim = readValue("MissileGroundSkimTolerance", readValue("ATGMGroundSkimTolerance", missileGroundSkimTolerance, file), file);
+        missileGroundSkimTolerance = Mth.clamp(finiteOr(skim, 0.12F), 0F, 4F);
+    }
+
+    private void readLongRangePerformance(TypeFile file)
+    {
+        dynamicBulletDelay = readValue("DynamicBulletDelay", dynamicBulletDelay, file);
+        // The reference fork marks unused long-range data with a delay of 9000 ticks or more.
+        if (dynamicBulletDelay >= LEGACY_UNUSED_DYNAMIC_DELAY)
+            dynamicBulletDelay = -1;
+        dynamicDamage = Math.max(0F, finiteOr(readValue("DynamicDamage", dynamicDamage, file), 1F));
+    }
+
+    private static float finiteOr(float value, float fallback)
+    {
+        return Float.isFinite(value) ? value : fallback;
+    }
+
+    /** The {@code QuadraticDrag} setting, or null when the definition leaves it to the projectile's mass. */
+    @Nullable
+    public Boolean getQuadraticDragSetting()
+    {
+        return quadraticDrag;
+    }
+
+    /** Whether the round switches to its long-range damage after {@link #dynamicBulletDelay} ticks of flight. */
+    public boolean hasLongRangeDamage()
+    {
+        return dynamicBulletDelay >= 0;
+    }
+
     private void readAmmoModelTypes(TypeFile file)
     {
         readValuesInLines("AmmoModelType", file, 2).ifPresent(lines -> lines.forEach(split ->
@@ -379,6 +456,13 @@ public class BulletType extends ShootableType
         penetrationDecayEffectOnDamage = readValue("PenetrationDecayDamageEffect", penetrationDecayEffectOnDamage, file);
 
         dragInAir = readValue("DragInAir", dragInAir, file);
+        explicitDragInAir = file.hasConfigLine("DragInAir");
+        if (file.hasConfigLine("QuadraticDrag"))
+            quadraticDrag = readValue("QuadraticDrag", false, file);
+        float multiplier = readValue("QuadraticDragMultiplier", quadraticDragMultiplier, file);
+        quadraticDragMultiplier = Float.isFinite(multiplier) ? Mth.clamp(multiplier, 0F, 20F) : 1F;
+        float exponent = readValue("PenetrationVelocityExponent", penetrationVelocityExponent, file);
+        penetrationVelocityExponent = Float.isFinite(exponent) ? Mth.clamp(exponent, 0F, 3F) : DEFAULT_PENETRATION_VELOCITY_EXPONENT;
         dragInWater = readValue("DragInWater", dragInWater, file);
 
         bulletSpread = readValue("Accuracy", bulletSpread, file);
@@ -449,6 +533,9 @@ public class BulletType extends ShootableType
 
         manualGuidance = readValue("ManualGuidance", manualGuidance, file);
         laserGuidance = readValue("LaserGuidance", laserGuidance, file);
+        readMissileFlightProfile(file);
+        readLongRangePerformance(file);
+        projectileChunkLoading = readValue("ProjectileChunkLoading", projectileChunkLoading, file);
         maxRange = readValue("MaxRange", maxRange, file);
 
         fancyDescription = readValue("FancyDescription", fancyDescription, file);

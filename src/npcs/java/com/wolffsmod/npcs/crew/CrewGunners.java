@@ -93,6 +93,7 @@ public final class CrewGunners
         private double speed = Double.NaN;
         private double gravity;
         private double drag = 1D;
+        private double quadraticDrag;
         /** What the gun fires and how it reloads, looked up every so often for the gunner they were looked up for. */
         private ItemStack ammo = ItemStack.EMPTY;
         @Nullable
@@ -445,12 +446,13 @@ public final class CrewGunners
             gun.speed = shot == null ? Double.NaN : shot.speed();
             gun.gravity = shot == null ? 0D : shot.gravity();
             gun.drag = shot == null ? 1D : shot.drag();
+            gun.quadraticDrag = shot == null ? 0D : shot.quadraticDrag();
         }
         Vec3 toTarget = NpcVehicleState.aimPoint(target).subtract(origin);
         if (Double.isNaN(gun.speed))
             return toTarget.normalize();
         boolean arc = context.options().enabled(Feature.BALLISTIC_AIM);
-        return context.state().lead(gunner, toTarget, target, context.options(), gun.speed, arc ? gun.gravity : 0D, arc ? gun.drag : 1D, false);
+        return context.state().lead(gunner, toTarget, target, context.options(), gun.speed, arc ? gun.gravity : 0D, arc ? BallisticDrag.effectiveRetention(gun.drag, gun.quadraticDrag, gun.speed, toTarget.length()) : 1D, false);
     }
 
     /** Whether nothing solid stands between the gun and the target, looked at every few ticks. */

@@ -110,14 +110,6 @@ No matching sensor mechanic exists, but parsed reference fields alone do not est
 
 Missing: unconfirmed; do not treat this as an active gameplay gap without evidence of reference detection and triggering.
 
-### Projectile chunk loading — MISSING
-
-Reference: `R/common/guns/ProjectileChunkManager`, `ShootableType.ProjectileChunkLoading`
-Long-range projectiles take chunk tickets so they keep simulating beyond players' loaded areas.
-
-Target checked: `T/platform/world/ChunkTicketPlatform` (used only by `TeamsManager`)
-Missing: chunk tickets for projectiles in flight.
-
 ### Seekers: self-guided, radar-guided, anti-radiation and homing torpedoes — MISSING
 
 Reference: `R/common/guns/EntityBullet` (around lines 418–500 and 656–690), `BulletType` (`selfGuided`, `seekerRange`, `radarGuided`, `antiRadiation`, `modernTorpedo`, `ASWminRange`, `scoutBullet`, `infiniteAngle`, `LockOnFuse`)
@@ -136,14 +128,6 @@ This is opt-in interception guidance for MISSILE rounds. PN commands the turn ra
 Target checked: `T/common/entity/Bullet` homing (pursuit using `TurningForce`/`LockOnForce`)
 Present: server-authoritative `ProportionalNavigation` / `ProNavGain` steering, preserving speed and the existing seeker, delay and `LockOnForce` turn budget. PN projectiles accept vanilla tracked velocity corrections; the existing entity tracking carries motion to clients.
 Missing: separate `ProNavMaxTurnRate`, terminal gain/range controls, and the optional debug trail.
-
-### Missile twirl and ground-skim profiles — MISSING
-
-Reference: `BulletType` (`ATGMTwirl`, `ATGMTwirlSpeed`, `ATGMTwirlWobble`, `MissileTwirl*`, `ATGMGroundSkimTolerance`, `MissileGroundSkimTolerance`)
-ATGMs and missiles spin around their flight axis with a wobble, and can fly close to the ground within a set tolerance.
-
-Target checked: `T/common/entity/Bullet`
-Missing: the visual and flight twirl, and the ground-skim height profile.
 
 ### Fly-over top attack — PARTIAL
 
@@ -170,14 +154,14 @@ Star shells light up the area below them while they descend.
 Target checked: `T/client/ModClient` dynamic lights (`HasDynamicLight` projectiles at a flat level)
 Missing: a dedicated slow-falling illumination round.
 
-### Soft-target and vanilla-damage modifiers — MISSING
+### Soft-target and vanilla-damage modifiers — PARTIAL
 
-Reference: `BulletType` (`dynamicDamage`, `dynamicBulletDelay`, `vanillaDamage`), `R/common/guns/raytracing/PlayerHitbox` (line 604), `R/common/guns/ItemBullet` ("Soft-Target Damage")
-Damage against living targets has its own multiplier, which the tooltip shows. `vanillaDamage` controls whether vanilla damage sources can hurt driveables.
+Reference: `BulletType` (`dynamicBodyarmorPen`, `vanillaDamage`), `R/common/guns/raytracing/PlayerHitbox` (line 172), `EntityVehicle`/`EntityPlane`/`EntityMecha.attackEntityFrom`
+After `dynamicBulletDelay` a round also switches to a separate body-armour penetration. `vanillaDamage false` (the fork default) makes crewed driveables ignore direct player melee.
 
-Target checked: `T/common/types/BulletType`, `T/common/types/ShootableType`
-Missing: the soft-target damage multiplier and the per-driveable vanilla-damage gate.
-
+Target checked: `T/common/guns/LongRangeDamage`, `T/common/entity/Driveable.hurt`
+**Note:** `DynamicBulletDelay` / `DynamicDamage` are present (see Projectile ports, 2026-11-21).
+Missing: long-range body-armour penetration, which has no target counterpart because the target has no Labjac body-armour model, and the per-driveable melee gate; target driveables always take player melee damage, as in 1.7.10.
 ### glTF skeletal gun animation — MISSING
 
 Reference: `GunType` (`UseGLTFAnimation`, `GLTFAnimation`, `Use{Left,Right}ArmGLTFAnimation`, `TacticalReloadGLTFAnimation`, `Start/End/LoopReloadAnimation`, `ShootAnimation`, `AimingShootAnimation`, `SwitchAnimation`, `Secondary*Animation`, `ActionAnimation`)
@@ -333,22 +317,6 @@ The weight of loaded ordnance affects aircraft performance. Aircraft can dock on
 
 Target checked: `T/common/entity/Plane`, `T/common/types/PlaneType`
 Missing: ordnance weight, carrier and helipad docking, and parasite aircraft.
-
-### Animated wing flaps and wheel covers — MISSING
-
-Reference: `PlaneType` (`WingFlapPosition1/2`, `WingFlapRotation1/2`, `WingFlapRate`, `WingFlapRotRate`, `WheelCover*`, `GearCoverPriority`)
-Extra animation channels move flaps and gear-bay covers between two poses.
-
-Target checked: `T/common/types/PlaneType` (wings, gear and doors)
-Missing: the flap and wheel-cover channels.
-
-### Afterburner — MISSING
-
-Reference: `R/common/driveables/EntityPlane` (lines 537, 2086 and 3039; `hasAfterBurner`, `afterBurnFuelPenalty`, `afterburnOffBonus`, `AfterburnWing`/`AfterburnWingFlipped`, `particleAfterBurn`, `afterBurnName`)
-The pilot toggles an afterburner, which adds thrust, burns extra fuel, can sweep the wings and emits afterburner particles.
-
-Target checked: `T/common/entity/Plane` (afterburn particles only for Valkyrie foot exhaust)
-Missing: the afterburner toggle and its thrust and fuel effects.
 
 ### Altitude-dependent aircraft performance and Labjac flight tuning — MISSING
 
@@ -559,14 +527,12 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Weapons | Directional melee and bayonets | PARTIAL | HIGH |
 | Weapons | Ricochet and penetration feedback | PARTIAL | MEDIUM |
 | Weapons | Motion-sensor grenades | UNCERTAIN | LOW |
-| Weapons | Projectile chunk loading | MISSING | HIGH |
 | Weapons | Self-guided, radar and ARM seekers, homing torpedoes | MISSING | HIGH |
 | Weapons | Proportional navigation | PARTIAL | HIGH |
-| Weapons | Missile twirl and ground skim | MISSING | HIGH |
 | Weapons | Fly-over top attack | PARTIAL | HIGH |
 | Weapons | Wire-guided missile and wire | MISSING | HIGH |
 | Weapons | Illumination star shells | MISSING | HIGH |
-| Weapons | Soft-target and vanilla-damage modifiers | MISSING | MEDIUM |
+| Weapons | Long-range armour penetration and vanilla-damage gate | PARTIAL | MEDIUM |
 | Weapons | glTF gun animation | MISSING | HIGH |
 | Weapons | Tactical reload and secondary switch timing | PARTIAL | HIGH |
 | Weapons | Gun carry limits and tiers | MISSING | HIGH |
@@ -585,8 +551,6 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Vehicles | Submarine diving and oxygen | MISSING | HIGH |
 | Vehicles | SLBM and VLS timing | MISSING | MEDIUM |
 | Vehicles | Hardpoints, ordnance weight and carriers | MISSING | HIGH |
-| Vehicles | Wing-flap and wheel-cover animation | MISSING | HIGH |
-| Vehicles | Afterburner | MISSING | HIGH |
 | Vehicles | Altitude performance and flight tuning | MISSING | MEDIUM |
 | Vehicles | Helicopter and aircraft crash presentation | PARTIAL | HIGH |
 | Vehicles | Distant and situational vehicle audio | PARTIAL | HIGH |
@@ -609,7 +573,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 40 MISSING, 13 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 29 MISSING, 19 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -705,3 +669,11 @@ Compatibility follow-up (2026-11-04): gun `IronSightOffset` (raw legacy render t
 Additional rate/audio compatibility (2026-11-04): gun `RPM` aliases canonical/category `RoundsPerMin` at lower priority, `Descriptions` aliases `Description`, and native player bolt/pump closing supports optional `ActionEndSound` with server-validated per-shot/reload permissions. This is a timing adaptation to native animations, not glTF clip playback.
 
 Impact/scatter follow-up (2026-11-04): ammunition `DynamicHitSoundEnable` can layer material feedback with the authored hit sound, with explicit false and unset fallback handled separately. Grenade `RandomDirection` chooses the fork-style scatter direction and speed on the server; spawn and saved orientation now include roll. Shared impact metadata carries both sound layers for native NPC equipment.
+
+## Projectile ports (2026-11-21)
+
+- **Long-range soft-target damage:** `DynamicBulletDelay` / `DynamicDamage` (`LongRangeDamage`, `ShootingHelper.getDamage`). After the delay, the long-range value replaces damage against living targets other than driveables and their stand-ins. Raytraced shots use shooter distance over muzzle velocity as flight time. Mass-based rounds are scaled by `DynamicDamage` over their authored damage against the target, since kinetic damage uses muzzle velocity and has no falloff of its own. The fork's delay of 9000 or more counts as unused. Ammunition tooltips show the long-range value or factor.
+- **Missile twirl and ground skim:** `MissileTwirl*` / `ATGMTwirl*` and `*GroundSkimTolerance` (`MissileFlightProfile`, `BulletRenderer`, `Bullet.trySkimGround`), on by default for guided rounds as in the fork. Skim surfaces are block tags and blocks standing in for the 1.7.10 grass/ground/sand/clay/snow materials, plus gravel, farmland and paths.
+- **Projectile chunk loading:** `ProjectileChunkLoading` (`ProjectileChunkLoader`). Instead of persistent Forge tickets, the round renews short-lived vanilla region tickets along the next ten ticks of its path; nothing is saved and nothing outlives it. Server settings cap rounds per player and per server and the distance from launch; rounds over a cap fly normally instead of being refused at launch as in the fork. There is no per-dimension cap and no check that chunks are already generated, so a round flying into unexplored terrain generates it.
+- **Stale findings removed:** the afterburner (`Plane`, `PlaneType`; the fork's `afterburnOffBonus` is parsed but never used) and wing-flap and wheel-cover animation (`PlaneType`, `ModelPlane`) already existed.
+- Validation: Analysis profile, with scoped Spotless, compilation, parser and behaviour tests and SonarLint; no new findings remain. Not exercised in a running game.

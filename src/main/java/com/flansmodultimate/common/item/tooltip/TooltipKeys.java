@@ -71,6 +71,7 @@ public final class TooltipKeys
     public static final String ITEM_HOLDER = "tooltip.flansmodultimate.item_holder";
     public static final String JUMP_HEIGHT = "tooltip.flansmodultimate.jump_height";
     public static final String LEGENDARY_SKIN_CRAFTER = "tooltip.flansmodultimate.legendary_skin_crafter";
+    public static final String LONG_RANGE_SOFT_DAMAGE = "tooltip.flansmodultimate.long_range_soft_damage";
     public static final String MASS = "tooltip.flansmodultimate.mass";
     public static final String MELEE_DAMAGE = "tooltip.flansmodultimate.melee_damage";
     public static final String MODE = "tooltip.flansmodultimate.mode";

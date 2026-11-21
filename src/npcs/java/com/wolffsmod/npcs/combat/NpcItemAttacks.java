@@ -331,7 +331,7 @@ public final class NpcItemAttacks
             ownSpeed ? (float) NpcEquipment.speed(npc.stats.ranged.getSpeed()) : 1F);
         var shot = FlansEquipment.getLoadedAmmunition(weapon).flatMap(ammo -> FlansProjectiles.prepare(npc, ammo, weapon, null, null, false, parameters));
         return shot.map(value -> ProjectileAim.direction(direct, NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement().scale(NpcSkill.leadShare(npc)) : Vec3.ZERO, value.speed(),
-            NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? value.gravity() : 0D, value.drag(), false)).orElse(direct);
+            NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? value.gravity() : 0D, value.drag(direct.length()), false)).orElse(direct);
     }
 
     private static boolean grenade(EntityNPCInterface npc, LivingEntity target, ItemStack weapon)

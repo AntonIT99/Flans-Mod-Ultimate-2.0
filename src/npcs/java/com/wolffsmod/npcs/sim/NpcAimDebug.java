@@ -109,8 +109,8 @@ public final class NpcAimDebug
         double gravity = options.enabled(Feature.BALLISTIC_AIM) ? shot.get().gravity() : 0D;
         Optional<TargetMotion> motion = options.enabled(Feature.ADVANCED_LEAD) ? state.motionOf(target) : Optional.empty();
         ProjectileAim.Solution solution = motion.isPresent()
-            ? ProjectileAim.solve(displacement, motion.get(), shot.get().speed(), gravity, shot.get().drag(), false)
-            : ProjectileAim.solve(displacement, target.getDeltaMovement(), shot.get().speed(), gravity, shot.get().drag(), false);
+            ? ProjectileAim.solve(displacement, motion.get(), shot.get().speed(), gravity, shot.get().drag(displacement.length()), false)
+            : ProjectileAim.solve(displacement, target.getDeltaMovement(), shot.get().speed(), gravity, shot.get().drag(displacement.length()), false);
         if (solution.ticks() <= 0D)
             return null;
         Vec3 offset = motion.map(tracked -> tracked.lead(solution.ticks())).orElseGet(() -> target.getDeltaMovement().scale(solution.ticks()));

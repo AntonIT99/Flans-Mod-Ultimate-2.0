@@ -2,6 +2,8 @@ package com.flansmodultimate.client.render.entity;
 
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.guns.MissileFlightProfile;
+import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -39,6 +41,9 @@ public class BulletRenderer extends FlanEntityRenderer<Bullet>
 
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(90.0F - pitch));
+        BulletType type = bullet.getConfigType();
+        if (MissileFlightProfile.shouldTwirl(type, bullet.hasLockOnTarget()))
+            poseStack.mulPose(Axis.YP.rotationDegrees(MissileFlightProfile.twirlDegrees(bullet.tickCount + partialTicks, type.getMissileTwirlSpeed(), type.getMissileTwirlWobble())));
 
         super.render(bullet, entityYaw, partialTicks, poseStack, buffer, bullet.getConfigType().isHasLight() ? LightTexture.FULL_BRIGHT : packedLight);
 

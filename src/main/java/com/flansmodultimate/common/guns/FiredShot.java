@@ -5,6 +5,7 @@ import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.IFlanEntity;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -43,6 +45,9 @@ public class FiredShot
     /** Addon-controlled platform whose live entity is not a Flan driveable. */
     @Nullable
     private final InfoType platformType;
+    /** Where the shot left the weapon, once known; ranges for drag are measured from here. */
+    @Getter @Setter @Nullable
+    private Vec3 launchOrigin;
 
     /** Constructor for living entities shooting with a gun item in hand */
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
@@ -140,6 +145,38 @@ public class FiredShot
     {
         float resolved = getAmmoOverride().resolveBulletSpeed(bulletType, shot, weaponBulletSpeed(), useDefaultFallback);
         return resolved * (fireableGun == null ? 1F : fireableGun.getBulletSpeedMultiplier());
+    }
+
+    /** Speed-dependent air drag coefficient of this shot in inverse blocks, or 0; see {@link ProjectileDragModel}. Server side. */
+    public double getQuadraticDrag(Level level)
+    {
+        return ProjectileDragModel.coefficient(bulletType, getProjectileMass(), getMuzzleVelocity(), ModCommonConfig.dragFactor(level));
+    }
+
+    /** Straight-line distance from where the shot was launched, or from its shooter when that is not known, to {@code point}. */
+    public double rangeTo(Vec3 point)
+    {
+        if (launchOrigin != null)
+            return launchOrigin.distanceTo(point);
+        return getCausingEntity().map(entity -> entity.position().distanceTo(point)).orElse(0D);
+    }
+
+    /** Speed in blocks per tick the round keeps on reaching {@code point}, its muzzle velocity less air drag. Server side. */
+    public float getImpactVelocity(Level level, Vec3 point)
+    {
+        return (float) (getMuzzleVelocity() * ProjectileDragModel.speedShare(getQuadraticDrag(level), rangeTo(point)));
+    }
+
+    /**
+     * Penetration in millimetres on reaching {@code point}: the 100 m rating, scaled with the speed kept at that range by
+     * {@code PenetrationVelocityExponent}. HEAT and HESH warheads do not depend on speed and keep their rating. Server side.
+     */
+    public float getPenetrationAt(Level level, Vec3 point)
+    {
+        float rated = getPenetrationAt100m();
+        if (bulletType.isHeat() || bulletType.isHesh() || rated <= 0F)
+            return rated;
+        return (float) (rated * ProjectileDragModel.penetrationShare(getQuadraticDrag(level), rangeTo(point), bulletType.getPenetrationVelocityExponent()));
     }
 
     /** Bursting charge in kg TNT equivalent for this shot, after any per-weapon override. */

@@ -618,8 +618,16 @@ public final class ExternalProjectileSupport
         @Override
         public double drag()
         {
+            if (quadraticDrag() > 0D)
+                return 1D;
             float base = ammo instanceof BulletType bullet ? bullet.getDragInAir() : ShootableType.AIR_DEFAULT_DRAG;
             return ModPhysics.dragRetention(base, shooter.level());
+        }
+
+        @Override
+        public double quadraticDrag()
+        {
+            return ammo instanceof BulletType bullet ? new FiredShot(gun, bullet, shooter, shooter, round, platform).getQuadraticDrag(shooter.level()) : 0D;
         }
 
         @Override

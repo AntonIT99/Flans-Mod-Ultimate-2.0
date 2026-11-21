@@ -23,8 +23,26 @@ public interface ProjectileShot
     /** @return downward acceleration in blocks per tick squared, including dimension gravity */
     double gravity();
 
-    /** @return air velocity retention per tick, including dimension drag */
+    /** @return air velocity retention per tick regardless of speed, including dimension drag */
     double drag();
+
+    /**
+     * @return speed-dependent air drag coefficient in inverse blocks, including dimension drag, or 0 for none; see
+     *         {@link BallisticDrag}
+     */
+    default double quadraticDrag()
+    {
+        return 0D;
+    }
+
+    /**
+     * @return the constant per-tick retention to aim with at a target {@code distance} blocks away, folding
+     *         {@link #quadraticDrag()} in; see {@link BallisticDrag#effectiveRetention}
+     */
+    default double drag(double distance)
+    {
+        return BallisticDrag.effectiveRetention(drag(), quadraticDrag(), speed(), distance);
+    }
 
     /**
      * @return whether the round is dropped, as a bomb is: {@link #launch} then releases it at the shooter's own velocity

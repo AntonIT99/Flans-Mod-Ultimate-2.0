@@ -38,7 +38,7 @@ public final class WeaponAim
     static Vec3 launch(Vec3 displacement, TargetMotion motion, WeaponBallistics ballistics, boolean lead, boolean accelerating, boolean arc, float share)
     {
         double gravity = arc ? ballistics.gravity() : 0D;
-        double drag = arc ? ballistics.drag() : 1D;
+        double drag = arc ? ballistics.drag(displacement.length()) : 1D;
         Vec3 still = ProjectileAim.direction(displacement, Vec3.ZERO, ballistics.speed(), gravity, drag, false);
         if (!lead)
             return still;
