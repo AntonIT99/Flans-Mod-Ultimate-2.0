@@ -467,7 +467,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
     private static Vec3 getAAGunDebugBarrelOrigin(AAGun aaGun, int barrel, boolean sentryShot, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
     {
         if (hasModelBarrel(barrelOriginData, barrel))
-            return aaGun.position().add(AAGunBarrelGeometry.modelBarrelOffset(barrelOriginData.pivots()[barrel], barrelOriginData.muzzles()[barrel], aaGun.getGunYaw(), aaGun.getGunPitch()));
+            return aaGun.mountFrame().worldPosition(aaGun.position().add(AAGunBarrelGeometry.modelBarrelOffset(barrelOriginData.pivots()[barrel], barrelOriginData.muzzles()[barrel], aaGun.getGunYaw(), aaGun.getGunPitch())));
 
         return aaGun.getBarrelOrigin(barrel, sentryShot);
     }

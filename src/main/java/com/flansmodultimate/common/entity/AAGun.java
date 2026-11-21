@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.DriveableRepairRules;
 import com.flansmodultimate.common.driveables.collision.AAGunCollisionHelper;
 import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
 import com.flansmodultimate.common.driveables.visual.AAGunVisual;
+import com.flansmodultimate.common.entity.geometry.EmplacementFrame;
 import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.entity.geometry.AAGunTraverse;
 import com.flansmodultimate.common.guns.*;
@@ -143,7 +144,8 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (placer != null)
         {
             placerId = placer.getUUID();
-            setGunYaw(placer.getYRot());
+            EmplacementFrame frame = mountFrame();
+            setGunYaw(frame == EmplacementFrame.TERRAIN ? placer.getYRot() : ModUtils.getYawFromDirection(frame.localDirection(placer.getLookAngle())));
         }
         setGunPitch(0F);
         setYRot(getGunYaw());
@@ -809,6 +811,12 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
             prevGunPitch = getGunPitch();
         }
 
+        if (!level().isClientSide && mountFrame() != EmplacementFrame.TERRAIN && level().isEmptyBlock(blockPosition().below()))
+        {
+            discard();
+            return;
+        }
+
         if (isWreck())
         {
             tickWreckState();
@@ -951,7 +959,9 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     private Optional<Entity> findValidTarget(Level level)
     {
         double range = getConfigType().getTargetRange();
-        return level.getEntities(this, getBoundingBox().inflate(range), this::isValidTarget).stream().min(Comparator.comparingDouble(this::distanceToSqr));
+        Vec3 origin = mountFrame().worldPosition(position());
+        AABB search = getBoundingBox().move(origin.subtract(position())).inflate(range);
+        return level.getEntities(this, search, this::isValidTarget).stream().min(Comparator.comparingDouble(candidate -> candidate.distanceToSqr(origin)));
     }
 
     private boolean isValidTarget(Entity candidate)
@@ -961,7 +971,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
             return false;
         if (placerId != null && placerId.equals(candidate.getUUID()))
             return false;
-        if (candidate.distanceToSqr(this) > type.getTargetRange() * type.getTargetRange())
+        if (candidate.distanceToSqr(mountFrame().worldPosition(position())) > type.getTargetRange() * type.getTargetRange())
             return false;
         if (!canSeeTarget(candidate))
             return false;
@@ -979,9 +989,9 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     private void aimAtTarget(Entity targetEntity)
     {
-        Vec3 origin = position().add(0D, 1.5D, 0D);
+        Vec3 origin = mountFrame().worldPosition(position().add(0D, 1.5D, 0D));
         Vec3 targetPos = targetEntity instanceof LivingEntity living ? living.getEyePosition() : targetEntity.position().add(0D, targetEntity.getBbHeight() * 0.5D, 0D);
-        Vec3 direction = targetPos.subtract(origin);
+        Vec3 direction = mountFrame().localDirection(targetPos.subtract(origin));
         float targetYaw = ModUtils.getYawFromDirection(direction);
         float targetPitch = ModUtils.getPitchFromDirection(direction);
 
@@ -999,7 +1009,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     private boolean canSeeTarget(Entity candidate)
     {
-        Vec3 start = position().add(0D, 1.5D, 0D);
+        Vec3 start = mountFrame().worldPosition(position().add(0D, 1.5D, 0D));
         Vec3 end = candidate instanceof LivingEntity living ? living.getEyePosition() : candidate.position().add(0D, candidate.getBbHeight() * 0.5D, 0D);
         return level().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this)).getType() == HitResult.Type.MISS;
     }
@@ -1079,7 +1089,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
         if (soundTimer <= 0 && StringUtils.isNotBlank(type.getShootSound()))
         {
-            PacketPlaySound.sendSoundPacket(this, type.getGunSoundRange(), type.getShootSound(), true);
+            PacketPlaySound.sendSoundPacket(barrelOrigin, type.getGunSoundRange(), level.dimension(), type.getShootSound(), true, this);
             soundTimer = type.getShootSoundLength();
         }
 
@@ -1151,7 +1161,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
             if (volleys <= 1)
                 shootDelay = Math.min(shootDelay, wait);
             if (StringUtils.isNotBlank(type.getReloadSound()))
-                PacketPlaySound.sendSoundPacket(this, type.getReloadSoundRange(), type.getReloadSound(), false);
+                PacketPlaySound.sendSoundPacket(mountFrame().worldPosition(position()), type.getReloadSoundRange(), level.dimension(), type.getReloadSound(), false, this);
         }
     }
 
@@ -1201,13 +1211,13 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     @Override
     public Optional<Vec3> getEmplacementOperatorPosition(LivingEntity operator)
     {
-        return getConfigType() == null || configType.isSentry() ? Optional.empty() : Optional.of(getGunnerRiderPosition());
+        return getConfigType() == null || configType.isSentry() ? Optional.empty() : Optional.of(mountFrame().worldPosition(getGunnerRiderPosition()));
     }
 
     @Override
     public boolean canEmplacementAimAt(Vec3 point)
     {
-        float pitch = ModUtils.getPitchFromDirection(point.subtract(getEmplacementOrigin()));
+        float pitch = ModUtils.getPitchFromDirection(mountFrame().localDirection(point.subtract(getEmplacementOrigin())));
         return getConfigType() != null && Math.abs(pitch - clampPitch(pitch)) < 0.01F;
     }
 
@@ -1216,7 +1226,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     {
         if (level().isClientSide || getFirstPassenger() != operator)
             return;
-        Vec3 direction = point.subtract(getEmplacementOrigin());
+        Vec3 direction = mountFrame().localDirection(point.subtract(getEmplacementOrigin()));
         automation.aim(level().getGameTime(), operator, direction);
         operator.setYRot(ModUtils.getYawFromDirection(direction));
         operator.setXRot(ModUtils.getPitchFromDirection(direction));
@@ -1365,6 +1375,11 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     private void applyMotion()
     {
+        if (mountFrame() != EmplacementFrame.TERRAIN)
+        {
+            setDeltaMovement(Vec3.ZERO);
+            return;
+        }
         Vec3 motion = getDeltaMovement();
         if (!onGround())
             motion = motion.add(0D, -ModPhysics.gravity(9.8D / 400D, level()), 0D);
@@ -1398,7 +1413,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
      */
     public Vec3 getGunnerSeatPosition()
     {
-        return getGunnerRiderPosition().subtract(0D, Seat.LEGACY_PLAYER_RIDING_OFFSET, 0D);
+        return mountFrame().worldPosition(getGunnerRiderPosition().subtract(0D, Seat.LEGACY_PLAYER_RIDING_OFFSET, 0D));
     }
 
     /** Where the gunner's feet are placed. */
@@ -1423,7 +1438,17 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         return new Vec3(getX() + x2, getY() + y - LEGACY_PLAYER_EYE_HEIGHT, getZ() + z2);
     }
 
+    public EmplacementFrame mountFrame()
+    {
+        return EmplacementFrame.at(level(), blockPosition());
+    }
+
     public Vec3 getBarrelOrigin(int barrel, boolean sentryShot)
+    {
+        return mountFrame().worldPosition(localBarrelOrigin(barrel, sentryShot));
+    }
+
+    private Vec3 localBarrelOrigin(int barrel, boolean sentryShot)
     {
         AAGunType type = getConfigType();
         if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
@@ -1453,8 +1478,8 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     {
         AAGunType type = getConfigType();
         if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
-            return position();
-        return position().add(authoredBarrelOffset(type, barrel, sentryShot, modelPivot, getGunYaw(), getGunPitch()));
+            return mountFrame().worldPosition(position());
+        return mountFrame().worldPosition(position().add(authoredBarrelOffset(type, barrel, sentryShot, modelPivot, getGunYaw(), getGunPitch())));
     }
 
     private static Vec3 authoredBarrelOffset(AAGunType type, int barrel, boolean sentryShot, @Nullable Vec3 modelPivot, float gunYaw, float gunPitch)
@@ -1470,7 +1495,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     public Vec3 getShootingDirection()
     {
-        return ModUtils.getDirectionFromPitchAndYaw(getGunPitch(), getGunYaw());
+        return mountFrame().worldDirection(ModUtils.getDirectionFromPitchAndYaw(getGunPitch(), getGunYaw()));
     }
 
     private float clampPitch(float pitch)

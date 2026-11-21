@@ -206,6 +206,8 @@ captured the complete scene. For reliable visual verification on this Windows
 machine, use the available Computer Use skill/plugin to select the Minecraft
 window and capture its state. Select the exact version's window, restore it if
 minimized, and refresh before input. This native capture was verified on 1.21.1.
+
+When testing with two graphical clients, disable pause on lost focus in the isolated shooter profile. Check the active screen and verify a shot or ammo delta after sending fire input.
 Agents without that capability should report the visual limitation rather than
 claiming that a black/cropped screenshot validates rendering.
 
