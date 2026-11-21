@@ -343,6 +343,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected float turretTossChance = -1F;
     /** Whether the machine leaves no wreck when destroyed, whatever the server allows. */
     protected boolean noWreck;
+    /** Multiplier on the explosive damage the machine's parts take. */
+    protected float explosionResistance = 1F;
 
     protected String lockedOnSound = StringUtils.EMPTY;
     protected int soundTime;
@@ -589,6 +591,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readSeatVectorLines("GunOrigin", file, SeatInfo::setGunOrigin, true);
         readSeatBooleanLines("invisiblePassenger", file, SeatInfo::setInvisiblePassenger);
         readSeatBooleanLines("SetPassengerInvisible", file, SeatInfo::setInvisiblePassenger);
+        if (readValue("SetDriverInvincible", false, file))
+            driver.setInvincible(true);
+        readSeatBooleanLines("invincible", file, SeatInfo::setInvincible);
         readSeatIntLines("barrels", file, (seat, count) -> seat.setAuthoredBarrels(Math.max(1, Math.min(64, count))));
         readSeatIntLines("SeatGuns", file, (seat, count) -> seat.setAuthoredBarrels(Math.max(1, Math.min(64, count))));
         readSeatBooleanLines("PassengerHasParticles", file, SeatInfo::setPassengerHasParticles);
@@ -866,7 +871,10 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         reloadSoundTick = readValue("VehicleGunReloadTick", reloadSoundTick, file);
         explosionWhenDestroyed = readValue("IsExplosionWhenDestroyed", explosionWhenDestroyed, file);
         deathFireRadius = aliasFloat(deathFireRadius, file, "DeathFireRadius", "DeathFire");
-        deathExplosionRadius = aliasFloat(deathExplosionRadius, file, "DeathExplosionRadius", "DeathExplosion");
+        deathExplosionRadius = aliasFloat(deathExplosionRadius, file, "isExplosionWhenDestroyedRadius", "DeathExplosionRadius", "DeathExplosion");
+        // Labjac: a positive radius alone turns the death explosion on.
+        if (readOptionalValue("isExplosionWhenDestroyedRadius", 0F, file) > 0F)
+            explosionWhenDestroyed = true;
         deathExplosionPower = readValue("DeathExplosionPower", deathExplosionPower, file);
         deathExplosionBreaksBlocks = readValue("DeathExplosionBreaksBlocks", deathExplosionBreaksBlocks, file);
         deathExplosionDamageVsLiving = readValue("DeathExplosionDamageVsLiving", deathExplosionDamageVsLiving, file);
@@ -875,7 +883,15 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         deathExplosionDamageVsVehicle = readValue("DeathExplosionDamageVsVehicle", deathExplosionDamageVsVehicle, file);
         cookOff = readValue("CookOff", cookOff, file);
         turretTossChance = readValue("TurretTossChance", turretTossChance, file);
+        // Labjac LeaveWreck is the inverse of NoWreck; the fork's wrecks are opt-in, ours are on unless a type opts out.
+        noWreck = !readValue("LeaveWreck", !noWreck, file);
         noWreck = readValue("NoWreck", noWreck, file);
+        explosionResistance = readValue("explosionResistance", explosionResistance, file);
+        if (!Float.isFinite(explosionResistance) || explosionResistance < 0F)
+        {
+            logError("explosionResistance must be a finite non-negative multiplier; using 1", file);
+            explosionResistance = 1F;
+        }
         fallDamageFactor = readValue("FallDamageFactor", fallDamageFactor, file);
 
         maxThrottle = readValue("MaxThrottle", maxThrottle, file);

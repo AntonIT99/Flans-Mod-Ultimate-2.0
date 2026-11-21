@@ -471,7 +471,7 @@ public class FlanExplosion extends Explosion
         @Override
         public boolean damage(EnumDriveablePart part, float amount, DamageSource source)
         {
-            return entity.damagePart(part, amount, source);
+            return entity.damagePart(part, amount * type.getExplosionResistance(), source);
         }
     }
 

@@ -4,20 +4,27 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.BloodEffects;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.guns.FiredShot;
+import com.flansmodultimate.common.guns.LongRangeDamage;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.common.types.ArmorZone;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -177,6 +184,56 @@ public class PlayerHitbox
         return stack.getItem() instanceof CustomArmorItem armour && !armour.isDepleted(stack) ? armour.getConfigType().getPenetrationResistance() : unarmored;
     }
 
+    /**
+     * @return the zone struck by a round at the wound travelling along the direction: the back when it arrives from behind,
+     *         the face or nape when it strikes the head below eye level
+     */
+    @Nullable
+    public static ArmorZone zoneOf(LivingEntity entity, EnumHitboxType type, Vec3 wound, Vec3 direction)
+    {
+        Vec3 facing = Vec3.directionFromRotation(0F, entity.getYRot());
+        boolean fromBehind = direction.x * facing.x + direction.z * facing.z > 0D;
+        return ArmorZone.of(type, fromBehind, wound.y < entity.getEyeY());
+    }
+
+    /**
+     * Applies the per-zone ratings of every worn piece to the round, playing a deflection and wearing the piece when it is
+     * not penetrated. Server side only has effects.
+     *
+     * @return the share of damage that gets through
+     */
+    private float zoneArmorDamageFactor(FiredShot shot, @Nullable Bullet bullet, Vec3 wound, Vec3 direction)
+    {
+        ArmorZone zone = zoneOf(entity, type, wound, direction);
+        if (zone == null)
+            return 1F;
+        BulletType bulletType = shot.getBulletType();
+        float penetration = bulletType.getBodyArmorPenetration(LongRangeDamage.flightTicks(bullet, shot, entity));
+        float factor = 1F;
+        boolean deflected = false;
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            if (slot.getType() != EquipmentSlot.Type.ARMOR)
+                continue;
+            ItemStack stack = entity.getItemBySlot(slot);
+            if (!(stack.getItem() instanceof CustomArmorItem armour) || armour.isDepleted(stack) || !armour.getConfigType().isHasZoneArmor())
+                continue;
+            ZoneArmor.Result result = ZoneArmor.resolve(penetration, armour.getConfigType().getZoneArmor(zone));
+            if (result == ZoneArmor.Result.PENETRATED)
+                continue;
+            factor *= ZoneArmor.damageFactor(result, bulletType.getNonPenPenalty(), bulletType.getBarelyPenPenalty());
+            deflected = true;
+            if (result == ZoneArmor.Result.NOT_PENETRATED && !entity.level().isClientSide)
+                ItemStackData.hurtAndBreak(stack, 1, entity, slot);
+        }
+        if (deflected && entity.level() instanceof ServerLevel level)
+        {
+            level.playSound(null, wound.x, wound.y, wound.z, SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 0.6F, 1.3F + level.random.nextFloat() * 0.3F);
+            level.sendParticles(ParticleTypes.CRIT, wound.x, wound.y, wound.z, 8, 0.1D, 0.1D, 0.1D, 0.2D);
+        }
+        return factor;
+    }
+
     public ShootingHelper.HitData hitByBullet(FiredShot shot, ShootingHelper.HitData hitData, @Nullable Bullet bullet)
     {
         return hitByBullet(shot, hitData, bullet, entity.position().add(0D, entity.getBbHeight() * 0.6D, 0D), Vec3.ZERO);
@@ -204,6 +261,7 @@ public class PlayerHitbox
 
         lastHitPenAmount = Math.max(hitData.lastHitPenAmount(), damageModifier);
 
+        damageModifier *= zoneArmorDamageFactor(shot, bullet, wound, direction);
         damageModifier *= bodyPartDamageModifier(type);
         if (type == EnumHitboxType.HEAD)
             lastHitHeadshot = true;

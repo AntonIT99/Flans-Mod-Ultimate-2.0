@@ -78,7 +78,8 @@ This recoil model gives the first shot its own kick and makes recoil grow over a
 Target checked: `T/common/types/GunType` (`Recoil`, `RecoilYaw`, `RandomRecoil*`, `DecreaseRecoil*`, stance multipliers, `FancyRecoil`)
 Both legacy recoil and FancyRecoil exist. The first-shot and sustained parameters do not.
 
-Missing: first-shot recoil, sustained per-burst recoil growth, and the elevator and zoom modifiers.
+Missing: sustained per-burst recoil growth (`sustainedRecoilPitch` / `sustainedRecoilYaw`).
+**Dormant in the reference (checked 2026-11-22):** `firstShotRecoil`, `recoilElevator`, `sustainedelevator`, `dillElevator` and `dillZoomModifier` are parsed into fields that nothing reads, so packs authoring them (Tyrants and Plebeians: 100–220 guns each) lose nothing in the target.
 
 ### Directional melee and bayonets — PARTIAL
 
@@ -207,13 +208,14 @@ Target checked: `T/network/client/PacketGunMuzzleFlash`, `T/client/render/item/G
 
 ## Armour and the player damage model
 
-### Per-zone armour and armour penetration — MISSING
+### Per-zone armour and armour penetration — PARTIAL
 
 Reference: `R/common/teams/ArmourType` (`headArmor`, `faceArmor`, `neckArmor`, `napeArmor`, `chestArmor`, `backArmor`, `armArmor`, `legArmor`, `bodyArmor`, …), `ShootableType` (`headPen`, `bodyPen`, `armPen`, `bodyArmorPen`, `dynamicBodyArmorPen`), `R/common/guns/raytracing/PlayerHitbox`
 Each armour piece protects specific hitbox zones, and each round has its own penetration per zone.
 
 Target checked: `T/common/types/ArmorType`, `T/common/guns/ShootingHelper`
-Missing: zone coefficients and per-zone penetration.
+**Present (2026-11-22):** zone ratings (`headArmor`/`faceArmor`/`neckArmor`/`bodyArmor`/`backArmor`/`armArmor`/`legArmor` and aliases) on any worn piece, round `bodyArmorPen` (and `armPen`/`headPen`/`bodyPen`, which the reference folds into one value), long-range `dynamicBodyArmorPen`, `nonPenPenalty` / `barelyPenPenalty` (`ZoneArmor`, `PlayerHitbox`). The target's hitboxes have no separate face, nape or back boxes: hits on the head below eye level count as face or nape by direction, and body hits from behind as back. A missing `dynamicBodyArmorPen` keeps the round's own value instead of the fork's fixed 250.
+Missing: the reference's separate zone damage multipliers (nape 3.5×, cranium 2×, face 1.5×) beyond the target's configured body-part modifiers, and grenade zone penetration.
 
 ### Reserve armour plates and energy shields — MISSING
 
@@ -245,13 +247,14 @@ Missing: weapon mounts and gas or smoke protection.
 
 ## Vehicles, aircraft and mechas
 
-### Destroyed-vehicle wrecks — MISSING
+### Destroyed-vehicle wrecks — PARTIAL
 
 Reference: `R/common/driveables/EntityDriveableWreck`, `DriveableType` (`LeaveWreck`, `WreckModel`, `WreckTexture`, `WreckSmoke`, `WreckLifetime`, `WreckRendersFancyTracks`)
 A destroyed vehicle leaves a smoking wreck entity, with its own model and texture, that lasts for a set time.
 
-Target checked: `T/common/driveables/DriveableCrashExplosion`, `T/common/entity/Driveable` (death sequence)
-Missing: a persistent wreck entity.
+Target checked: `T/common/entity/Driveable` (`becomeWreck`, wreck physics, burn-out, blast break-up)
+**Present (rechecked 2026-11-22):** destroyed driveables stay as burning, collidable wrecks for the server-configured lifetime; `NoWreck` and now `LeaveWreck false` opt out.
+Missing: per-type `WreckLifetime` / `WreckSmoke`, and custom `WreckModel` / `WreckTexture` (the target renders the damaged original model).
 
 ### Ammo-rack and weak-spot cook-off — PARTIAL
 
@@ -523,7 +526,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Optics | Helicopter seat stabiliser and hover hold | MISSING | HIGH |
 | Optics | Picture-in-picture scopes | MISSING | HIGH |
 | Optics | Missile and shell camera views | MISSING | HIGH |
-| Weapons | Battlefield and sustained recoil | MISSING | HIGH |
+| Weapons | Sustained recoil | MISSING | HIGH |
 | Weapons | Directional melee and bayonets | PARTIAL | HIGH |
 | Weapons | Ricochet and penetration feedback | PARTIAL | MEDIUM |
 | Weapons | Motion-sensor grenades | UNCERTAIN | LOW |
@@ -538,11 +541,11 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Weapons | Gun carry limits and tiers | MISSING | HIGH |
 | Weapons | Ammunition evolution | MISSING | MEDIUM |
 | Weapons | Muzzle and chamber smoke models | PARTIAL | MEDIUM |
-| Armour | Per-zone armour and penetration | MISSING | HIGH |
+| Armour | Per-zone armour and penetration | PARTIAL | HIGH |
 | Armour | Reserve plates and energy shields | MISSING | HIGH |
 | Armour | Bleeding and field medicine | PARTIAL | HIGH |
 | Armour | Weapon mounts, pouches and attributes | PARTIAL | HIGH |
-| Vehicles | Destroyed-vehicle wrecks | MISSING | HIGH |
+| Vehicles | Destroyed-vehicle wrecks | PARTIAL | HIGH |
 | Vehicles | Ammo-rack and weak-spot cook-off | PARTIAL | HIGH |
 | Vehicles | Radar, stealth and designation | MISSING | HIGH |
 | Vehicles | APS and CIWS | MISSING | HIGH |
@@ -573,7 +576,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 29 MISSING, 19 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 27 MISSING, 21 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -677,3 +680,14 @@ Impact/scatter follow-up (2026-11-04): ammunition `DynamicHitSoundEnable` can la
 - **Projectile chunk loading:** `ProjectileChunkLoading` (`ProjectileChunkLoader`). Instead of persistent Forge tickets, the round renews short-lived vanilla region tickets along the next ten ticks of its path; nothing is saved and nothing outlives it. Server settings cap rounds per player and per server and the distance from launch; rounds over a cap fly normally instead of being refused at launch as in the fork. There is no per-dimension cap and no check that chunks are already generated, so a round flying into unexplored terrain generates it.
 - **Stale findings removed:** the afterburner (`Plane`, `PlaneType`; the fork's `afterburnOffBonus` is parsed but never used) and wing-flap and wheel-cover animation (`PlaneType`, `ModelPlane`) already existed.
 - Validation: Analysis profile, with scoped Spotless, compilation, parser and behaviour tests and SonarLint; no new findings remain. Not exercised in a running game.
+
+## Pack-driven ports (2026-11-22)
+
+Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`run/flan`) authors and the target ignored, after checking each against reference call sites; keys whose reference fields are never read were classified dormant instead.
+
+- **Per-zone body armour:** see the armour section above. TaP authors zone ratings on about 440 armour files and penetration on about 300 rounds.
+- **Driveable death explosions:** `isExplosionWhenDestroyedRadius` (290 TaP driveables) sets the death-explosion radius at the lowest priority of its aliases and, as in the reference, a positive value turns the explosion on.
+- **Explosion resistance:** `explosionResistance` multiplies the blast damage a driveable's parts take (`FlanExplosion`).
+- **Seat invincibility:** `invincible <seat> <bool>` and `SetDriverInvincible` cancel damage to that seat's rider except damage that bypasses invulnerability; destroying the driveable still kills them.
+- **Not ported:** vehicle `armorPen` / `penDecay` use the fork's unitless armour integers, which conflict with the target's millimetre armour model; `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` need the driving-model comparison listed under deeper audit.
+- Validation: Focused profile, with scoped Spotless, compilation and parser/behaviour tests. Not exercised in a running game.

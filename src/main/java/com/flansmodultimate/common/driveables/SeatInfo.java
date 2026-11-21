@@ -49,6 +49,9 @@ public final class SeatInfo
     private boolean legacyAiming;
     @Setter
     private boolean invisiblePassenger;
+    /** Whether the rider takes no damage while seated here; destroying the driveable still kills them. */
+    @Setter
+    private boolean invincible;
     @Setter
     private boolean yawBeforePitch;
     @Setter

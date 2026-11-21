@@ -70,6 +70,10 @@ public class ArmorType extends InfoType
      */
     @Getter
     protected float penetrationResistance = UNARMORED_HELMET_PENETRATION_RESISTANCE;
+    /** Per-zone ratings against a round's body-armour penetration, indexed by {@link ArmorZone#ordinal()}; zero leaves the zone uncovered. */
+    protected final float[] zoneArmor = new float[ArmorZone.values().length];
+    @Getter
+    protected boolean hasZoneArmor;
     @Getter
     protected int durability;
     @Getter
@@ -188,6 +192,8 @@ public class ArmorType extends InfoType
         equipSound = readSound("EquipSound", equipSound, file);
         capeTextureName = readResource("CapeTexture", capeTextureName, file);
 
+        readZoneArmor(file);
+
         addEffects("AddEffect", effects, file, true, false);
         addEffects("AddPotionEffect", effects, file, true, false);
         addEffects("PotionEffect", effects, file, true, false);
@@ -219,6 +225,38 @@ public class ArmorType extends InfoType
             logError("PenetrationResistance must be a finite non-negative value; using the unarmoured value of the slot", file);
             penetrationResistance = getUnarmoredPenetrationResistance(armorItemType);
         }
+    }
+
+    private void readZoneArmor(TypeFile file)
+    {
+        readZone(ArmorZone.HEAD, file, "helmetArmor", "headArmor");
+        readZone(ArmorZone.FACE, file, "maskArmor", "faceArmor");
+        readZone(ArmorZone.NAPE, file, "napeArmor", "neckArmor");
+        readZone(ArmorZone.BODY, file, "chestArmor", "bodyArmor");
+        readZone(ArmorZone.BACK, file, "rearArmor", "backArmor");
+        readZone(ArmorZone.ARM, file, "gauntletArmor", "armArmor");
+        readZone(ArmorZone.LEG, file, "leggingArmor", "legArmor");
+    }
+
+    /** Reads a zone rating; later keys win over earlier aliases. */
+    private void readZone(ArmorZone zone, TypeFile file, String... keys)
+    {
+        float rating = 0F;
+        for (String key : keys)
+            rating = readValue(key, rating, file);
+        if (!Float.isFinite(rating) || rating < 0F)
+        {
+            logError(zone.name().toLowerCase(Locale.ROOT) + " armour rating must be a finite non-negative value; ignoring it", file);
+            rating = 0F;
+        }
+        zoneArmor[zone.ordinal()] = rating;
+        hasZoneArmor |= rating > 0F;
+    }
+
+    /** @return this piece's rating for the zone against body-armour penetration, or zero when it does not cover it */
+    public float getZoneArmor(ArmorZone zone)
+    {
+        return zoneArmor[zone.ordinal()];
     }
 
     /**

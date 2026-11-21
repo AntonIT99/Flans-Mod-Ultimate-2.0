@@ -35,6 +35,8 @@ public class BulletType extends ShootableType
     public static final float DEFAULT_BULLET_SPEED = 3F;
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
     private static final int LEGACY_UNUSED_DYNAMIC_DELAY = 8999;
+    /** Labjac default body-armour penetration, above every authored zone rating */
+    public static final float DEFAULT_BODY_ARMOR_PENETRATION = 500F;
     public static final float DEFAULT_PENETRATION_VELOCITY_EXPONENT = 1.43F;
 
     /** {@code mass} in grams, {@code explosiveMass} in kg TNT equivalent, {@code bulletSpeed} in blocks per tick. */
@@ -261,6 +263,20 @@ public class BulletType extends ShootableType
     @Getter
     protected float dynamicDamage = 1F;
 
+    // Per-zone body armour
+    /** Penetration tested against the zone ratings of worn armour, such as {@code bodyArmor}. */
+    @Getter
+    protected float bodyArmorPenetration = DEFAULT_BODY_ARMOR_PENETRATION;
+    /** Body-armour penetration once the round has flown longer than {@link #dynamicBulletDelay}; defaults to {@link #bodyArmorPenetration}. */
+    @Getter
+    protected float dynamicBodyArmorPenetration = DEFAULT_BODY_ARMOR_PENETRATION;
+    /** Share of damage kept by a round that does not penetrate a zone's armour. */
+    @Getter
+    protected float nonPenPenalty;
+    /** Share of damage kept by a round that only barely penetrates a zone's armour. */
+    @Getter
+    protected float barelyPenPenalty = 0.01F;
+
     /** Keeps the chunks ahead of the projectile loaded while it flies, within the server's projectile ticket limits. */
     @Getter
     protected boolean projectileChunkLoading;
@@ -363,6 +379,25 @@ public class BulletType extends ShootableType
         if (dynamicBulletDelay >= LEGACY_UNUSED_DYNAMIC_DELAY)
             dynamicBulletDelay = -1;
         dynamicDamage = Math.max(0F, finiteOr(readValue("DynamicDamage", dynamicDamage, file), 1F));
+    }
+
+    private void readZoneArmorPenetration(TypeFile file)
+    {
+        // The reference fork reads all four keys into one value.
+        float penetration = bodyArmorPenetration;
+        for (String key : new String[] {"armPen", "headPen", "bodyPen", "bodyArmorPen"})
+            penetration = readValue(key, penetration, file);
+        bodyArmorPenetration = Math.max(0F, finiteOr(penetration, DEFAULT_BODY_ARMOR_PENETRATION));
+        // Unlike the fork's fixed 250, an unauthored long-range value keeps the round's own penetration.
+        dynamicBodyArmorPenetration = Math.max(0F, finiteOr(readValue("dynamicBodyArmorPen", bodyArmorPenetration, file), bodyArmorPenetration));
+        nonPenPenalty = Math.max(0F, finiteOr(readValue("nonPenPenalty", nonPenPenalty, file), 0F));
+        barelyPenPenalty = Math.max(0F, finiteOr(readValue("barelyPenPenalty", barelyPenPenalty, file), 0.01F));
+    }
+
+    /** @return the round's body-armour penetration after the given flight time */
+    public float getBodyArmorPenetration(float flightTicks)
+    {
+        return hasLongRangeDamage() && flightTicks > dynamicBulletDelay ? dynamicBodyArmorPenetration : bodyArmorPenetration;
     }
 
     private static float finiteOr(float value, float fallback)
@@ -535,6 +570,7 @@ public class BulletType extends ShootableType
         laserGuidance = readValue("LaserGuidance", laserGuidance, file);
         readMissileFlightProfile(file);
         readLongRangePerformance(file);
+        readZoneArmorPenetration(file);
         projectileChunkLoading = readValue("ProjectileChunkLoading", projectileChunkLoading, file);
         maxRange = readValue("MaxRange", maxRange, file);
 

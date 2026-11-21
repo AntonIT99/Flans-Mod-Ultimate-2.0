@@ -467,6 +467,8 @@ public final class CommonEventHandler
     {
         if (!entity.level().isClientSide && (isRejectedByTeams(entity, source) || FriendlyFireRules.sparesDamage(entity, source)))
             return true;
+        if (!entity.level().isClientSide && ridesInvincibleSeat(entity) && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY))
+            return true;
         // A raised melee block keeps its holder from striking at all, vanilla swings included
         if (!entity.level().isClientSide && isMeleeDamage(source) && source.getEntity() instanceof LivingEntity attacker && source.getDirectEntity() == attacker && MeleeBlocking.isBlocking(attacker))
             return true;
@@ -483,6 +485,12 @@ public final class CommonEventHandler
         if (!cancel && !entity.level().isClientSide && (!(entity instanceof IEquipmentPolicy policy) || policy.flansWeaponEffects()) && tryShieldBlock(entity, source, amount))
             cancel = true;
         return cancel;
+    }
+
+    /** Whether the entity sits in a seat its driveable's definition makes invincible, such as a carrier's crew stations. */
+    private static boolean ridesInvincibleSeat(LivingEntity entity)
+    {
+        return entity.getVehicle() instanceof Seat seat && seat.getSeatInfo() != null && seat.getSeatInfo().isInvincible();
     }
 
     /** Whether the running Teams game type spares a player or a combatant this damage, as it spares allies. Server side. */
