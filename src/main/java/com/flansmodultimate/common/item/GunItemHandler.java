@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.equipment.FlansMelee;
 import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.entity.*;
+import com.flansmodultimate.common.entity.geometry.EmplacementFrame;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.PlayerShootingHandler;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
@@ -897,14 +898,15 @@ public class GunItemHandler
                 pos = pos.below();
             }
 
-            Direction direction = player.getDirection();
+            EmplacementFrame frame = EmplacementFrame.at(level, pos);
+            Direction direction = frame == EmplacementFrame.TERRAIN ? player.getDirection() : Direction.fromYRot(ModUtils.getYawFromDirection(frame.localDirection(lookDir)));
 
             // placement positions:
             BlockPos base = pos;
             BlockPos mgPos = pos.above();
             BlockPos forwardAbove = mgPos.relative(direction);
 
-            if (!level.isClientSide && isSolidTop(level, base) && isReplaceableOrAir(level, mgPos) && isReplaceableOrAir(level, forwardAbove) && isReplaceableOrAir(level, base.relative(direction)))
+            if (!level.isClientSide && isSolidTop(level, base) && isReplaceableOrAir(level, mgPos) && isReplaceableOrAir(level, forwardAbove) && (frame != EmplacementFrame.TERRAIN || isReplaceableOrAir(level, base.relative(direction))))
             {
                 // check if an MG already exists at that block position
                 boolean exists = !level.getEntitiesOfClass(DeployedGun.class, new AABB(mgPos)).isEmpty();
@@ -913,7 +915,8 @@ public class GunItemHandler
                 {
                     DeployedGun mg = new DeployedGun(level, mgPos, direction, item.configType);
                     EraEntities.tagIfBypassing(mg, player);
-                    level.addFreshEntity(mg);
+                    if (!level.addFreshEntity(mg))
+                        return false;
 
                     if (!player.getAbilities().instabuild)
                         stack.shrink(1);

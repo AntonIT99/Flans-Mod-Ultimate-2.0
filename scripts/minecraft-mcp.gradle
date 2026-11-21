@@ -6,7 +6,9 @@ def mcpTarget = new JsonSlurper().parse(file('tools/minecraft-mcp/target.json'))
 String mcpName = "minecraft-mcp-${mcpTarget.version}-${mcpTarget.loader}-v${mcpTarget.modVersion}.jar"
 String mcpUrl = "https://github.com/langyo/minecraft-mod-mcp/releases/download/v${mcpTarget.modVersion}/${mcpName}"
 String mcpHash = mcpTarget.sha256
-def mcpJar = layout.buildDirectory.file("minecraft-mcp/${mcpName}")
+def mcpRepository = layout.buildDirectory.dir('minecraft-mcp/repository')
+String mcpVersion = mcpTarget.modVersion
+def mcpJar = mcpRepository.map { it.file("dev/fmu/mcpmod/${mcpVersion}/mcpmod-${mcpVersion}.jar") }
 def downloadMcp = tasks.register('prepareMinecraftMcp') {
     group = 'development'
     description = 'Download the pinned Minecraft MCP development mod and verify its SHA-256.'
@@ -59,12 +61,11 @@ if (!project.hasProperty('withoutMinecraftMcp') && (mcpJar.get().asFile.isFile()
     String width = providers.gradleProperty('mcpWidth').getOrElse('1280')
     String height = providers.gradleProperty('mcpHeight').getOrElse('800')
     boolean useTestProfile = project.hasProperty('mcpTestProfile')
-    def mcpRuntime = dependencies.create(files(mcpJar).builtBy(downloadMcp))
     neoForge.runs.configureEach { run ->
         if (run.name == 'clientMcp' || mcpOnEveryClient && run.name.startsWith('client'))
         {
-            // Only these runs put the MCP mod on their classpath; servers and the plain client never see it.
-            run.additionalRuntimeClasspathConfiguration.dependencies.add(mcpRuntime)
+            // FML must discover this as a mod. The additional runtime classpath can load it as a plain module.
+            run.programArguments.addAll('--fml.mavenRoots', mcpRepository.get().asFile.absolutePath, '--fml.mods', "dev.fmu:mcpmod:${mcpVersion}".toString())
             boolean second = run.name == 'client2'
             systemProperty 'mcp.port', (second ? mcpTarget.secondPort : mcpTarget.port).toString()
             systemProperty 'mcp.background_input', 'true'

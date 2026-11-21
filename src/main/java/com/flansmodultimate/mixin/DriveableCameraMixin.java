@@ -6,6 +6,7 @@ import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
+import com.flansmodultimate.common.entity.geometry.EmplacementFrame;
 import com.flansmodultimate.common.types.GunType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -59,6 +60,9 @@ public abstract class DriveableCameraMixin
     {
         if (!detached && cameraEntity instanceof Player player && player.getVehicle() instanceof DeployedGun gun)
         {
+            // Sable owns the interpolated camera position and roll of riders on retained entities.
+            if (gun.mountFrame() != EmplacementFrame.TERRAIN)
+                return;
             GunType type = gun.getConfigType();
             if (type != null)
             {

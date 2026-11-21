@@ -7,6 +7,7 @@ import com.flansmodultimate.api.driveables.IEmplacement;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
+import com.flansmodultimate.common.entity.geometry.EmplacementFrame;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -486,15 +487,19 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         // A player operating the gun from its front must move clear of the
         // tripod before mounting, rather than being pulled through it later.
         double yawRad = baseYaw * Mth.DEG_TO_RAD;
-        double rearDot = (player.getX() - getX()) * Math.sin(yawRad) - (player.getZ() - getZ()) * Math.cos(yawRad);
+        EmplacementFrame frame = mountFrame();
+        Vec3 localPlayer = frame.localPosition(player.position());
+        double rearDot = (localPlayer.x - getX()) * Math.sin(yawRad) - (localPlayer.z - getZ()) * Math.cos(yawRad);
         if (rearDot < 0D)
         {
+            behind = frame.worldPosition(behind);
+            float approachYaw = frame == EmplacementFrame.TERRAIN ? baseYaw : ModUtils.getYawFromDirection(frame.worldDirection(ModUtils.getDirectionFromPitchAndYaw(0F, baseYaw)));
             if (player instanceof ServerPlayer serverPlayer)
-                serverPlayer.teleportTo((ServerLevel) level, behind.x, behind.y, behind.z, baseYaw, player.getXRot());
+                serverPlayer.teleportTo((ServerLevel) level, behind.x, behind.y, behind.z, approachYaw, player.getXRot());
             else
             {
                 player.setPos(behind);
-                player.setYRot(baseYaw);
+                player.setYRot(approachYaw);
             }
         }
 
@@ -674,8 +679,9 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         {
             // The barrel recenters when the operator leaves; keep the player
             // at their own last grounded position instead of following it.
-            double x = passenger.getX();
-            double z = passenger.getZ();
+            Vec3 local = mountFrame().localPosition(passenger.position());
+            double x = local.x;
+            double z = local.z;
             double standingY = getStandingY(passenger, x, z);
             if (Double.isFinite(standingY))
             {
@@ -708,8 +714,8 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         Level level = level();
         Entity gunner = getFirstPassenger();
 
-        if (blockPos == null)
-            blockPos = this.blockPosition();
+        // Sable assembly can move a retained entity and its support into a new block grid.
+        blockPos = blockPosition();
 
         if (gunner == null || !gunner.isAlive())
         {
@@ -756,7 +762,10 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         // Check supporting block
         BlockPos supportPos = blockPos.below();
         if (level.isEmptyBlock(supportPos))
+        {
             discard();
+            return;
+        }
 
         // Timers
         shootTimer = ShotCooldown.tick(shootTimer);
@@ -901,7 +910,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     @Override
     public Optional<Vec3> getEmplacementOperatorPosition(LivingEntity operator)
     {
-        return configType == null || blockPos == null ? Optional.empty() : Optional.ofNullable(getRiderPosition(operator, Direction.from2DDataValue(getGunDirection()).toYRot()));
+        return configType == null || blockPos == null ? Optional.empty() : Optional.ofNullable(getRiderPosition(operator, Direction.from2DDataValue(getGunDirection()).toYRot())).map(mountFrame()::worldPosition);
     }
 
     @Override
@@ -909,7 +918,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     {
         if (getConfigType() == null)
             return false;
-        Vec3 direction = point.subtract(getShootingOrigin());
+        Vec3 direction = mountFrame().localDirection(point.subtract(getShootingOrigin()));
         float yaw = ModUtils.getYawFromDirection(direction);
         float pitch = ModUtils.getPitchFromDirection(direction);
         float base = Direction.from2DDataValue(getGunDirection()).toYRot();
@@ -922,7 +931,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     {
         if (level().isClientSide || getFirstPassenger() != operator)
             return;
-        Vec3 direction = point.subtract(getShootingOrigin());
+        Vec3 direction = mountFrame().localDirection(point.subtract(getShootingOrigin()));
         automation.aim(level().getGameTime(), operator, direction);
         operator.setYRot(ModUtils.getYawFromDirection(direction));
         operator.setXRot(ModUtils.getPitchFromDirection(direction));
@@ -958,7 +967,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
             return;
         if (StringUtils.isNotBlank(configType.getShootSound()))
         {
-            PacketPlaySound.sendSoundPacket(this, configType.getGunSoundRange(), configType.getShootSound(), configType.isDistortSound(), configType.isSilencedSound(null));
+            PacketPlaySound.sendSoundPacket(mountFrame().worldPosition(position()), configType.getGunSoundRange(), level.dimension(), configType.getShootSound(), configType.isDistortSound(), configType.isSilencedSound(null), this);
             soundTimer = configType.getShootSoundLength();
         }
         if (StringUtils.isNotBlank(configType.getDistantShootSound()))
@@ -1010,7 +1019,17 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
             PacketPlaySound.sendSoundPacket(gunner, configType.getReloadSoundRange(), reloadSound, false, false);
     }
 
+    public EmplacementFrame mountFrame()
+    {
+        return EmplacementFrame.at(level(), blockPosition());
+    }
+
     public Vec3 getShootingOrigin()
+    {
+        return mountFrame().worldPosition(localMuzzle());
+    }
+
+    private Vec3 localMuzzle()
     {
         if (configType.hasMeasuredDeployableMuzzle())
         {
@@ -1024,7 +1043,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
 
     public Vec3 getShootingDirection()
     {
-        return ModUtils.getDirectionFromPitchAndYaw(getShootingPitch(), getShootingYaw());
+        return mountFrame().worldDirection(ModUtils.getDirectionFromPitchAndYaw(getShootingPitch(), getShootingYaw()));
     }
 
     public float getShootingPitch()

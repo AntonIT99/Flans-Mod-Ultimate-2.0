@@ -54,7 +54,7 @@ On Forge 1.20.1, setup must prepare the jar before launching with MCP.
 ModDevGradle Legacy remaps that verified jar through a `mod*` remapping
 configuration attached only to the MCP client runs; adding the production
 jar directly to the development classpath causes SRG-method startup errors.
-NeoForge adds the downloaded jar only to the runtime classpath of MCP client runs.
+NeoForge supplies the verified JAR to FML's mod discovery for MCP client runs. A JAR present only on the additional runtime classpath can be treated as a library: the mapped adapter starts, but the upstream control port stays closed.
 
 Both versions may run simultaneously. The adapter verifies the expected Minecraft
 MCP mod version, loader and port before every game action and never falls back to another

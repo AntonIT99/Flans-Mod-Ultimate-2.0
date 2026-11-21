@@ -2,13 +2,13 @@ package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.common.driveables.collision.DriveableCollisionWorld;
 import com.flansmodultimate.common.teams.TeamsRegeneration;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -29,9 +29,15 @@ public abstract class PlayerDriveableEdgeMixin
             player.heal(pHealAmount);
     }
 
-    @Redirect(method = "canFallAtLeast", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;noCollision(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Z"))
-    private boolean flansmodultimateNoDriveableHullBelow(Level level, Entity entity, AABB box)
+    // Sable replaces the noCollision call. Compose with the final verdict from the block collision check.
+    @ModifyReturnValue(method = "canFallAtLeast", at = @At("RETURN"))
+    private boolean flansmodultimateNoDriveableHullBelow(boolean canFall, double x, double z, float distance)
     {
-        return level.noCollision(entity, box) && !DriveableCollisionWorld.intersectsHull(entity, box);
+        if (!canFall)
+            return false;
+        Entity player = (Player) (Object) this;
+        AABB bounds = player.getBoundingBox();
+        AABB below = new AABB(bounds.minX + x, bounds.minY - distance - 1.0E-5F, bounds.minZ + z, bounds.maxX + x, bounds.minY, bounds.maxZ + z);
+        return !DriveableCollisionWorld.intersectsHull(player, below);
     }
 }

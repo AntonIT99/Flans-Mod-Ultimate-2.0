@@ -39,7 +39,7 @@ versions can run simultaneously. The existing `run` world and running clients
 are independent. The source sets normally loaded by the checkout remain loaded.
 On first preparation, `run/flan` is copied into the isolated server if present;
 later changes to those runtime packs require deliberately refreshing that copy.
-Changes to packaged source packs follow the ordinary Gradle run.
+Changes to packaged source packs follow the ordinary Gradle run. When joining with a real client, its isolated profile also needs the same external archives in its `flan` directory. A bot can finish negotiation even when a Java client would reject missing pack registry entries.
 
 Preparation copies an already accepted `run/eula.txt`. If none exists, accept
 the Minecraft EULA in the isolated server's `eula.txt`, or set
