@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.render.entity;
 
+import com.flansmodultimate.client.model.ItemIconAtlas;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.types.GunType;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -59,7 +60,7 @@ public class ThrownGunRenderer extends EntityRenderer<ThrownGun>
             poseStack.translate(-SPRITE_SETBACK * scale, 0F, 0F);
             poseStack.mulPose(Axis.ZP.rotationDegrees(-45F));
             // Flat items are always a sixteenth of a block thick; thin HD sprites to their own pixel size
-            int spriteWidth = itemRenderer.getModel(weapon, entity.level(), null, entity.getId()).getParticleIcon().contents().width();
+            int spriteWidth = ItemIconAtlas.iconWidth(itemRenderer.getModel(weapon, entity.level(), null, entity.getId()));
             poseStack.scale(scale, scale, scale * Math.min(1F, 16F / Math.max(1, spriteWidth)));
             itemRenderer.renderStatic(weapon, ItemDisplayContext.NONE, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), entity.getId());
             poseStack.popPose();

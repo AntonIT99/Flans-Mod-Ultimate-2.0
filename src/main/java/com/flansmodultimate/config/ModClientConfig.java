@@ -52,6 +52,7 @@ public final class ModClientConfig
     public final boolean loadAllModelsInCache;
     public final boolean searchModelsInOtherContentPacks;
     public final boolean preferBuiltInModelClasses;
+    public final EnumItemIconSizeLimit itemIconSizeLimit;
     public final boolean showShootableDurabilityBars;
     public final boolean showArmorDamageAbsorptionBar;
     public final boolean showAmmoHud;
@@ -193,6 +194,7 @@ public final class ModClientConfig
     private static final Supplier<Boolean> LOAD_ALL_MODELS_IN_CACHE;
     private static final Supplier<Boolean> SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
     private static final Supplier<Boolean> PREFER_BUILT_IN_MODEL_CLASSES;
+    public static final EnumValue<EnumItemIconSizeLimit> ITEM_ICON_SIZE_LIMIT;
     public static final BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     public static final BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
     public static final BooleanValue SHOW_AMMO_HUD;
@@ -409,6 +411,11 @@ public final class ModClientConfig
             shipping its own version of a model that also exists in the mod renders with its own version.
             Content packs keep loading the model classes the mod does not provide either way.
             """).define("preferBuiltInModelClasses", false);
+        ITEM_ICON_SIZE_LIMIT = builder.comment("""
+            Largest width and height content-pack item icons keep in the item icon atlas.
+            Larger icons are halved until they fit. Icons are drawn at 16 GUI pixels, so a lower limit saves video memory
+            and lets more content packs fit the graphics card's texture size limit. Changing it reloads resources.
+            """).defineEnum("itemIconSizeLimit", EnumItemIconSizeLimit.UNLIMITED);
         builder.pop();
         builder.push("Hit Markers");
         HIT_MARKER_STYLE = builder.comment("""
@@ -769,6 +776,7 @@ public final class ModClientConfig
         loadAllModelsInCache = LOAD_ALL_MODELS_IN_CACHE.get();
         searchModelsInOtherContentPacks = SEARCH_MODELS_IN_OTHER_CONTENT_PACKS.get();
         preferBuiltInModelClasses = PREFER_BUILT_IN_MODEL_CLASSES.get();
+        itemIconSizeLimit = ITEM_ICON_SIZE_LIMIT.get();
         showShootableDurabilityBars = SHOW_SHOOTABLE_DURABILITY_BARS.get();
         showArmorDamageAbsorptionBar = SHOW_ARMOR_DAMAGE_ABSORPTION_BAR.get();
         showAmmoHud = SHOW_AMMO_HUD.get();
@@ -1314,7 +1322,7 @@ public final class ModClientConfig
         ModClientConfig old = instance.get();
         instance.set(new ModClientConfig());
 
-        if (old != null && old.enableUncensoredContent != get().enableUncensoredContent && PlatformEnvironment.isClient())
+        if (old != null && (old.enableUncensoredContent != get().enableUncensoredContent || old.itemIconSizeLimit != get().itemIconSizeLimit) && PlatformEnvironment.isClient())
         {
             Minecraft minecraft = Minecraft.getInstance();
             minecraft.execute(minecraft::reloadResourcePacks);

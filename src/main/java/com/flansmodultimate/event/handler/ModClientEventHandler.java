@@ -4,6 +4,7 @@ import com.flansmodultimate.*;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
+import com.flansmodultimate.client.model.ItemIconAtlas;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.*;
 import com.flansmodultimate.client.render.blockentity.CapturePointRenderer;
@@ -36,6 +37,7 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -115,9 +117,10 @@ public final class ModClientEventHandler
         // prohibitively expensive during every resource reload.
         event.getModels().replaceAll((location, original) ->
         {
-            if (customRenderedItemIds.contains(ClientPlatform.modelItemId(location)) && !(original instanceof BewlrRoutingModel))
-                return new BewlrRoutingModel(original);
-            return original;
+            BakedModel model = ItemIconAtlas.wrap(location, original);
+            if (customRenderedItemIds.contains(ClientPlatform.modelItemId(location)) && !(model instanceof BewlrRoutingModel))
+                return new BewlrRoutingModel(model);
+            return model;
         });
     }
 

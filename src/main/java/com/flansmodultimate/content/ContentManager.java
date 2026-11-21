@@ -919,6 +919,31 @@ public class ContentManager
         return configs.get(provider).stream().filter(config -> config.getType().isHasBlock()).toList();
     }
 
+    /**
+     * Sanitized names of the item icons that item holder blocks draw on their faces in the world. Read from resource
+     * reload workers, so it copies the lists and settles for none if a content reload changes them meanwhile.
+     */
+    public static Set<String> itemHolderIcons()
+    {
+        Set<String> icons = new HashSet<>();
+        try
+        {
+            for (List<InfoType> providerConfigs : List.copyOf(configs.values()))
+            {
+                for (InfoType config : List.copyOf(providerConfigs))
+                {
+                    if (config instanceof ItemHolderType)
+                        icons.add(ResourceUtils.sanitize(config.getIcon()));
+                }
+            }
+        }
+        catch (ConcurrentModificationException e)
+        {
+            return Set.of();
+        }
+        return icons;
+    }
+
     public static String getShortnameAliasInContentPack(String shortname, @Nullable IContentProvider provider)
     {
         if (provider != null)

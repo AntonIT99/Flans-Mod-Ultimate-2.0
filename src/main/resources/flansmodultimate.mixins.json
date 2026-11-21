@@ -36,6 +36,7 @@
       "LevelRendererMixin",
       "LivingEntityNameTagRangeMixin",
       "LocalPlayerMixin",
+      "ModelManagerMixin",
       "ModMismatchDisconnectedScreenAccessor",
       "MountedRiderTurnMixin",
       "ParticleAccessor",
@@ -43,6 +44,7 @@
       "PlayerRendererMixin",
       "PostChainAccessor",
       "SearchRegistryLazyTreesMixin",
+      "SpriteSourcesAccessor",
       "VehicleOpticsLightMixin",
       "WorldOpenFlowsApocalypseMixin"
   ],
