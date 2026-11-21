@@ -241,6 +241,7 @@ public final class ClientEventHandler
         ModClient.tick();
         ParticleHelper.tick();
         DriveableDamageEffects.tickClient();
+        GuidanceWireRenderer.tick(Minecraft.getInstance().level);
         AircraftCockpit.tick();
         DistantHorizonsClient.tick();
         ModelPreloader.tick();
@@ -299,6 +300,7 @@ public final class ClientEventHandler
         MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
         InstantBulletRenderer.renderAllTrails(event.getPoseStack(), buffers, partialTick, event.getCamera());
         OpStickConnectionRenderer.render(event.getPoseStack(), buffers, event.getCamera(), partialTick);
+        GuidanceWireRenderer.render(event.getPoseStack(), buffers, event.getCamera(), partialTick);
 
         if (ModClient.isDebug())
         {
@@ -574,6 +576,7 @@ public final class ClientEventHandler
     {
         com.flansmodultimate.network.client.debug.PacketDebugHitboxes.clearSession();
         DriveableDamageEffects.clear();
+        GuidanceWireRenderer.reset();
         DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();

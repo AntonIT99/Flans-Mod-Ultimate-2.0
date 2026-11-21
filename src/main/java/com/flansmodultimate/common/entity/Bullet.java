@@ -1144,8 +1144,12 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             if (!level().isClientSide)
             {
                 Vec3 targetVelocity = lockedOnTo == null ? Vec3.ZERO : lockedOnTo.getDeltaMovement();
-                setDeltaMovement(com.flansmodultimate.common.guns.ProportionalNavigation.steer(velocity, new Vec3(dX, dY, dZ), targetVelocity,
-                    configType.getProNavGain(), Math.toRadians(configType.getLockOnForce() * 28.10 / 60)));
+                Vec3 relativePosition = new Vec3(dX, dY, dZ);
+                double gain = ProportionalNavigation.gainAtRange(relativePosition.length(), configType.getProNavGain(), configType.getProNavTerminalRange(),
+                    configType.getProNavTerminalGain());
+                // An authored ProNavMaxTurnRate (degrees per tick) replaces the LockOnForce turn budget
+                double maxTurn = configType.getProNavMaxTurnRate() >= 0F ? Math.toRadians(configType.getProNavMaxTurnRate()) : Math.toRadians(configType.getLockOnForce() * 28.10 / 60);
+                setDeltaMovement(ProportionalNavigation.steer(velocity, relativePosition, targetVelocity, gain, maxTurn));
             }
             return;
         }

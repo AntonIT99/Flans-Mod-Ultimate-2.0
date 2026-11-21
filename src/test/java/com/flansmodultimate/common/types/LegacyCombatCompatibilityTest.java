@@ -118,5 +118,16 @@ class LegacyCombatCompatibilityTest
         bullet.read(new TypeFile("missile", EnumType.BULLET, PACK, List.of("ProportionalNavigation true", "ProNavGain 4")));
         assertTrue(bullet.isProportionalNavigation());
         assertEquals(4F, bullet.getProNavGain());
+        assertTrue(bullet.getProNavMaxTurnRate() < 0F);
+        assertEquals(0F, bullet.getProNavTerminalRange());
+        assertFalse(bullet.isHasLine());
+
+        BulletType tuned = new BulletType();
+        tuned.read(new TypeFile("tow", EnumType.BULLET, PACK,
+            List.of("ProportionalNavigation true", "ProNavMaxTurnRate 120", "ProNavTerminalRange 16", "ProNavTerminalGain 12", "HasLine true")));
+        assertEquals(90F, tuned.getProNavMaxTurnRate());
+        assertEquals(16F, tuned.getProNavTerminalRange());
+        assertEquals(10F, tuned.getProNavTerminalGain());
+        assertTrue(tuned.isHasLine());
     }
 }

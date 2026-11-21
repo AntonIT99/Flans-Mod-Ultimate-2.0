@@ -34,4 +34,13 @@ class ProportionalNavigationTest
         Vec3 velocity = new Vec3(3, 0, 0);
         assertEquals(velocity, ProportionalNavigation.steer(velocity, new Vec3(100, 0, 0), Vec3.ZERO, 4, 1));
     }
+
+    @Test
+    void terminalGainBlendsInsideTerminalRange()
+    {
+        assertEquals(3.5D, ProportionalNavigation.gainAtRange(50, 3.5, 0, 6), 1E-12D);
+        assertEquals(3.5D, ProportionalNavigation.gainAtRange(20, 3.5, 20, 6), 1E-12D);
+        assertEquals(4.75D, ProportionalNavigation.gainAtRange(18, 3.5, 20, 6), 1E-12D);
+        assertEquals(6D, ProportionalNavigation.gainAtRange(5, 3.5, 20, 6), 1E-12D);
+    }
 }

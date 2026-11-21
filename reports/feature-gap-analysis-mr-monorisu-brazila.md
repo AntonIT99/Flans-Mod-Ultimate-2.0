@@ -128,7 +128,8 @@ This is opt-in interception guidance for MISSILE rounds. PN commands the turn ra
 
 Target checked: `T/common/entity/Bullet` homing (pursuit using `TurningForce`/`LockOnForce`)
 Present: server-authoritative `ProportionalNavigation` / `ProNavGain` steering, preserving speed and the existing seeker, delay and `LockOnForce` turn budget. PN projectiles accept vanilla tracked velocity corrections; the existing entity tracking carries motion to clients.
-Missing: separate `ProNavMaxTurnRate`, terminal gain/range controls, and the optional debug trail.
+**Present (2026-11-22):** `ProNavMaxTurnRate`, `ProNavTerminalRange` and `ProNavTerminalGain` (21 Tyrants and Plebeians missiles). An unset turn rate keeps the `LockOnForce` budget instead of the fork's 6° default.
+Missing: the optional debug trail.
 
 ### Fly-over top attack — PARTIAL
 
@@ -139,21 +140,22 @@ Target checked: `T/common/types/BulletType.isDoTopAttack` (`IsDoTopAttack`), `T/
 **Present:** Javelin-style dive top attack.
 **Missing:** the fly-over-and-shoot-down mode and its parameters.
 
-### Wire-guided missiles and the visible wire — MISSING
+### Wire-guided missiles and the visible wire — PARTIAL
 
 Reference: `R/common/guns/EntityGuidanceWire`, `BulletType.HasLine`
 Wire-guided missiles draw a wire from the launcher to the missile, and guidance depends on it.
 
 Target checked: `T/common/entity/Driveable.hasLineOfSight` (an unrelated LOS check)
-Missing: the guidance-wire entity and its rendering.
+**Present (2026-11-22):** `HasLine` draws a client-side wire along the recorded flight path that sags to loaded terrain and fades after the missile is gone (`GuidanceWireRenderer`, 17 Tyrants and Plebeians missiles). Guidance never depended on the wire in the reference either.
+Missing: the separately tracked wire entity (a wire appears only while the client tracks the missile, anchored at its first seen position rather than the launcher), the launch curl and the rear beacon.
 
-### Illumination (star) shells — MISSING
+### Illumination (star) shells — DORMANT
 
 Reference: `BulletType.starShell`, `R/client/FlansModClient` (around line 1118), `R/client/EntityCamera`
 Star shells light up the area below them while they descend.
 
 Target checked: `T/client/ModClient` dynamic lights (`HasDynamicLight` projectiles at a flat level)
-Missing: a dedicated slow-falling illumination round.
+**Dormant in the reference (checked 2026-11-22):** `starShell` only raises a client counter that sets `starStruck`, which nothing reads, and admits the round to the artillery shell camera. There is no lighting effect to port.
 
 ### Soft-target and vanilla-damage modifiers — PARTIAL
 
@@ -533,8 +535,8 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Weapons | Self-guided, radar and ARM seekers, homing torpedoes | MISSING | HIGH |
 | Weapons | Proportional navigation | PARTIAL | HIGH |
 | Weapons | Fly-over top attack | PARTIAL | HIGH |
-| Weapons | Wire-guided missile and wire | MISSING | HIGH |
-| Weapons | Illumination star shells | MISSING | HIGH |
+| Weapons | Wire-guided missile and wire | PARTIAL | HIGH |
+| Weapons | Illumination star shells | DORMANT | HIGH |
 | Weapons | Long-range armour penetration and vanilla-damage gate | PARTIAL | MEDIUM |
 | Weapons | glTF gun animation | MISSING | HIGH |
 | Weapons | Tactical reload and secondary switch timing | PARTIAL | HIGH |
@@ -576,7 +578,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 27 MISSING, 21 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 25 MISSING, 22 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -689,5 +691,6 @@ Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`r
 - **Driveable death explosions:** `isExplosionWhenDestroyedRadius` (290 TaP driveables) sets the death-explosion radius at the lowest priority of its aliases and, as in the reference, a positive value turns the explosion on.
 - **Explosion resistance:** `explosionResistance` multiplies the blast damage a driveable's parts take (`FlanExplosion`).
 - **Seat invincibility:** `invincible <seat> <bool>` and `SetDriverInvincible` cancel damage to that seat's rider except damage that bypasses invulnerability; destroying the driveable still kills them.
+- **Missile guidance (second batch):** `ProNavMaxTurnRate` / `ProNavTerminalRange` / `ProNavTerminalGain` (21 TaP missiles) and the `HasLine` guidance wire (17); see the weapons section. `starShell` (3) is dormant in the reference.
 - **Not ported:** vehicle `armorPen` / `penDecay` use the fork's unitless armour integers, which conflict with the target's millimetre armour model; `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` need the driving-model comparison listed under deeper audit.
 - Validation: Focused profile, with scoped Spotless, compilation and parser/behaviour tests. Not exercised in a running game.

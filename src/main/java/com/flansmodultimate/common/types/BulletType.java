@@ -166,6 +166,17 @@ public class BulletType extends ShootableType
     protected boolean proportionalNavigation;
     @Getter
     protected float proNavGain = 3.5F;
+    /** Maximum proportional-navigation turn per tick in degrees; negative keeps the LockOnForce turn budget. */
+    @Getter
+    protected float proNavMaxTurnRate = -1F;
+    /** Range in blocks inside which the gain blends to {@link #proNavTerminalGain}; 0 disables the terminal phase. */
+    @Getter
+    protected float proNavTerminalRange;
+    @Getter
+    protected float proNavTerminalGain = 4.5F;
+    /** Draws a guidance wire from the launch point to the projectile (Labjac HasLine). Visual only. */
+    @Getter
+    protected boolean hasLine;
     @Getter
     protected String trailTexture = StringUtils.EMPTY;
     @Getter
@@ -360,6 +371,15 @@ public class BulletType extends ShootableType
         if (!Float.isFinite(proNavGain))
             proNavGain = 3.5F;
         proNavGain = Math.max(0F, Math.min(10F, proNavGain));
+        float maxTurnRate = readValue("ProNavMaxTurnRate", proNavMaxTurnRate, file);
+        if (Float.isFinite(maxTurnRate) && maxTurnRate >= 0F)
+            proNavMaxTurnRate = Math.min(90F, maxTurnRate);
+        float terminalRange = readValue("ProNavTerminalRange", proNavTerminalRange, file);
+        if (Float.isFinite(terminalRange))
+            proNavTerminalRange = Math.max(0F, terminalRange);
+        float terminalGain = readValue("ProNavTerminalGain", proNavTerminalGain, file);
+        if (Float.isFinite(terminalGain))
+            proNavTerminalGain = Math.max(0F, Math.min(10F, terminalGain));
     }
 
     private void readMissileFlightProfile(TypeFile file)
@@ -514,6 +534,7 @@ public class BulletType extends ShootableType
         trackPhaseTurn = readValue("GuidedPhaseTurnSpeed", trackPhaseTurn, file);
         boostPhaseParticle = readValue("BoostParticle", boostPhaseParticle, file);
         torpedo = readValue("Torpedo", torpedo, file);
+        hasLine = readValue("HasLine", hasLine, file);
         depthCharge = readValue("depthCharge", depthCharge, file);
         activationDepth = readValue("activationDepth", activationDepth, file);
         activationDepth = Float.isFinite(activationDepth) ? Mth.clamp(activationDepth, 0F, 4096F) : 20F;
