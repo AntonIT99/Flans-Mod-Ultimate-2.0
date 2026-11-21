@@ -181,6 +181,7 @@ public final class ModClientConfig
     public final boolean distantHorizonsIntegration;
     public final boolean distantHorizonsRangefinder;
     public final boolean distantHorizonsContacts;
+    public final boolean distantHorizonsImpostors;
     public final boolean distantHorizonsExplosions;
     public final boolean distantHorizonsDriveableRendering;
 
@@ -341,6 +342,7 @@ public final class ModClientConfig
     public static final BooleanValue DISTANT_HORIZONS_INTEGRATION;
     public static final BooleanValue DISTANT_HORIZONS_RANGEFINDER;
     public static final BooleanValue DISTANT_HORIZONS_CONTACTS;
+    public static final BooleanValue DISTANT_HORIZONS_IMPOSTORS;
     public static final BooleanValue DISTANT_HORIZONS_EXPLOSIONS;
     public static final BooleanValue DISTANT_HORIZONS_DRIVEABLE_RENDERING;
 
@@ -743,6 +745,9 @@ public final class ModClientConfig
             .define("distantHorizonsRangefinder", true);
         DISTANT_HORIZONS_CONTACTS = builder.comment("Show driveables beyond the entity render distance as simplified shapes on the far terrain, including those the server",
             "only reports from beyond the tracking range, when the server allows it.").define("distantHorizonsContacts", true);
+        DISTANT_HORIZONS_IMPOSTORS = builder.comment("Draw distant planes and vehicles as pictures of their models instead of boxes, once a picture of them is ready.",
+            "Mechas and entities drawn as driveables stay boxes. Beyond the vanilla chunks, pictures need Distant Horizons API 7.2 or newer and no shader pack.")
+            .define("distantHorizonsImpostors", true);
         DISTANT_HORIZONS_EXPLOSIONS = builder.comment("Show large explosions beyond the particle range as a flash, a fireball and a smoke column, when the server allows it.")
             .define("distantHorizonsExplosions", true);
         DISTANT_HORIZONS_DRIVEABLE_RENDERING = builder.comment("Keep drawing driveables as entities up to the edge of the vanilla chunks, where their far-terrain shapes take over,",
@@ -904,6 +909,7 @@ public final class ModClientConfig
         distantHorizonsIntegration = DISTANT_HORIZONS_INTEGRATION.get();
         distantHorizonsRangefinder = DISTANT_HORIZONS_RANGEFINDER.get();
         distantHorizonsContacts = DISTANT_HORIZONS_CONTACTS.get();
+        distantHorizonsImpostors = DISTANT_HORIZONS_IMPOSTORS.get();
         distantHorizonsExplosions = DISTANT_HORIZONS_EXPLOSIONS.get();
         distantHorizonsDriveableRendering = DISTANT_HORIZONS_DRIVEABLE_RENDERING.get();
     }

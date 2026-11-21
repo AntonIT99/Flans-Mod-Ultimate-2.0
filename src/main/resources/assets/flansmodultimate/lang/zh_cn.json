@@ -583,6 +583,8 @@
   "options.flansmodultimate.distantHorizonsDriveableRendering.tooltip": "将完整载具模型绘制到区块边缘，扩展按大小配置的距离。关闭后使用配置距离，并在其外显示远距离联系形状。",
   "options.flansmodultimate.distantHorizonsExplosions": "远处爆炸",
   "options.flansmodultimate.distantHorizonsExplosions.tooltip": "若服务器允许，将粒子范围之外的大型爆炸显示为闪光、火球和烟柱。",
+  "options.flansmodultimate.distantHorizonsImpostors": "精细远处载具",
+  "options.flansmodultimate.distantHorizonsImpostors.tooltip": "图像准备好后，将远处的飞机和车辆绘制为其模型的图像而不是方块。机甲和显示为载具的NPC仍为方块。在已加载区块之外，需要较新的 Distant Horizons 且未使用光影包。",
   "options.flansmodultimate.distantHorizonsIntegration": "Distant Horizons 集成",
   "options.flansmodultimate.distantHorizonsIntegration.tooltip": "使用 Distant Horizons 显示并测量原版渲染距离之外的内容。以下设置仅在此项开启时生效。",
   "options.flansmodultimate.distantHorizonsRangefinder": "远景地形测距",

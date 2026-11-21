@@ -87,7 +87,7 @@ public class FlansOptionsScreen extends Screen
             List.of(ModClientConfig.AIM_TYPE, ModClientConfig.AIM_POSE, ModClientConfig.PREFERRED_GUN_FIRST_PERSON_FRAME, ModClientConfig.HOLD_TO_PRONE, ModClientConfig.INVERT_GRENADE_THROW_BUTTONS, ModClientConfig.GUN_BLOCK_INTERACTION, ModClientConfig.DRIVEABLE_SPEED_UNIT,
                 ModClientConfig.DRIVEABLE_VERTICAL_SPEED_UNIT, ModClientConfig.ENABLE_UNCENSORED_CONTENT, ModClientConfig.OPTIONS_BUTTON_PLACEMENT)),
         new QuickSection(DISTANT_HORIZONS_SECTION, List.of(ModClientConfig.DISTANT_HORIZONS_INTEGRATION, ModClientConfig.DISTANT_HORIZONS_RANGEFINDER, ModClientConfig.DISTANT_HORIZONS_CONTACTS,
-            ModClientConfig.DISTANT_HORIZONS_EXPLOSIONS, ModClientConfig.DISTANT_HORIZONS_DRIVEABLE_RENDERING)));
+            ModClientConfig.DISTANT_HORIZONS_IMPOSTORS, ModClientConfig.DISTANT_HORIZONS_EXPLOSIONS, ModClientConfig.DISTANT_HORIZONS_DRIVEABLE_RENDERING)));
 
     private record QuickSection(String name, List<ConfigValue<?>> values)
     {}

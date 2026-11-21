@@ -583,6 +583,8 @@
   "options.flansmodultimate.distantHorizonsDriveableRendering.tooltip": "Рисует полные модели техники до границы чанков, расширяя настроенный предел. При выключении используются настроенный предел и дальние заместители.",
   "options.flansmodultimate.distantHorizonsExplosions": "Дальние взрывы",
   "options.flansmodultimate.distantHorizonsExplosions.tooltip": "Показывать крупные взрывы за дальностью частиц вспышкой, огненным шаром и столбом дыма, если сервер это разрешает.",
+  "options.flansmodultimate.distantHorizonsImpostors": "Детальная дальняя техника",
+  "options.flansmodultimate.distantHorizonsImpostors.tooltip": "Рисовать дальние самолёты и технику изображениями их моделей вместо блоков, как только изображение готово. Мехи и NPC в виде техники остаются блоками. За пределами загруженных чанков нужен свежий Distant Horizons и отключённый шейдерпак.",
   "options.flansmodultimate.distantHorizonsIntegration": "Интеграция с Distant Horizons",
   "options.flansmodultimate.distantHorizonsIntegration.tooltip": "Использовать Distant Horizons, чтобы показывать и измерять то, что лежит за ванильной дальностью прорисовки. Настройки ниже действуют только при включённой интеграции.",
   "options.flansmodultimate.distantHorizonsRangefinder": "Дальномер по дальнему ландшафту",

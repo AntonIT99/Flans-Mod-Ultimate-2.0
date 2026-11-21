@@ -140,6 +140,49 @@ class DriveableImpostorCacheTest
         assertView(0, 4, new Vec3(Double.NaN, 0D, 0D), new Quaternionf());
     }
 
+    @Test
+    void distantShapeTakesTheCameraViewOnceCaptured()
+    {
+        boolean[] captured = new boolean[8 * 9];
+        assertEquals(-1, DriveableImpostorCache.nearestCaptured(captured, 8, 3, 4));
+        captured[4 * 8 + 3] = true;
+        captured[4 * 8 + 4] = true;
+        assertEquals(4 * 8 + 3, DriveableImpostorCache.nearestCaptured(captured, 8, 3, 4));
+    }
+
+    @Test
+    void distantShapeFallsBackToTheNearestCapturedView()
+    {
+        boolean[] captured = new boolean[8 * 9];
+        captured[4 * 8 + 4] = true;
+        captured[4 * 8 + 1] = true;
+        // Two yaw steps away, around the wrap, beats three
+        assertEquals(4 * 8 + 1, DriveableImpostorCache.nearestCaptured(captured, 8, 7, 4));
+        assertEquals(4 * 8 + 4, DriveableImpostorCache.nearestCaptured(captured, 8, 5, 4));
+
+        // One pitch step, 22.5 degrees, beats a quarter turn of 90 degrees at the horizon
+        captured = new boolean[8 * 9];
+        captured[5 * 8] = true;
+        captured[4 * 8 + 2] = true;
+        assertEquals(5 * 8, DriveableImpostorCache.nearestCaptured(captured, 8, 0, 4));
+
+        // At a pole every yaw shows the same view, so a pole cell of any yaw is as near as the camera's own
+        captured = new boolean[8 * 9];
+        captured[8 * 8 + 4] = true;
+        captured[7 * 8] = true;
+        assertEquals(8 * 8 + 4, DriveableImpostorCache.nearestCaptured(captured, 8, 0, 8));
+    }
+
+    @Test
+    void distantBillboardIsPulledTowardsTheCameraOnlyFromAfar()
+    {
+        assertEquals(0.9F, DriveableImpostorCache.pullScale(100D, 10F), 1E-6F);
+        assertEquals(1F, DriveableImpostorCache.pullScale(15D, 10F));
+        assertEquals(1F, DriveableImpostorCache.pullScale(100D, 0F));
+        assertEquals(1F, DriveableImpostorCache.pullScale(Double.NaN, 10F));
+        assertEquals(1F, DriveableImpostorCache.pullScale(100D, Float.NaN));
+    }
+
     private static DriveableImpostorCache.ViewSelection select(Vector3f camera, Quaternionf rotation,
         float centerX, float centerY, float centerZ, int yawAngles)
     {

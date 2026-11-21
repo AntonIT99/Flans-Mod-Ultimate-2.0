@@ -904,6 +904,8 @@
   "options.flansmodultimate.distantHorizonsDriveableRendering.tooltip": "Zeichnet vollständige Fahrzeuge bis zum Chunkrand und erweitert damit die konfigurierte Größen-Grenze. Aus nutzt die konfigurierte Grenze und entfernte Kontaktformen.",
   "options.flansmodultimate.distantHorizonsExplosions": "Entfernte Explosionen",
   "options.flansmodultimate.distantHorizonsExplosions.tooltip": "Große Explosionen jenseits der Partikelreichweite als Blitz, Feuerball und Rauchsäule zeigen, sofern der Server es erlaubt.",
+  "options.flansmodultimate.distantHorizonsImpostors": "Detaillierte entfernte Fahrzeuge",
+  "options.flansmodultimate.distantHorizonsImpostors.tooltip": "Entfernte Flugzeuge und Fahrzeuge als Bilder ihrer Modelle statt als Quader zeichnen, sobald ein Bild bereitsteht. Mechs und als Fahrzeuge gezeigte NPCs bleiben Quader. Jenseits der geladenen Chunks braucht das ein aktuelles Distant Horizons und kein Shaderpack.",
   "options.flansmodultimate.distantHorizonsIntegration": "Distant-Horizons-Integration",
   "options.flansmodultimate.distantHorizonsIntegration.tooltip": "Distant Horizons nutzen, um zu zeigen und zu messen, was hinter der Vanilla-Sichtweite liegt. Die folgenden Einstellungen gelten nur, solange dies aktiv ist.",
   "options.flansmodultimate.distantHorizonsRangefinder": "Fernterrain-Entfernungsmesser",

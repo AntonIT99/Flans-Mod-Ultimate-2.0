@@ -904,6 +904,8 @@
   "options.flansmodultimate.distantHorizonsDriveableRendering.tooltip": "Draw full driveable models to the chunk edge. This extends the configured size-based cutoff. Off uses the configured cutoff and distant contact shapes beyond it.",
   "options.flansmodultimate.distantHorizonsExplosions": "Distant Explosions",
   "options.flansmodultimate.distantHorizonsExplosions.tooltip": "Show large explosions beyond the particle range as a flash, a fireball and a smoke column, if the server allows it.",
+  "options.flansmodultimate.distantHorizonsImpostors": "Detailed Distant Driveables",
+  "options.flansmodultimate.distantHorizonsImpostors.tooltip": "Draw distant planes and vehicles as pictures of their models instead of boxes, once a picture is ready. Mechas and NPCs drawn as driveables stay boxes. Beyond the loaded chunks, this needs a recent Distant Horizons and no shader pack.",
   "options.flansmodultimate.distantHorizonsIntegration": "Distant Horizons Integration",
   "options.flansmodultimate.distantHorizonsIntegration.tooltip": "Use Distant Horizons to show and measure what lies beyond the vanilla render distance. The settings below only apply while this is on.",
   "options.flansmodultimate.distantHorizonsRangefinder": "Far-Terrain Rangefinder",

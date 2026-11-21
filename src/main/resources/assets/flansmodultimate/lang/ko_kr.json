@@ -583,6 +583,8 @@
   "options.flansmodultimate.distantHorizonsDriveableRendering.tooltip": "완전한 탑승물 모델을 청크 경계까지 그려 설정 거리를 확장합니다. 끄면 설정 거리와 그 밖의 원거리 접촉 형태를 사용합니다.",
   "options.flansmodultimate.distantHorizonsExplosions": "원거리 폭발",
   "options.flansmodultimate.distantHorizonsExplosions.tooltip": "서버가 허용하면 파티클 범위 너머의 큰 폭발을 섬광, 불덩이, 연기 기둥으로 표시합니다.",
+  "options.flansmodultimate.distantHorizonsImpostors": "상세한 원거리 탈것",
+  "options.flansmodultimate.distantHorizonsImpostors.tooltip": "원거리의 비행기와 차량을 이미지가 준비되는 대로 상자 대신 모델 이미지로 그립니다. 메카와 탈것으로 표시되는 NPC는 상자로 남습니다. 불러온 청크 밖에서는 최신 Distant Horizons가 필요하며 셰이더 팩을 쓰지 않아야 합니다.",
   "options.flansmodultimate.distantHorizonsIntegration": "Distant Horizons 연동",
   "options.flansmodultimate.distantHorizonsIntegration.tooltip": "Distant Horizons를 사용해 바닐라 렌더 거리 너머에 있는 것을 보여 주고 측정합니다. 아래 설정은 이 옵션이 켜져 있을 때만 적용됩니다.",
   "options.flansmodultimate.distantHorizonsRangefinder": "원거리 지형 거리 측정",

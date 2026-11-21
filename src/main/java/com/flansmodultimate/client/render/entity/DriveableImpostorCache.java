@@ -16,6 +16,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -255,6 +256,179 @@ public final class DriveableImpostorCache
     }
 
     /**
+     * The atlas a distant shape of this model and skin is drawn from, after asking for the view the camera has
+     * of it. Null while no view of it is captured yet, while the cache holds no room for it, or when the model
+     * cannot be pictured; the shape is then drawn another way. Unlike {@link #renderOrPrepare}, this does not
+     * depend on the level of detail settings: a distant shape is always a picture once one is ready. The atlas is
+     * shared with driveables of the same type and skin drawn as entities.
+     *
+     * @param cameraOffset
+     *            the camera position minus the shape's origin
+     * @param rotation
+     *            the model's rotation about its origin, built as {@link #renderOrPrepare} builds it
+     */
+    @Nullable
+    public static DistantAtlas requestDistant(ModelDriveable model, DriveableType type, ResourceLocation texture, Vec3 cameraOffset, Quaternionf rotation)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null)
+            return null;
+        ensureSettings(config);
+        ModelBounds bounds = cachedBounds(model, type);
+        if (!bounds.valid())
+            return null;
+        // As the driveable renderer draws the type, so that both find the same atlas
+        int colour = type.getColour();
+        Entry entry = getOrCreate(model, type, texture, config.useTranslucentRendering(type), config.useCullingRendering(type), (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F,
+            (colour & 255) / 255F, bounds);
+        if (entry == null || entry.failed)
+            return null;
+        DistantAtlas atlas = new DistantAtlas(entry);
+        return distantView(atlas, cameraOffset, rotation) != null ? atlas : null;
+    }
+
+    /**
+     * Draws a distant shape as a billboard of its model, in a pose whose origin is the camera. The billboard is
+     * pulled {@code pull} blocks towards the camera and shrunk so that it keeps its size on screen, which keeps
+     * the ground a vehicle stands on from cutting into its picture. False once nothing captured can be drawn.
+     *
+     * @param offset
+     *            the shape's origin minus the camera position
+     */
+    public static boolean renderDistantBillboard(DistantAtlas atlas, Vec3 offset, Quaternionf rotation, float pull, PoseStack poseStack, MultiBufferSource buffers, int light)
+    {
+        ViewSelection view = distantView(atlas, offset.reverse(), rotation);
+        if (view == null)
+            return false;
+        Entry entry = atlas.entry;
+        AtlasPage page = entry.pages[atlasCell(view.yawIndex(), view.pitchIndex(), settings.yawAngles()).pageIndex()];
+        if (page == null || page.location == null)
+            return false;
+
+        Vector3f center = new Vector3f(entry.bounds.centerX(), entry.bounds.centerY(), entry.bounds.centerZ()).rotate(rotation)
+            .add((float) offset.x, (float) offset.y, (float) offset.z);
+        float scale = pullScale(center.length(), pull);
+        poseStack.pushPose();
+        // Scaled about the camera, which leaves the picture where it was on screen
+        poseStack.scale(scale, scale, scale);
+        poseStack.translate(offset.x, offset.y, offset.z);
+        renderBillboard(entry, view, rotation, poseStack, buffers, light, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
+        poseStack.popPose();
+        return true;
+    }
+
+    /**
+     * Puts the billboard of a distant shape into {@code out}, relative to the camera and pulled towards it as
+     * {@link #renderDistantBillboard} pulls it. False once nothing captured can be drawn.
+     *
+     * @param offset
+     *            the shape's origin minus the camera position
+     */
+    public static boolean fillDistantBillboard(DistantAtlas atlas, Vec3 offset, Quaternionf rotation, float pull, DistantBillboard out)
+    {
+        ViewSelection view = distantView(atlas, offset.reverse(), rotation);
+        if (view == null)
+            return false;
+        Entry entry = atlas.entry;
+        AtlasCell cell = atlasCell(view.yawIndex(), view.pitchIndex(), settings.yawAngles());
+        AtlasPage page = entry.pages[cell.pageIndex()];
+        if (page == null || page.texture == null)
+            return false;
+
+        float[] uvs = cellUvs(cell);
+        out.texture = page.texture.getId();
+        out.atlasWidth = (float) settings.resolution() * PAGE_COLUMNS;
+        out.atlasHeight = (float) settings.resolution() * PAGE_ROWS;
+        out.u0 = uvs[0];
+        out.u1 = uvs[1];
+        out.v0 = uvs[2];
+        out.v1 = uvs[3];
+        Quaternionf facing = view.billboardRotation(rotation);
+        float halfExtent = entry.bounds.halfExtent();
+        out.center.set(entry.bounds.centerX(), entry.bounds.centerY(), entry.bounds.centerZ()).rotate(rotation).add((float) offset.x, (float) offset.y, (float) offset.z);
+        out.right.set(halfExtent, 0F, 0F).rotate(facing);
+        out.up.set(0F, halfExtent, 0F).rotate(facing);
+        float scale = pullScale(out.center.length(), pull);
+        out.center.mul(scale);
+        out.right.mul(scale);
+        out.up.mul(scale);
+        return true;
+    }
+
+    /** Radius in blocks of the model the atlas pictures, about the model's centre. */
+    public static float distantRadius(DistantAtlas atlas)
+    {
+        return atlas.entry.bounds.radius();
+    }
+
+    /**
+     * The view of a distant shape to draw: the camera's own once captured, else the nearest captured one, still
+     * facing the camera. Asks for the camera's own when it is missing. Null once the atlas is gone or holds none.
+     */
+    @Nullable
+    private static ViewSelection distantView(DistantAtlas atlas, Vec3 cameraOffset, Quaternionf rotation)
+    {
+        Entry entry = atlas.entry;
+        // A clear or an eviction releases the entry's pages; a settings change also replaces the cell layout
+        if (settings == null || entry.failed || !entries.contains(entry))
+            return null;
+        int yawAngles = settings.yawAngles();
+        ViewSelection view = selectView(cameraOffset, rotation, entry.bounds.centerX(), entry.bounds.centerY(), entry.bounds.centerZ(), yawAngles);
+        if (!entry.captured[view.pitchIndex() * yawAngles + view.yawIndex()] && pendingEntry == null)
+        {
+            pendingEntry = entry;
+            pendingYawIndex = view.yawIndex();
+            pendingPitchIndex = view.pitchIndex();
+        }
+        int cell = nearestCaptured(entry.captured, yawAngles, view.yawIndex(), view.pitchIndex());
+        if (cell < 0)
+            return null;
+        return new ViewSelection(cell % yawAngles, cell / yawAngles, view.viewYaw(), view.viewPitch());
+    }
+
+    /**
+     * The captured cell, numbered {@code pitchIndex * yawAngles + yawIndex}, whose view is nearest the given one,
+     * or -1 when none is captured. A yaw step turns the view by less towards the poles, so it counts for less there.
+     */
+    static int nearestCaptured(boolean[] captured, int yawAngles, int yawIndex, int pitchIndex)
+    {
+        int wanted = pitchIndex * yawAngles + yawIndex;
+        if (captured[wanted])
+            return wanted;
+        int best = -1;
+        float bestCost = Float.POSITIVE_INFINITY;
+        float yawStep = 360F / yawAngles;
+        for (int pitch = 0; pitch < PITCH_ANGLES; pitch++)
+        {
+            float yawWeight = Math.abs(Mth.cos(capturePitch(pitch) * Mth.DEG_TO_RAD));
+            float pitchCost = Math.abs(pitch - pitchIndex) * PITCH_STEP;
+            for (int yaw = 0; yaw < yawAngles; yaw++)
+            {
+                int cell = pitch * yawAngles + yaw;
+                if (!captured[cell])
+                    continue;
+                int steps = Math.abs(yaw - yawIndex);
+                float cost = pitchCost + Math.min(steps, yawAngles - steps) * yawStep * yawWeight;
+                if (cost < bestCost)
+                {
+                    bestCost = cost;
+                    best = cell;
+                }
+            }
+        }
+        return best;
+    }
+
+    /** Scale about the camera that brings a billboard {@code distance} blocks away {@code pull} blocks nearer; 1 when it is too near to move. */
+    static float pullScale(double distance, float pull)
+    {
+        // Written so that a NaN distance or pull leaves the billboard where it is
+        if (pull > 0F && distance > 2D * pull)
+            return (float) ((distance - pull) / distance);
+        return 1F;
+    }
+
+    /**
      * Captures the cell requested while rendering. Call at the start of a frame, before
      * any level rendering, with the main render target bound.
      */
@@ -405,16 +579,13 @@ public final class DriveableImpostorCache
     private static void renderBillboard(Entry entry, ViewSelection view, Quaternionf entityRotation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int overlay, float red,
         float green, float blue, float alpha)
     {
-        int resolution = settings.resolution();
         AtlasCell cell = atlasCell(view.yawIndex(), view.pitchIndex(), settings.yawAngles());
         AtlasPage page = entry.pages[cell.pageIndex()];
-        float atlasWidth = (float) resolution * PAGE_COLUMNS;
-        float atlasHeight = (float) resolution * PAGE_ROWS;
-        float inset = 0.5F;
-        float u0 = (cell.column() * resolution + inset) / atlasWidth;
-        float u1 = ((cell.column() + 1) * resolution - inset) / atlasWidth;
-        float v0 = (cell.row() * resolution + inset) / atlasHeight;
-        float v1 = ((cell.row() + 1) * resolution - inset) / atlasHeight;
+        float[] uvs = cellUvs(cell);
+        float u0 = uvs[0];
+        float u1 = uvs[1];
+        float v0 = uvs[2];
+        float v1 = uvs[3];
 
         Vector3f offset = new Vector3f(entry.bounds.centerX(), entry.bounds.centerY(), entry.bounds.centerZ()).rotate(entityRotation);
         float halfExtent = entry.bounds.halfExtent();
@@ -428,6 +599,20 @@ public final class DriveableImpostorCache
         vertex(pose, vertices, halfExtent, halfExtent, u1, v0, packedLight, overlay, red, green, blue, alpha);
         vertex(pose, vertices, -halfExtent, halfExtent, u0, v0, packedLight, overlay, red, green, blue, alpha);
         poseStack.popPose();
+    }
+
+    /**
+     * Texture coordinates of a cell, {@code u0, u1, v0, v1}, half a texel inside its edges so that filtering never
+     * reads a neighbouring cell.
+     */
+    private static float[] cellUvs(AtlasCell cell)
+    {
+        int resolution = settings.resolution();
+        float atlasWidth = (float) resolution * PAGE_COLUMNS;
+        float atlasHeight = (float) resolution * PAGE_ROWS;
+        float inset = 0.5F;
+        return new float[]{(cell.column() * resolution + inset) / atlasWidth, ((cell.column() + 1) * resolution - inset) / atlasWidth, (cell.row() * resolution + inset) / atlasHeight,
+            ((cell.row() + 1) * resolution - inset) / atlasHeight};
     }
 
     private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float u, float v, int packedLight, int overlay, float red, float green, float blue, float alpha)
@@ -601,6 +786,41 @@ public final class DriveableImpostorCache
                 && Float.floatToIntBits(red) == Float.floatToIntBits(otherRed) && Float.floatToIntBits(green) == Float.floatToIntBits(otherGreen)
                 && Float.floatToIntBits(blue) == Float.floatToIntBits(otherBlue);
         }
+    }
+
+    /**
+     * The atlas of one model and skin that a distant shape is drawn from. A clear or an eviction may release it at
+     * any time, after which it draws nothing until requested again. Render thread.
+     */
+    public static final class DistantAtlas
+    {
+        private final Entry entry;
+
+        private DistantAtlas(Entry entry)
+        {
+            this.entry = entry;
+        }
+    }
+
+    /**
+     * A camera-facing billboard of a distant shape relative to the camera, filled by {@link #fillDistantBillboard}.
+     * Its corners are {@code center} plus or minus {@code right} and {@code up}; the lower left one shows
+     * {@code u0, v1} and the upper right one {@code u1, v0}. The vectors belong to the billboard and change with it.
+     */
+    @Getter
+    public static final class DistantBillboard
+    {
+        private final Vector3f center = new Vector3f();
+        private final Vector3f right = new Vector3f();
+        private final Vector3f up = new Vector3f();
+        /** OpenGL name of the atlas page. */
+        private int texture;
+        private float atlasWidth;
+        private float atlasHeight;
+        private float u0;
+        private float u1;
+        private float v0;
+        private float v1;
     }
 
     private record ModelBounds(float centerX, float centerY, float centerZ, float radius, float halfExtent, boolean valid)

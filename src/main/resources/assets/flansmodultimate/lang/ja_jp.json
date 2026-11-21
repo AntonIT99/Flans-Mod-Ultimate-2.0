@@ -583,6 +583,8 @@
   "options.flansmodultimate.distantHorizonsDriveableRendering.tooltip": "乗り物の完全なモデルをチャンク端まで描画し、設定距離を延長します。オフでは設定距離と、その先の遠距離代理表示を使います。",
   "options.flansmodultimate.distantHorizonsExplosions": "遠方の爆発",
   "options.flansmodultimate.distantHorizonsExplosions.tooltip": "パーティクル範囲の先の大きな爆発を、閃光・火球・煙柱として表示します(サーバーが許可している場合)。",
+  "options.flansmodultimate.distantHorizonsImpostors": "詳細な遠方の乗り物",
+  "options.flansmodultimate.distantHorizonsImpostors.tooltip": "遠方の航空機と車両を、画像の準備ができ次第、箱ではなくモデルの画像で描画します。メカと乗り物として表示されるNPCは箱のままです。読み込まれたチャンクの外では、新しいDistant Horizonsが必要で、シェーダーパックは使えません。",
   "options.flansmodultimate.distantHorizonsIntegration": "Distant Horizons 連携",
   "options.flansmodultimate.distantHorizonsIntegration.tooltip": "Distant Horizons を使い、バニラの描画距離の先にあるものを表示・測定します。以下の設定はこれが有効なときのみ適用されます。",
   "options.flansmodultimate.distantHorizonsRangefinder": "遠景地形の測距",

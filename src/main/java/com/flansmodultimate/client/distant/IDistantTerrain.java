@@ -66,6 +66,20 @@ public interface IDistantTerrain
     @Nullable
     IDistantBoxGroup createGroup(String name, DistantBoxStyle style);
 
+    /**
+     * Whether the far terrain of the current level runs the pass given to {@link #setImpostorPass} this tick, so
+     * impostors drawn by it are seen beyond the vanilla chunks.
+     */
+    default boolean drawsImpostors()
+    {
+        return false;
+    }
+
+    /** Sets what draws into the far terrain's own colour and depth every frame, before its fog, or null for nothing. */
+    default void setImpostorPass(@Nullable IDistantImpostorPass pass)
+    {
+    }
+
     /** Called at the end of every client tick. */
     default void tick()
     {

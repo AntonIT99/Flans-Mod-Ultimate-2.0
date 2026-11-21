@@ -904,6 +904,8 @@
   "options.flansmodultimate.distantHorizonsDriveableRendering.tooltip": "Rysuje pełne modele pojazdów do granicy chunków. Rozszerza skonfigurowany próg zależny od rozmiaru. Wyłączenie używa tego progu, a poza nim uproszczonych kształtów odległych pojazdów.",
   "options.flansmodultimate.distantHorizonsExplosions": "Odległe wybuchy",
   "options.flansmodultimate.distantHorizonsExplosions.tooltip": "Pokazuje duże wybuchy poza zasięgiem cząsteczek jako błysk, kulę ognia i słup dymu, jeśli serwer na to zezwala.",
+  "options.flansmodultimate.distantHorizonsImpostors": "Szczegółowe odległe pojazdy",
+  "options.flansmodultimate.distantHorizonsImpostors.tooltip": "Rysuje odległe samoloty i pojazdy jako obrazy ich modeli zamiast bloków, gdy tylko obraz jest gotowy. Mechy i NPC wyświetlane jako pojazdy pozostają blokami. Poza załadowanymi chunkami wymaga aktualnego Distant Horizons i braku pakietu shaderów.",
   "options.flansmodultimate.distantHorizonsIntegration": "Integracja z Distant Horizons",
   "options.flansmodultimate.distantHorizonsIntegration.tooltip": "Używa Distant Horizons do wyświetlania i pomiaru obszaru poza standardowym zasięgiem renderowania. Poniższe ustawienia działają tylko przy włączonej integracji.",
   "options.flansmodultimate.distantHorizonsRangefinder": "Dalmierz odległego terenu",

@@ -1,42 +1,61 @@
 package com.flansmodultimate.client.distant;
 
+import com.flansmod.client.model.ModelDriveable;
 import com.flansmodultimate.api.driveables.MountAim;
 import com.flansmodultimate.api.parts.PartBodyPose;
+import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.model.ModelPreloader;
+import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
+import com.flansmodultimate.client.render.entity.DriveableRenderer;
 import com.flansmodultimate.client.render.thermal.ThermalVision;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.parts.PartBodies;
 import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.network.client.driveable.PacketDistantContacts;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Driveables shown as simplified shapes because they are too far away to be drawn as entities: those the
  * client tracks but no longer draws, and those only the server reports, beyond the tracking range. An entity
  * that wears the part boxes of a driveable type, as an NPC drawn as one does, is shown the same way. Each is
  * drawn by the far-terrain renderer beyond the vanilla chunks and by {@link DistantBoxRenderer} within them.
- * Render thread.
+ *
+ * <p>
+ * Planes and vehicles are drawn as impostors of their models once the atlas of {@link DriveableImpostorCache}
+ * holds a view of them: by {@link DistantImpostorPass} into the far terrain, and by {@link DistantBoxRenderer}
+ * within the vanilla chunks. Until then, and for mechas and the entities standing in for driveables, which the
+ * atlas cannot picture in their pose, they are drawn as boxes. Render thread.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DistantContactsClient
 {
+    /** How driveables look in a thermal sight: their engines and hulls are the hottest things around. */
+    static final int THERMAL_COLOR = 0xFFF2F2F2;
     /** Ticks a reported contact outlives the update that should have replaced it. */
     private static final int STALE_MARGIN_TICKS = 20;
-    /** How driveables look in a thermal sight: their engines and hulls are the hottest things around. */
-    private static final int THERMAL_COLOR = 0xFFF2F2F2;
 
     private record Reported(PacketDistantContacts.Contact contact, long receivedTick)
     {}
@@ -114,17 +133,31 @@ public final class DistantContactsClient
         });
 
         boolean thermal = ThermalVision.active();
+        boolean impostors = DistantHorizonsClient.impostorsEnabled();
         for (Proxy proxy : proxies.values())
-            proxy.update(terrain, camera, handoff, thermal);
+            proxy.update(terrain, camera, handoff, thermal, impostors);
     }
 
-    /** Calls {@code action} for every shape that {@link DistantBoxRenderer} draws this tick. */
-    static void forEachNear(DistantBoxRenderer.ShapeConsumer action)
+    /**
+     * Visits every shape that {@link DistantBoxRenderer} draws this tick. Those with an impostor are first offered
+     * to {@code impostors}, when given, and passed to {@code boxes} only when it did not draw them.
+     */
+    static void forEachNear(@Nullable Predicate<IDistantImpostor> impostors, DistantBoxRenderer.ShapeConsumer boxes)
     {
         for (Proxy proxy : proxies.values())
         {
-            if (proxy.near)
-                action.accept(proxy, proxy.boxes, DistantBoxStyle.SOLID);
+            if (proxy.near && (impostors == null || proxy.atlas == null || !impostors.test(proxy)))
+                boxes.accept(proxy, proxy.boxes, DistantBoxStyle.SOLID);
+        }
+    }
+
+    /** Visits every impostor drawn into the far terrain this tick, in place of its boxes there. */
+    static void forEachFarImpostor(Consumer<IDistantImpostor> action)
+    {
+        for (Proxy proxy : proxies.values())
+        {
+            if (proxy.farImpostor && proxy.atlas != null)
+                action.accept(proxy);
         }
     }
 
@@ -136,9 +169,10 @@ public final class DistantContactsClient
         reported.clear();
     }
 
-    private static final class Proxy implements IDistantBoxGroup.Origin
+    private static final class Proxy implements IDistantBoxGroup.Origin, IDistantImpostor
     {
         private final int id;
+        private final Quaternionf rotationScratch = new Quaternionf();
         /** The tracked entity: a driveable, or the wearer of {@link #worn}. */
         @Nullable
         private Entity entity;
@@ -160,6 +194,13 @@ public final class DistantContactsClient
         private IDistantBoxGroup group;
         /** Whether the mod draws this shape itself this tick, rather than the far-terrain renderer. */
         private boolean near;
+        /** The atlas the shape is drawn from as an impostor, or null for boxes; asked for again every tick. */
+        @Nullable
+        private DriveableImpostorCache.DistantAtlas atlas;
+        /** Blocks the impostor is pulled towards the camera; none for what floats, whose hull the water should hide. */
+        private float pull;
+        /** Whether the shape is drawn as an impostor into the far terrain this tick, rather than as boxes. */
+        private boolean farImpostor;
 
         private Proxy(int id)
         {
@@ -215,45 +256,135 @@ public final class DistantContactsClient
             return new Vec3(contact.x() + contact.velocityX() * age, contact.y() + contact.velocityY() * age, contact.z() + contact.velocityZ() * age);
         }
 
-        private void update(IDistantTerrain terrain, Vec3 camera, double handoff, boolean thermal)
+        /** Never null while visited as an impostor, which only happens while it holds an atlas. */
+        @Override
+        public DriveableImpostorCache.DistantAtlas atlas()
         {
+            return atlas;
+        }
+
+        @Override
+        public Quaternionf rotation(float partialTick, Quaternionf out)
+        {
+            float modelYaw;
+            float pitch;
+            float roll;
+            if (entity instanceof Driveable driveable)
+            {
+                modelYaw = DriveableRenderer.modelYaw(driveable, Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()));
+                pitch = Mth.rotLerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
+                roll = Mth.rotLerp(partialTick, driveable.getPrevRoll(), driveable.getRoll());
+            }
+            else if (report != null)
+            {
+                // Only planes and vehicles are drawn as impostors, and both turn their models this way
+                PacketDistantContacts.Contact contact = report.contact();
+                modelYaw = 180F - contact.yaw();
+                pitch = contact.pitch();
+                roll = contact.roll();
+            }
+            else
+                return out.identity();
+            // As the driveable renderer turns the model it pictures
+            return out.identity().rotateY(modelYaw * Mth.DEG_TO_RAD).rotateZ(pitch * Mth.DEG_TO_RAD).rotateX(roll * Mth.DEG_TO_RAD);
+        }
+
+        @Override
+        public float pull()
+        {
+            return pull;
+        }
+
+        /**
+         * The atlas a plane or vehicle is drawn from as an impostor, asking for the view the camera now has of it, or
+         * null for boxes: until a view is captured, for mechas, and for the entities standing in for driveables, whose
+         * pose the neutral model in the atlas does not show.
+         */
+        @Nullable
+        private DriveableImpostorCache.DistantAtlas requestAtlas(Vec3 camera)
+        {
+            if (type == null || worn != null)
+                return null;
+            int paintjob;
+            if (entity instanceof Driveable driveable && (driveable instanceof Plane || driveable instanceof Vehicle))
+                paintjob = driveable.getPaintjobId();
+            else if (entity == null && report != null && !report.contact().standIn() && (type instanceof PlaneType || type instanceof VehicleType))
+                paintjob = report.contact().paintjobId();
+            else
+                return null;
+
+            // A first sighting waits for its model's background load rather than stalling the tick
+            if (ModelPreloader.isLoadPending(type) || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelDriveable model))
+                return null;
+            DriveableImpostorCache.DistantAtlas requested = DriveableImpostorCache.requestDistant(model, type, DriveableRenderer.skin(type, paintjob), camera.subtract(at(1F)),
+                rotation(1F, rotationScratch));
+            if (requested != null)
+                pull = type.isFloatOnWater() ? 0F : DriveableImpostorCache.distantRadius(requested);
+            return requested;
+        }
+
+        private void update(IDistantTerrain terrain, Vec3 camera, double handoff, boolean thermal, boolean impostors)
+        {
+            atlas = null;
+            farImpostor = false;
             if (type == null)
                 return;
 
+            refreshBoxes(type, thermal);
+            near = at(1F).distanceTo(camera) < handoff;
+            // Views are only worth capturing where an impostor can be drawn
+            boolean farImpostors = terrain.drawsImpostors();
+            if (impostors && (near || farImpostors))
+                atlas = requestAtlas(camera);
+            farImpostor = !near && farImpostors && atlas != null;
+            if (near || farImpostor || !terrain.drawsBoxes())
+            {
+                if (group != null)
+                    group.setActive(false);
+                return;
+            }
+            showGroup(terrain, thermal);
+        }
+
+        /** Rebuilds the boxes from what is known of the driveable this tick. */
+        private void refreshBoxes(DriveableType shown, boolean thermal)
+        {
             if (entity instanceof Driveable driveable)
             {
-                int color = thermal ? THERMAL_COLOR : DistantTextureColors.of(type, driveable.getPaintjobId());
+                int color = tint(thermal, DistantTextureColors.of(shown, driveable.getPaintjobId()));
                 boxes = DistantProxyShapes.forEntity(driveable, color);
             }
             else if (entity != null && worn != null)
             {
-                int color = thermal ? THERMAL_COLOR : DistantTextureColors.of(type, skin);
+                int color = tint(thermal, DistantTextureColors.of(shown, skin));
                 boxes = DistantProxyShapes.forBody(worn, worn.originOffset(), Set.of(), color);
             }
             else if (report != null && report.contact().standIn())
             {
                 PacketDistantContacts.Contact contact = report.contact();
-                int color = thermal ? THERMAL_COLOR : DistantTextureColors.of(type, skin);
-                if (reportedBody == null || reportedBody.getType() != type)
-                    reportedBody = PartBody.of(type);
+                int color = tint(thermal, DistantTextureColors.of(shown, skin));
+                if (reportedBody == null || reportedBody.getType() != shown)
+                    reportedBody = PartBody.of(shown);
                 reportedBody.setPose(new PartBodyPose(Vec3.ZERO, contact.yaw(), contact.pitch(), contact.roll(), contact.scale(), MountAim.REST));
                 boxes = DistantProxyShapes.forBody(reportedBody, Vec3.ZERO, destroyedParts(contact), color);
             }
             else if (report != null)
             {
                 PacketDistantContacts.Contact contact = report.contact();
-                int color = thermal ? THERMAL_COLOR : DistantTextureColors.of(type, contact.paintjobId());
-                boxes = DistantProxyShapes.forType(type, contact.yaw(), contact.pitch(), contact.roll(), destroyedParts(contact), color);
+                int color = tint(thermal, DistantTextureColors.of(shown, contact.paintjobId()));
+                boxes = DistantProxyShapes.forType(shown, contact.yaw(), contact.pitch(), contact.roll(), destroyedParts(contact), color);
             }
+        }
 
-            near = at(1F).distanceTo(camera) < handoff;
-            if (near || !terrain.drawsBoxes())
-            {
-                if (group != null)
-                    group.setActive(false);
-                return;
-            }
+        /** The colour of the boxes: the skin's, or a thermal sight's heat. */
+        private static int tint(boolean thermal, int skinColor)
+        {
+            return thermal ? THERMAL_COLOR : skinColor;
+        }
 
+        /** Has the far terrain draw the boxes, making their group again after the terrain dropped it. */
+        private void showGroup(IDistantTerrain terrain, boolean thermal)
+        {
             if (group != null && !group.isValid())
             {
                 group.close();
@@ -290,6 +421,8 @@ public final class DistantContactsClient
             if (group != null)
                 group.close();
             group = null;
+            atlas = null;
+            farImpostor = false;
         }
     }
 }

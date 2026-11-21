@@ -172,7 +172,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         Vec3 cameraOffset = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().subtract(driveable.getPosition(partialTick));
         double cameraDistance = cameraOffset.length();
 
-        float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle || driveable instanceof Mecha ? 180F - yaw : -yaw;
+        float entityYawRotation = modelYaw(driveable, yaw);
         boolean locallyControlled = Minecraft.getInstance().player != null && Minecraft.getInstance().player.getVehicle() == driveable;
         // A burnt-out wreck has charred to one colour all over, which the billboard carries as a per-draw tint, so
         // the atlas of the clean model still describes it. Until it has, its parts are charring at their own rates.
@@ -339,9 +339,20 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         DriveableType type = driveable.getConfigType();
         if (type == null)
             return FlansModTextures.FALLBACK_TEXTURE;
+        return skin(type, driveable.getPaintjobId());
+    }
 
-        Paintjob paintjob = type.getPaintjob(driveable.getPaintjobId());
+    /** The texture a driveable of this type is drawn with in the given paintjob. */
+    public static ResourceLocation skin(DriveableType type, int paintjobId)
+    {
+        Paintjob paintjob = type.getPaintjob(paintjobId);
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : Optional.ofNullable(type.getTexture()).orElse(FlansModTextures.FALLBACK_TEXTURE);
+    }
+
+    /** The yaw in degrees by which the model of a driveable facing {@code yaw} is turned about its origin. */
+    public static float modelYaw(Driveable driveable, float yaw)
+    {
+        return driveable instanceof Plane || driveable instanceof Vehicle || driveable instanceof Mecha ? 180F - yaw : -yaw;
     }
 
     private static void renderShootPointMarkers(Driveable driveable, DriveableType type, boolean secondary, float[] authoredColour)

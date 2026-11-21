@@ -49,6 +49,15 @@ public final class DistantHorizonsClient
             FlansLog.log.warn("Could not hook into Distant Horizons; Flan's Mod far-terrain integration stays off", exception);
             terrain = IDistantTerrain.NONE;
         }
+        try
+        {
+            terrain.setImpostorPass(DistantImpostorPass.INSTANCE);
+        }
+        catch (LinkageError | RuntimeException exception)
+        {
+            // The rest of the integration does without impostors
+            FlansLog.log.warn("Could not set up distant driveable impostors; they are drawn as boxes", exception);
+        }
     }
 
     /** Whether Distant Horizons is installed, compatible and enabled in the client settings. */
@@ -72,6 +81,12 @@ public final class DistantHorizonsClient
     public static boolean contactsEnabled()
     {
         return enabled() && ModClientConfig.get().distantHorizonsContacts;
+    }
+
+    /** Whether distant planes and vehicles are drawn as impostors of their models rather than as boxes. */
+    public static boolean impostorsEnabled()
+    {
+        return contactsEnabled() && ModClientConfig.get().distantHorizonsImpostors;
     }
 
     public static boolean explosionsEnabled()

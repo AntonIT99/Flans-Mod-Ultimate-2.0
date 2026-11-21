@@ -1,11 +1,14 @@
 package com.flansmodultimate.client.distant;
 
 import com.flansmodultimate.client.render.WhiteTexture;
+import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
+import com.flansmodultimate.client.render.thermal.ThermalVision;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.joml.Quaternionf;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -19,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Draws the distant shapes that lie within the vanilla chunks. A far-terrain renderer draws before the
@@ -51,16 +55,26 @@ public final class DistantBoxRenderer
                 : LevelRenderer.getLightColor(level, BlockPos.containing(position));
             emit(poseStack, buffers.getBuffer(renderType(style)), position.subtract(cameraPosition), boxes, light);
         };
-        DistantContactsClient.forEachNear(draw);
+        // A thermal sight shows heat, which the boxes carry and an impostor's picture of the skin does not
+        Quaternionf rotation = new Quaternionf();
+        Predicate<IDistantImpostor> impostors = ThermalVision.active() ? null : impostor -> {
+            Vec3 position = impostor.at(partialTick);
+            int light = LevelRenderer.getLightColor(level, BlockPos.containing(position));
+            return DriveableImpostorCache.renderDistantBillboard(impostor.atlas(), position.subtract(cameraPosition), impostor.rotation(partialTick, rotation), impostor.pull(), poseStack, buffers,
+                light);
+        };
+        DistantContactsClient.forEachNear(impostors, draw);
         DistantExplosionCues.forEachNear(draw);
         for (DistantBoxStyle style : DistantBoxStyle.values())
             buffers.endBatch(renderType(style));
+        // Each atlas page has a render type of its own, of which the last one drawn is still open
+        buffers.endLastBatch();
     }
 
     /** Adds the nearby driveable shapes to a thermal sight's heat mask, which recolours whatever it is given. */
     public static void renderHeatMask(PoseStack poseStack, VertexConsumer mask, Vec3 camera, float partialTick)
     {
-        DistantContactsClient.forEachNear((origin, boxes, style) ->
+        DistantContactsClient.forEachNear(null, (origin, boxes, style) ->
             emit(poseStack, mask, origin.at(partialTick).subtract(camera), boxes, LightTexture.FULL_BRIGHT));
     }
 

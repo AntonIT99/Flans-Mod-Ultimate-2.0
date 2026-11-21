@@ -583,6 +583,8 @@
   "options.flansmodultimate.distantHorizonsDriveableRendering.tooltip": "Disegna veicoli completi fino al bordo dei chunk, estendendo il limite configurato. Disattivato, usa tale limite e sagome dei contatti distanti.",
   "options.flansmodultimate.distantHorizonsExplosions": "Esplosioni lontane",
   "options.flansmodultimate.distantHorizonsExplosions.tooltip": "Mostra le grandi esplosioni oltre la portata delle particelle come un lampo, una palla di fuoco e una colonna di fumo, se il server lo consente.",
+  "options.flansmodultimate.distantHorizonsImpostors": "Veicoli lontani dettagliati",
+  "options.flansmodultimate.distantHorizonsImpostors.tooltip": "Disegna aerei e veicoli lontani come immagini dei loro modelli invece che come blocchi, appena un'immagine è pronta. I mecha e gli NPC mostrati come veicoli restano blocchi. Oltre i chunk caricati richiede un Distant Horizons recente e nessun pacchetto di shader.",
   "options.flansmodultimate.distantHorizonsIntegration": "Integrazione con Distant Horizons",
   "options.flansmodultimate.distantHorizonsIntegration.tooltip": "Usa Distant Horizons per mostrare e misurare ciò che si trova oltre la distanza di rendering vanilla. Le impostazioni seguenti valgono solo mentre questa è attiva.",
   "options.flansmodultimate.distantHorizonsRangefinder": "Telemetro su terreno lontano",

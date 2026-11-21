@@ -4,6 +4,7 @@ import com.flansmodultimate.client.distant.DistantBox;
 import com.flansmodultimate.client.distant.DistantBoxStyle;
 import com.flansmodultimate.client.distant.DistantRaycastMath;
 import com.flansmodultimate.client.distant.IDistantBoxGroup;
+import com.flansmodultimate.client.distant.IDistantImpostorPass;
 import com.flansmodultimate.client.distant.IDistantTerrain;
 import com.flansmodultimate.util.FlansLog;
 import com.seibel.distanthorizons.api.DhApi;
@@ -75,6 +76,9 @@ public final class DhDistantTerrain implements IDistantTerrain
     private long generation;
     /** {@link #drawsBoxes()}, worked out once per tick since every distant shape asks for it. */
     private boolean drawsBoxes;
+    /** Draws the distant impostors, when the API is new enough and took the hook. Render thread. */
+    @Nullable
+    private DhImpostorHook impostors;
     @Nullable
     private IDhApiLevelWrapper cacheLevel;
     @Nullable
@@ -113,6 +117,11 @@ public final class DhDistantTerrain implements IDistantTerrain
                 terrain.levelUnloaded = true;
             }
         });
+        if (major > DhImpostorHook.MIN_API_MAJOR || major == DhImpostorHook.MIN_API_MAJOR && minor >= DhImpostorHook.MIN_API_MINOR)
+            terrain.impostors = DhImpostorHook.register(terrain);
+        else
+            FlansLog.log.info("Distant Horizons API {}.{} cannot take distant driveable impostors, which need {}.{}; they are drawn as boxes", major, minor,
+                DhImpostorHook.MIN_API_MAJOR, DhImpostorHook.MIN_API_MINOR);
         FlansLog.log.info("Distant Horizons {} (API {}.{}) found; enabling Flan's Mod far-terrain integration", DhApi.getModVersion(), major, minor);
         return terrain;
     }
@@ -126,6 +135,8 @@ public final class DhDistantTerrain implements IDistantTerrain
             invalidate();
         }
         drawsBoxes = rendersGenericObjects();
+        if (impostors != null)
+            impostors.tick();
     }
 
     @Override
@@ -151,7 +162,7 @@ public final class DhDistantTerrain implements IDistantTerrain
 
     /** The Distant Horizons level for the client's current level, or null when it has none yet. */
     @Nullable
-    private IDhApiLevelWrapper currentLevel()
+    IDhApiLevelWrapper currentLevel()
     {
         Object clientLevel = Minecraft.getInstance().level;
         if (clientLevel == null)
@@ -205,6 +216,19 @@ public final class DhDistantTerrain implements IDistantTerrain
         {
             return false;
         }
+    }
+
+    @Override
+    public boolean drawsImpostors()
+    {
+        return impostors != null && impostors.drawsImpostors();
+    }
+
+    @Override
+    public void setImpostorPass(@Nullable IDistantImpostorPass pass)
+    {
+        if (impostors != null)
+            impostors.setPass(pass);
     }
 
     @Override
