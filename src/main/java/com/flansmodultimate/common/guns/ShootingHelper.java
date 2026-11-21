@@ -248,7 +248,7 @@ public final class ShootingHelper
         }
         else if (bulletHit instanceof BlockHit bh && bh.getHitResult().getType() == HitResult.Type.BLOCK)
         {
-            penetratingPower = handleBlockHit(level, bh.getHitResult(), shootingMotion, shot, penetratingPower, bullet);
+            penetratingPower = handleBlockHit(level, bh, shootingMotion, shot, penetratingPower, bullet);
 
             spawnHitDebugDot(level, hit, 0F, 1F, 0F);
         }
@@ -488,24 +488,25 @@ public final class ShootingHelper
         return entity.hurt(source, damage);
     }
 
-    private static float handleBlockHit(Level level, BlockHitResult hitResult, Vec3 shootingMotion, FiredShot shot, float penetratingPower, @Nullable Bullet bullet)
+    static float handleBlockHit(Level level, BlockHit blockHit, Vec3 shootingMotion, FiredShot shot, float penetratingPower, @Nullable Bullet bullet)
     {
+        BlockHitResult hitResult = blockHit.getHitResult();
         BlockPos pos = hitResult.getBlockPos();
-        Vec3 hitVec = hitResult.getLocation();
+        Vec3 hitVec = blockHit.getWorldPosition();
         BlockState state = level.getBlockState(pos);
 
-        // Block penetration (may consume power and let the bullet continue)
-        if (ModCommonConfig.get().enableBlockPenetration())
+        playImpactSound(level, pos, hitVec, state, shot.getBulletType());
+        spawnBlockHitParticles(level, hitResult, hitVec, shootingMotion, shot.getBulletType(), bullet);
+
+        boolean penetrationEnabled = ModCommonConfig.get().enableBlockPenetration();
+        if (penetrationEnabled)
         {
             float hardness = getBlockPenetrationDecrease(level, state, pos, shot.getBulletType());
             penetratingPower -= hardness;
-
-            // No penetration
             if (penetratingPower < 0F)
                 return penetratingPower;
 
             PenetrableBlock penetrableBlock = PenetrableBlock.get(state);
-
             if (penetrableBlock != null && penetrableBlock.breaksOnPenetration() && !level.isClientSide)
                 ModUtils.destroyBlock((ServerLevel) level, pos, shot.getAttacker().orElse(null), false);
 
@@ -513,18 +514,11 @@ public final class ShootingHelper
                 bullet.getPenetrationLosses().add(new PenetrationLoss(hardness, PenetrationLoss.EnumType.BLOCK));
         }
 
-        // Special handling: glass breaking
         handleGlassBreak(level, pos, state, shot.getAttacker().orElse(null), shot.getBulletType());
-
-        // Impact sound
-        playImpactSound(level, pos, state, shot.getBulletType());
-
-        // Particles
-        spawnBlockHitParticles(level, hitResult, shootingMotion, shot.getBulletType(), bullet);
-
-        // Bounce / ricochet or stop
-        if (bullet != null)
-            bullet.handleBounceOrStop(level, hitResult, hitVec);
+        if (!penetrationEnabled && bullet == null)
+            return 0F;
+        if (bullet != null && (!penetrationEnabled || penetratingPower <= 0F))
+            bullet.handleBounceOrStop(level, blockHit.getWorldNormal(), hitVec);
 
         return penetratingPower;
     }
@@ -539,15 +533,20 @@ public final class ShootingHelper
 
     static void playImpactSound(Level level, BlockPos pos, BlockState state, BulletType type)
     {
+        playImpactSound(level, pos, pos.getCenter(), state, type);
+    }
+
+    private static void playImpactSound(Level level, BlockPos pos, Vec3 soundPosition, BlockState state, BulletType type)
+    {
         if (level.isClientSide || !type.isHitSoundEnable())
             return;
 
         String authored = type.getHitSound();
         if (StringUtils.isNotBlank(authored))
-            PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), authored, true, null);
+            PacketPlaySound.sendSoundPacket(soundPosition, type.getHitSoundRange(), level.dimension(), authored, true, null);
         if (type.usesMaterialImpactSounds())
             resolveMaterialImpactSound(level, pos, state).filter(sound -> !sound.equals(authored)).ifPresent(sound ->
-                PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), sound, true, null));
+                PacketPlaySound.sendSoundPacket(soundPosition, type.getHitSoundRange(), level.dimension(), sound, true, null));
     }
 
     private static Optional<String> resolveMaterialImpactSound(Level level, BlockPos pos, BlockState state)
@@ -582,7 +581,7 @@ public final class ShootingHelper
         return Optional.empty();
     }
 
-    private static void spawnBlockHitParticles(Level level, BlockHitResult hitResult, Vec3 shootingMotion, BulletType type, @Nullable Bullet bullet)
+    private static void spawnBlockHitParticles(Level level, BlockHitResult hitResult, Vec3 hitVec, Vec3 shootingMotion, BulletType type, @Nullable Bullet bullet)
     {
         if (level.isClientSide)
             return;
@@ -593,7 +592,6 @@ public final class ShootingHelper
         if (state.isAir())
             return;
 
-        Vec3 hitVec = hitResult.getLocation();
         Direction direction = hitResult.getDirection();
         PacketHandler.sendToAllAround(new PacketBlockHitEffect(hitVec, shootingMotion, pos, direction, type.getExplosionStats(bullet).explosionRadius(), type.getBlockHitFXScale(),
             bullet != null ? bullet.getBbWidth() : Shootable.DEFAULT_HITBOX_SIZE), hitVec, ModCommonConfig.blockHitParticleRange(), level.dimension());

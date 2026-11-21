@@ -33,6 +33,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Raytracer
@@ -44,6 +45,28 @@ public class Raytracer
     private static final double ENTITY_SEARCH_MARGIN = 10D;
     /** Fastest a target is expected to move per tick, which bounds how far a rewound target can be from where it is now */
     private static final double REWIND_TARGET_SPEED = 0.5D;
+
+    @FunctionalInterface
+    public interface MovingBlockClipper
+    {
+        BlockContact nearest(Level level, Vec3 from, Vec3 to, Set<BlockPos> visited, BlockContact terrain);
+    }
+
+    /** Block identity and face are in the owning grid. Position and normal are in world space. */
+    public record BlockContact(BlockHitResult local, Vec3 position, Vec3 normal)
+    {
+        static BlockContact terrain(BlockHitResult hit)
+        {
+            return new BlockContact(hit, hit.getLocation(), Vec3.atLowerCornerOf(hit.getDirection().getNormal()));
+        }
+    }
+
+    private static MovingBlockClipper movingBlockClipper = (level, from, to, visited, terrain) -> terrain;
+
+    public static void setMovingBlockClipper(MovingBlockClipper clipper)
+    {
+        movingBlockClipper = Objects.requireNonNull(clipper);
+    }
 
     /**
      * @param rewindTicks
@@ -398,39 +421,30 @@ public class Raytracer
     public static List<BulletHit> raytraceBlock(Level level, Vec3 posVec, Vec3 previousHit, Vec3 motion, Vec3 direction, List<BulletHit> hits, float penetration, @Nullable BlockPos oldPos,
         BulletType type)
     {
-        // Ray trace the bullet by comparing its next position to its current position
-        Vec3 nextPosVec = posVec.add(motion);
+        Vec3 original = posVec.subtract(previousHit);
+        Vec3 end = original.add(motion);
+        double lengthSquared = motion.lengthSqr();
+        if (lengthSquared == 0D)
+            return hits;
 
-        BlockHitResult hit = clipBlocks(level, posVec, nextPosVec);
-
-        if (hit.getType() == HitResult.Type.BLOCK)
+        Set<BlockPos> visited = new HashSet<>();
+        if (oldPos != null)
+            visited.add(oldPos);
+        Vec3 from = posVec;
+        do
         {
-            Vec3 hitVec = hit.getLocation().subtract(posVec).add(previousHit);
-            BlockPos pos = hit.getBlockPos();
-            BlockState blockState = level.getBlockState(pos);
-
-            if (!pos.equals(oldPos))
-            {
-                // Calculate the lambda value of the intercept
-                float lambda = 1;
-                // Try each co-ordinate one at a time.
-                if (motion.x != 0)
-                    lambda = (float) (hitVec.x / motion.x);
-                else if (motion.y != 0)
-                    lambda = (float) (hitVec.y / motion.y);
-                else if (motion.z != 0)
-                    lambda = (float) (hitVec.z / motion.z);
-
-                if (lambda < 0)
-                    lambda = -lambda;
-
-                hits.add(new BlockHit(hit, lambda, blockState));
-                penetration -= ShootingHelper.getBlockPenetrationDecrease(level, blockState, pos, type);
-            }
-
-            if (penetration > 0)
-                hits = raytraceBlock(level, hit.getLocation().add(direction), hitVec.add(direction), motion, direction, hits, penetration, pos, type);
+            BlockContact terrain = BlockContact.terrain(clipBlocks(level, from, end, pos -> !visited.contains(pos)));
+            BlockContact contact = movingBlockClipper.nearest(level, from, end, visited, terrain);
+            BlockPos pos = contact.local().getBlockPos();
+            if (contact.local().getType() == HitResult.Type.MISS || !visited.add(pos.immutable()))
+                break;
+            BlockState state = level.getBlockState(pos);
+            float fraction = (float) Mth.clamp(contact.position().subtract(original).dot(motion) / lengthSquared, 0D, 1D);
+            hits.add(new BlockHit(contact.local(), fraction, state, contact.position(), contact.normal()));
+            penetration -= ShootingHelper.getBlockPenetrationDecrease(level, state, pos, type);
+            from = contact.position();
         }
+        while (penetration > 0F);
         return hits;
     }
 
@@ -439,8 +453,15 @@ public class Raytracer
      */
     public static BlockHitResult clipBlocks(BlockGetter level, Vec3 from, Vec3 to)
     {
+        return clipBlocks(level, from, to, pos -> true);
+    }
+
+    public static BlockHitResult clipBlocks(BlockGetter level, Vec3 from, Vec3 to, Predicate<BlockPos> include)
+    {
         return BlockGetter.traverseBlocks(from, to, level, (getter, pos) ->
         {
+            if (!include.test(pos))
+                return null;
             BlockState state = getter.getBlockState(pos);
             return getter.clipWithInteractionOverride(from, to, pos, shotShape(getter, pos, state), state);
         }, getter ->

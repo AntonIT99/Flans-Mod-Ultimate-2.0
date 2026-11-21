@@ -353,6 +353,10 @@ tasks.register('staticAnalysis') {
 // ModDevGradle adds the NeoForge repositories.
 repositories {
     maven {
+        url = 'https://maven.ryanhcode.dev/releases'
+        content { includeGroup 'dev.ryanhcode.sable-companion' }
+    }
+    maven {
         url = 'https://maven.blamejared.com'
         content {
             includeGroup 'mezz.jei'
@@ -391,6 +395,10 @@ dependencies {
     // Modrinth file ID selects the NeoForge build of Sable 2.0.6 for Minecraft 1.21.1.
     def sableDependency = 'maven.modrinth:sable:fg9dTRz9'
     sablecompatCompileOnly sableDependency
+    def sableCompanion = 'dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:1.6.0'
+    sablecompatCompileOnly sableCompanion
+    testImplementation sableCompanion
+    testImplementation sourceSets.sablecompat.output
     if (project.hasProperty('withSable'))
         localRuntime sableDependency
 

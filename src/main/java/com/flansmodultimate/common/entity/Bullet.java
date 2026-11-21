@@ -806,6 +806,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     public void handleBounceOrStop(Level level, BlockHitResult hitResult, Vec3 hitVec)
     {
+        handleBounceOrStop(level, getSurfaceNormal(hitResult.getDirection()), hitVec);
+    }
+
+    public void handleBounceOrStop(Level level, Vec3 surfaceNormal, Vec3 hitVec)
+    {
         if (configType.getBounciness() <= 0F)
         {
             // No bounce: stop at impact point
@@ -816,8 +821,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
         Vec3 preHitVel = hitVec.subtract(position());
         Vec3 postHitVel = velocity.subtract(preHitVel);
-
-        Vec3 surfaceNormal = getSurfaceNormal(hitResult.getDirection());
 
         if (velocity.lengthSqr() < 0.1F * initialSpeed)
         {

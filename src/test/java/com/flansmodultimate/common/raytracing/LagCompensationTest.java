@@ -1,12 +1,15 @@
 package com.flansmodultimate.common.raytracing;
 
+import com.flansmodultimate.common.raytracing.hits.BulletHit;
+import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.SharedConstants;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.Bootstrap;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.EmptyBlockGetter;
@@ -18,6 +21,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,22 +30,9 @@ import static org.mockito.Mockito.*;
 class LagCompensationTest
 {
     @BeforeAll
-    static void bootstrapRegistries()
+    static void bootstrapRegistries() throws ReflectiveOperationException
     {
-        SharedConstants.tryDetectVersion();
-        try
-        {
-            Bootstrap.bootStrap();
-        }
-        catch (ExceptionInInitializerError error)
-        {
-            // Plain JUnit lacks Forge's NetworkEvent transformer; vanilla registries initialize first.
-            Throwable cause = error;
-            while (cause.getCause() != null)
-                cause = cause.getCause();
-            if (!(cause instanceof NoSuchMethodException) || !cause.getMessage().equals("net.minecraftforge.network.NetworkEvent.<init>()"))
-                throw error;
-        }
+        EntityTestBootstrap.initialize();
     }
 
     @Test
@@ -76,6 +67,18 @@ class LagCompensationTest
         assertTrue(LagCompensation.entityBoxes(entity, 111L, 0).isEmpty());
         // Nothing recorded that long ago
         assertTrue(LagCompensation.entityBoxes(entity, 111L, 40).isEmpty());
+    }
+
+    @Test
+    void penetrationVisitsEachBlockOnceAndEndsAtOriginalDestination()
+    {
+        Level level = mock(Level.class, CALLS_REAL_METHODS);
+        doReturn(Blocks.GLASS.defaultBlockState()).when(level).getBlockState(any());
+        var hits = new ArrayList<BulletHit>();
+        Vec3 from = new Vec3(0.5, 0.5, 0.5);
+        Raytracer.raytraceBlock(level, from, Vec3.ZERO, new Vec3(2, 0, 0), new Vec3(0.5, 0, 0), hits, 100, null, mock(BulletType.class));
+        assertEquals(3, hits.size());
+        assertEquals(0.75F, hits.getLast().getIntersectTime(), 0.001F);
     }
 
     @Test
