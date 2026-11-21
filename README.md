@@ -2,7 +2,7 @@
 
 Flan's Mod Ultimate 2 is an unofficial continuation of Flan's Mod. It loads and modernizes legacy Flan's Mod content packs, including weapons, ammo, armor, gun boxes, armor boxes, workbenches, paintjobs, sounds, particles, and related gameplay systems.
 
-The repository maintains four Minecraft targets. Choose the branch that matches the version and mod loader you want to develop for or run.
+The repository maintains two Minecraft targets. Choose the branch that matches the version and mod loader you want to develop for or run.
 
 ## Supported Versions
 
@@ -10,8 +10,6 @@ The repository maintains four Minecraft targets. Choose the branch that matches 
 | --- | --- | --- | --- | --- |
 | `master` | 1.20.1 | Forge 47.4.x | 17 | ForgeGradle |
 | `1.21.1` | 1.21.1 | NeoForge 21.1.x | 21 | ModDevGradle |
-| `26.1.2` (WIP - not supported yet) | 26.1.2 | NeoForge 26.1.2.x | 25 | ModDevGradle |
-| `26.2` (WIP - not supported yet) | 26.2 | NeoForge 26.2.x | 25 | ModDevGradle |
 
 The main mod ID is `flansmodultimate`. The project is in beta: some legacy systems are complete, while others remain in progress.
 
@@ -137,7 +135,7 @@ At the Paintjob Table or Gun Modification Table, left-click a paintjob to pay it
 - See [Platform-independent development practices](docs/platform-independent-practices.md) for shared helpers, item data ownership and cross-version tests.
 - Java sources are compiled with UTF-8 encoding.
 - The project uses Sponge Mixin and generates a refmap for `flansmodultimate`.
-- Keep loader-specific APIs, metadata, event registration, networking, and Java toolchain appropriate to the checked-out branch. The 26.1.2 and 26.2 branches use NeoForge's modern rendering/extraction APIs and Mojang's deobfuscated names; 26.2 additionally uses the feature-rendering pipeline introduced in that release.
+- Keep loader-specific APIs, metadata, event registration, networking, and Java toolchain appropriate to the checked-out branch.
 
 ## Documentation
 
