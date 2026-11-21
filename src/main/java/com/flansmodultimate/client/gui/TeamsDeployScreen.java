@@ -144,26 +144,35 @@ public final class TeamsDeployScreen extends Screen
     private DeployTerrainMap terrain;
     private long terrainMillis;
 
-    /** Takes the place of the death screen, whose message it shows first. */
+    /**
+     * Takes the place of the death screen, whose message it shows first. Only a death brings a message, even an empty one;
+     * the death screen the game puts back after the class menu has none, and keeps waiting out the same death.
+     */
     public TeamsDeployScreen(@Nullable Component causeOfDeath)
     {
-        this(false);
-        deathCause = causeOfDeath == null ? Component.empty() : causeOfDeath;
+        this(false, causeOfDeath);
     }
 
     public TeamsDeployScreen(boolean manuallyOpened)
     {
+        this(manuallyOpened, null);
+    }
+
+    private TeamsDeployScreen(boolean manuallyOpened, @Nullable Component causeOfDeath)
+    {
         super(Component.translatable("gui.flansmod.teams.deploy.title"));
         this.manuallyOpened = manuallyOpened;
-        if (!manuallyOpened && deathMillis == 0L)
-            startDeath();
+        // A new death starts over even when the last one was never forgotten, as when the respawn changed dimension
+        // and the loading screen took this one down before it saw the player alive again.
+        if (!manuallyOpened && (causeOfDeath != null || deathMillis == 0L))
+            startDeath(causeOfDeath);
         openedMillis = manuallyOpened ? System.currentTimeMillis() : deathMillis;
     }
 
-    private static void startDeath()
+    private static void startDeath(@Nullable Component causeOfDeath)
     {
         deathMillis = System.currentTimeMillis();
-        deathCause = Component.empty();
+        deathCause = causeOfDeath == null ? Component.empty() : causeOfDeath;
     }
 
     /** Milliseconds since the death this screen waits out, or {@link Long#MAX_VALUE} when it was opened by hand. */
