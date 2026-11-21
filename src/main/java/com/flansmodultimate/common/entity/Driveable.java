@@ -139,6 +139,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final String SOUND_CHANNEL_REVERSE = "reverse";
     /** Ticks the driving loop outlasts a closed throttle, so a brief dip does not restart the engine sound twice. */
     protected static final int ENGINE_LOOP_HOLD_TICKS = 10;
+    /** How far a player outside the driveable may stand from its origin and still use its inventory. */
+    private static final double INVENTORY_REACH_SQUARED = 64D;
     protected static final int FLAG_IT1_CAN_FIRE = 1 << 5;
     protected static final int FLAG_IT1_RELOADING = 1 << 6;
     /** Countermeasures have finished deploying but are not ready to fire again. */
@@ -5919,7 +5921,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     public boolean canPlayerAccessInventory(@NotNull Player player)
     {
-        if (!player.isAlive() || player.distanceToSqr(this) > 64D || !canPlayerAccess(player))
+        if (!player.isAlive() || !canPlayerAccess(player))
+            return false;
+        // Seats of large driveables, such as a titan's cockpit, sit far beyond reach
+        // of the hull origin, so the reach limit only applies to players outside.
+        if (getSeat(player) == null && player.distanceToSqr(this) > INVENTORY_REACH_SQUARED)
             return false;
         // An aircraft without in-flight inventory access only opens parked on the ground.
         return !(configType instanceof PlaneType plane && !plane.isInvInflight() && (!onGround() || Math.abs(getThrottle()) >= 0.1F));

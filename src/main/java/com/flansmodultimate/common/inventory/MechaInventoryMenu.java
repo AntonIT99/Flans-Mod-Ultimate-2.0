@@ -4,6 +4,8 @@ import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
 import com.flansmodultimate.common.entity.Mecha;
+import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -194,7 +196,7 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
             if (!moveItemStackTo(slotStack, playerInventoryStart, playerInventoryEnd, true))
                 return ItemStack.EMPTY;
         }
-        else if (!moveItemStackTo(slotStack, 0, mechaSlotEnd, false))
+        else if (!moveIntoMecha(slotStack))
         {
             return ItemStack.EMPTY;
         }
@@ -207,6 +209,14 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
             return ItemStack.EMPTY;
         slot.onTake(player, slotStack);
         return original;
+    }
+
+    /** Equipment goes straight onto the mecha before it falls back to cargo; everything else fills cargo first. */
+    private boolean moveIntoMecha(ItemStack stack)
+    {
+        if (stack.getItem() instanceof GunItem || stack.getItem() instanceof MechaAddonItem)
+            return moveItemStackTo(stack, GRID_SLOT_COUNT, mechaSlotEnd, false) || moveItemStackTo(stack, 0, GRID_SLOT_COUNT, false);
+        return moveItemStackTo(stack, 0, mechaSlotEnd, false);
     }
 
     @Override
