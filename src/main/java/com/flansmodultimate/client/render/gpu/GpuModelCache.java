@@ -5,6 +5,7 @@ import com.flansmodultimate.client.render.*;
 import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.mixin.BufferSourceAccessor;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.render.MeshUploadBuffer;
 import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.flansmodultimate.platform.render.VertexPlatform;
@@ -48,6 +49,7 @@ public final class GpuModelCache
     private static int paletteRing;
     private static int paletteRingOffset;
     private static int paletteBlockBytes;
+    private static boolean rebindPaletteAfterApply;
     private static int uniformOffsetAlignment = 256;
     private static ByteBuffer paletteBytes;
     private static final long MIB = 1024L * 1024;
@@ -97,6 +99,7 @@ public final class GpuModelCache
     public static void registerShader(RegisterShadersEvent event)
     {
         shader = null;
+        rebindPaletteAfterApply = PlatformEnvironment.isModLoaded("veil");
         java.util.Arrays.fill(samplerTextures, -1);
         clear();
         try
@@ -605,6 +608,14 @@ public final class GpuModelCache
             gpu.setupRenderState();
             prepareShader(shader, samplerTextures);
             shader.apply();
+            if (rebindPaletteAfterApply)
+            {
+                // Veil can relink or substitute this program after registration, resetting its palette binding.
+                int program = GL11C.glGetInteger(GL20C.GL_CURRENT_PROGRAM);
+                int block = GL31C.glGetUniformBlockIndex(program, "PartPalette");
+                if (block != GL31C.GL_INVALID_INDEX)
+                    GL31C.glUniformBlockBinding(program, block, PALETTE_BINDING);
+            }
             if (RenderDiagnostics.enabled)
                 RenderDiagnostics.stateSetups++;
         }

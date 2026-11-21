@@ -1,6 +1,6 @@
 package com.flansmodultimate.compat.sable;
 
-import com.flansmodultimate.common.entity.Vehicle;
+import com.flansmodultimate.common.entity.Driveable;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.EntityMovementExtension;
 
@@ -12,7 +12,19 @@ public final class SableVehicleContact
 {
     private SableVehicleContact() {}
 
-    public static void apply(Vehicle vehicle, BlockPos support)
+    public static Vec3 release(Driveable driveable, BlockPos support)
+    {
+        var deck = Sable.HELPER.getContaining(driveable.level(), support);
+        if (deck == null || deck.isRemoved())
+            return Vec3.ZERO;
+        // Entity.move would otherwise carry the root a second time on the departure tick.
+        if (Sable.HELPER.getTrackingSubLevel(driveable) == deck)
+            ((EntityMovementExtension) driveable).sable$setTrackingSubLevel(null);
+        Vec3 position = driveable.position();
+        return deck.logicalPose().transformPosition(deck.lastPose().transformPositionInverse(position)).subtract(position);
+    }
+
+    public static void apply(Driveable vehicle, BlockPos support)
     {
         var deck = Sable.HELPER.getContaining(vehicle.level(), support);
         if (deck == null)

@@ -252,6 +252,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public static final double PASSENGER_GUN_MOUNTED_OFFSET = 1.35D;
 
     protected Wheel[] wheels = new Wheel[0];
+    @Nullable
+    protected BlockPos wheelSupport;
     protected int groundedWheelCount;
     /** What the grounded wheels last stood on, averaged; firm ground while airborne or unsampled. */
     protected SurfaceTraction.Sample wheelSurface = SurfaceTraction.Sample.FIRM;
@@ -7326,6 +7328,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     protected Vec3 applyWheelContactPhysics(@NotNull Vec3 velocity, boolean alignToTerrain, double appliedGravity)
     {
+        wheelSupport = null;
         groundedWheelCount = 0;
         wheelSurface = SurfaceTraction.Sample.FIRM;
         if (configType == null || configType.getWheelPositions().isEmpty())
@@ -7368,8 +7371,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 surfaceSpeedSum += wheelSample.speedFactor();
             }
         }
-        if (support != null && this instanceof Vehicle vehicle)
-            VehicleDeckContact.apply(vehicle, support);
+        wheelSupport = support;
+        if (support != null)
+            VehicleDeckContact.apply(this, support);
         groundedWheelCount = sampler.grounded();
         if (groundedWheelCount == 0)
             return velocity;
@@ -7428,12 +7432,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         BlockHitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
         if (hit.getType() != HitResult.Type.BLOCK)
             return null;
-        if (this instanceof Vehicle)
-        {
-            EmplacementFrame frame = EmplacementFrame.at(level(), hit.getBlockPos());
-            if (frame != EmplacementFrame.TERRAIN)
-                return new BlockHitResult(frame.worldPosition(hit.getLocation()), hit.getDirection(), hit.getBlockPos(), hit.isInside());
-        }
+        EmplacementFrame frame = EmplacementFrame.at(level(), hit.getBlockPos());
+        if (frame != EmplacementFrame.TERRAIN)
+            return new BlockHitResult(frame.worldPosition(hit.getLocation()), hit.getDirection(), hit.getBlockPos(), hit.isInside());
         return hit;
     }
 
@@ -7457,6 +7458,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** Forgets the last wheel contact sample, for a tick that does not take one. */
     protected void clearWheelContact()
     {
+        wheelSupport = null;
         groundedWheelCount = 0;
         wheelSurface = SurfaceTraction.Sample.FIRM;
     }

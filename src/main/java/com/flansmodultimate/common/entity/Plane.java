@@ -498,6 +498,7 @@ public class Plane extends Driveable implements PlaneVisual
             liftingOff = velocity.y > 0.01D;
         if (!ModCommonConfig.forceLegacyPlanePhysics())
             velocity = enforceSpeedCap(velocity, ModCommonConfig.maxPlaneSpeedKmh());
+        BlockPos previousSupport = wheelSupport;
         if (isGearDeployed() && !liftingOff)
         {
             velocity = applyWheelContactPhysics(velocity, !type.isEpicShip() || !isFloatingOnWater());
@@ -514,6 +515,8 @@ public class Plane extends Driveable implements PlaneVisual
         // chocked and braked rather than free to roll away from a push.
         if (!hasFlightController() || !isEngineActive())
             velocity = applyMinimumGroundDeceleration(startVelocity, velocity, VehiclePhysicsConstants.PARKED_GROUND_FRICTION_DECELERATION_MS2);
+        if (previousSupport != null && wheelSupport == null)
+            velocity = velocity.add(VehicleDeckContact.release(this, previousSupport));
         moveWithCollisions(velocity);
         handleGroundImpact(type, impactVelocity);
         slideOnBelly(type);

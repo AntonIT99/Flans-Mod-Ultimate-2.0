@@ -25,6 +25,7 @@ public final class SableSetup
         if (ModList.get().isLoaded("sable"))
             event.enqueueWork(() ->
             {
+                VehicleDeckContact.setReleaseMotion(SableVehicleContact::release);
                 VehicleDeckContact.setResolver(SableVehicleContact::apply);
                 Raytracer.setMovingBlockClipper(SableShotClipper::nearest);
                 EmplacementFrame.Lookup.setResolver(SableEmplacementFrame::at);
