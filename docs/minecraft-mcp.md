@@ -175,6 +175,7 @@ and other-version limitations still require their own checks.
 
 | Failure or misleading observation | Recovery and verification |
 | --- | --- |
+| Setup piped through `tail` or another filter never returns | The Gradle daemon that `prepareMinecraftMcp` starts inherits the pipe and keeps it open. Run setup unpiped, then check that `build/minecraft-mcp` holds the verified jar instead of waiting for the shell. |
 | Offline status while Gradle is still starting Minecraft | Poll the pinned status endpoint and active log with a deadline. Run live preflight after the title screen is ready; investigate startup errors instead of treating them as gameplay failures. |
 | Forge warns that `mcpDev` has no valid resource pack info | Keep `src/mcpDev/resources/pack.mcmeta` with the branch's pack format. Restart the owned client and verify the warning is gone; do not merely dismiss it. |
 | Upstream labels are blank or widget IDs repeat | Use mapped `ui_state` labels, translation keys and snapshot/widget references. Do not guess from a stale button index. |
