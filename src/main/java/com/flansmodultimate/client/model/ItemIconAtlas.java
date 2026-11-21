@@ -74,6 +74,15 @@ public final class ItemIconAtlas
         return config == null ? 0 : config.itemIconSizeLimit.getPixels();
     }
 
+    /**
+     * Item render types bind their texture without mipmaps, so the icon atlas skips generating them: that saves load time,
+     * a quarter of its video memory and the 16 pixel padding mipmaps impose on each icon.
+     */
+    public static int mipLevel(ResourceLocation atlas, int mipLevel)
+    {
+        return ATLAS.equals(atlas) ? 0 : mipLevel;
+    }
+
     static void setListedIcons(Set<ResourceLocation> icons)
     {
         listedIcons.set(Set.copyOf(icons));
@@ -85,6 +94,7 @@ public final class ItemIconAtlas
      */
     public static BiFunction<ResourceLocation, Material, TextureAtlasSprite> iconSpriteGetter(BiFunction<ResourceLocation, Material, TextureAtlasSprite> sprites)
     {
+        ItemIconDecodes.finishReload();
         Set<ResourceLocation> icons = listedIcons.get();
         Map<ResourceLocation, TextureAtlasSprite> fallbacks = new ConcurrentHashMap<>();
         fallbackSprites.set(fallbacks);

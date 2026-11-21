@@ -32,6 +32,7 @@
       "HumanoidArmorLayerMixin",
       "HumanoidModelMixin",
       "ItemInHandLayerMixin",
+      "ItemModelGeneratorMixin",
       "KeyMappingConflictMixin",
       "LevelRendererMixin",
       "LivingEntityNameTagRangeMixin",
@@ -44,6 +45,7 @@
       "PlayerRendererMixin",
       "PostChainAccessor",
       "SearchRegistryLazyTreesMixin",
+      "SpriteLoaderMixin",
       "SpriteSourcesAccessor",
       "VehicleOpticsLightMixin",
       "WorldOpenFlowsApocalypseMixin"

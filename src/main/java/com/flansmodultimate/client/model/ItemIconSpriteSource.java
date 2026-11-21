@@ -30,7 +30,8 @@ import java.util.Set;
  * Lists the content-pack item icons ({@code flansmod:item/...}). The item icon atlas uses it with the configured size
  * limit. The block atlas uses it as a {@code fallback} after filtering the icons out, keeping 16 pixel copies for the
  * particles and block models that still sample icons there. Item holder icons keep their size there, since item holder
- * blocks draw them on their faces in the world.
+ * blocks draw them on their faces in the world. Both atlases load in parallel and share each icon's decoded pixels
+ * through {@link ItemIconDecodes}, so an icon is usually decoded once.
  */
 public final class ItemIconSpriteSource implements SpriteSource
 {
@@ -50,7 +51,8 @@ public final class ItemIconSpriteSource implements SpriteSource
     public void run(@NotNull ResourceManager resourceManager, @NotNull Output output)
     {
         int limit = fallback ? ItemIconAtlas.FALLBACK_ICON_SIZE : ItemIconAtlas.configuredIconSizeLimit();
-        Set<String> fullSize = fallback ? ContentManager.itemHolderIcons() : Set.of();
+        Set<String> fullSize = ContentManager.itemHolderIcons();
+        ItemIconDecodes<NativeImage> decodes = ItemIconDecodes.forReload(resourceManager);
         Set<ResourceLocation> listed = new HashSet<>();
         ICON_FILES.listMatchingResources(resourceManager).forEach((file, resource) ->
         {
@@ -59,10 +61,13 @@ public final class ItemIconSpriteSource implements SpriteSource
             ResourceLocation name = ICON_FILES.fileToId(file);
             ResourceLocation id = name.withPrefix(ID_PREFIX);
             listed.add(id);
-            if (limit <= 0 || fullSize.contains(name.getPath()))
+            boolean blockFaces = fullSize.contains(name.getPath());
+            if (fallback && blockFaces)
                 output.add(id, resource);
+            else if (fallback)
+                output.add(id, () -> loadFallback(id, resource, decodes));
             else
-                output.add(id, () -> load(id, resource, limit, fallback));
+                output.add(id, () -> loadIcon(id, resource, limit, !blockFaces, decodes));
         });
         if (!fallback)
             ItemIconAtlas.setListedIcons(listed);
@@ -75,46 +80,76 @@ public final class ItemIconSpriteSource implements SpriteSource
         return ItemIconAtlas.spriteSourceType();
     }
 
-    /** Icons with metadata (animations, custom loaders) keep the vanilla path and their size. */
-    @Nullable
-    // The Forge overload only adds custom-loader metadata, and icons with metadata never get here.
-    @SuppressWarnings("deprecation")
-    private static SpriteContents load(ResourceLocation id, Resource resource, int limit, boolean fallback)
+    /** Icons with metadata (animations, custom loaders) keep the vanilla path, their size and their own decode. */
+    private static boolean hasMetadata(Resource resource)
     {
         try
         {
-            if (resource.metadata() != ResourceMetadata.EMPTY)
-                return SpriteLoader.loadSprite(id, resource);
+            return resource.metadata() != ResourceMetadata.EMPTY;
         }
         catch (IOException e)
         {
-            return SpriteLoader.loadSprite(id, resource);
+            return true;
         }
+    }
 
-        NativeImage image;
+    @Nullable
+    private static SpriteContents loadIcon(ResourceLocation id, Resource resource, int limit, boolean blockCopy, ItemIconDecodes<NativeImage> decodes)
+    {
+        if (hasMetadata(resource))
+            return SpriteLoader.loadSprite(id, resource);
+        NativeImage image = decodes.forIconAtlas(id, () -> decode(id, resource), blockCopy ? ItemIconAtlas.FALLBACK_ICON_SIZE : 0);
+        if (image == null)
+            return null;
+        if (limit > 0 && Math.max(image.getWidth(), image.getHeight()) > limit)
+        {
+            float scale = (float) limit / Math.max(image.getWidth(), image.getHeight());
+            NativeImage scaled = downscale(image, Math.max(1, Math.round(image.getWidth() * scale)), Math.max(1, Math.round(image.getHeight() * scale)));
+            image.close();
+            image = scaled;
+            decodes.countDownscaled();
+        }
+        return contents(id, image);
+    }
+
+    @Nullable
+    private static SpriteContents loadFallback(ResourceLocation id, Resource resource, ItemIconDecodes<NativeImage> decodes)
+    {
+        if (hasMetadata(resource))
+            return SpriteLoader.loadSprite(id, resource);
+        NativeImage image = decodes.forBlockAtlas(id, () -> decode(id, resource), ItemIconAtlas.FALLBACK_ICON_SIZE);
+        return image == null ? null : contents(id, image);
+    }
+
+    // The Forge overload only adds custom-loader metadata, and icons with metadata never get here.
+    @SuppressWarnings("deprecation")
+    private static SpriteContents contents(ResourceLocation id, NativeImage image)
+    {
+        return new SpriteContents(id, new FrameSize(image.getWidth(), image.getHeight()), image, AnimationMetadataSection.EMPTY);
+    }
+
+    @Nullable
+    private static NativeImage decode(ResourceLocation id, Resource resource)
+    {
         try (InputStream input = resource.open())
         {
-            image = NativeImage.read(input);
+            return NativeImage.read(input);
         }
         catch (IOException e)
         {
             FlansLog.log.error("Using missing texture, unable to load {}: {}", id, e.toString());
             return null;
         }
+    }
 
-        int width = image.getWidth();
-        int height = image.getHeight();
-        if (Math.max(width, height) > limit)
-        {
-            // Block atlas copies stay square at the limit, so an odd icon size cannot lower that atlas's mipmap level
-            int targetWidth = fallback ? limit : Math.max(1, Math.round(width * (float) limit / Math.max(width, height)));
-            int targetHeight = fallback ? limit : Math.max(1, Math.round(height * (float) limit / Math.max(width, height)));
-            NativeImage scaled = downscale(image, targetWidth, targetHeight);
-            image.close();
-            image = scaled;
-            FlansLog.log.debug("Downscaled item icon {} from {}x{} to {}x{}", id, width, height, targetWidth, targetHeight);
-        }
-        return new SpriteContents(id, new FrameSize(image.getWidth(), image.getHeight()), image, AnimationMetadataSection.EMPTY);
+    /**
+     * The square block atlas copy of an icon larger than {@code size}, which keeps an odd icon size from lowering that
+     * atlas's mipmap level, or null when the icon is small enough to use as it is.
+     */
+    @Nullable
+    static NativeImage blockCopy(NativeImage image, int size)
+    {
+        return Math.max(image.getWidth(), image.getHeight()) > size ? downscale(image, size, size) : null;
     }
 
     /** Box-filters the image, weighting colours by alpha so transparent pixels do not darken the icon's edges. */
