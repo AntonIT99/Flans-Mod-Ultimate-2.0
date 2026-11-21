@@ -214,6 +214,7 @@ sourceSets {
     packsmanager.resources.exclude 'flan/**'
     // Models Tyrants and Plebeians expects from the mod; shipped in the main jar until that pack has its own mod.
     tapcompat {}
+    sablecompat {}
 }
 
 // Development-only files never ship in any jar.
@@ -245,6 +246,7 @@ def configureModSourceSet = { SourceSet sourceSet, String modId ->
 
 configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
 configureModSourceSet(sourceSets.tapcompat, mod_id)
+configureModSourceSet(sourceSets.sablecompat, mod_id)
 
 /*
  * Registers an optional module described by src/<module>/fmu-module.gradle.
@@ -386,6 +388,12 @@ dependencies {
     compileOnly "maven.modrinth:distanthorizonsapi:$version_distant_horizons_api"
 
     // Optional mods loaded only in development runs.
+    // Modrinth file ID selects the NeoForge build of Sable 2.0.6 for Minecraft 1.21.1.
+    def sableDependency = 'maven.modrinth:sable:fg9dTRz9'
+    sablecompatCompileOnly sableDependency
+    if (project.hasProperty('withSable'))
+        localRuntime sableDependency
+
     localRuntime customNpcsDependency
     // NPC unit tests use Custom NPCs data classes; ModDevGradle's localRuntime does not reach the test runtime.
     testRuntimeOnly customNpcsDependency
@@ -463,6 +471,7 @@ tasks.named('jar', Jar) {
     // The API package is MIT licensed and ships inside this jar, so its notice must too.
     from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
     from(sourceSets.tapcompat.output)
+    from(sourceSets.sablecompat.output)
     manifest {
         attributes([
                 'Specification-Title'     : mod_id,
