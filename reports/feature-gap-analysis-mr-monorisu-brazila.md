@@ -467,13 +467,14 @@ The player's own body is drawn in first person, and hidden while looking through
 Target checked: whole target
 Missing: first-person body rendering.
 
-### Iron-sight alignment tool — MISSING
+### Iron-sight alignment tool — PARTIAL
 
 Reference: `R/client/IronSightCalibrationCommand`, `GunType` (`IronSightOffset`, `IronSightPitch`, `ScopeAlignment`, `Xoffset`/`Zoffset`)
 A client command adjusts first-person iron-sight alignment live, and per-gun keys store the offsets.
 
-Target checked: `T/client/render/item/GunItemRenderer`
-Missing: the alignment tool and the offset keys.
+Target checked: `T/client/render/item/GunItemRenderer`, `T/client/debug/AimOffsetDebugCommand`
+**Corrected 2026-11-22:** `IronSightOffset` and `IronSightPitch` (33 Tyrants and Plebeians guns) are read and applied in the first-person frame, and `/flansdebug aimoffset` previews aim offsets live, with a Tyrants and Plebeians first-person frame (`/flansdebug viewFrame tap`).
+Missing: per-optic `ScopeAlignment` (1 TaP gun) and the fork's calibration command that exports the offsets as config lines.
 
 ### Client performance governor and shot prediction — PARTIAL
 
@@ -589,7 +590,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | AI | Armed bot NPCs | PARTIAL | MEDIUM |
 | AI | AI target aircraft | PARTIAL | MEDIUM |
 | Client | First-person body rendering | MISSING | HIGH |
-| Client | Iron-sight alignment tool | MISSING | HIGH |
+| Client | Iron-sight alignment tool | PARTIAL | HIGH |
 | Client | Performance governor and shot prediction | PARTIAL | MEDIUM |
 | Client | Tab-list ping display | PARTIAL | MEDIUM |
 | Client | Offhand gun selection | UNCERTAIN | LOW |
@@ -598,7 +599,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 15 MISSING, 32 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 14 MISSING, 33 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -742,5 +743,5 @@ What each port leaves out compared with the reference, and where it behaves diff
 - **Morale, shell camera and scout rounds:** morale and the panic timer are not saved and start full for a reloaded mount, as in the fork; the panicking mount needs its engine and hips like any walk, and nothing stops its rider dismounting. The shell camera's on/off state is per player, not per driveable, and is dropped on leaving the driveable; it forces third person while it follows a round and restores the previous view after. A scout round reports once, in one chat line instead of the fork's five.
 - **Fighter HUD and gunner stabiliser:** the HUD reads the composed camera view rather than the fork's blend of airframe and head angles, hides while the seat's optics or third person are in use, labels every ten degrees of heading instead of every five, and draws no flight path marker. The sight stabiliser holds heading only and ignores the seat's own aim frame, so a gunner seat on a turning mount is not compensated for it.
 - **Classified as needing nothing:** `firstShotRecoil` and the other dormant recoil keys, `starShell`, `alwaysShowTurret`, vehicle `hasSmoke`, the hard-kill `hasAPS`, `CIWSable` / `ciwsBullet` / `CIWSer`.
-- **Checked and left alone:** `turretTossTrue` (cosmetic turret throw-off already present), `damageVsCrew` / `SetupCrewedPart` crews (the target counts seat occupants), `bleedMultiplier` (no TaP medical tools), `HeliCrashEffects` / `HeliCrashSpin` (overlap the target's crash physics), `labjacFuel` (duplicates the target's fuel), vehicle `armorPen` / `penDecay` (conflict with millimetre armour) and `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` (need the driving-model comparison).
+- **Checked and left alone:** `HeliCrashEffects` / `HeliCrashSpin` were re-checked on 2026-11-22: the fork's doomed-helicopter pitch-and-roll, extra sink and flame and smoke overlap the target's realistic aircraft damage, autorotation and wreck crash modes. `turretTossTrue` (cosmetic turret throw-off already present), `damageVsCrew` / `SetupCrewedPart` crews (the target counts seat occupants), `bleedMultiplier` (no TaP medical tools), `HeliCrashEffects` / `HeliCrashSpin` (overlap the target's crash physics), `labjacFuel` (duplicates the target's fuel), vehicle `armorPen` / `penDecay` (conflict with millimetre armour) and `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` (need the driving-model comparison).
 - **Large TaP-used gaps not started:** troop transport and the content-pack bots it carries (50 vehicles, 33 bots), carrier operations and `weightLimit` (26), and the tier experience economy.
