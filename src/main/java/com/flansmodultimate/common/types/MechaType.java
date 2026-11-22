@@ -68,6 +68,14 @@ public class MechaType extends DriveableType implements IMechaType
     protected float stompRangeUpper;
     protected boolean restrictInventoryInput;
     protected boolean allowMechaToolsInRestrictedInv = true;
+    /** Labjac {@code canPanic}: the mount loses morale to core damage and bolts when it runs out. */
+    protected boolean canPanic;
+    /** Labjac {@code morale}: core damage the mount takes before it panics, recovering one a second. */
+    protected int morale = 1;
+    /** Labjac {@code panicTime}: the panic timer a panic starts with; it runs down two a second. */
+    protected int panicTime = 40;
+    protected String panicSound = StringUtils.EMPTY;
+    protected String runAmokSound = StringUtils.EMPTY;
 
     @Override
     protected void read(TypeFile file)
@@ -82,6 +90,11 @@ public class MechaType extends DriveableType implements IMechaType
         jumpVelocity = jumpHeight == -99F ? 1F : (float) Math.sqrt(Math.abs(9.81F * (jumpHeight + 0.2F) / 200F));
         rotateSpeed = readValue("RotateSpeed", rotateSpeed, file);
         stompSound = readSound("StompSound", stompSound, file);
+        canPanic = readValue("canPanic", canPanic, file);
+        morale = Math.max(1, Math.round(readValue("morale", (float) morale, file)));
+        panicTime = Math.max(1, readValue("panicTime", panicTime, file));
+        panicSound = readSound("panicSound", panicSound, file);
+        runAmokSound = readSound("runAmokSound", runAmokSound, file);
         stompSoundLength = Math.max(0, readSoundLength("StompSoundLength", stompSoundLength, file));
         registerSoundTimer("StompSoundLength", () -> stompSound, () -> stompSoundLength, length -> stompSoundLength = length);
         stompRangeLower = readValue("StompRangeLower", stompRangeLower, file);

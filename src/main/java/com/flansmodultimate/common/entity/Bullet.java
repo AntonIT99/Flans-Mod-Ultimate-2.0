@@ -41,6 +41,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -128,6 +129,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected int passiveApsTicks;
     /** Whether a TV-guided round has offered its camera to the player who fired it. Client side. */
     protected boolean tvCameraOffered;
+    /** Whether a scout round has told its shooter where it came down. Server side. */
+    protected boolean scoutReported;
 
     /** Submunitions */
     protected int submunitionDelay = 20;
@@ -1424,6 +1427,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         if (level.isClientSide || detonated || isRemoved() || tickCount < configType.getPrimeDelay())
             return;
 
+        reportScoutImpact();
         detonate(level, firedShot.getAttacker().orElse(null));
         if (startSmoke())
             setDeltaMovement(Vec3.ZERO);
@@ -1436,12 +1440,23 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         if (isRemoved())
             return;
 
+        if (!level.isClientSide)
+            reportScoutImpact();
         ShootingHelper.onBulletDeath(level, configType, position(), this, Optional.ofNullable(firedShot).flatMap(FiredShot::getAttacker).orElse(null));
         detonated = true;
         if (startSmoke())
             setDeltaMovement(Vec3.ZERO);
         else
             discard();
+    }
+
+    /** A scout round tells the player who fired it where it came down and how far that is from them, once. Server side. */
+    protected void reportScoutImpact()
+    {
+        if (scoutReported || configType == null || !configType.isScoutBullet() || firedShot == null || !(firedShot.getAttacker().orElse(null) instanceof Player player))
+            return;
+        scoutReported = true;
+        player.displayClientMessage(Component.translatable("message.flansmodultimate.scout.impact", Math.round(getX()), Math.round(getY()), Math.round(getZ()), Math.round(player.distanceTo(this))), false);
     }
 
     protected void clientTick(Level level)

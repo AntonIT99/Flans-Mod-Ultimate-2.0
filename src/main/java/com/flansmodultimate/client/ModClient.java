@@ -13,6 +13,7 @@ import com.flansmodultimate.client.render.hud.*;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.client.sound.SoundHelper;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.guns.GunSoundPermissions.Kind;
@@ -193,6 +194,11 @@ public class ModClient
     /** The original CameraType */
     private static CameraType originalCameraType = CameraType.FIRST_PERSON;
     private static boolean changedCameraEntity;
+    /** Whether the driver wants the camera to follow the shells their driveable fires, from the Labjac fork's magic artillery view. */
+    private static boolean shellCameraEnabled;
+    /** The camera type to go back to once a followed shell is gone, or null when the shell camera did not change it. */
+    @Nullable
+    private static CameraType shellCameraRestoreType;
 
     /** Hit marker state, set from the server via PacketHitMarker */
     @Getter @Setter
@@ -247,6 +253,59 @@ public class ModClient
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null)
             mc.gui.getChat().addMessage(Component.literal("[Flan's Mod Ultimate] Debug Mode " + (isDebug ? "On" : "Off")).withStyle(ChatFormatting.RED));
+    }
+
+    /** @return the driveable the player rides whose type has the shell camera, or null */
+    @Nullable
+    private static Driveable shellCameraDriveable(LocalPlayer player)
+    {
+        Driveable driveable = player.getVehicle() instanceof Seat seat ? seat.getDriveable() : null;
+        return driveable != null && driveable.getConfigType() != null && driveable.getConfigType().isMagicArtilleryMode() ? driveable : null;
+    }
+
+    /** Switches the shell camera of the player's driveable on or off. @return whether it is now on, or null when the driveable has none */
+    @Nullable
+    public static Boolean toggleShellCamera(LocalPlayer player)
+    {
+        if (shellCameraDriveable(player) == null)
+            return null;
+        shellCameraEnabled = !shellCameraEnabled;
+        return shellCameraEnabled;
+    }
+
+    /** While the shell camera is on, follows the newest shell, missile or bomb fired from the player's driveable, in third person. */
+    private static void updateShellCamera(Minecraft mc, LocalPlayer player)
+    {
+        Driveable driveable = shellCameraDriveable(player);
+        if (driveable == null)
+        {
+            shellCameraEnabled = false;
+            return;
+        }
+        if (!shellCameraEnabled || mc.getCameraEntity() != player)
+            return;
+        Bullet newest = null;
+        for (Bullet bullet : player.level().getEntitiesOfClass(Bullet.class, driveable.getBoundingBox().inflate(200D, 500D, 200D), bullet -> isShellCameraRound(bullet, driveable)))
+        {
+            if (newest == null || bullet.tickCount < newest.tickCount)
+                newest = bullet;
+        }
+        if (newest == null)
+            return;
+        mc.setCameraEntity(newest);
+        changedCameraEntity = true;
+        shellCameraRestoreType = mc.options.getCameraType();
+        mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+    }
+
+    private static boolean isShellCameraRound(Bullet bullet, Driveable driveable)
+    {
+        if (!bullet.isAlive() || bullet.getConfigType() == null || bullet.getFiredShot() == null)
+            return false;
+        EnumWeaponType weapon = bullet.getConfigType().getWeaponType();
+        if (weapon != EnumWeaponType.SHELL && weapon != EnumWeaponType.MISSILE && weapon != EnumWeaponType.BOMB)
+            return false;
+        return bullet.getFiredShot().getAttacker().map(attacker -> attacker.getRootVehicle() == driveable).orElse(false);
     }
 
     /** Moves the camera onto a TV-guided round the local player just fired from a driveable seat. */
@@ -423,7 +482,11 @@ public class ModClient
         {
             mc.setCameraEntity(player);
             changedCameraEntity = false;
+            if (shellCameraRestoreType != null)
+                mc.options.setCameraType(shellCameraRestoreType);
+            shellCameraRestoreType = null;
         }
+        updateShellCamera(mc, player);
 
         MouseInputHandler.beginTick(player);
         double dx = Minecraft.getInstance().mouseHandler.getXVelocity();

@@ -69,7 +69,8 @@ Target checked: `T/network/server/PacketManualGuidance`, `T/common/entity/Bullet
 Manual guidance steers along the shooter's line of sight, and the camera stays with the shooter.
 
 **Present (2026-11-22):** the TV-guided view (`TVguided`, 7 Tyrants and Plebeians rounds): a player firing one from a driveable seat watches from the round, looking along its flight, until it is gone or they leave the seat. Steering keeps the operator's line of sight, as the target's manual guidance does.
-Missing: TPV drone views, the steering sensitivity setting, and the artillery camera and calculator modes (`hasMagicArtilleryMode`, `artilleryCalculator`).
+**Present (2026-11-22):** the magic artillery view (`hasMagicArtilleryMode`, 35 TaP vehicles): F6 (the fork's U is the teams menu here) switches on a camera that follows, in third person, the newest shell, missile or bomb fired by anyone aboard within 200 blocks across and 500 up or down, until it is gone. Client side, like the fork's camera.
+Missing: TPV drone views, the steering sensitivity setting, and the range calculators (`artilleryCalculator`, `walterCalculator`).
 
 ---
 
@@ -397,13 +398,14 @@ Target checked: `T/client/particle/SmokeGrenadeParticle`, `T/network/client/Pack
 **Note:** smoke shell particles exist.
 Missing: vehicle-mounted grenade launchers and automatic smoke.
 
-### Mecha morale — MISSING
+### Mecha morale — PARTIAL
 
 Reference: `MechaType` (`morale`, `panicSound`, `panicTime`, `runAmokSound`, `unpunchable`)
 Mecha pilots can panic or run amok.
 
 Target checked: `T/common/types/MechaType`
-Missing: the morale system.
+**Present (2026-11-22):** `canPanic`, `morale`, `panicTime`, `panicSound` and `runAmokSound` (4 Tyrants and Plebeians mounts: horse, camels, elephant) with the fork's once-a-second model: core damage costs morale, which recovers one a second; at none the mount panics, bolts forward along its legs with random swerves whatever its rider does, its timer running down two a second and growing by a quarter of further damage (`MechaMorale`, `Mecha`). Morale or PANIC! shows beside the hotbar.
+Missing: `unpunchable`; the fork also stops a panicking mount's rider from turning it with the view, which the target gets by steering along the legs instead.
 
 ### Vehicle repair costs and new driving model — UNCERTAIN
 
@@ -578,7 +580,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Vehicles | Distant and situational vehicle audio | PARTIAL | HIGH |
 | Vehicles | Door-state passenger visibility | PARTIAL | HIGH |
 | Vehicles | Vehicle smoke and turret grenades | MISSING | HIGH |
-| Mechas | Mecha morale | MISSING | HIGH |
+| Mechas | Mecha morale | PARTIAL | HIGH |
 | Vehicles | Multi-barrel seat guns | UNCERTAIN | LOW |
 | Vehicles | Crew damage and part-loss effects | UNCERTAIN | LOW |
 | Vehicles | Repair costs and alternative driving model | UNCERTAIN | LOW |
@@ -595,7 +597,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 16 MISSING, 31 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 15 MISSING, 32 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -716,6 +718,7 @@ Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`r
 - **Tier and explosion push (seventh batch):** `Tier` as a tooltip line on every type, and `explosionPush` (8 TaP submarines) scaling how hard blasts shove a driveable against the fork's default. Also checked: the `slbm*` keys are dormant; directional melee and blocking were already ported; `sidearm` / `labigunLimit` are firing-input keys, not carry limits; the `seatOptics*` HUD keys parse by prefix and already work.
 - **Seekers, radar and ceiling (eighth batch):** `modernTorpedo` (13 TaP rounds) runs as a torpedo that keeps its depth instead of settling, and on its first tick in water listens once: the usual lock along its heading applies first, as in the fork, then the nearest driveable it hears replaces it, heard within `ASWminRange` (5) plus `seekerRange` (250) times its throttle, half for astern, never the launcher's own mount (`PassiveSeekers`, `Bullet.listenForTarget`). Locked, it is steered by the seeker alone with no boresight limit. `hasRadar` (114 TaP vehicles) and `hasPlaneRadar` (78 aircraft) give the driver an active/passive toggle (F7, a new `TOGGLE_RADAR` input bit, a saved driveable flag) and a HUD line; radars start active as in the fork. `antiRadiation` rounds (2) lock on to the nearest emitting driveable their lock flags allow, preferring it to the heading lock, and keep it past their seeker cone. `flightCeiling` (280 aircraft) pitches a nose-up aircraft down a degree a tick within 10 blocks of it, and the plane HUD shows the ceiling beside the altitude (`FlightCeiling`). Also checked: `turretTossTrue` (139 vehicles) throws the turret as a damaging grenade with the vehicle's turret model; the target already throws destroyed turrets off as cosmetic pieces (`DestructionSequences.partsLost`), so only the grenade's blast and impact damage are missing. `damageVsCrew` and `SetupCrewedPart` crews (159 / 211) drive the fork's ship rate of fire and flooding repair, where the target deliberately counts real seat occupants (`DriveableRepairs`).
 - **Death blasts, wrecks, hover hold, soft-kill APS and TV guidance (ninth batch):** `Death` (153 TaP driveables), `bigDeath` (144) and `nuclearDeath` (12) play the fork's death sounds (`explcls6`, `battleshipgun`, `yamatogun`, which TaP ships) out to 250 blocks, its screen shakes (88/69, 120/80, 250/120 strength and blocks) and a fiery visual-only explosion (`DeathBlast`); damage still comes from the death explosion alone, as in the fork. `WreckLifetime` (913, all 2000 ticks) shortens the server's wreck lifetime, and `WreckSmoke false` leaves a wreck that neither burns nor smokes. Helicopters get the hover hold (see the optics section). `HasPassiveAPS` vehicles jam SACLOS and manually guided missiles that do not bypass them: every second tick from the third, a missile within 80 blocks, beyond 10, flying within about 70° of the vehicle and passing within its hitbox reach plus 4 blocks, with a clear line and from the hull's front half (any side with `PassiveAPSCanForceAim`), drops its guidance and corkscrews away by a shared seed (`PassiveAps`, `PacketPassiveAps`). `TVguided` rounds show their flight to the operator (see the optics section).
+- **Morale, shell camera and scout rounds (tenth batch):** mount morale (see the mechas section), the magic artillery shell camera (see the optics section), and `scoutBullet` (7 TaP rounds), which tells the player who fired it the round's X, Y and Z and its distance from them in chat when it detonates or dies.
 - **Not ported:** vehicle `armorPen` / `penDecay` use the fork's unitless armour integers, which conflict with the target's millimetre armour model; `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` need the driving-model comparison listed under deeper audit.
 - Validation: Focused profile, with scoped Spotless, compilation and parser/behaviour tests. Not exercised in a running game.
 
@@ -734,6 +737,7 @@ What each port leaves out compared with the reference, and where it behaves diff
 - **Tier and explosion push:** the tier is display only, without the fork's tier-gap experience bonus; a missing `Tier` shows nothing rather than the fork's "Reserve Tier". `explosionPush` scales the target's own knockback, which pushes every driveable as hard as a player, so it is relative to the fork's default of 0.25 rather than its absolute value; unauthored driveables, epic ships included, keep the target's push instead of the fork's 0.25 and 0.
 - **Seekers, radar and ceiling:** a modern torpedo hears only Flan's driveables, whose throttle is their noise, not vehicles of other mods. The fork's lock scan covers all loaded entities; the target's covers the server lock-on range, also for anti-radiation rounds. The torpedo listens on the client as well and takes the server's tracked motion, so a client that hears differently is corrected. An anti-radiation round keeps a lock made before its target goes passive, as in the fork, and aircraft radars emit too, where the fork's seeker reads only `hasRadar`; no TaP anti-radiation round locks on to planes. The flight ceiling counts from sea level like the HUD altitude rather than from Y 0, unauthored aircraft have none instead of the fork's 800, and the push never takes the nose past level. No radar contact display, stealth or SLBM keys.
 - **Death blasts, wrecks, hover hold, soft-kill APS and TV guidance:** the fork's tank, ship and nuke flash particles are drawn with the target's explosion visuals. The wreck lifetime is capped by the server's `driveableWreckLifetime`, so a pack cannot make wrecks outlast what the server allows, and an unauthored or 0 lifetime keeps the server's where the fork's 0 means a permanent wreck. The hover hold needs a pilot, a running engine and intact blades, and is not on the mode key of helicopters whose wings fold. The soft-kill APS covers all sides with `PassiveAPSCanForceAim` instead of slewing the turret toward the launcher and waiting until it faces within 8°, and discharges no smoke; its 20-tick response cooldown is not modelled. The TV-guided camera keeps the player's first- or third-person setting; seat HUD overlays still draw over it.
+- **Morale, shell camera and scout rounds:** morale and the panic timer are not saved and start full for a reloaded mount, as in the fork; the panicking mount needs its engine and hips like any walk, and nothing stops its rider dismounting. The shell camera's on/off state is per player, not per driveable, and is dropped on leaving the driveable; it forces third person while it follows a round and restores the previous view after. A scout round reports once, in one chat line instead of the fork's five.
 - **Classified as needing nothing:** `firstShotRecoil` and the other dormant recoil keys, `starShell`, `alwaysShowTurret`, vehicle `hasSmoke`, the hard-kill `hasAPS`, `CIWSable` / `ciwsBullet` / `CIWSer`.
 - **Checked and left alone:** `turretTossTrue` (cosmetic turret throw-off already present), `damageVsCrew` / `SetupCrewedPart` crews (the target counts seat occupants), `bleedMultiplier` (no TaP medical tools), `HeliCrashEffects` / `HeliCrashSpin` (overlap the target's crash physics), `labjacFuel` (duplicates the target's fuel), vehicle `armorPen` / `penDecay` (conflict with millimetre armour) and `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` (need the driving-model comparison).
 - **Large TaP-used gaps not started:** troop transport and the content-pack bots it carries (50 vehicles, 33 bots), carrier operations and `weightLimit` (26), and the tier experience economy.

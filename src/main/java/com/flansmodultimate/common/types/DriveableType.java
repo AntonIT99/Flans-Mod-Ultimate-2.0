@@ -364,6 +364,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * passive. While active it emits, and anti-radiation rounds can home on it.
      */
     protected boolean radar;
+    /** Labjac {@code hasMagicArtilleryMode}: the crew can switch to a camera that follows the shells, missiles and bombs they fire. */
+    protected boolean magicArtilleryMode;
 
     protected String lockedOnSound = StringUtils.EMPTY;
     protected int soundTime;
@@ -923,6 +925,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         }
         radar = readValue("hasRadar", radar, file);
         radar = readValue("hasPlaneRadar", radar, file);
+        magicArtilleryMode = readValue("hasMagicArtilleryMode", magicArtilleryMode, file);
         float explosionPush = readValue("explosionPush", -1F, file);
         if (Float.isFinite(explosionPush) && explosionPush >= 0F)
             explosionPushFactor = Math.min(8F, explosionPush / LABJAC_DEFAULT_EXPLOSION_PUSH);

@@ -3,6 +3,8 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.common.driveables.damage.DeathBlast;
 import com.flansmodultimate.content.ContentPack;
 import com.flansmodultimate.content.IContentProvider;
+import com.flansmodultimate.platform.entity.EntityTestBootstrap;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -16,6 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class LabjacDeathAndProtectionTypesTest
 {
     private static final IContentProvider PACK = new ContentPack("test", Path.of("build", "test-packs", "test"));
+
+    /** Sound keys register sound events, which need the game's registries. */
+    @BeforeAll
+    static void bootstrap() throws ReflectiveOperationException
+    {
+        EntityTestBootstrap.initialize();
+    }
 
     @Test
     void theTyrantsAndPlebeiansWreckKeysShortenTheServersLifetime()

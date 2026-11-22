@@ -108,6 +108,7 @@ public final class KeyInputHandler
     private static final KeyMapping resetRangeKey = key("driveable.reset_range", InputConstants.KEY_H, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping opticsEditorKey = key("driveable.optics_editor", InputConstants.KEY_F8, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping radarKey = key("driveable.radar", InputConstants.KEY_F7, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping shellCameraKey = key("driveable.shell_camera", InputConstants.KEY_F6, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
 
     // Planes and helicopters. Aircraft fly on their own binds rather than the
     // vanilla movement keys, so the flight axes can be rebound without changing
@@ -135,26 +136,26 @@ public final class KeyInputHandler
     private static final List<KeyMapping> ON_FOOT_BINDS = List.of(reloadKey, fireModeKey, lookAtGunKey, preferredAmmoKey, secondaryModeKey, toggleKey, increaseZoomKey, decreaseZoomKey, proneKey);
 
     private static final List<KeyMapping> DRIVEABLE_BINDS = List.of(driveableInventoryKey, driveablePlayerInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey,
-        changeSeatKey, doorKey, engineKey, flareKey, repairKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, radarKey);
+        changeSeatKey, doorKey, engineKey, flareKey, repairKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, radarKey, shellCameraKey);
     /** Binds that claim their key while the player is at the controls of an aircraft. */
     private static final List<KeyMapping> AIRCRAFT_BINDS = List.of(pitchDownKey, pitchUpKey, yawLeftKey, yawRightKey, rollLeftKey, rollRightKey, throttleUpKey, throttleDownKey, controlModeKey,
         gearKey, airBrakeKey, afterburnerKey, modeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, engineKey, flareKey, repairKey,
-        driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, radarKey);
+        driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, radarKey, shellCameraKey);
     /** Binds that claim their key while the player is at the controls of anything else. */
     private static final List<KeyMapping> GROUND_BINDS = List.of(driveForwardKey, driveBackwardKey, steerLeftKey, steerRightKey, brakeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey,
         secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, flareKey, repairKey, driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey,
-        radarKey);
+        radarKey, shellCameraKey);
     /** Ground binds plus the persistent throttle lever that only vehicles answer. */
     private static final List<KeyMapping> VEHICLE_BINDS = List.of(driveForwardKey, driveBackwardKey, steerLeftKey, steerRightKey, brakeKey, decreaseVehicleThrottleKey, increaseVehicleThrottleKey,
         vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey,
-        doorKey, engineKey, flareKey, repairKey, driveablePlayerInventoryKey, turretStabilizerKey, diveKey, surfaceKey, radarKey);
+        doorKey, engineKey, flareKey, repairKey, driveablePlayerInventoryKey, turretStabilizerKey, diveKey, surfaceKey, radarKey, shellCameraKey);
     /**
      * Binds read with consumeClick. Forge gates isDown on the conflict context
      * but not consumeClick, so a press made outside the context stays queued and
      * would fire the moment the player mounts. These are drained instead.
      */
     private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, changeSeatKey, doorKey, engineKey, flareKey, repairKey, controlModeKey, gearKey, airBrakeKey, afterburnerKey, modeKey,
-        driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, turretStabilizerKey, radarKey);
+        driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, turretStabilizerKey, radarKey, shellCameraKey);
 
     private static final int[] LEGACY_KEYS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 34};
 
@@ -262,6 +263,7 @@ public final class KeyInputHandler
         register.accept(resetRangeKey);
         register.accept(opticsEditorKey);
         register.accept(radarKey);
+        register.accept(shellCameraKey);
         register.accept(pitchDownKey);
         register.accept(pitchUpKey);
         register.accept(yawLeftKey);
@@ -595,6 +597,12 @@ public final class KeyInputHandler
                 edgeMask |= DriveableInput.REPAIR;
             if (radarKey.consumeClick() && driveable.hasRadar())
                 edgeMask |= DriveableInput.TOGGLE_RADAR;
+            if (shellCameraKey.consumeClick())
+            {
+                Boolean following = ModClient.toggleShellCamera(player);
+                if (following != null)
+                    player.displayClientMessage(Component.translatable(following ? "gui.flansmodultimate.shell_camera.on" : "gui.flansmodultimate.shell_camera.off"), true);
+            }
             if (flareKey.consumeClick())
                 edgeMask |= DriveableInput.FLARE;
             // The same key that picks a handheld gun's ammunition chambers the

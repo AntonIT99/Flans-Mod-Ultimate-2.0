@@ -7,6 +7,7 @@ import com.flansmodultimate.api.equipment.FlansEquipment;
 import com.flansmodultimate.api.equipment.MechaMeleeProperties;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.physics.MechaMorale;
 import com.flansmodultimate.common.driveables.physics.MechaPhysics;
 import com.flansmodultimate.common.driveables.visual.MechaVisual;
 import com.flansmodultimate.common.guns.*;
@@ -60,6 +61,10 @@ public class Mecha extends Driveable implements MechaVisual
     private static final int JUMP_COOLDOWN = 20;
     private static final String NBT_LEG_YAW = "LegsYaw";
     private static final EntityDataAccessor<Float> DATA_LEG_YAW = SynchedEntityData.defineId(Mecha.class, EntityDataSerializers.FLOAT);
+    /** The mount's morale, or negative while it panics, for its rider's HUD. */
+    private static final EntityDataAccessor<Integer> DATA_MORALE = SynchedEntityData.defineId(Mecha.class, EntityDataSerializers.INT);
+    /** Ticks between the random swerves of a panicking mount. */
+    private static final int PANIC_SWERVE_TICKS = 10;
 
     @Getter
     protected float legSwing;
@@ -78,6 +83,9 @@ public class Mecha extends Driveable implements MechaVisual
     private boolean hipsStateInitialized;
     private boolean lastHipsIntact;
     private boolean legYawInitialized;
+    /** Morale of a mount that can panic. Server side and transient, like the fork's. */
+    private final MechaMorale morale = new MechaMorale();
+    private float panicSwerve;
     private final int[] toolCooldown = new int[2];
     private final float[] handGunCooldown = new float[2];
     private final int[] handGunHeldTicks = new int[2];
@@ -113,6 +121,7 @@ public class Mecha extends Driveable implements MechaVisual
     {
         super.defineEntityData(data);
         data.define(DATA_LEG_YAW, 0F);
+        data.define(DATA_MORALE, 0);
     }
 
     @Override
@@ -174,12 +183,17 @@ public class Mecha extends Driveable implements MechaVisual
         }
 
         updateAddonSystems();
+        updateMorale(type);
+        boolean panicking = morale.isPanicking();
         int input = getInputMask();
-        float forwardInput = axis(input, DriveableInput.FORWARD, DriveableInput.BACKWARD);
-        float sideInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        Vec3 intent = MechaPhysics.movementIntent(MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw()), forwardInput, sideInput);
+        // A panicking mount bolts ahead and swerves at random, whatever its rider does.
+        float forwardInput = panicking ? 1F : axis(input, DriveableInput.FORWARD, DriveableInput.BACKWARD);
+        float sideInput = panicking ? panicSwerve : axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
+        // It runs the way its legs face, not where its rider looks.
+        float heading = panicking && legYawInitialized ? legYaw : getYaw() + getTurretYaw();
+        Vec3 intent = MechaPhysics.movementIntent(MechaPhysics.driverMovementYaw(heading), forwardInput, sideInput);
         boolean walking = intent.lengthSqr() > 0.01D;
-        boolean canMove = isUnderCommand() && isEngineActive() && hasFuelForMovement() && isPartIntact(EnumDriveablePart.HIPS);
+        boolean canMove = (isUnderCommand() || panicking) && isEngineActive() && hasFuelForMovement() && isPartIntact(EnumDriveablePart.HIPS);
         double moveSpeed = MechaPhysics.movementSpeed(type.getMoveSpeed(), type.getRealWorldSpec().maxSpeedKmh(), getEngineSpeed(), speedMultiplier());
         Vec3 current = getDeltaMovement();
         float rocketPower = Mth.clamp(jetPackPower(), 0.1F, 8F);
@@ -238,6 +252,34 @@ public class Mecha extends Driveable implements MechaVisual
             if (boostedAirMovement)
                 consumeAddonFuel(10F * rocketPower);
         }
+    }
+
+    /** Steps a panicking mount's morale once a second and plays its panic sounds. Server side. */
+    private void updateMorale(MechaType type)
+    {
+        if (!type.isCanPanic() || driveableData == null || driveableData.getPart(EnumDriveablePart.CORE) == null)
+            return;
+        if (morale.isPanicking() && tickCount % PANIC_SWERVE_TICKS == 0)
+            panicSwerve = level().random.nextInt(3) - 1F;
+        if (tickCount % 20 != 0)
+            return;
+        MechaMorale.Step step = morale.step(type.getMorale(), type.getPanicTime(), driveableData.getPart(EnumDriveablePart.CORE).getHealth());
+        String sound = switch (step)
+        {
+            case PANIC_STARTED -> type.getPanicSound();
+            // The fork roars every five seconds while the mount runs amok.
+            case PANICKING -> tickCount % 100 == 0 ? type.getRunAmokSound() : null;
+            case NONE -> null;
+        };
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(this, 50D, sound, false);
+        entityData.set(DATA_MORALE, morale.isPanicking() ? -1 : morale.getMorale());
+    }
+
+    /** @return the mount's morale for its rider's HUD, or negative while it panics; on either side */
+    public int getMoraleDisplay()
+    {
+        return entityData.get(DATA_MORALE);
     }
 
     @Override

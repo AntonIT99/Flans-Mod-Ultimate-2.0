@@ -260,6 +260,9 @@ public class BulletType extends ShootableType
     /** Labjac {@code TVguided}: a player firing it from a driveable seat watches its flight from the round itself. */
     @Getter
     protected boolean tvGuided;
+    /** Labjac {@code scoutBullet}: the player who fired it is told where it came down and how far that is from them. */
+    @Getter
+    protected boolean scoutBullet;
     @Getter
     protected boolean depthCharge;
     @Getter
@@ -569,6 +572,7 @@ public class BulletType extends ShootableType
         bypassPassiveAPS = readValue("BypassPassiveAPS", bypassPassiveAPS, file);
         bypassPassiveAPS = readValue("PassiveAPSECCM", bypassPassiveAPS, file);
         tvGuided = readValue("TVguided", tvGuided, file);
+        scoutBullet = readValue("scoutBullet", scoutBullet, file);
         hasLine = readValue("HasLine", hasLine, file);
         depthCharge = readValue("depthCharge", depthCharge, file);
         activationDepth = readValue("activationDepth", activationDepth, file);
