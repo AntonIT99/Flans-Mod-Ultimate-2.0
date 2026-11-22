@@ -129,6 +129,7 @@ public final class ClientHudOverlays
         registrar.aboveHotbar("radar", RADAR);
         registrar.aboveHotbar("hover_hold", HOVER_HOLD);
         registrar.aboveHotbar("mecha_morale", MECHA_MORALE);
+        registrar.aboveCameraOverlays("fighter_hud", FighterHud.LAYER);
         registrar.aboveHotbar("teams_rank_up", (g, partialTick, sw, sh) -> TeamsRankUpPopup.render(g, sw));
         registrar.aboveHotbar("debug_armor", (g, partialTick, sw, sh) -> DriveableArmorDebugHud.render(g, sw, sh));
     }
@@ -138,10 +139,10 @@ public final class ClientHudOverlays
     {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null || mc.options.hideGui || !(player.getVehicle() instanceof Seat seat) || !seat.supportsTurretStabilization())
+        if (player == null || mc.options.hideGui || !(player.getVehicle() instanceof Seat seat) || !seat.supportsTurretStabilization() && !seat.supportsHeliStabilization())
             return;
         Component label = Component.translatable("gui.flansmodultimate.turret_stabilizer.indicator");
-        g.drawString(mc.font, label, sw / 2 + 96, sh - 15, seat.isTurretStabilizerEngaged() ? 0x55FF55 : 0xFF5555);
+        g.drawString(mc.font, label, sw / 2 + 96, sh - 15, seat.isTurretStabilizerEngaged() || seat.isHeliStabilizerEngaged() ? 0x55FF55 : 0xFF5555);
     };
 
     /** The range the adjusting-barrel fire control works with, beside the hotbar. */

@@ -53,6 +53,33 @@ class LabjacMountAndScoutTypesTest
     }
 
     @Test
+    void aFighterSeatCarriesItsHudColour()
+    {
+        PlaneType type = new PlaneType();
+        type.read(new TypeFile("testPlane", EnumType.PLANE, PACK, List.of("Driver 0 0 0", "hasHUD 0 true", "hudColorR 0 255", "hudColorG 0 128", "hudColorB 0 0")));
+        assertTrue(type.getSeat(0).isHasHud());
+        assertEquals(0xFF8000, type.getSeat(0).getHudColor());
+    }
+
+    @Test
+    void helicopterSeatsCanCarryASightStabiliser()
+    {
+        PlaneType type = new PlaneType();
+        type.read(new TypeFile("testPlane", EnumType.PLANE, PACK, List.of("Driver 0 0 0", "AddHeliStabilizerToSeat 0 true")));
+        assertTrue(type.getSeat(0).isHeliStabilizer());
+    }
+
+    @Test
+    void anUnauthoredSeatHasNoHudAndTheForksGreen()
+    {
+        PlaneType type = new PlaneType();
+        type.read(new TypeFile("testPlane", EnumType.PLANE, PACK, List.of("Driver 0 0 0")));
+        assertFalse(type.getSeat(0).isHasHud());
+        assertEquals(0x00FF00, type.getSeat(0).getHudColor());
+        assertEquals(0x00FFFF, DriveableType.withChannel(0x00FF00, 0, 999), "channels are clamped to a byte");
+    }
+
+    @Test
     void scoutRoundsAreRead()
     {
         BulletType type = new BulletType();

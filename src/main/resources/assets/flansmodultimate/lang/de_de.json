@@ -617,6 +617,8 @@
   "gui.flansmodultimate.radar.passive": "Radar PASSIV (%s)",
   "gui.flansmodultimate.shell_camera.off": "Geschosskamera aus",
   "gui.flansmodultimate.shell_camera.on": "Geschosskamera an",
+  "gui.flansmodultimate.sight_stabilizer.off": "Visierstabilisator ausgeschaltet",
+  "gui.flansmodultimate.sight_stabilizer.on": "Visierstabilisator eingeschaltet",
   "gui.flansmodultimate.submarine.no_oxygen": "Kein Sauerstoff: Auftauchen",
   "gui.flansmodultimate.submarine.status": "Tiefe %s m  O2 %s%%",
   "gui.flansmodultimate.teams.overtime": "Verlängerung",

@@ -52,6 +52,15 @@ public final class SeatInfo
     /** Whether the rider takes no damage while seated here; destroying the driveable still kills them. */
     @Setter
     private boolean invincible;
+    /** Labjac {@code hasHUD}: an aircraft seat that shows the fighter head-up display. */
+    @Setter
+    private boolean hasHud;
+    /** Labjac {@code hudColorR/G/B}: the head-up display's colour, green by default as in the fork. */
+    @Setter
+    private int hudColor = 0x00FF00;
+    /** Labjac {@code AddHeliStabilizerToSeat}: an aircraft gunner seat whose sight can hold its world heading. */
+    @Setter
+    private boolean heliStabilizer;
     @Setter
     private boolean yawBeforePitch;
     @Setter

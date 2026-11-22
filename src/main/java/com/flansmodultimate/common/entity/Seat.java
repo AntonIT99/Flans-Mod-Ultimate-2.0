@@ -197,6 +197,8 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     private float clientViewWorldYaw;
     /** Whether the local driver keeps the turret stabiliser engaged, for vehicles that have one. Client side and transient. */
     private boolean turretStabilizerEngaged = true;
+    /** An aircraft gunner's sight stabiliser, released by default as in the fork. Client side. */
+    private boolean heliStabilizerEngaged;
 
     private int orphanTicks;
     private int yawSoundDelay;
@@ -323,7 +325,21 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
      */
     private boolean usesAbsoluteViewYaw()
     {
-        return level().isClientSide && isDriverSeat() && (driveable instanceof Mecha || isTurretStabilizerEngaged());
+        return level().isClientSide && (isDriverSeat() && (driveable instanceof Mecha || isTurretStabilizerEngaged()) || isHeliStabilizerEngaged());
+    }
+
+    /**
+     * Whether this is an aircraft gunner seat authored with {@code AddHeliStabilizerToSeat}, whose sight can hold its world
+     * heading while the airframe turns. The fork also stabilises the pilot's optics, which this does not.
+     */
+    public boolean supportsHeliStabilization()
+    {
+        return !isDriverSeat() && driveable instanceof Plane && seatInfo != null && seatInfo.isHeliStabilizer();
+    }
+
+    public boolean isHeliStabilizerEngaged()
+    {
+        return heliStabilizerEngaged && supportsHeliStabilization();
     }
 
     /** Whether this is the driver seat of a vehicle authored with {@code TurretStabilization}. */
@@ -345,14 +361,19 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
      */
     public boolean toggleTurretStabilizer()
     {
-        if (!supportsTurretStabilization())
+        boolean turret = supportsTurretStabilization();
+        if (!turret && !supportsHeliStabilization())
             return false;
         initializeClientViewAim();
         float viewYaw = getViewAimYaw();
-        turretStabilizerEngaged = !turretStabilizerEngaged;
+        boolean engaged;
+        if (turret)
+            engaged = turretStabilizerEngaged = !turretStabilizerEngaged;
+        else
+            engaged = heliStabilizerEngaged = !heliStabilizerEngaged;
         clientViewAimYaw = viewYaw;
         clientViewWorldYaw = Mth.wrapDegrees(Objects.requireNonNull(driveable).getYaw() + viewYaw);
-        return turretStabilizerEngaged;
+        return engaged;
     }
 
     public float getViewAimPitch()

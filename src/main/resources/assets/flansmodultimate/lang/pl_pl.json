@@ -619,6 +619,8 @@
   "gui.flansmodultimate.radar.passive": "Radar PASYWNY (%s)",
   "gui.flansmodultimate.shell_camera.off": "Kamera pocisku wyłączona",
   "gui.flansmodultimate.shell_camera.on": "Kamera pocisku włączona",
+  "gui.flansmodultimate.sight_stabilizer.off": "Stabilizator celownika wyłączony",
+  "gui.flansmodultimate.sight_stabilizer.on": "Stabilizator celownika włączony",
   "gui.flansmodultimate.submarine.no_oxygen": "Brak tlenu: wynurzanie",
   "gui.flansmodultimate.submarine.status": "Głębokość %s m  O2 %s%%",
   "gui.flansmodultimate.teams.overtime": "Dogrywka",

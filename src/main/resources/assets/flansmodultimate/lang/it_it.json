@@ -346,6 +346,8 @@
   "gui.flansmodultimate.radar.passive": "Radar PASSIVO (%s)",
   "gui.flansmodultimate.shell_camera.off": "Telecamera sul proiettile disattivata",
   "gui.flansmodultimate.shell_camera.on": "Telecamera sul proiettile attivata",
+  "gui.flansmodultimate.sight_stabilizer.off": "Stabilizzatore del mirino disattivato",
+  "gui.flansmodultimate.sight_stabilizer.on": "Stabilizzatore del mirino attivato",
   "gui.flansmodultimate.submarine.no_oxygen": "Ossigeno esaurito: emersione",
   "gui.flansmodultimate.submarine.status": "Profondità %s m  O2 %s%%",
   "gui.flansmodultimate.teams.overtime": "Supplementari",

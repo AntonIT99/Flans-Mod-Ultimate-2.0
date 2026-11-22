@@ -619,6 +619,8 @@
   "gui.flansmodultimate.radar.passive": "Radar PASSIVE (%s)",
   "gui.flansmodultimate.shell_camera.off": "Shell camera off",
   "gui.flansmodultimate.shell_camera.on": "Shell camera on",
+  "gui.flansmodultimate.sight_stabilizer.off": "Sight stabiliser released",
+  "gui.flansmodultimate.sight_stabilizer.on": "Sight stabiliser engaged",
   "gui.flansmodultimate.submarine.no_oxygen": "Out of oxygen: surfacing",
   "gui.flansmodultimate.submarine.status": "Depth %s m  O2 %s%%",
   "gui.flansmodultimate.teams.overtime": "Overtime",

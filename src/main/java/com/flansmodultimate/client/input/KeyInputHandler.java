@@ -579,8 +579,11 @@ public final class KeyInputHandler
                 VehicleOpticsHud.resetRange();
             if (opticsEditorKey.consumeClick())
                 VehicleOpticsHud.openEditor();
-            if (turretStabilizerKey.consumeClick() && mount instanceof Seat seat && seat.supportsTurretStabilization())
-                player.displayClientMessage(Component.translatable(seat.toggleTurretStabilizer() ? "gui.flansmodultimate.turret_stabilizer.on" : "gui.flansmodultimate.turret_stabilizer.off"), true);
+            if (turretStabilizerKey.consumeClick() && mount instanceof Seat seat && (seat.supportsTurretStabilization() || seat.supportsHeliStabilization()))
+            {
+                String kind = seat.supportsTurretStabilization() ? "turret_stabilizer" : "sight_stabilizer";
+                player.displayClientMessage(Component.translatable("gui.flansmodultimate." + kind + (seat.toggleTurretStabilizer() ? ".on" : ".off")), true);
+            }
             if (gearKey.consumeClick())
                 edgeMask |= DriveableInput.TOGGLE_GEAR;
             if (airBrakeKey.consumeClick())

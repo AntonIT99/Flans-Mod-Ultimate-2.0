@@ -346,6 +346,8 @@
   "gui.flansmodultimate.radar.passive": "레이더 수동 (%s)",
   "gui.flansmodultimate.shell_camera.off": "포탄 카메라 꺼짐",
   "gui.flansmodultimate.shell_camera.on": "포탄 카메라 켜짐",
+  "gui.flansmodultimate.sight_stabilizer.off": "조준 안정화 장치 해제",
+  "gui.flansmodultimate.sight_stabilizer.on": "조준 안정화 장치 작동",
   "gui.flansmodultimate.submarine.no_oxygen": "산소 고갈: 부상 중",
   "gui.flansmodultimate.submarine.status": "심도 %s m  O2 %s%%",
   "gui.flansmodultimate.teams.overtime": "연장전",

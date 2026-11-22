@@ -346,6 +346,8 @@
   "gui.flansmodultimate.radar.passive": "雷达 被动 (%s)",
   "gui.flansmodultimate.shell_camera.off": "炮弹视角已关闭",
   "gui.flansmodultimate.shell_camera.on": "炮弹视角已开启",
+  "gui.flansmodultimate.sight_stabilizer.off": "瞄具稳定器已关闭",
+  "gui.flansmodultimate.sight_stabilizer.on": "瞄具稳定器已启用",
   "gui.flansmodultimate.submarine.no_oxygen": "氧气耗尽：正在上浮",
   "gui.flansmodultimate.submarine.status": "深度 %s 米  氧气 %s%%",
   "gui.flansmodultimate.teams.overtime": "加时",

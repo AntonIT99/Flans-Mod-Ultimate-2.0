@@ -346,6 +346,8 @@
   "gui.flansmodultimate.radar.passive": "Radar PASSIF (%s)",
   "gui.flansmodultimate.shell_camera.off": "Caméra d'obus désactivée",
   "gui.flansmodultimate.shell_camera.on": "Caméra d'obus activée",
+  "gui.flansmodultimate.sight_stabilizer.off": "Stabilisateur de visée désactivé",
+  "gui.flansmodultimate.sight_stabilizer.on": "Stabilisateur de visée activé",
   "gui.flansmodultimate.submarine.no_oxygen": "Plus d'oxygène : remontée",
   "gui.flansmodultimate.submarine.status": "Profondeur %s m  O2 %s%%",
   "gui.flansmodultimate.teams.overtime": "Prolongation",

@@ -25,6 +25,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
@@ -615,6 +616,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         if (readValue("SetDriverInvincible", false, file))
             driver.setInvincible(true);
         readSeatBooleanLines("invincible", file, SeatInfo::setInvincible);
+        readSeatBooleanLines("hasHUD", file, SeatInfo::setHasHud);
+        readSeatBooleanLines("AddHeliStabilizerToSeat", file, SeatInfo::setHeliStabilizer);
+        readSeatIntLines("hudColorR", file, (seat, value) -> seat.setHudColor(withChannel(seat.getHudColor(), 16, value)));
+        readSeatIntLines("hudColorG", file, (seat, value) -> seat.setHudColor(withChannel(seat.getHudColor(), 8, value)));
+        readSeatIntLines("hudColorB", file, (seat, value) -> seat.setHudColor(withChannel(seat.getHudColor(), 0, value)));
         readSeatIntLines("barrels", file, (seat, count) -> seat.setAuthoredBarrels(Math.max(1, Math.min(64, count))));
         readSeatIntLines("SeatGuns", file, (seat, count) -> seat.setAuthoredBarrels(Math.max(1, Math.min(64, count))));
         readSeatBooleanLines("PassengerHasParticles", file, SeatInfo::setPassengerHasParticles);
@@ -2157,6 +2163,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 setter.set(seat, vector);
             }
         });
+    }
+
+    /** @return the colour with one 8-bit channel, at this bit shift, replaced by the value clamped to 0-255 */
+    static int withChannel(int rgb, int shift, int value)
+    {
+        return (rgb & ~(0xFF << shift)) | (Mth.clamp(value, 0, 255) << shift);
     }
 
     private void readSeatBooleanLines(String key, TypeFile file, SeatBooleanSetter setter)

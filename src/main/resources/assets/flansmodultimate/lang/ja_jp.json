@@ -346,6 +346,8 @@
   "gui.flansmodultimate.radar.passive": "レーダー パッシブ (%s)",
   "gui.flansmodultimate.shell_camera.off": "砲弾カメラ オフ",
   "gui.flansmodultimate.shell_camera.on": "砲弾カメラ オン",
+  "gui.flansmodultimate.sight_stabilizer.off": "照準スタビライザー解除",
+  "gui.flansmodultimate.sight_stabilizer.on": "照準スタビライザー作動",
   "gui.flansmodultimate.submarine.no_oxygen": "酸素切れ：浮上中",
   "gui.flansmodultimate.submarine.status": "深度 %s m  O2 %s%%",
   "gui.flansmodultimate.teams.overtime": "延長戦",

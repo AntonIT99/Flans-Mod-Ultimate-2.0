@@ -346,6 +346,8 @@
   "gui.flansmodultimate.radar.passive": "Радар ПАССИВЕН (%s)",
   "gui.flansmodultimate.shell_camera.off": "Камера снаряда выключена",
   "gui.flansmodultimate.shell_camera.on": "Камера снаряда включена",
+  "gui.flansmodultimate.sight_stabilizer.off": "Стабилизатор прицела выключен",
+  "gui.flansmodultimate.sight_stabilizer.on": "Стабилизатор прицела включён",
   "gui.flansmodultimate.submarine.no_oxygen": "Нет кислорода: всплытие",
   "gui.flansmodultimate.submarine.status": "Глубина %s м  O2 %s%%",
   "gui.flansmodultimate.teams.overtime": "Доп. время",
