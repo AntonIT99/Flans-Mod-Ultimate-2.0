@@ -4,6 +4,9 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.*;
 import com.flansmodultimate.api.driveables.*;
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.FlanEntityPermissions;
+import com.flansmodultimate.common.entity.geometry.EmplacementFrame;
+import com.flansmodultimate.common.entity.geometry.PlaneTieDown;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import com.flansmodultimate.common.driveables.damage.*;
@@ -21,6 +24,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -43,6 +49,10 @@ import java.util.*;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Plane extends Driveable implements PlaneVisual
 {
+    private static final int FLAG_TIED_DOWN = 1 << 12;
+    private static final String NBT_TIE_DOWN = "deck_tie_down";
+    @Nullable
+    private PlaneTieDown tieDown;
     private float afterburnerSpool;
     private int stukaSoundDelay;
     private static final Vec3 MODEL_FLIGHT_FORWARD = LegacyDriveableCoordinates.applyPlaneModelFacing(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
@@ -469,6 +479,11 @@ public class Plane extends Driveable implements PlaneVisual
         PlaneType type = getPlaneType();
         if (type == null)
             return;
+        if (tieDown != null && followTieDown())
+        {
+            advanceAnimations();
+            return;
+        }
         tickStukaSound(type);
         Vec3 startVelocity = getDeltaMovement();
         if (crashImpactCooldown > 0)
@@ -864,10 +879,76 @@ public class Plane extends Driveable implements PlaneVisual
         tickValkyrieAnimation();
     }
 
+    boolean toggleTieDown(Player player, InteractionHand hand)
+    {
+        if (level().isClientSide || hand != InteractionHand.MAIN_HAND || !player.isShiftKeyDown() || !player.getItemInHand(hand).isEmpty()
+            || player.isSpectator() || isWreck() || !canPlayerAccess(player) || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
+            return false;
+        if (tieDown != null)
+        {
+            clearTieDown();
+            player.displayClientMessage(Component.translatable("message.flansmodultimate.driveable.tie_down.released"), true);
+            return true;
+        }
+        if (wheelSupport == null)
+            return false;
+        EmplacementFrame frame = EmplacementFrame.at(level(), wheelSupport);
+        if (frame.deckId() == null)
+            return false;
+        if (!isGearDeployed() || Math.abs(getThrottle()) > PARKED_THROTTLE || getDeltaMovement().lengthSqr() > 0.0004D)
+        {
+            player.displayClientMessage(Component.translatable("message.flansmodultimate.driveable.tie_down.stop"), true);
+            return true;
+        }
+        tieDown = PlaneTieDown.capture(frame, wheelSupport, position(), attitudeAt(getYaw(), getPitch(), getRoll()));
+        setFlag(FLAG_TIED_DOWN, true);
+        player.displayClientMessage(Component.translatable("message.flansmodultimate.driveable.tie_down.secured"), true);
+        return true;
+    }
+
+    private boolean followTieDown()
+    {
+        EmplacementFrame frame = EmplacementFrame.at(level(), tieDown.support());
+        if (!tieDown.deck().equals(frame.deckId()) || level().isEmptyBlock(tieDown.support()))
+        {
+            clearTieDown();
+            return false;
+        }
+        DriveableAttitude pose = tieDown.worldAttitude(frame);
+        setPos(frame.worldPosition(tieDown.position()));
+        setOrientation(LegacyDriveableCoordinates.driveableYawFromRenderedForward(pose.heading(), true), -pose.pitch(), -pose.roll());
+        setDeltaMovement(Vec3.ZERO);
+        setThrottle(0F);
+        return true;
+    }
+
+    private void clearTieDown()
+    {
+        tieDown = null;
+        setFlag(FLAG_TIED_DOWN, false);
+        clearWheelContact();
+    }
+
+    @Override
+    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        super.addAdditionalSaveData(tag);
+        if (tieDown != null)
+            PlaneTieDown.CODEC.encodeStart(NbtOps.INSTANCE, tieDown).result().ifPresent(value -> tag.put(NBT_TIE_DOWN, value));
+    }
+
+    @Override
+    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        super.readAdditionalSaveData(tag);
+        tieDown = tag.contains(NBT_TIE_DOWN) ? PlaneTieDown.CODEC.parse(NbtOps.INSTANCE, tag.get(NBT_TIE_DOWN)).result().orElse(null) : null;
+        setFlag(FLAG_TIED_DOWN, tieDown != null);
+    }
+
     @Override
     public boolean supportsClientPrediction()
     {
-        return true;
+        return !getFlag(FLAG_TIED_DOWN);
     }
 
     /**

@@ -8,12 +8,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public record SableEmplacementFrame(Pose3dc pose) implements EmplacementFrame
+public record SableEmplacementFrame(Pose3dc pose, java.util.UUID deckId) implements EmplacementFrame
 {
+    public SableEmplacementFrame(Pose3dc pose)
+    {
+        this(pose, null);
+    }
+
     public static EmplacementFrame at(Level level, BlockPos pos)
     {
         var structure = Sable.HELPER.getContaining(level, pos);
-        return structure == null ? TERRAIN : new SableEmplacementFrame(structure.logicalPose());
+        return structure == null ? TERRAIN : new SableEmplacementFrame(structure.logicalPose(), structure.getUniqueId());
     }
 
     @Override

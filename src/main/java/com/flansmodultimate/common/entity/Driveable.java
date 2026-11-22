@@ -5984,6 +5984,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (level().isClientSide)
             return InteractionResult.SUCCESS;
 
+        if (this instanceof Plane plane && plane.toggleTieDown(player, hand))
+            return InteractionResult.CONSUME;
+
         // A seat proxy can be hidden behind the much larger vehicle hitbox.
         // Continue the click ray through that hitbox so clicking a passenger
         // position does not silently fall back to the driver seat.

@@ -26,6 +26,8 @@ public interface EmplacementFrame
         return Lookup.resolver.apply(level, pos);
     }
 
+    default java.util.UUID deckId() { return null; }
+
     default Vec3 worldPosition(Vec3 local) { return local; }
     default Vec3 localPosition(Vec3 world) { return world; }
     default Vec3 worldDirection(Vec3 local) { return local; }
