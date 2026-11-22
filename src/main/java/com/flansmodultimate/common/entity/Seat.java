@@ -195,6 +195,8 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     private float clientViewAimYaw;
     private float clientViewAimPitch;
     private float clientViewWorldYaw;
+    /** Whether the local driver keeps the turret stabiliser engaged, for vehicles that have one. Client side and transient. */
+    private boolean turretStabilizerEngaged = true;
 
     private int orphanTicks;
     private int yawSoundDelay;
@@ -307,14 +309,50 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         // reintroduced the same one-tick sawtooth on top of an otherwise perfectly smooth,
         // continuously mouse-driven view whenever the torso was actually turning.
         if (usesAbsoluteViewYaw())
-            return Mth.wrapDegrees(clientViewWorldYaw - Mth.rotLerp(partialTick, Objects.requireNonNull(driveable).getPrevYaw(), driveable.getYaw()));
+        {
+            float relative = Mth.wrapDegrees(clientViewWorldYaw - Mth.rotLerp(partialTick, Objects.requireNonNull(driveable).getPrevYaw(), driveable.getYaw()));
+            // A stabilised turret still stops at its traverse limits; a mecha torso is free to spin.
+            return driveable instanceof Mecha || seatInfo == null ? relative : seatInfo.clampYaw(relative);
+        }
         return clientViewAimYaw;
     }
 
-    /** Whether this seat stores its look as a world yaw instead of a driveable relative aim. */
+    /**
+     * Whether this seat stores its look as a world yaw instead of a driveable relative aim: a mecha driver, whose torso
+     * follows the look, and the driver of a vehicle whose engaged turret stabiliser holds the aim while the hull turns.
+     */
     private boolean usesAbsoluteViewYaw()
     {
-        return level().isClientSide && driveable instanceof Mecha && isDriverSeat();
+        return level().isClientSide && isDriverSeat() && (driveable instanceof Mecha || isTurretStabilizerEngaged());
+    }
+
+    /** Whether this is the driver seat of a vehicle authored with {@code TurretStabilization}. */
+    public boolean supportsTurretStabilization()
+    {
+        return isDriverSeat() && driveable instanceof Vehicle vehicle && vehicle.getVehicleType() != null && vehicle.getVehicleType().isTurretStabilization();
+    }
+
+    public boolean isTurretStabilizerEngaged()
+    {
+        return turretStabilizerEngaged && supportsTurretStabilization();
+    }
+
+    /**
+     * Engages or releases the turret stabiliser, keeping the current view direction. Client side: the server only follows
+     * the aim the client requests, at the turret's own traverse speed.
+     *
+     * @return whether the stabiliser is now engaged
+     */
+    public boolean toggleTurretStabilizer()
+    {
+        if (!supportsTurretStabilization())
+            return false;
+        initializeClientViewAim();
+        float viewYaw = getViewAimYaw();
+        turretStabilizerEngaged = !turretStabilizerEngaged;
+        clientViewAimYaw = viewYaw;
+        clientViewWorldYaw = Mth.wrapDegrees(Objects.requireNonNull(driveable).getYaw() + viewYaw);
+        return turretStabilizerEngaged;
     }
 
     public float getViewAimPitch()
@@ -1045,8 +1083,11 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
         initializeClientViewAim();
         if (usesAbsoluteViewYaw())
         {
-            // The torso is free to spin, so only the pitch keeps its seat limits.
+            // The torso is free to spin, so only the pitch keeps its seat limits. A stabilised turret
+            // keeps its traverse limits too, measured from where the hull points now.
             clientViewWorldYaw = Mth.wrapDegrees(clientViewWorldYaw + yawDelta);
+            if (!(driveable instanceof Mecha) && seatInfo != null && driveable != null)
+                clientViewWorldYaw = Mth.wrapDegrees(driveable.getYaw() + seatInfo.clampYaw(Mth.wrapDegrees(clientViewWorldYaw - driveable.getYaw())));
             float pitched = clientViewAimPitch + pitchDelta;
             clientViewAimPitch = Mth.clamp(seatInfo == null ? pitched : seatInfo.clampPitch(pitched), -89.9F, 89.9F);
             return;

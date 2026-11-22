@@ -99,6 +99,7 @@ public final class KeyInputHandler
     private static final KeyMapping brakeKey = key("vehicle.brake", InputConstants.KEY_SPACE, EnumKeyConflictContext.GROUND_DRIVEABLE, CATEGORY_VEHICLES);
     private static final KeyMapping decreaseVehicleThrottleKey = key("vehicle.throttle_decrease", InputConstants.KEY_Q, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
     private static final KeyMapping increaseVehicleThrottleKey = key("vehicle.throttle_increase", InputConstants.KEY_E, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
+    private static final KeyMapping turretStabilizerKey = key("vehicle.turret_stabilizer", InputConstants.KEY_O, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
     private static final KeyMapping vehicleZoomKey = mouseKey("vehicle.zoom", GLFW.GLFW_MOUSE_BUTTON_MIDDLE, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping cycleSightKey = key("driveable.cycle_sight", InputConstants.KEY_B, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping rangefinderKey = key("driveable.rangefinder", InputConstants.KEY_Y, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
@@ -142,14 +143,14 @@ public final class KeyInputHandler
     /** Ground binds plus the persistent throttle lever that only vehicles answer. */
     private static final List<KeyMapping> VEHICLE_BINDS = List.of(driveForwardKey, driveBackwardKey, steerLeftKey, steerRightKey, brakeKey, decreaseVehicleThrottleKey, increaseVehicleThrottleKey,
         vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey,
-        doorKey, engineKey, flareKey, repairKey, driveablePlayerInventoryKey);
+        doorKey, engineKey, flareKey, repairKey, driveablePlayerInventoryKey, turretStabilizerKey);
     /**
      * Binds read with consumeClick. Forge gates isDown on the conflict context
      * but not consumeClick, so a press made outside the context stays queued and
      * would fire the moment the player mounts. These are drained instead.
      */
     private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, changeSeatKey, doorKey, engineKey, flareKey, repairKey, controlModeKey, gearKey, airBrakeKey, afterburnerKey, modeKey,
-        driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
+        driveablePlayerInventoryKey, vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, turretStabilizerKey);
 
     private static final int[] LEGACY_KEYS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 34};
 
@@ -237,6 +238,7 @@ public final class KeyInputHandler
         register.accept(brakeKey);
         register.accept(decreaseVehicleThrottleKey);
         register.accept(increaseVehicleThrottleKey);
+        register.accept(turretStabilizerKey);
         register.accept(vehicleZoomKey);
         register.accept(cycleSightKey);
         register.accept(rangefinderKey);
@@ -553,6 +555,8 @@ public final class KeyInputHandler
                 VehicleOpticsHud.resetRange();
             if (opticsEditorKey.consumeClick())
                 VehicleOpticsHud.openEditor();
+            if (turretStabilizerKey.consumeClick() && mount instanceof Seat seat && seat.supportsTurretStabilization())
+                player.displayClientMessage(Component.translatable(seat.toggleTurretStabilizer() ? "gui.flansmodultimate.turret_stabilizer.on" : "gui.flansmodultimate.turret_stabilizer.off"), true);
             if (gearKey.consumeClick())
                 edgeMask |= DriveableInput.TOGGLE_GEAR;
             if (airBrakeKey.consumeClick())

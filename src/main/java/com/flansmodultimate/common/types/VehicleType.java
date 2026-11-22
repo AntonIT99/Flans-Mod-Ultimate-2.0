@@ -76,6 +76,8 @@ public class VehicleType extends DriveableType
     protected int trackLinkFix = 5;
     /** Seconds, doubled as in the Labjac fork, that a destroyed ammunition rack takes to burn its core or turret down. */
     protected float weakspotCookTime = 3F;
+    /** The driver's turret aim stays fixed in world space while the hull turns, as the Labjac fork's stabiliser. */
+    protected boolean turretStabilization;
     protected final List<SmokePoint> smokers = new ArrayList<>();
     protected String stompSoundFrontRight = StringUtils.EMPTY;
     protected String stompSoundFrontLeft = StringUtils.EMPTY;
@@ -102,6 +104,7 @@ public class VehicleType extends DriveableType
         float cookTime = readValue("WeakspotCookTime", weakspotCookTime, file);
         if (Float.isFinite(cookTime) && cookTime > 0F)
             weakspotCookTime = cookTime;
+        turretStabilization = readValue("TurretStabilization", turretStabilization, file);
         fourWheelDrive = readValue("FourWheelDrive", fourWheelDrive, file);
         tank = readValue("Tank", tank, file);
         tank = readValue("TankMode", tank, file);

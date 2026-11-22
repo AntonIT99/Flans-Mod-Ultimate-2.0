@@ -123,9 +123,21 @@ public final class ClientHudOverlays
         registrar.aboveCameraOverlays("flash_bang", FLASH_BANG);
         registrar.aboveArmorLevel("damage_absorption", DAMAGE_ABSORPTION);
         registrar.aboveHotbar("hud", HUD);
+        registrar.aboveHotbar("turret_stabilizer", TURRET_STABILIZER);
         registrar.aboveHotbar("teams_rank_up", (g, partialTick, sw, sh) -> TeamsRankUpPopup.render(g, sw));
         registrar.aboveHotbar("debug_armor", (g, partialTick, sw, sh) -> DriveableArmorDebugHud.render(g, sw, sh));
     }
+
+    /** The driver's turret stabiliser state, green while engaged and red while released. */
+    public static final HudOverlayPlatform.HudLayer TURRET_STABILIZER = (g, partialTick, sw, sh) ->
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.options.hideGui || !(player.getVehicle() instanceof Seat seat) || !seat.supportsTurretStabilization())
+            return;
+        Component label = Component.translatable("gui.flansmodultimate.turret_stabilizer.indicator");
+        g.drawString(mc.font, label, sw / 2 + 96, sh - 15, seat.isTurretStabilizerEngaged() ? 0x55FF55 : 0xFF5555);
+    };
 
     public static final HudOverlayPlatform.HudLayer SCOPE = (g, partialTick, sw, sh) ->
     {

@@ -59,10 +59,12 @@ class AmmoRackCookOffTest
         VehicleType defaults = new VehicleType();
         defaults.load(new TypeFile("rackDefault", EnumType.VEHICLE, PACK, List.of("ShortName rackDefault")));
         assertEquals(3F, defaults.getWeakspotCookTime());
+        assertFalse(defaults.isTurretStabilization());
 
         VehicleType tuned = new VehicleType();
-        tuned.load(new TypeFile("rackTuned", EnumType.VEHICLE, PACK, List.of("ShortName rackTuned", "WeakspotCookTime 10")));
+        tuned.load(new TypeFile("rackTuned", EnumType.VEHICLE, PACK, List.of("ShortName rackTuned", "WeakspotCookTime 10", "TurretStabilization True")));
         assertEquals(10F, tuned.getWeakspotCookTime());
+        assertTrue(tuned.isTurretStabilization());
     }
 
     private static DriveablePart part(EnumDriveablePart type, float health)

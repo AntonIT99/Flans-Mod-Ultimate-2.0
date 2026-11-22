@@ -26,7 +26,7 @@ Target checked: `T/client/render/VehicleOpticsHud` (`measureRange`, `requestRang
 **Present:** manual or automatic range display (it can also measure Distant Horizons terrain), configurable optics-HUD elements, per-sight colour and scale, and a live HUD editor.
 **Missing:** any ballistic computation, the adjusting-sight impact marker, adjusting-barrel correction, separate coax solutions, `FCSDebug` ballistic readouts, and the reference's `Rangefinder`/`FCS*` key names. None of the reference's FCS keys parse.
 
-### Tank turret and sight stabilisation — MISSING
+### Tank turret and sight stabilisation — PARTIAL
 
 Reference: `R/common/driveables/EntitySeat` (`turretStabilization`, `playerLookingStabilized`, `toggleTurretStabilizer`, `stabilizedRenderView`), `R/common/driveables/VehicleType` (`TurretStabilization`), `R/client/KeyInputHandler` (toggle key H), `FCSStabilizerPos/Scale[Sight]`, `config_txt/fcs_stabilizer_configs.txt`
 A stabilised seat keeps the gunner's intended aim fixed in world space while the hull turns and pitches. The physical turret catches up at its traverse speed and the sight stays on target. The feature can be toggled and shows a green or red `STA` indicator. Turret and barrel rendering is interpolated for display only, and an F10 diagnostic is available.
@@ -34,7 +34,8 @@ A stabilised seat keeps the gunner's intended aim fixed in world space while the
 Target checked: `T/common/entity/Seat` (`applyClientAimDelta`, `getHullAimYaw`, `usesAbsoluteViewYaw`)
 Vehicle seat aim is stored relative to the hull or turret, so it turns with the vehicle. World-yaw aim is used only for a mecha driver's torso (`usesAbsoluteViewYaw`). There is no stabiliser key, toggle or indicator.
 
-Missing: world-space stabilised aim for vehicle turret seats, its toggle key and STA HUD, and the `TurretStabilization` definition key.
+**Present (2026-11-22):** `TurretStabilization` (44 Tyrants and Plebeians vehicles) holds the vehicle driver's view in world yaw, reusing the mecha driver's world-yaw view, with the turret following at its traverse speed and within its traverse limits. A client-side toggle key (O by default; the fork uses H, which the target binds to the optics range reset) and a green/red STA label beside the hotbar. The server needs no change: it already turns the turret toward the aim the client requests.
+Missing: hull-pitch compensation, stabilised passenger turret seats, the fork's display-only turret interpolation and FCS stabiliser sight settings.
 
 ### Helicopter seat stabiliser and hover hold — MISSING
 
@@ -525,7 +526,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Subsystem | Feature | Status | Confidence |
 | --------- | ------- | ------ | ---------- |
 | Optics | Ballistic fire-control solution | PARTIAL | HIGH |
-| Optics | Turret and sight stabilisation | MISSING | HIGH |
+| Optics | Turret and sight stabilisation | PARTIAL | HIGH |
 | Optics | Helicopter seat stabiliser and hover hold | MISSING | HIGH |
 | Optics | Picture-in-picture scopes | MISSING | HIGH |
 | Optics | Missile and shell camera views | MISSING | HIGH |
@@ -579,7 +580,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 25 MISSING, 22 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 24 MISSING, 23 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -692,6 +693,7 @@ Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`r
 - **Driveable death explosions:** `isExplosionWhenDestroyedRadius` (290 TaP driveables) sets the death-explosion radius at the lowest priority of its aliases and, as in the reference, a positive value turns the explosion on.
 - **Explosion resistance:** `explosionResistance` multiplies the blast damage a driveable's parts take (`FlanExplosion`).
 - **Seat invincibility:** `invincible <seat> <bool>` and `SetDriverInvincible` cancel damage to that seat's rider except damage that bypasses invulnerability; destroying the driveable still kills them.
+- **Turret stabiliser (fourth batch):** `TurretStabilization`; see the optics section. Also checked and left alone: `bleedMultiplier` (198 rounds) needs the fork's bleeding state, which is off by default there, and TaP ships none of its bandage, surgery or transfusion tools; `HeliCrashEffects` / `HeliCrashSpin` (20 helicopters) would overlap the target's own crash-mode physics; `labjacFuel` (265 aircraft) duplicates the target's fuel system.
 - **Ammo-rack cook-off (third batch):** `WeakspotCookTime`; see the vehicles section. `alwaysShowTurret` (167 TaP vehicles) needs nothing: the fork hides the turret from a first-person driver unless it is set, and the target never hides it. Vehicle `hasSmoke` (274) is not read by the fork's driveable code.
 - **Missile guidance (second batch):** `ProNavMaxTurnRate` / `ProNavTerminalRange` / `ProNavTerminalGain` (21 TaP missiles) and the `HasLine` guidance wire (17); see the weapons section. `starShell` (3) is dormant in the reference.
 - **Not ported:** vehicle `armorPen` / `penDecay` use the fork's unitless armour integers, which conflict with the target's millimetre armour model; `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` need the driving-model comparison listed under deeper audit.
