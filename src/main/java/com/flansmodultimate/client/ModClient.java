@@ -249,6 +249,17 @@ public class ModClient
             mc.gui.getChat().addMessage(Component.literal("[Flan's Mod Ultimate] Debug Mode " + (isDebug ? "On" : "Off")).withStyle(ChatFormatting.RED));
     }
 
+    /** Moves the camera onto a TV-guided round the local player just fired from a driveable seat. */
+    public static void viewFromProjectile(Entity projectile, @Nullable Entity owner)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || owner != player || !(player.getVehicle() instanceof Seat) || mc.getCameraEntity() != player || !projectile.isAlive())
+            return;
+        mc.setCameraEntity(projectile);
+        changedCameraEntity = true;
+    }
+
     public static boolean isMouseControlEnabled()
     {
         return controlModeMouse;
@@ -407,7 +418,8 @@ public class ModClient
         playGunItemSounds(player, InteractionHand.OFF_HAND);
         SoundHelper.tickClient();
 
-        if (changedCameraEntity && (mc.getCameraEntity() == null || !mc.getCameraEntity().isAlive()))
+        // A TV-guided round's view ends with the round, or once its operator leaves the seat they fired from.
+        if (changedCameraEntity && (mc.getCameraEntity() == null || !mc.getCameraEntity().isAlive() || !(player.getVehicle() instanceof Seat)))
         {
             mc.setCameraEntity(player);
             changedCameraEntity = false;

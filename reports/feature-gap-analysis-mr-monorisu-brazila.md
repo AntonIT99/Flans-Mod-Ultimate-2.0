@@ -39,7 +39,7 @@ Vehicle seat aim is stored relative to the hull or turret, so it turns with the 
 **Present (2026-11-22):** `TurretStabilization` (44 Tyrants and Plebeians vehicles) holds the vehicle driver's view in world yaw, reusing the mecha driver's world-yaw view, with the turret following at its traverse speed and within its traverse limits. A client-side toggle key (O by default; the fork uses H, which the target binds to the optics range reset) and a green/red STA label beside the hotbar. The server needs no change: it already turns the turret toward the aim the client requests.
 Missing: hull-pitch compensation, stabilised passenger turret seats, the fork's display-only turret interpolation and FCS stabiliser sight settings.
 
-### Helicopter seat stabiliser and hover hold — MISSING
+### Helicopter seat stabiliser and hover hold — PARTIAL
 
 Reference: `R/common/driveables/DriveableType` (`AddHeliStabilizerToSeat`), `R/common/driveables/EntitySeat.isHeliStabilizerEnabled`, `R/common/driveables/EntityPlane.heliHoverMode`, `R/common/driveables/FlightController` (hover-hold block near line 1397), `R/client/TickHandlerClient` ("HOVER ON")
 In a helicopter, stabilised gunner and pilot optics keep their world aim within the gun's yaw and pitch limits. The pilot can toggle hover hold with the mode key: the helicopter holds the altitude it had when hold was engaged (vertical-speed command clamped to ±0.22) and damps horizontal drift. The HUD shows the state.
@@ -47,7 +47,8 @@ In a helicopter, stabilised gunner and pilot optics keep their world aim within 
 Target checked: `T/common/driveables/physics/HelicopterPhysics` (half-collective hover convention), `T/common/entity/Plane`, `T/common/entity/Seat`
 Helicopters hover at mid collective, but nothing holds a target altitude and there is no toggle. Seat stabilisation is absent, as above.
 
-Missing: the altitude-hold hover mode with its HUD text, and per-seat helicopter optics stabilisation.
+**Present (2026-11-22):** the hover hold on the mode key (J) for `Mode HELI` helicopters without folding wings (41 Tyrants and Plebeians helicopters, one of which folds wings and keeps that on the key), with the fork's ±0.22 climb cap, gain and drift damping (`HoverHold`), a synced and saved hold height and a HUD line.
+Missing: per-seat helicopter optics stabilisation (`AddHeliStabilizerToSeat`, 13 TaP helicopters).
 
 ### Picture-in-picture scopes — MISSING
 
@@ -59,7 +60,7 @@ Scopes only use full-screen FOV zoom with overlays.
 
 Missing: rendering the lens from a secondary camera, the PiP reticle and scale keys, and the calibration command.
 
-### Missile and shell camera views — MISSING
+### Missile and shell camera views — PARTIAL
 
 Reference: `R/client/EntityCamera` (TV-guided and "magic artillery" views, `bullet.type.TVguided`, `bullet.type.starShell`), `R/common/guns/BulletType` (`TVguided`, `TPVdrone`, `manualSensitivity`), `R/common/driveables/DriveableType` (`hasMagicArtilleryMode`, `artilleryCalculator`, `walterCalculator`)
 Firing a TV-guided missile or a TPV drone round moves the player's camera onto the projectile, which they steer from its own viewpoint. Artillery vehicles can switch to an overhead aiming view with range calculators.
@@ -67,7 +68,8 @@ Firing a TV-guided missile or a TPV drone round moves the player's camera onto t
 Target checked: `T/network/server/PacketManualGuidance`, `T/common/entity/Bullet` (manual and laser guidance by the shooter's look ray), `T/client/ModClient` (`setCameraEntity` only restores the player)
 Manual guidance steers along the shooter's line of sight, and the camera stays with the shooter.
 
-Missing: projectile-mounted cameras (TV-guided and TPV drone views), the steering sensitivity setting, and the artillery camera and calculator modes.
+**Present (2026-11-22):** the TV-guided view (`TVguided`, 7 Tyrants and Plebeians rounds): a player firing one from a driveable seat watches from the round, looking along its flight, until it is gone or they leave the seat. Steering keeps the operator's line of sight, as the target's manual guidance does.
+Missing: TPV drone views, the steering sensitivity setting, and the artillery camera and calculator modes (`hasMagicArtilleryMode`, `artilleryCalculator`).
 
 ---
 
@@ -262,7 +264,8 @@ A destroyed vehicle leaves a smoking wreck entity, with its own model and textur
 
 Target checked: `T/common/entity/Driveable` (`becomeWreck`, wreck physics, burn-out, blast break-up)
 **Present (rechecked 2026-11-22):** destroyed driveables stay as burning, collidable wrecks for the server-configured lifetime; `NoWreck` and now `LeaveWreck false` opt out.
-Missing: per-type `WreckLifetime` / `WreckSmoke`, and custom `WreckModel` / `WreckTexture` (the target renders the damaged original model).
+**Present (2026-11-22):** per-type `WreckLifetime` within the server's wreck lifetime and `WreckSmoke false`.
+Missing: custom `WreckModel` / `WreckTexture` (the target renders the damaged original model); TaP authors `None` for both.
 
 ### Ammo-rack and weak-spot cook-off — PARTIAL
 
@@ -284,14 +287,15 @@ Target checked: `T/common/driveables/EnumDriveablePart` (radar hitbox parts only
 **Present (2026-11-22):** the active/passive toggle for `hasRadar` and `hasPlaneRadar` driveables with a HUD line, and anti-radiation lock-on; see the eighth batch under Pack-driven ports.
 Missing: stealth (`Stealth`, `RadarDetectableAltitude`, `OnRadar`), not re-checked.
 
-### Active protection systems and CIWS — MISSING
+### Active protection systems and CIWS — PARTIAL
 
 Reference: `DriveableType` (`hasAPS`, `APSdelayMax`), `VehicleType` (`HasPassiveAPS`, `PassiveAPSCanForceAim`), `BulletType` (`BypassPassiveAPS`, `PassiveAPSECCM`, `CIWSable`, `CIWSer`, `ciwsBullet`, `APSsound`), `R/common/network/PacketPassiveAPS`, `R/client/particle/EntityAPSGrenade`
 Hard-kill APS destroys incoming missiles and then needs time to reload. Soft-kill APS can throw off a missile's aim. CIWS rounds shoot down munitions marked `CIWSable`.
 
 Target checked: whole target
 **Checked 2026-11-22:** the hard-kill `hasAPS` only starts the `APSdelayMax` timer, plays `APSsound` and shows a HUD readout; it never stops the round (7 Tyrants and Plebeians vehicles). `CIWSable` lets a round collide with other projectiles, which take no damage from it, and `ciwsBullet` / `CIWSer` are parsed but never read (141 and 48 TaP rounds). Neither has a gameplay effect to port.
-Missing: the passive soft-kill APS (`HasPassiveAPS`, `PassiveAPSCanForceAim`, `BypassPassiveAPS`, `PassiveAPSECCM`), which throws incoming missiles off and can slew the turret toward the launcher. TaP sets it on 2 vehicles and `BypassPassiveAPS` on 71 rounds.
+**Present (2026-11-22):** the passive soft-kill APS (`HasPassiveAPS`, `PassiveAPSCanForceAim`, `BypassPassiveAPS` / `PassiveAPSECCM`; 2 TaP vehicles, 71 rounds), see the ninth batch under Pack-driven ports.
+Missing: the forced-aim turret slew toward the launcher and the smoke it discharges.
 
 ### Remote-controlled drones and quadcopters — MISSING
 
@@ -538,9 +542,9 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | --------- | ------- | ------ | ---------- |
 | Optics | Ballistic fire-control solution | PARTIAL | HIGH |
 | Optics | Turret and sight stabilisation | PARTIAL | HIGH |
-| Optics | Helicopter seat stabiliser and hover hold | MISSING | HIGH |
+| Optics | Helicopter seat stabiliser and hover hold | PARTIAL | HIGH |
 | Optics | Picture-in-picture scopes | MISSING | HIGH |
-| Optics | Missile and shell camera views | MISSING | HIGH |
+| Optics | Missile and shell camera views | PARTIAL | HIGH |
 | Weapons | Sustained recoil | MISSING | HIGH |
 | Weapons | Directional melee and bayonets | PARTIAL | HIGH |
 | Weapons | Ricochet and penetration feedback | PARTIAL | MEDIUM |
@@ -563,7 +567,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Vehicles | Destroyed-vehicle wrecks | PARTIAL | HIGH |
 | Vehicles | Ammo-rack and weak-spot cook-off | PARTIAL | HIGH |
 | Vehicles | Radar, stealth and designation | PARTIAL | HIGH |
-| Vehicles | APS and CIWS | MISSING | HIGH |
+| Vehicles | APS and CIWS | PARTIAL | HIGH |
 | Vehicles | Remote drones and quadcopters | MISSING | HIGH |
 | Vehicles | Troop transport | MISSING | HIGH |
 | Vehicles | Submarine diving and oxygen | PARTIAL | HIGH |
@@ -591,7 +595,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 19 MISSING, 28 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 16 MISSING, 31 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -711,6 +715,7 @@ Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`r
 - **Submarines (sixth batch):** `CanDive` and its oxygen and depth keys; see the vehicles section. The radar keys were checked and found mostly dormant in the reference; see the radar section.
 - **Tier and explosion push (seventh batch):** `Tier` as a tooltip line on every type, and `explosionPush` (8 TaP submarines) scaling how hard blasts shove a driveable against the fork's default. Also checked: the `slbm*` keys are dormant; directional melee and blocking were already ported; `sidearm` / `labigunLimit` are firing-input keys, not carry limits; the `seatOptics*` HUD keys parse by prefix and already work.
 - **Seekers, radar and ceiling (eighth batch):** `modernTorpedo` (13 TaP rounds) runs as a torpedo that keeps its depth instead of settling, and on its first tick in water listens once: the usual lock along its heading applies first, as in the fork, then the nearest driveable it hears replaces it, heard within `ASWminRange` (5) plus `seekerRange` (250) times its throttle, half for astern, never the launcher's own mount (`PassiveSeekers`, `Bullet.listenForTarget`). Locked, it is steered by the seeker alone with no boresight limit. `hasRadar` (114 TaP vehicles) and `hasPlaneRadar` (78 aircraft) give the driver an active/passive toggle (F7, a new `TOGGLE_RADAR` input bit, a saved driveable flag) and a HUD line; radars start active as in the fork. `antiRadiation` rounds (2) lock on to the nearest emitting driveable their lock flags allow, preferring it to the heading lock, and keep it past their seeker cone. `flightCeiling` (280 aircraft) pitches a nose-up aircraft down a degree a tick within 10 blocks of it, and the plane HUD shows the ceiling beside the altitude (`FlightCeiling`). Also checked: `turretTossTrue` (139 vehicles) throws the turret as a damaging grenade with the vehicle's turret model; the target already throws destroyed turrets off as cosmetic pieces (`DestructionSequences.partsLost`), so only the grenade's blast and impact damage are missing. `damageVsCrew` and `SetupCrewedPart` crews (159 / 211) drive the fork's ship rate of fire and flooding repair, where the target deliberately counts real seat occupants (`DriveableRepairs`).
+- **Death blasts, wrecks, hover hold, soft-kill APS and TV guidance (ninth batch):** `Death` (153 TaP driveables), `bigDeath` (144) and `nuclearDeath` (12) play the fork's death sounds (`explcls6`, `battleshipgun`, `yamatogun`, which TaP ships) out to 250 blocks, its screen shakes (88/69, 120/80, 250/120 strength and blocks) and a fiery visual-only explosion (`DeathBlast`); damage still comes from the death explosion alone, as in the fork. `WreckLifetime` (913, all 2000 ticks) shortens the server's wreck lifetime, and `WreckSmoke false` leaves a wreck that neither burns nor smokes. Helicopters get the hover hold (see the optics section). `HasPassiveAPS` vehicles jam SACLOS and manually guided missiles that do not bypass them: every second tick from the third, a missile within 80 blocks, beyond 10, flying within about 70° of the vehicle and passing within its hitbox reach plus 4 blocks, with a clear line and from the hull's front half (any side with `PassiveAPSCanForceAim`), drops its guidance and corkscrews away by a shared seed (`PassiveAps`, `PacketPassiveAps`). `TVguided` rounds show their flight to the operator (see the optics section).
 - **Not ported:** vehicle `armorPen` / `penDecay` use the fork's unitless armour integers, which conflict with the target's millimetre armour model; `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` need the driving-model comparison listed under deeper audit.
 - Validation: Focused profile, with scoped Spotless, compilation and parser/behaviour tests. Not exercised in a running game.
 
@@ -719,7 +724,7 @@ Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`r
 What each port leaves out compared with the reference, and where it behaves differently. None of these ports has been exercised in a running game.
 
 - **Per-zone body armour:** no separate zone damage multipliers (nape 3.5×, cranium 2×, face 1.5×) beyond the configured body-part modifiers; no grenade zone penetration. Face, nape and back are inferred from where and from which side the head or body is hit, since the target's hitboxes have no boxes of their own for them.
-- **Destroyed-vehicle wrecks:** no per-type `WreckLifetime` / `WreckSmoke` (913 TaP driveables author them, all with the same values) and no custom `WreckModel` / `WreckTexture`.
+- **Destroyed-vehicle wrecks:** no custom `WreckModel` / `WreckTexture` (TaP sets both to `None`).
 - **Proportional navigation:** no debug flight-path trail (`ProNavDebugTrail*`). An unset `ProNavMaxTurnRate` keeps the `LockOnForce` turn budget, where the fork defaults to 6° per tick.
 - **Guidance wire (`HasLine`):** client-side only, so a wire exists only while that client tracks the missile and starts where the client first saw it rather than at the launcher. No launch curl, no rear beacon, and no separately tracked wire entity that outlives the missile's tracking range.
 - **Ammo-rack cook-off:** no `fancyAmmoRackCookoff` column; no hull cook-off after the turret is lost on `needsTurret` tanks; no troops escaping a burning transport. Flames, smoke and blasts are vanilla particles and sound instead of the fork's flak flares, and there is no vanilla explosion, so nothing nearby is damaged. The driver-killed flag is not saved, so a vehicle reloaded with a destroyed rack can kill one more driver.
@@ -728,6 +733,7 @@ What each port leaves out compared with the reference, and where it behaves diff
 - **Submarine diving:** depth is measured from the hull's position to the water surface above it, not from the fork's fixed `TeamsManager.seaLevel`, and counts up to 160 blocks of water. The depth rate is not saved and is stepped separately on the server and the predicting client. There are no `seaLevel` server setting, airship lift (`airship`, `maxAltitude`) or SLBM launch timing, which TaP also authors. `MaxDepth` also keeps its target meaning, so a diving hull's engine floods below its crush depth. The crush damage bypasses armour and hits only the core.
 - **Tier and explosion push:** the tier is display only, without the fork's tier-gap experience bonus; a missing `Tier` shows nothing rather than the fork's "Reserve Tier". `explosionPush` scales the target's own knockback, which pushes every driveable as hard as a player, so it is relative to the fork's default of 0.25 rather than its absolute value; unauthored driveables, epic ships included, keep the target's push instead of the fork's 0.25 and 0.
 - **Seekers, radar and ceiling:** a modern torpedo hears only Flan's driveables, whose throttle is their noise, not vehicles of other mods. The fork's lock scan covers all loaded entities; the target's covers the server lock-on range, also for anti-radiation rounds. The torpedo listens on the client as well and takes the server's tracked motion, so a client that hears differently is corrected. An anti-radiation round keeps a lock made before its target goes passive, as in the fork, and aircraft radars emit too, where the fork's seeker reads only `hasRadar`; no TaP anti-radiation round locks on to planes. The flight ceiling counts from sea level like the HUD altitude rather than from Y 0, unauthored aircraft have none instead of the fork's 800, and the push never takes the nose past level. No radar contact display, stealth or SLBM keys.
+- **Death blasts, wrecks, hover hold, soft-kill APS and TV guidance:** the fork's tank, ship and nuke flash particles are drawn with the target's explosion visuals. The wreck lifetime is capped by the server's `driveableWreckLifetime`, so a pack cannot make wrecks outlast what the server allows, and an unauthored or 0 lifetime keeps the server's where the fork's 0 means a permanent wreck. The hover hold needs a pilot, a running engine and intact blades, and is not on the mode key of helicopters whose wings fold. The soft-kill APS covers all sides with `PassiveAPSCanForceAim` instead of slewing the turret toward the launcher and waiting until it faces within 8°, and discharges no smoke; its 20-tick response cooldown is not modelled. The TV-guided camera keeps the player's first- or third-person setting; seat HUD overlays still draw over it.
 - **Classified as needing nothing:** `firstShotRecoil` and the other dormant recoil keys, `starShell`, `alwaysShowTurret`, vehicle `hasSmoke`, the hard-kill `hasAPS`, `CIWSable` / `ciwsBullet` / `CIWSer`.
 - **Checked and left alone:** `turretTossTrue` (cosmetic turret throw-off already present), `damageVsCrew` / `SetupCrewedPart` crews (the target counts seat occupants), `bleedMultiplier` (no TaP medical tools), `HeliCrashEffects` / `HeliCrashSpin` (overlap the target's crash physics), `labjacFuel` (duplicates the target's fuel), vehicle `armorPen` / `penDecay` (conflict with millimetre armour) and `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` (need the driving-model comparison).
-- **Large TaP-used gaps not started:** troop transport and the content-pack bots it carries (50 vehicles, 33 bots), passive APS (2), carrier operations and `weightLimit` (26), and the tier experience economy.
+- **Large TaP-used gaps not started:** troop transport and the content-pack bots it carries (50 vehicles, 33 bots), carrier operations and `weightLimit` (26), and the tier experience economy.

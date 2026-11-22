@@ -9,9 +9,11 @@ import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -41,6 +43,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     public void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale)
     {
         /* no-op */
+    }
+
+    @Override
+    public void followGuidedProjectile(Entity projectile, @Nullable Entity owner)
+    {
+        // No camera on a server.
     }
 
     @Override

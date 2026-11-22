@@ -26,7 +26,6 @@ import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
-import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -317,7 +316,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         if (age < 0)
             return 0F;
         float aged = age + partialTick;
-        float share = DamageVisualCurves.wreckSag(aged) + DamageVisualCurves.wreckSink(aged, ModCommonConfig.driveableWreckLifetimeTicks());
+        float share = DamageVisualCurves.wreckSag(aged) + DamageVisualCurves.wreckSink(aged, driveable.getWreckLifetimeTicks());
         return share * driveable.getBbHeight();
     }
 

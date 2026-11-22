@@ -7,6 +7,7 @@ import com.flansmodultimate.api.parts.PartArmor;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.*;
 import com.flansmodultimate.common.driveables.collision.*;
+import com.flansmodultimate.common.driveables.damage.DeathBlast;
 import com.flansmodultimate.common.driveables.damage.DriveableExplosion;
 import com.flansmodultimate.common.driveables.damage.PartDamageKind;
 import com.flansmodultimate.common.driveables.optics.VehicleOptics;
@@ -345,6 +346,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected float turretTossChance = -1F;
     /** Whether the machine leaves no wreck when destroyed, whatever the server allows. */
     protected boolean noWreck;
+    /** Labjac {@code WreckLifetime}: ticks the wreck lasts, within the server's wreck lifetime; 0 keeps the server's. */
+    protected int wreckLifetime;
+    /** Labjac {@code WreckSmoke}: false leaves a wreck that neither burns nor smokes. */
+    protected boolean wreckSmoke = true;
+    /** Labjac {@code Death}, {@code bigDeath} and {@code nuclearDeath}: the blasts played when the machine is destroyed. */
+    protected Set<DeathBlast> deathBlasts = EnumSet.noneOf(DeathBlast.class);
     /** Multiplier on the explosive damage the machine's parts take. */
     protected float explosionResistance = 1F;
     /**
@@ -898,6 +905,16 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         // Labjac LeaveWreck is the inverse of NoWreck; the fork's wrecks are opt-in, ours are on unless a type opts out.
         noWreck = !readValue("LeaveWreck", !noWreck, file);
         noWreck = readValue("NoWreck", noWreck, file);
+        wreckLifetime = Math.max(0, readValue("WreckLifetime", wreckLifetime, file));
+        wreckSmoke = readValue("WreckSmoke", wreckSmoke, file);
+        for (DeathBlast blast : DeathBlast.values())
+        {
+            if (readValue(blast.getKey(), false, file))
+            {
+                deathBlasts.add(blast);
+                registerConfiguredSound(blast.getSound(), file);
+            }
+        }
         explosionResistance = readValue("explosionResistance", explosionResistance, file);
         if (!Float.isFinite(explosionResistance) || explosionResistance < 0F)
         {
@@ -1760,6 +1777,23 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
         }
         return null;
+    }
+
+    /**
+     * @param serverLifetime the server's wreck lifetime in ticks, 0 when wrecks are off
+     * @return ticks this machine's wreck lasts: its own lifetime when shorter than the server's, which also turns wrecks off
+     */
+    public int wreckLifetimeTicks(int serverLifetime)
+    {
+        return resolveWreckLifetime(serverLifetime, wreckLifetime);
+    }
+
+    /** @return the authored wreck lifetime capped by the server's, the server's when none is authored, 0 when wrecks are off */
+    public static int resolveWreckLifetime(int serverLifetime, int authoredLifetime)
+    {
+        if (serverLifetime <= 0)
+            return 0;
+        return authoredLifetime > 0 ? Math.min(serverLifetime, authoredLifetime) : serverLifetime;
     }
 
     public boolean hidesOccupants(boolean doorsOpen)

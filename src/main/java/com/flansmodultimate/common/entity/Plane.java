@@ -15,6 +15,7 @@ import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketParticle;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +24,12 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -77,6 +83,9 @@ public class Plane extends Driveable implements PlaneVisual
     private static final List<EnumDriveablePart> MAIN_GEAR = List.of(EnumDriveablePart.CORE_WHEEL, EnumDriveablePart.LEFT_WING_WHEEL, EnumDriveablePart.RIGHT_WING_WHEEL);
     /** Share of a windmilling rotor's lift a dead helicopter's wreck keeps. */
     private static final float WRECK_ROTOR_LIFT = 0.3F;
+    private static final String NBT_HOVER_ALTITUDE = "hover_altitude";
+    /** Height a helicopter's hover hold keeps it at, or NaN while the hold is off. Synced so the predicting client holds it too. */
+    private static final EntityDataAccessor<Float> DATA_HOVER_ALTITUDE = SynchedEntityData.defineId(Plane.class, EntityDataSerializers.FLOAT);
 
     @Getter
     protected float propellerAngle;
@@ -142,6 +151,49 @@ public class Plane extends Driveable implements PlaneVisual
         setDriveableMode(type.getMode() == EnumPlaneMode.VTOL ? 0 : type.getMode().ordinal());
         // HasGear means retractable gear. Fixed landing gear is still always down.
         setGearDeployed(true);
+    }
+
+    @Override
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        super.defineEntityData(data);
+        data.define(DATA_HOVER_ALTITUDE, Float.NaN);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        super.readAdditionalSaveData(tag);
+        entityData.set(DATA_HOVER_ALTITUDE, tag.contains(NBT_HOVER_ALTITUDE, Tag.TAG_ANY_NUMERIC) ? tag.getFloat(NBT_HOVER_ALTITUDE) : Float.NaN);
+    }
+
+    @Override
+    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        super.addAdditionalSaveData(tag);
+        if (isHoverHoldEngaged())
+            tag.putFloat(NBT_HOVER_ALTITUDE, entityData.get(DATA_HOVER_ALTITUDE));
+    }
+
+    /** @return whether the helicopter's hover hold is engaged */
+    public boolean isHoverHoldEngaged()
+    {
+        return Float.isFinite(entityData.get(DATA_HOVER_ALTITUDE));
+    }
+
+    /** @return whether the mode key switches this aircraft's hover hold: a helicopter with no wings to fold */
+    public boolean hasHoverHold()
+    {
+        PlaneType type = getPlaneType();
+        return type != null && type.getMode() == EnumPlaneMode.HELI && !type.isHasWing() && !type.isValkyrie();
+    }
+
+    /** Engages the hover hold at the current height, or releases it. */
+    private void toggleHoverHold(@NotNull Player player)
+    {
+        boolean engage = !isHoverHoldEngaged();
+        entityData.set(DATA_HOVER_ALTITUDE, engage ? (float) getY() : Float.NaN);
+        player.displayClientMessage(Component.translatable(engage ? "message.flansmodultimate.driveable.hover_hold.on" : "message.flansmodultimate.driveable.hover_hold.off"), true);
     }
 
     @Nullable
@@ -388,6 +440,11 @@ public class Plane extends Driveable implements PlaneVisual
         PlaneType type = getPlaneType();
         if (type == null)
             return;
+        if (hasHoverHold())
+        {
+            toggleHoverHold(player);
+            return;
+        }
         if (type.isHasWing() || type.isValkyrie())
         {
             setWingFolded(!isWingFolded());
@@ -1517,7 +1574,12 @@ public class Plane extends Driveable implements PlaneVisual
         HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(spec, thrust, type.getDrag(), ModCommonConfig.realisticSpeedScale(resolved.category()));
         applyHelicopterControls(type, rotorFraction, performance);
         Vec3 velocity = HelicopterPhysics.step(current, flightUpVector(), performance, throttle, rotorSpeed, rotorFraction, ModCommonConfig.gravityFactor(level()), ModCommonConfig.dragFactor(level()));
-        return autorotating ? HelicopterPhysics.autorotationDrag(velocity, rotorSpeed) : velocity;
+        if (autorotating)
+            return HelicopterPhysics.autorotationDrag(velocity, rotorSpeed);
+        // The hold flies the collective for the pilot, so it needs one aboard and a working rotor.
+        if (isHoverHoldEngaged() && getPlaneMode() == EnumPlaneMode.HELI && getControllingEntity() != null && isEngineActive() && isPartIntact(EnumDriveablePart.BLADES))
+            return HoverHold.hold(velocity, entityData.get(DATA_HOVER_ALTITUDE) - getY());
+        return velocity;
     }
 
     /** @return the share of its lift the holed rotor still makes, and the hit engine still drives it to while it runs */

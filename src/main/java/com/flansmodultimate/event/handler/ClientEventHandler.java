@@ -158,10 +158,26 @@ public final class ClientEventHandler
             event.setPitch(Mth.clamp(frontView ? -view.pitch() : view.pitch(), -89.9F, 89.9F));
             event.setRoll(event.getRoll() + (frontView ? -view.roll() : view.roll()));
         }
+        else if (cameraEntity instanceof Bullet bullet)
+            lookAlongFlight(event, bullet);
         applyVehicleScreenShake(event);
         applyGunScreenShake(event);
         applyAircraftTremor(event);
         applyCombatScreenEffects(event);
+    }
+
+    /** A TV-guided round's camera looks the way the round is flying. */
+    private static void lookAlongFlight(ViewportEvent.ComputeCameraAngles event, Bullet bullet)
+    {
+        double dx = bullet.getX() - bullet.xo;
+        double dy = bullet.getY() - bullet.yo;
+        double dz = bullet.getZ() - bullet.zo;
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+        if (horizontal < 1.0E-4D && Math.abs(dy) < 1.0E-4D)
+            return;
+        event.setYaw((float) Math.toDegrees(Math.atan2(-dx, dz)));
+        event.setPitch(Mth.clamp((float) -Math.toDegrees(Math.atan2(dy, horizontal)), -89.9F, 89.9F));
+        event.setRoll(0F);
     }
 
     /** Composes cosmetic explosion and near-miss motion without changing player or mounted weapon aim. */

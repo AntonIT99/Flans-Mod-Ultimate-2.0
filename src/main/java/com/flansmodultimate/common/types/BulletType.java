@@ -254,6 +254,12 @@ public class BulletType extends ShootableType
     /** Labjac anti-radiation seeker: it locks on to a driveable whose radar is emitting and follows it past its seeker cone. */
     @Getter
     protected boolean antiRadiation;
+    /** Labjac {@code BypassPassiveAPS} (or {@code PassiveAPSECCM}): soft-kill protection systems cannot throw the missile off. */
+    @Getter
+    protected boolean bypassPassiveAPS;
+    /** Labjac {@code TVguided}: a player firing it from a driveable seat watches its flight from the round itself. */
+    @Getter
+    protected boolean tvGuided;
     @Getter
     protected boolean depthCharge;
     @Getter
@@ -560,6 +566,9 @@ public class BulletType extends ShootableType
         aswMinRange = nonNegative(readValue("ASWminRange", aswMinRange, file), 5F);
         seekerRange = nonNegative(readValue("seekerRange", seekerRange, file), 250F);
         antiRadiation = readValue("antiRadiation", antiRadiation, file);
+        bypassPassiveAPS = readValue("BypassPassiveAPS", bypassPassiveAPS, file);
+        bypassPassiveAPS = readValue("PassiveAPSECCM", bypassPassiveAPS, file);
+        tvGuided = readValue("TVguided", tvGuided, file);
         hasLine = readValue("HasLine", hasLine, file);
         depthCharge = readValue("depthCharge", depthCharge, file);
         activationDepth = readValue("activationDepth", activationDepth, file);

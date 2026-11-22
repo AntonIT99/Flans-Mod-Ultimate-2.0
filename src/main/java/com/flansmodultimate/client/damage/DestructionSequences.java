@@ -10,7 +10,6 @@ import com.flansmodultimate.common.driveables.damage.PartDamageKind;
 import com.flansmodultimate.common.driveables.damage.PartPieces;
 import com.flansmodultimate.common.driveables.damage.WreckLoad;
 import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformSounds;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -165,7 +164,7 @@ final class DestructionSequences
         int lifetime = DamageParticles.SCORCH_TICKS;
         if (owner instanceof Driveable driveable)
         {
-            int wreckLifetime = ModCommonConfig.driveableWreckLifetimeTicks();
+            int wreckLifetime = driveable.getWreckLifetimeTicks();
             if (wreckLifetime <= 0 || driveable.getConfigType() != null && driveable.getConfigType().isNoWreck())
                 return;
             lifetime = Math.max(1, wreckLifetime - Math.max(0, driveable.getWreckAge()));

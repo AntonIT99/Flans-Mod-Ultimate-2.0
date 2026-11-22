@@ -28,6 +28,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
 import com.flansmodultimate.util.FileUtils;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.Util;
 import net.minecraft.client.CameraType;
@@ -84,6 +85,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     public void withLandmarkRange(double range, Runnable spawner)
     {
         ParticleHelper.withLandmarkRange(range, spawner);
+    }
+
+    @Override
+    public void followGuidedProjectile(Entity projectile, @Nullable Entity owner)
+    {
+        ModClient.viewFromProjectile(projectile, owner);
     }
 
     @Override

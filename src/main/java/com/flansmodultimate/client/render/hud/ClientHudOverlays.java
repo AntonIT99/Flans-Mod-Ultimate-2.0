@@ -127,6 +127,7 @@ public final class ClientHudOverlays
         registrar.aboveHotbar("fire_control", FIRE_CONTROL);
         registrar.aboveHotbar("submarine", SUBMARINE);
         registrar.aboveHotbar("radar", RADAR);
+        registrar.aboveHotbar("hover_hold", HOVER_HOLD);
         registrar.aboveHotbar("teams_rank_up", (g, partialTick, sw, sh) -> TeamsRankUpPopup.render(g, sw));
         registrar.aboveHotbar("debug_armor", (g, partialTick, sw, sh) -> DriveableArmorDebugHud.render(g, sw, sh));
     }
@@ -185,6 +186,18 @@ public final class ClientHudOverlays
         boolean emitting = seat.getDriveable().isRadarEmitting();
         Component label = Component.translatable(emitting ? "gui.flansmodultimate.radar.active" : "gui.flansmodultimate.radar.passive", KeyInputHandler.getRadarKeyName());
         g.drawString(mc.font, label, sw / 2 + 96, sh - 48, emitting ? 0x55FF55 : 0xFF5555);
+    };
+
+    /** A helicopter pilot's hover hold, green while it holds the height and white with the key that engages it. */
+    public static final HudOverlayPlatform.HudLayer HOVER_HOLD = (g, partialTick, sw, sh) ->
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.options.hideGui || !(player.getVehicle() instanceof Seat seat) || !seat.isDriverSeat() || !(seat.getDriveable() instanceof Plane plane) || !plane.hasHoverHold())
+            return;
+        boolean engaged = plane.isHoverHoldEngaged();
+        Component label = engaged ? Component.translatable("gui.flansmodultimate.hover_hold.on") : Component.translatable("gui.flansmodultimate.hover_hold.off", KeyInputHandler.getModeKeyName());
+        g.drawString(mc.font, label, sw / 2 + 96, sh - 59, engaged ? 0x55FF55 : 0xFFFFFF);
     };
 
     public static final HudOverlayPlatform.HudLayer SCOPE = (g, partialTick, sw, sh) ->

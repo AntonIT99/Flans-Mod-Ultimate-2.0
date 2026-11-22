@@ -6143,6 +6143,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 configType.getDeathExplosionDamageVsLiving(), configType.getDeathExplosionDamageVsPlayer(), configType.getDeathExplosionDamageVsPlane(), configType.getDeathExplosionDamageVsVehicle()),
                 position());
         }
+        if (configType != null && level() instanceof ServerLevel serverLevel)
+            configType.getDeathBlasts().forEach(blast -> blast.play(serverLevel, position()));
         for (Seat seat : seats)
         {
             if (seat == null)
@@ -6195,7 +6197,20 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** @return whether this driveable stays as a wreck once destroyed: wrecks are on and its type does not opt out */
     protected boolean leavesWreck()
     {
-        return ModCommonConfig.driveableWreckLifetimeTicks() > 0 && (configType == null || !configType.isNoWreck());
+        return getWreckLifetimeTicks() > 0 && (configType == null || !configType.isNoWreck());
+    }
+
+    /** @return ticks this driveable's wreck lasts: the server's wreck lifetime, shortened by its type's own; 0 when wrecks are off */
+    public int getWreckLifetimeTicks()
+    {
+        int serverLifetime = ModCommonConfig.driveableWreckLifetimeTicks();
+        return configType == null ? serverLifetime : configType.wreckLifetimeTicks(serverLifetime);
+    }
+
+    /** @return whether this driveable's wreck burns and smokes, which its type can turn off */
+    public boolean hasWreckSmoke()
+    {
+        return configType == null || configType.isWreckSmoke();
     }
 
     /**
@@ -6231,7 +6246,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         clearLockOnTarget();
         entityData.set(DATA_WRECK_LOAD, wreckLoad.pack());
         entityData.set(DATA_WRECK_AGE, 0);
-        wreckStageSent = DamageVisualCurves.fireStage(0, ModCommonConfig.driveableWreckLifetimeTicks());
+        wreckStageSent = DamageVisualCurves.fireStage(0, getWreckLifetimeTicks());
         return true;
     }
 
@@ -6423,7 +6438,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected void tickWreck()
     {
         ++wreckTicks;
-        int lifetime = ModCommonConfig.driveableWreckLifetimeTicks();
+        int lifetime = getWreckLifetimeTicks();
         syncWreckAge(lifetime);
         // A wreck that has burnt out is gone. One lying on the sea bed stays for its own lifetime like any other.
         if (lifetime <= 0 || wreckTicks >= lifetime)

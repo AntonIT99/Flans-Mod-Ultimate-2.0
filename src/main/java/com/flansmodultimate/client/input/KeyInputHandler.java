@@ -182,6 +182,11 @@ public final class KeyInputHandler
         return radarKey.getTranslatedKeyMessage();
     }
 
+    public static Component getModeKeyName()
+    {
+        return modeKey.getTranslatedKeyMessage();
+    }
+
     /** The current ammunition-switch binding, including whether it is unbound. */
     public static Component getPreferredAmmoKeyName()
     {

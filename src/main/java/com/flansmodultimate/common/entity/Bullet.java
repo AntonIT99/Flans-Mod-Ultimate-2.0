@@ -6,6 +6,7 @@ import com.flansmodultimate.api.content.IContentType;
 import com.flansmodultimate.api.projectiles.BallisticDrag;
 import com.flansmodultimate.api.projectiles.IBullet;
 import com.flansmodultimate.common.driveables.DriveablePart;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
@@ -24,6 +25,7 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.ParticleNameCodec;
 import com.flansmodultimate.network.client.effects.PacketBulletDeflect;
+import com.flansmodultimate.network.client.effects.PacketPassiveAps;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.network.PacketBuffer;
@@ -45,6 +47,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 
@@ -119,6 +122,12 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected double prevDistanceToTarget;
     /** A modern torpedo listens for a target only once, on its first tick in water. */
     protected boolean listenedForTarget;
+    /** Thrown off course by a vehicle's soft-kill protection: no longer guided, the missile corkscrews away. */
+    protected boolean passiveApsJammed;
+    protected int passiveApsSeed;
+    protected int passiveApsTicks;
+    /** Whether a TV-guided round has offered its camera to the player who fired it. Client side. */
+    protected boolean tvCameraOffered;
 
     /** Submunitions */
     protected int submunitionDelay = 20;
@@ -317,6 +326,59 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         PlatformEvents.post(event);
         if (!event.isCanceled())
             lockedOnTo = event.getLockedOnTo();
+    }
+
+    /**
+     * A vehicle with soft-kill protection in reach throws an operator-guided missile flying at it off course, as the
+     * fork's passive APS does; once jammed, the missile corkscrews away for the rest of its flight. Detection is server side
+     * and sent to the clients tracking the missile, which then corkscrew it the same way.
+     */
+    protected void updatePassiveAps(Level level)
+    {
+        if (passiveApsJammed)
+        {
+            velocity = PassiveAps.spiral(velocity, passiveApsSeed, passiveApsTicks++);
+            setDeltaMovement(velocity);
+            return;
+        }
+        if (level.isClientSide || tickCount <= 2 || (tickCount & 1) != 0 || !canBeJammedByPassiveAps())
+            return;
+        for (Vehicle vehicle : ModUtils.queryEntitiesInRange(level, this, PassiveAps.SCAN_RANGE, Vehicle.class, null))
+        {
+            VehicleType type = vehicle.getVehicleType();
+            if (type == null || !type.isHasPassiveAPS() || vehicle.isWreck() || !vehicle.isPartIntact(EnumDriveablePart.CORE) || isLaunchersMount(vehicle))
+                continue;
+            Vec3 middle = vehicle.position().add(0D, vehicle.getBbHeight() * 0.5D, 0D);
+            Vec3 toVehicle = middle.subtract(position());
+            if (!PassiveAps.threatens(toVehicle, velocity, type.getBulletDetectionRadius()) || !PassiveAps.covers(vehicle.getForwardVector(), toVehicle.reverse(), type.isPassiveAPSCanForceAim())
+                || level.clip(new ClipContext(position(), middle, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this)).getType() != HitResult.Type.MISS)
+                continue;
+            jamByPassiveAps(position(), velocity, PassiveAps.seed(getId(), vehicle.getId()));
+            PacketHandler.sendToTracking(new PacketPassiveAps(getId(), position(), velocity, passiveApsSeed), this);
+            return;
+        }
+    }
+
+    /** @return whether soft-kill protection can throw this round off: an operator-guided missile, SACLOS or manual, that does not bypass it */
+    private boolean canBeJammedByPassiveAps()
+    {
+        if (configType.isBypassPassiveAPS() || configType.getWeaponType() != EnumWeaponType.MISSILE)
+            return false;
+        if (configType.isEnableSACLOS())
+            return true;
+        boolean homes = lockedOnTo != null || configType.isLockOnToPlanes() || configType.isLockOnToVehicles() || configType.isLockOnToMechas() || configType.isLockOnToPlayers()
+            || configType.isLockOnToLivings();
+        return !homes && configType.isManualGuidance();
+    }
+
+    /** Jams the missile from this position and velocity on: it drops its guidance and corkscrews by the seed. Either side. */
+    public void jamByPassiveAps(Vec3 position, Vec3 newVelocity, int seed)
+    {
+        passiveApsJammed = true;
+        passiveApsSeed = seed;
+        passiveApsTicks = 0;
+        lockedOnTo = null;
+        applyDeflection(position, newVelocity);
     }
 
     /** @return whether the one who fired this round rides the given driveable, which a torpedo must not hunt */
@@ -568,6 +630,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 return;
             applyDragAndGravity();
             updatePenetrationPower();
+            updatePassiveAps(level);
             listenForTarget(level);
             applyHomingIfLocked(level);
             updateShootForSettingPos();
@@ -1074,7 +1137,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     protected void applyHomingIfLocked(Level level)
     {
-        if (isRemoved())
+        if (isRemoved() || passiveApsJammed)
             return;
 
         LivingEntity owner = firedShot.getAttacker().orElse(null);
@@ -1317,7 +1380,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     {
         LivingEntity owner = firedShot.getAttacker().orElse(null);
 
-        if (owner != null && configType.isManualGuidance() && vlsDelay <= 0 && lockedOnTo == null)
+        if (owner != null && configType.isManualGuidance() && vlsDelay <= 0 && lockedOnTo == null && !passiveApsJammed)
         {
             // On the server these are the authoritative owner coordinates and rotation.
             Vec3 lookVec = owner.getLookAngle();
@@ -1383,6 +1446,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     protected void clientTick(Level level)
     {
+        if (configType.isTvGuided() && !tvCameraOffered)
+        {
+            tvCameraOffered = true;
+            ClientHooks.RENDER.followGuidedProjectile(this, firedShot.getAttacker().orElse(null));
+        }
         if (level.getFluidState(blockPosition()).is(FluidTags.WATER) && !level.getFluidState(BlockPos.containing(xo, yo, zo)).is(FluidTags.WATER))
             ClientHooks.RENDER.waterImpact(position(), configType.getWeaponType() == EnumWeaponType.SHELL ? 1.5F : 0.35F);
         spawnWaterBubbles(level);

@@ -94,11 +94,21 @@ public class VehicleType extends DriveableType
     /** Ticks of oxygen the crew has while submerged. */
     protected float maxOxygen = 9001F;
     protected boolean unlimitedOxygen;
+    /** Labjac {@code HasPassiveAPS}: a soft-kill protection system that throws incoming wire- and beam-guided missiles off course. */
+    protected boolean hasPassiveAPS;
+    /** Labjac {@code PassiveAPSCanForceAim}: the system covers every side, not just the vehicle's front. */
+    protected boolean passiveAPSCanForceAim;
     protected final List<SmokePoint> smokers = new ArrayList<>();
     protected String stompSoundFrontRight = StringUtils.EMPTY;
     protected String stompSoundFrontLeft = StringUtils.EMPTY;
     protected String stompSoundBackRight = StringUtils.EMPTY;
     protected String stompSoundBackLeft = StringUtils.EMPTY;
+
+    private void readPassiveAps(TypeFile file)
+    {
+        hasPassiveAPS = readValue("HasPassiveAPS", hasPassiveAPS, file);
+        passiveAPSCanForceAim = readValue("PassiveAPSCanForceAim", passiveAPSCanForceAim, file);
+    }
 
     private void readDiving(TypeFile file)
     {
@@ -153,6 +163,7 @@ public class VehicleType extends DriveableType
         turretStabilization = readValue("TurretStabilization", turretStabilization, file);
         readFireControl(file);
         readDiving(file);
+        readPassiveAps(file);
         fourWheelDrive = readValue("FourWheelDrive", fourWheelDrive, file);
         tank = readValue("Tank", tank, file);
         tank = readValue("TankMode", tank, file);

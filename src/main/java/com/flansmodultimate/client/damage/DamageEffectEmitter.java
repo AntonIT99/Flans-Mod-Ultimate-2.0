@@ -6,6 +6,7 @@ import com.flansmodultimate.client.sound.SoundHelper;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.damage.*;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
@@ -72,12 +73,13 @@ final class DamageEffectEmitter
         if (entity.position().distanceToSqr(minecraft.gameRenderer.getMainCamera().getPosition()) > reach * reach)
             return;
         int wreckAge = source.wreckAge();
-        int lifetime = source instanceof PartBodyEffectSource ? PartBodyEffectSource.MAX_WRECK_EFFECT_TICKS : ModCommonConfig.driveableWreckLifetimeTicks();
+        int lifetime = wreckLifetime(source);
         Vec3 motion = source.motion();
         boolean raining = isRainingOn(entity);
-        // A wreck burns as hard as the fuel it had, and less so in the rain.
-        float fire = DamageVisualCurves.wreckFire(wreckAge, lifetime) * source.load().fireStrength() * (raining ? RAIN_DAMPING : 1F);
-        Tick tick = new Tick(source, entity.level().random, density, motion, motion.length(), wreckAge >= 0, fire, DamageVisualCurves.wreckSmoke(wreckAge, lifetime), raining,
+        // A wreck burns as hard as the fuel it had, and less so in the rain; a type can leave a wreck that does neither.
+        float smokes = entity instanceof Driveable driveable && !driveable.hasWreckSmoke() ? 0F : 1F;
+        float fire = DamageVisualCurves.wreckFire(wreckAge, lifetime) * source.load().fireStrength() * (raining ? RAIN_DAMPING : 1F) * smokes;
+        Tick tick = new Tick(source, entity.level().random, density, motion, motion.length(), wreckAge >= 0, fire, DamageVisualCurves.wreckSmoke(wreckAge, lifetime) * smokes, raining,
             SmokeWind.of(entity.level()));
         for (DriveablePart part : source.parts())
             emitPart(tick, part);
@@ -85,6 +87,14 @@ final class DamageEffectEmitter
             emitWreck(tick);
         if (source.damageClass().flies() && tick.speed() > FLIGHT_TRAIL_SPEED)
             emitFlightTrail(tick);
+    }
+
+    /** @return ticks the source's wreck burns for: a part body's own limit, or the driveable's wreck lifetime */
+    private static int wreckLifetime(DamageEffectSource source)
+    {
+        if (source instanceof PartBodyEffectSource)
+            return PartBodyEffectSource.MAX_WRECK_EFFECT_TICKS;
+        return source.entity() instanceof Driveable driveable ? driveable.getWreckLifetimeTicks() : ModCommonConfig.driveableWreckLifetimeTicks();
     }
 
     /**

@@ -8,9 +8,11 @@ import com.flansmodultimate.common.teams.PlayerClassSkin;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -60,6 +62,9 @@ public interface IClientRenderHooks
      * {@code TracerBeam}. Colours and alpha are fractions from 0 to 1; the width is the core half-width in blocks.
      */
     void spawnTracerBeam(Vec3 start, Vec3 end, float red, float green, float blue, float alpha, float width);
+
+    /** Shows the local player the flight of a TV-guided round they fired from a driveable seat, from the round itself, until it is gone. */
+    void followGuidedProjectile(Entity projectile, @Nullable Entity owner);
 
     /**
      * Emits a burst of particles scattered around the given point and keeps replacing them as they

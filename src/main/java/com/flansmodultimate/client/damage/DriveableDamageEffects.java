@@ -6,7 +6,6 @@ import com.flansmodultimate.common.driveables.damage.DamageVisualCurves;
 import com.flansmodultimate.common.driveables.parts.PartBodies;
 import com.flansmodultimate.common.driveables.parts.PartBody;
 import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.config.ModCommonConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -122,9 +121,9 @@ public final class DriveableDamageEffects
     public static float wreckFireStrength(Driveable driveable)
     {
         int age = driveable.getWreckAge();
-        if (age < 0)
+        if (age < 0 || !driveable.hasWreckSmoke())
             return 0F;
-        float fire = DamageVisualCurves.wreckFire(age, ModCommonConfig.driveableWreckLifetimeTicks()) * driveable.getWreckLoad().fireStrength();
+        float fire = DamageVisualCurves.wreckFire(age, driveable.getWreckLifetimeTicks()) * driveable.getWreckLoad().fireStrength();
         DriveableEffectSource source = fire > 0F ? DriveableEffectSource.of(driveable) : null;
         return source == null ? fire : fire * DamageEffectEmitter.fireExposure(source);
     }
@@ -135,7 +134,7 @@ public final class DriveableDamageEffects
         int age = driveable.getWreckAge();
         if (age < 0)
             return 1F;
-        return Math.max(DamageVisualCurves.wreckHeat(age, ModCommonConfig.driveableWreckLifetimeTicks()) * (0.5F + 0.5F * driveable.getWreckLoad().fireStrength()), DamageVisualCurves.MIN_WRECK_HEAT);
+        return Math.max(DamageVisualCurves.wreckHeat(age, driveable.getWreckLifetimeTicks()) * (0.5F + 0.5F * driveable.getWreckLoad().fireStrength()), DamageVisualCurves.MIN_WRECK_HEAT);
     }
 
     private static void keepFireSound(Driveable wreck)
