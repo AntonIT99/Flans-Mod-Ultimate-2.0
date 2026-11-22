@@ -265,7 +265,8 @@ When a `turretWeak`/`weakSpot` hitbox is destroyed while the turret or core stil
 
 Target checked: `T/common/driveables/EnumDriveablePart` (`TURRET_WEAK`, `TURRET_WEAK_2`, `WEAK_SPOT`…`WEAK_SPOT_3`)
 **Present:** the weak-spot part names parse as damageable parts.
-**Missing:** the cook-off sequence (killing the driver, timed turret or core burn-down, effects), plus `WeakspotCookTime` and `fancyAmmoRackCookoff`.
+**Present (2026-11-22):** the cook-off sequence (`AmmoRackCookOff`, `Vehicle`): a destroyed hull or turret weak spot kills the driver once, then burns the core or turret down every five ticks over twice `WeakspotCookTime` (121 Tyrants and Plebeians vehicles, 77 of them with weak-spot parts). The core's or turret's own destruction then runs the target's normal death and cook-off effects. Effects are vanilla flame, lava, smoke and explosion particles instead of the fork's flak flares, and there is no vanilla explosion.
+**Missing:** `fancyAmmoRackCookoff`, the fork's turret-death hull cook for `needsTurret` tanks, and troop survivors escaping a burning transport.
 
 ### Radar, stealth and target designation — MISSING
 
@@ -691,6 +692,7 @@ Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`r
 - **Driveable death explosions:** `isExplosionWhenDestroyedRadius` (290 TaP driveables) sets the death-explosion radius at the lowest priority of its aliases and, as in the reference, a positive value turns the explosion on.
 - **Explosion resistance:** `explosionResistance` multiplies the blast damage a driveable's parts take (`FlanExplosion`).
 - **Seat invincibility:** `invincible <seat> <bool>` and `SetDriverInvincible` cancel damage to that seat's rider except damage that bypasses invulnerability; destroying the driveable still kills them.
+- **Ammo-rack cook-off (third batch):** `WeakspotCookTime`; see the vehicles section. `alwaysShowTurret` (167 TaP vehicles) needs nothing: the fork hides the turret from a first-person driver unless it is set, and the target never hides it. Vehicle `hasSmoke` (274) is not read by the fork's driveable code.
 - **Missile guidance (second batch):** `ProNavMaxTurnRate` / `ProNavTerminalRange` / `ProNavTerminalGain` (21 TaP missiles) and the `HasLine` guidance wire (17); see the weapons section. `starShell` (3) is dormant in the reference.
 - **Not ported:** vehicle `armorPen` / `penDecay` use the fork's unitless armour integers, which conflict with the target's millimetre armour model; `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` need the driving-model comparison listed under deeper audit.
 - Validation: Focused profile, with scoped Spotless, compilation and parser/behaviour tests. Not exercised in a running game.

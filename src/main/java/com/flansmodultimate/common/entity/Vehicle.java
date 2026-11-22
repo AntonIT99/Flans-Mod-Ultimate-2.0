@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.damage.AmmoRackCookOff;
 import com.flansmodultimate.common.driveables.damage.VehicleLandingDamage;
 import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.driveables.visual.VehicleVisual;
@@ -11,18 +12,27 @@ import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.*;
+import com.flansmodultimate.platform.PlatformSounds;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 /** Wheel-, track- and water-capable server vehicle simulation. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -55,6 +65,8 @@ public class Vehicle extends Driveable implements VehicleVisual
     /** Hull yaw seen by the previous engine-sound tick, and the ticks left before a pivot turn counts as stopped. Client side. */
     private float engineSoundYaw = Float.NaN;
     private int pivotSoundTicks;
+    /** Whether a burning ammunition rack has already killed the driver. Transient and server-side, as in the Labjac fork. */
+    private boolean ammoRackDriverKilled;
 
     public Vehicle(EntityType<?> entityType, Level level)
     {
@@ -115,6 +127,48 @@ public class Vehicle extends Driveable implements VehicleVisual
         float previousRightPhase = rightTrackProgress;
         advanceAnimations(type, getX() - previousX, getZ() - previousZ, Mth.wrapDegrees(getYaw() - previousYaw));
         tickWalkerStompSounds(type, previousLeftPhase, previousRightPhase);
+        tickAmmoRackCookOff(type);
+    }
+
+    /** A destroyed ammunition rack kills the driver once, then burns its core or turret down with small blasts. Server side. */
+    private void tickAmmoRackCookOff(VehicleType type)
+    {
+        if (level().isClientSide || destroyed || isWreck() || tickCount % AmmoRackCookOff.PULSE_TICKS != 0)
+            return;
+        EnumDriveablePart burning = AmmoRackCookOff.burningPart(driveableData == null ? null : driveableData.getParts());
+        if (burning == null)
+            return;
+        DriveablePart part = driveableData.getPart(burning);
+        killDriverForAmmoRack();
+        part.damage(AmmoRackCookOff.damagePerPulse(part.getMaxHealth(), type.getWeakspotCookTime()), false);
+        if (level() instanceof ServerLevel serverLevel)
+        {
+            Vec3 centre = getPartWorldCentre(burning);
+            serverLevel.sendParticles(ParticleTypes.LAVA, centre.x, centre.y + 0.5D, centre.z, 6, 0.4D, 0.3D, 0.4D, 0.1D);
+            serverLevel.sendParticles(ParticleTypes.FLAME, centre.x, centre.y + 0.5D, centre.z, 8, 0.3D, 0.6D, 0.3D, 0.08D);
+            serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, centre.x, centre.y + 1D, centre.z, 4, 0.3D, 0.5D, 0.3D, 0.04D);
+            serverLevel.sendParticles(ParticleTypes.EXPLOSION, centre.x, centre.y + 0.5D, centre.z, 1, 0.2D, 0.2D, 0.2D, 0D);
+            level().playSound(null, centre.x, centre.y, centre.z, PlatformSounds.genericExplode(), SoundSource.BLOCKS, 1.5F, 0.9F + random.nextFloat() * 0.3F);
+        }
+    }
+
+    private void killDriverForAmmoRack()
+    {
+        if (ammoRackDriverKilled)
+            return;
+        Seat driver = getDriverSeat();
+        if (driver == null)
+            return;
+        for (Entity passenger : List.copyOf(driver.getPassengers()))
+        {
+            if (!(passenger instanceof LivingEntity living))
+                continue;
+            living.stopRiding();
+            DamageSource source = lastAtkEntity instanceof Player attacker ? level().damageSources().playerAttack(attacker)
+                : lastAtkEntity instanceof LivingEntity attacker ? level().damageSources().mobAttack(attacker) : level().damageSources().generic();
+            living.hurt(source, Float.MAX_VALUE);
+            ammoRackDriverKilled = true;
+        }
     }
 
     @Override

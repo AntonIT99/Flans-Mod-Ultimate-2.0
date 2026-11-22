@@ -74,6 +74,8 @@ public class VehicleType extends DriveableType
     /** The door arms the weapons: they fire only while it is open, as in 1.7.10. */
     protected boolean shootWithOpenDoor;
     protected int trackLinkFix = 5;
+    /** Seconds, doubled as in the Labjac fork, that a destroyed ammunition rack takes to burn its core or turret down. */
+    protected float weakspotCookTime = 3F;
     protected final List<SmokePoint> smokers = new ArrayList<>();
     protected String stompSoundFrontRight = StringUtils.EMPTY;
     protected String stompSoundFrontLeft = StringUtils.EMPTY;
@@ -97,6 +99,9 @@ public class VehicleType extends DriveableType
         float configuredTurnRate = readValue(turnRateKey, 0F, file);
         realTurnRateDegPerSec = Float.isFinite(configuredTurnRate) && configuredTurnRate > 0F ? configuredTurnRate : 0F;
         squashMobs = readValue("SquashMobs", squashMobs, file);
+        float cookTime = readValue("WeakspotCookTime", weakspotCookTime, file);
+        if (Float.isFinite(cookTime) && cookTime > 0F)
+            weakspotCookTime = cookTime;
         fourWheelDrive = readValue("FourWheelDrive", fourWheelDrive, file);
         tank = readValue("Tank", tank, file);
         tank = readValue("TankMode", tank, file);
