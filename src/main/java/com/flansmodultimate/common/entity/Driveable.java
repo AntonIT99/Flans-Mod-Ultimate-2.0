@@ -150,6 +150,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final int FLAG_REPAIR = 1 << 9;
     protected static final int FLAG_LANDING_FLAPS = 1 << 10;
     protected static final int FLAG_AFTERBURNER = 1 << 11;
+    /** The radar is switched to passive: it no longer emits. Clear by default, so a radar starts active as in the fork. */
+    protected static final int FLAG_RADAR_PASSIVE = 1 << 12;
 
     protected static final EntityDataAccessor<Integer> DATA_WEAPON_HEAT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Boolean> DATA_WEAPON_OVERHEATED = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.BOOLEAN);
@@ -1091,6 +1093,28 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     public void setAfterburnerArmed(boolean value)
     {
         setFlag(FLAG_AFTERBURNER, value);
+    }
+
+    /** @return whether this driveable carries a radar its driver can switch between active and passive */
+    public boolean hasRadar()
+    {
+        return configType != null && configType.isRadar();
+    }
+
+    /** @return whether this driveable's radar is active and emitting, so anti-radiation rounds can home on it */
+    public boolean isRadarEmitting()
+    {
+        return hasRadar() && !getFlag(FLAG_RADAR_PASSIVE) && !isWreck();
+    }
+
+    /** The driver switches the radar between active and passive. */
+    protected void toggleRadar(@NotNull Player player)
+    {
+        if (!hasRadar())
+            return;
+        boolean passive = !getFlag(FLAG_RADAR_PASSIVE);
+        setFlag(FLAG_RADAR_PASSIVE, passive);
+        player.displayClientMessage(Component.translatable(passive ? "message.flansmodultimate.driveable.radar.passive" : "message.flansmodultimate.driveable.radar.active"), true);
     }
 
     /** Whether an afterburner is simulated, so its switch decides when afterburn exhaust shows. Only aircraft carry one. */
@@ -4818,6 +4842,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             setOrientation(getYaw(), 0F, 0F);
         if (DriveableInput.isDown(rising, DriveableInput.REPAIR) && seat.isDriverSeat())
             startRepair();
+        if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_RADAR) && seat.isDriverSeat())
+            toggleRadar(player);
         if (DriveableInput.isDown(rising, DriveableInput.FLARE))
             deployFlare();
         if (DriveableInput.isDown(rising, DriveableInput.SWITCH_AMMO))

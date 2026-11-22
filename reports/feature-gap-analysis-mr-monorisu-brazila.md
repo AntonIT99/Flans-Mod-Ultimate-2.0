@@ -114,7 +114,7 @@ No matching sensor mechanic exists, but parsed reference fields alone do not est
 
 Missing: unconfirmed; do not treat this as an active gameplay gap without evidence of reference detection and triggering.
 
-### Seekers: self-guided, radar-guided, anti-radiation and homing torpedoes — MISSING
+### Seekers: self-guided, radar-guided, anti-radiation and homing torpedoes — PARTIAL
 
 Reference: `R/common/guns/EntityBullet` (around lines 418–500 and 656–690), `BulletType` (`selfGuided`, `seekerRange`, `radarGuided`, `antiRadiation`, `modernTorpedo`, `ASWminRange`, `scoutBullet`, `infiniteAngle`, `LockOnFuse`)
 Fire-and-forget missiles find their own target after launch. Anti-radiation missiles home on radar emitters. Radar-guided missiles depend on the launcher. Modern torpedoes acquire a target only once they are in the water, can change depth, and use a seeker range scaled by the target's noise.
@@ -122,7 +122,8 @@ Fire-and-forget missiles find their own target after launch. Anti-radiation miss
 Target checked: `T/common/types/BulletType` (`LockOnTo*`, `MaxLockOnAngle`, `EnableSACLOS`, `ManualGuidance`, `LaserGuidance`, `Torpedo`)
 Missiles lock on at the launcher, or are steered by SACLOS, manual or laser guidance. Legacy torpedoes run straight.
 
-Missing: post-launch seeker acquisition, anti-radiation and radar-guided seekers, and torpedo homing and depth control.
+**Present (2026-11-22):** `modernTorpedo` acoustic homing with `ASWminRange` / `seekerRange` (13 Tyrants and Plebeians rounds) and `antiRadiation` (2), see the eighth batch under Pack-driven ports. `selfGuided`, `seekerRange` outside torpedoes and `radarGuided` are not authored by TaP.
+Missing: delayed post-launch acquisition for other missiles (`selfGuided`, `lockonDelay`), radar-guided seekers, `infiniteAngle`, `scoutBullet` and `LockOnFuse`.
 
 ### Proportional-navigation guidance — PARTIAL
 
@@ -201,14 +202,15 @@ Ammunition items can be upgraded into a linked type.
 Target checked: `T/common/types/BulletType`
 Missing: the evolution chain.
 
-### Muzzle and chamber smoke models — PARTIAL
+### Muzzle and chamber smoke models — PARTIAL (smoke models present)
 
 Reference: `GunType` (`MuzzleSmokeModel`/`Texture`, `ChamberSmokeModel`/`Texture`, `muzzleParticle`, `muzzleParticleCount`, `muzzleOffset`)
 Guns can draw 3D smoke models at the muzzle and chamber, and spawn named particles at the muzzle.
 
 Target checked: `T/network/client/PacketGunMuzzleFlash`, `T/client/render/item/GunItemRenderer`, the flash-model support in `GunType`
 **Present:** muzzle flash models and particles.
-**Missing:** the muzzle and chamber smoke model and texture keys.
+**Corrected 2026-11-22:** the muzzle and chamber smoke model and texture keys were ported with the keyframe gun animations in `4146dc0fa` (`GunType`, `FirstPersonGunEffects`), including the fork's swapped key meaning that TaP's 50 guns rely on.
+**Missing:** not re-checked beyond the smoke models.
 
 ---
 
@@ -272,14 +274,15 @@ Target checked: `T/common/driveables/EnumDriveablePart` (`TURRET_WEAK`, `TURRET_
 **Present (2026-11-22):** the cook-off sequence (`AmmoRackCookOff`, `Vehicle`): a destroyed hull or turret weak spot kills the driver once, then burns the core or turret down every five ticks over twice `WeakspotCookTime` (121 Tyrants and Plebeians vehicles, 77 of them with weak-spot parts). The core's or turret's own destruction then runs the target's normal death and cook-off effects. Effects are vanilla flame, lava, smoke and explosion particles instead of the fork's flak flares, and there is no vanilla explosion.
 **Missing:** `fancyAmmoRackCookoff`, the fork's turret-death hull cook for `needsTurret` tanks, and troop survivors escaping a burning transport.
 
-### Radar, stealth and target designation — MISSING
+### Radar, stealth and target designation — PARTIAL
 
 Reference: `DriveableType` (`hasRadar`, `hasPlaneRadar`, `digitalRadar`, `radarRange`, `radarRefreshDelay`, `radarPositionOffset`, `RadarDetectableAltitude`, `radarVisible`, `OnRadar`, `Stealth`, `radarDetectionRangeMultiplier`), `BulletType.missileRadarVisible`
 Vehicles with radar see contacts on a radar HUD. Stealth, altitude and terrain reduce how far a vehicle can be detected.
 
 Target checked: `T/common/driveables/EnumDriveablePart` (radar hitbox parts only), `T/client/distant/DistantContactsClient`
 **Checked 2026-11-22:** in the current reference the radar has no contact display or detection model. `radarRange`, `radarRefreshDelay`, `radarPositionOffset`, `digitalRadar`, `radarVisible` and `radarDetectionRangeMultiplier` are copied onto the entity and never read (196 Tyrants and Plebeians driveables author them). The live part is the active/passive radar toggle (`hasRadar`, `hasPlaneRadar`, the F8 key) and its HUD line, which `antiRadiation` missiles (2 TaP rounds) use to lock onto vehicles radiating with an active radar.
-Missing: the active/passive radar toggle and anti-radiation lock-on; stealth (`Stealth`, `RadarDetectableAltitude`, `OnRadar`) was not re-checked.
+**Present (2026-11-22):** the active/passive toggle for `hasRadar` and `hasPlaneRadar` driveables with a HUD line, and anti-radiation lock-on; see the eighth batch under Pack-driven ports.
+Missing: stealth (`Stealth`, `RadarDetectableAltitude`, `OnRadar`), not re-checked.
 
 ### Active protection systems and CIWS — MISSING
 
@@ -332,13 +335,14 @@ The weight of loaded ordnance affects aircraft performance. Aircraft can dock on
 Target checked: `T/common/entity/Plane`, `T/common/types/PlaneType`
 Missing: ordnance weight, carrier and helipad docking, and parasite aircraft.
 
-### Altitude-dependent aircraft performance and Labjac flight tuning — MISSING
+### Altitude-dependent aircraft performance and Labjac flight tuning — PARTIAL
 
 Reference: `PlaneType` (`flightCeiling`, `highAltMax`, `highAltMaxDry`, `maxSpeedDry`, `cruiseSpeed`, `climbRate`, `maxG`, `turnTime`, `pitch/roll/yaw{Bonus,Boost,Stall}`, `stallSuffering`, `planeDiveFactor`, `heliSpeedLimit`), `VehicleType.maxAltitude`
 Aircraft have a service ceiling, an altitude-dependent top speed, G and turn limits, and stall penalties on each axis.
 
 Target checked: `T/common/driveables/physics/AircraftPerformancePhysics` (constant `AIR_DENSITY`, soft stall)
-Missing: an altitude or ceiling model, and those tuning keys.
+**Present (2026-11-22):** the `flightCeiling` service ceiling and its HUD readout (280 Tyrants and Plebeians aircraft); see the eighth batch under Pack-driven ports.
+Missing: altitude-dependent top speed and the other tuning keys.
 
 ### Helicopter and aircraft crash presentation — PARTIAL
 
@@ -541,7 +545,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Weapons | Directional melee and bayonets | PARTIAL | HIGH |
 | Weapons | Ricochet and penetration feedback | PARTIAL | MEDIUM |
 | Weapons | Motion-sensor grenades | UNCERTAIN | LOW |
-| Weapons | Self-guided, radar and ARM seekers, homing torpedoes | MISSING | HIGH |
+| Weapons | Self-guided, radar and ARM seekers, homing torpedoes | PARTIAL | HIGH |
 | Weapons | Proportional navigation | PARTIAL | HIGH |
 | Weapons | Fly-over top attack | PARTIAL | HIGH |
 | Weapons | Wire-guided missile and wire | PARTIAL | HIGH |
@@ -558,14 +562,14 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Armour | Weapon mounts, pouches and attributes | PARTIAL | HIGH |
 | Vehicles | Destroyed-vehicle wrecks | PARTIAL | HIGH |
 | Vehicles | Ammo-rack and weak-spot cook-off | PARTIAL | HIGH |
-| Vehicles | Radar, stealth and designation | MISSING | HIGH |
+| Vehicles | Radar, stealth and designation | PARTIAL | HIGH |
 | Vehicles | APS and CIWS | MISSING | HIGH |
 | Vehicles | Remote drones and quadcopters | MISSING | HIGH |
 | Vehicles | Troop transport | MISSING | HIGH |
 | Vehicles | Submarine diving and oxygen | PARTIAL | HIGH |
 | Vehicles | SLBM and VLS timing | MISSING | MEDIUM |
 | Vehicles | Hardpoints, ordnance weight and carriers | MISSING | HIGH |
-| Vehicles | Altitude performance and flight tuning | MISSING | MEDIUM |
+| Vehicles | Altitude performance and flight tuning | PARTIAL | MEDIUM |
 | Vehicles | Helicopter and aircraft crash presentation | PARTIAL | HIGH |
 | Vehicles | Distant and situational vehicle audio | PARTIAL | HIGH |
 | Vehicles | Door-state passenger visibility | PARTIAL | HIGH |
@@ -587,7 +591,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 22 MISSING, 25 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 19 MISSING, 28 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -706,6 +710,7 @@ Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`r
 - **Fire control (fifth batch):** `FCSMode AdjustingBarrel`; see the optics section. Also checked: `CIWSable` (141 rounds) only lets a round collide with other projectiles, which take no damage, and `ciwsBullet` / `CIWSer` are never read; `hasAPS` (7 vehicles true) only starts a reload timer, a sound and a HUD readout without stopping the hit. Neither has a gameplay effect to port.
 - **Submarines (sixth batch):** `CanDive` and its oxygen and depth keys; see the vehicles section. The radar keys were checked and found mostly dormant in the reference; see the radar section.
 - **Tier and explosion push (seventh batch):** `Tier` as a tooltip line on every type, and `explosionPush` (8 TaP submarines) scaling how hard blasts shove a driveable against the fork's default. Also checked: the `slbm*` keys are dormant; directional melee and blocking were already ported; `sidearm` / `labigunLimit` are firing-input keys, not carry limits; the `seatOptics*` HUD keys parse by prefix and already work.
+- **Seekers, radar and ceiling (eighth batch):** `modernTorpedo` (13 TaP rounds) runs as a torpedo that keeps its depth instead of settling, and on its first tick in water listens once: the usual lock along its heading applies first, as in the fork, then the nearest driveable it hears replaces it, heard within `ASWminRange` (5) plus `seekerRange` (250) times its throttle, half for astern, never the launcher's own mount (`PassiveSeekers`, `Bullet.listenForTarget`). Locked, it is steered by the seeker alone with no boresight limit. `hasRadar` (114 TaP vehicles) and `hasPlaneRadar` (78 aircraft) give the driver an active/passive toggle (F7, a new `TOGGLE_RADAR` input bit, a saved driveable flag) and a HUD line; radars start active as in the fork. `antiRadiation` rounds (2) lock on to the nearest emitting driveable their lock flags allow, preferring it to the heading lock, and keep it past their seeker cone. `flightCeiling` (280 aircraft) pitches a nose-up aircraft down a degree a tick within 10 blocks of it, and the plane HUD shows the ceiling beside the altitude (`FlightCeiling`). Also checked: `turretTossTrue` (139 vehicles) throws the turret as a damaging grenade with the vehicle's turret model; the target already throws destroyed turrets off as cosmetic pieces (`DestructionSequences.partsLost`), so only the grenade's blast and impact damage are missing. `damageVsCrew` and `SetupCrewedPart` crews (159 / 211) drive the fork's ship rate of fire and flooding repair, where the target deliberately counts real seat occupants (`DriveableRepairs`).
 - **Not ported:** vehicle `armorPen` / `penDecay` use the fork's unitless armour integers, which conflict with the target's millimetre armour model; `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` need the driving-model comparison listed under deeper audit.
 - Validation: Focused profile, with scoped Spotless, compilation and parser/behaviour tests. Not exercised in a running game.
 
@@ -722,6 +727,7 @@ What each port leaves out compared with the reference, and where it behaves diff
 - **Adjusting-barrel fire control:** lases loaded terrain and entities only, not Distant Horizons terrain, and only in first person; the server trusts the client's range, capped at `FCSMaxRange`, because it cannot see far or unloaded terrain itself. Coax and other banks have their shots corrected but only the main bank raises the drawn barrel, and the shoot origin is not moved with it. No `AdjustingSight` impact marker (no TaP vehicle uses it; one authors the typo `AdjustingBarrek`, which the fork ignores too), no `FCSDebug` readouts, no `Rangefinder` key and no `FCS*Pos/Scale/Color/Label` HUD family. The drawn barrel's direction follows the aim-pitch convention (positive down) and has not been checked in game.
 - **Submarine diving:** depth is measured from the hull's position to the water surface above it, not from the fork's fixed `TeamsManager.seaLevel`, and counts up to 160 blocks of water. The depth rate is not saved and is stepped separately on the server and the predicting client. There are no `seaLevel` server setting, airship lift (`airship`, `maxAltitude`) or SLBM launch timing, which TaP also authors. `MaxDepth` also keeps its target meaning, so a diving hull's engine floods below its crush depth. The crush damage bypasses armour and hits only the core.
 - **Tier and explosion push:** the tier is display only, without the fork's tier-gap experience bonus; a missing `Tier` shows nothing rather than the fork's "Reserve Tier". `explosionPush` scales the target's own knockback, which pushes every driveable as hard as a player, so it is relative to the fork's default of 0.25 rather than its absolute value; unauthored driveables, epic ships included, keep the target's push instead of the fork's 0.25 and 0.
+- **Seekers, radar and ceiling:** a modern torpedo hears only Flan's driveables, whose throttle is their noise, not vehicles of other mods. The fork's lock scan covers all loaded entities; the target's covers the server lock-on range, also for anti-radiation rounds. The torpedo listens on the client as well and takes the server's tracked motion, so a client that hears differently is corrected. An anti-radiation round keeps a lock made before its target goes passive, as in the fork, and aircraft radars emit too, where the fork's seeker reads only `hasRadar`; no TaP anti-radiation round locks on to planes. The flight ceiling counts from sea level like the HUD altitude rather than from Y 0, unauthored aircraft have none instead of the fork's 800, and the push never takes the nose past level. No radar contact display, stealth or SLBM keys.
 - **Classified as needing nothing:** `firstShotRecoil` and the other dormant recoil keys, `starShell`, `alwaysShowTurret`, vehicle `hasSmoke`, the hard-kill `hasAPS`, `CIWSable` / `ciwsBullet` / `CIWSer`.
-- **Checked and left alone:** `bleedMultiplier` (no TaP medical tools), `HeliCrashEffects` / `HeliCrashSpin` (overlap the target's crash physics), `labjacFuel` (duplicates the target's fuel), vehicle `armorPen` / `penDecay` (conflict with millimetre armour) and `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` (need the driving-model comparison).
-- **Large TaP-used gaps not started:** the radar toggle and anti-radiation lock-on (2 rounds; the rest of the 196 driveables' radar keys are dormant), troop transport and the content-pack bots it carries (50 vehicles, 33 bots), passive APS (2), carrier operations and `weightLimit` (26), and the tier experience economy.
+- **Checked and left alone:** `turretTossTrue` (cosmetic turret throw-off already present), `damageVsCrew` / `SetupCrewedPart` crews (the target counts seat occupants), `bleedMultiplier` (no TaP medical tools), `HeliCrashEffects` / `HeliCrashSpin` (overlap the target's crash physics), `labjacFuel` (duplicates the target's fuel), vehicle `armorPen` / `penDecay` (conflict with millimetre armour) and `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` (need the driving-model comparison).
+- **Large TaP-used gaps not started:** troop transport and the content-pack bots it carries (50 vehicles, 33 bots), passive APS (2), carrier operations and `weightLimit` (26), and the tier experience economy.

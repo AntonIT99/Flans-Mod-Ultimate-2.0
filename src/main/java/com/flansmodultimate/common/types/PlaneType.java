@@ -25,6 +25,8 @@ public class PlaneType extends DriveableType
     protected int stukaSoundLength = 1;
     protected int stukaSoundRange = 50;
     protected float stukaSpeed = 9000F;
+    /** Labjac {@code flightCeiling}: blocks above sea level the aircraft levels off at. 0 means none. */
+    protected float flightCeiling;
 
     @Override
     public DriveableKind getDriveableKind()
@@ -196,6 +198,12 @@ public class PlaneType extends DriveableType
         stukaSoundLength = Math.max(1, readValue("StukaSoundLength", stukaSoundLength, file));
         stukaSoundRange = Math.max(0, readValue("StukaSoundRange", stukaSoundRange, file));
         stukaSpeed = Math.max(0F, readValue("StukaSpeed", stukaSpeed, file));
+        flightCeiling = readValue("flightCeiling", flightCeiling, file);
+        if (!Float.isFinite(flightCeiling) || flightCeiling < 0F)
+        {
+            logError("flightCeiling must be a finite non-negative altitude; ignoring it", file);
+            flightCeiling = 0F;
+        }
         mode = EnumPlaneMode.parse(readValue("Mode", mode.name(), file));
         newFlightControl = readValue("NewFlightControl", newFlightControl, file);
         turnLeftModifier = readOptionalValue("TurnLeftSpeed", turnLeftModifier, file);

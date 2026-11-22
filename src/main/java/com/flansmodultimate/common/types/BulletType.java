@@ -239,6 +239,21 @@ public class BulletType extends ShootableType
     protected float trackPhaseTurn = 0.1F;
     @Getter
     protected boolean torpedo;
+    /**
+     * Labjac acoustic homing torpedo: it runs as a torpedo that keeps its depth and, on its first tick in water, listens once
+     * for a driveable it may lock on to. Implies {@link #torpedo}.
+     */
+    @Getter
+    protected boolean modernTorpedo;
+    /** Blocks within which a modern torpedo hears even a silent driveable. */
+    @Getter
+    protected float aswMinRange = 5F;
+    /** Blocks a modern torpedo's hearing reaches beyond {@link #aswMinRange} against a driveable at full throttle. */
+    @Getter
+    protected float seekerRange = 250F;
+    /** Labjac anti-radiation seeker: it locks on to a driveable whose radar is emitting and follows it past its seeker cone. */
+    @Getter
+    protected boolean antiRadiation;
     @Getter
     protected boolean depthCharge;
     @Getter
@@ -425,6 +440,11 @@ public class BulletType extends ShootableType
         return Float.isFinite(value) ? value : fallback;
     }
 
+    private static float nonNegative(float value, float fallback)
+    {
+        return Math.max(0F, finiteOr(value, fallback));
+    }
+
     /** The {@code QuadraticDrag} setting, or null when the definition leaves it to the projectile's mass. */
     @Nullable
     public Boolean getQuadraticDragSetting()
@@ -534,6 +554,12 @@ public class BulletType extends ShootableType
         trackPhaseTurn = readValue("GuidedPhaseTurnSpeed", trackPhaseTurn, file);
         boostPhaseParticle = readValue("BoostParticle", boostPhaseParticle, file);
         torpedo = readValue("Torpedo", torpedo, file);
+        modernTorpedo = readValue("modernTorpedo", modernTorpedo, file);
+        // The fork runs a modern torpedo through the torpedo motion whether or not Torpedo is set as well.
+        torpedo |= modernTorpedo;
+        aswMinRange = nonNegative(readValue("ASWminRange", aswMinRange, file), 5F);
+        seekerRange = nonNegative(readValue("seekerRange", seekerRange, file), 250F);
+        antiRadiation = readValue("antiRadiation", antiRadiation, file);
         hasLine = readValue("HasLine", hasLine, file);
         depthCharge = readValue("depthCharge", depthCharge, file);
         activationDepth = readValue("activationDepth", activationDepth, file);

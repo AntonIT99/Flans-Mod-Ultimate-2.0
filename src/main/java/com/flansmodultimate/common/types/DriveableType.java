@@ -352,6 +352,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * against the fork's default of 0.25, so 0.5 pushes twice as hard. 1 when not authored.
      */
     protected float explosionPushFactor = 1F;
+    /**
+     * Carries a search radar (Labjac {@code hasRadar}, {@code hasPlaneRadar}) that the driver switches between active and
+     * passive. While active it emits, and anti-radiation rounds can home on it.
+     */
+    protected boolean radar;
 
     protected String lockedOnSound = StringUtils.EMPTY;
     protected int soundTime;
@@ -899,6 +904,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             logError("explosionResistance must be a finite non-negative multiplier; using 1", file);
             explosionResistance = 1F;
         }
+        radar = readValue("hasRadar", radar, file);
+        radar = readValue("hasPlaneRadar", radar, file);
         float explosionPush = readValue("explosionPush", -1F, file);
         if (Float.isFinite(explosionPush) && explosionPush >= 0F)
             explosionPushFactor = Math.min(8F, explosionPush / LABJAC_DEFAULT_EXPLOSION_PUSH);

@@ -532,12 +532,28 @@ public class Plane extends Driveable implements PlaneVisual
         if (crash.falling())
             return crashFlight(type, crash);
         crashRotation = Vec3.ZERO;
-        return switch (getPlaneMode())
+        Vec3 velocity = switch (getPlaneMode())
         {
             case HELI, VTOL -> helicopterPhysics(type);
             case SIXDOF -> sixDofPhysics(type);
             case PLANE -> fixedWingPhysics(type);
         };
+        holdUnderCeiling(type);
+        return velocity;
+    }
+
+    /** Near its authored ceiling an aircraft with its nose up is pitched down, as in the Labjac fork. */
+    private void holdUnderCeiling(PlaneType type)
+    {
+        float pitch = FlightCeiling.limitPitch(getPitch(), getAltitude(), type.getFlightCeiling());
+        if (pitch != getPitch())
+            setOrientation(getYaw(), pitch, getRoll());
+    }
+
+    /** @return the height above sea level, as the HUD shows it and the flight ceiling counts it */
+    public double getAltitude()
+    {
+        return getY() - level().getSeaLevel();
     }
 
     // Progressive damage and crashes

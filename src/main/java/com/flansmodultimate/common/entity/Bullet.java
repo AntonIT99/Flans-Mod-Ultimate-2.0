@@ -117,6 +117,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected boolean toggleLock;
     protected int closeCount;
     protected double prevDistanceToTarget;
+    /** A modern torpedo listens for a target only once, on its first tick in water. */
+    protected boolean listenedForTarget;
 
     /** Submunitions */
     protected int submunitionDelay = 20;
@@ -187,7 +189,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         velocity = ShootingHelper.calculateShootingMotionVector(random, direction, spread, speed, spreadPattern);
         setDeltaMovement(velocity);
         setOrientation(velocity);
-        getLockOnTarget(level());
+        // A modern torpedo finds its target by listening once it is in the water, not along its launch heading.
+        if (!configType.isModernTorpedo())
+            getLockOnTarget(level());
     }
 
     protected void setOrientation(Vec3 velocity)
@@ -252,6 +256,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             }
         }
 
+        // An anti-radiation seeker prefers whatever radar it can see emitting, wherever it is, as in the fork.
+        Entity emitter = configType.isAntiRadiation() ? nearestEmittingRadar(level) : null;
+        if (emitter != null)
+            closestEntity = emitter;
+
         if (closestEntity != null)
         {
             BulletLockOnEvent bulletLockOnEvent = new BulletLockOnEvent(this, closestEntity);
@@ -261,8 +270,66 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         }
     }
 
+    @Nullable
+    private Driveable nearestEmittingRadar(Level level)
+    {
+        Driveable nearest = null;
+        double nearestDistance = Double.MAX_VALUE;
+        for (Driveable driveable : ModUtils.queryEntitiesInRange(level, this, ModCommonConfig.lockOnRange(), Driveable.class, Driveable::isRadarEmitting))
+        {
+            double distance = distanceToSqr(driveable);
+            if (distance < nearestDistance && canLockOnEntity(driveable) && isUsableLockOnTarget(driveable))
+            {
+                nearest = driveable;
+                nearestDistance = distance;
+            }
+        }
+        return nearest;
+    }
+
+    /**
+     * A modern torpedo listens once, on its first tick in water, for the nearest driveable loud enough to hear. The usual
+     * lock along its heading still applies first, as in the fork, and a driveable it hears replaces it.
+     */
+    protected void listenForTarget(Level level)
+    {
+        if (!configType.isModernTorpedo() || listenedForTarget || lockedOnTo != null || !isInWater())
+            return;
+        listenedForTarget = true;
+        getLockOnTarget(level);
+        float minRange = configType.getAswMinRange();
+        float seekerRange = configType.getSeekerRange();
+        Entity heard = null;
+        double nearestDistance = Double.MAX_VALUE;
+        for (Driveable driveable : ModUtils.queryEntitiesInRange(level, this, (double) minRange + seekerRange, Driveable.class, null))
+        {
+            double distance = distanceToSqr(driveable);
+            if (distance < nearestDistance && PassiveSeekers.hears(distance, minRange, seekerRange, driveable.getThrottle()) && canLockOnEntity(driveable)
+                && isUsableLockOnTarget(driveable) && !isLaunchersMount(driveable))
+            {
+                heard = driveable;
+                nearestDistance = distance;
+            }
+        }
+        if (heard == null)
+            return;
+        BulletLockOnEvent event = new BulletLockOnEvent(this, heard);
+        PlatformEvents.post(event);
+        if (!event.isCanceled())
+            lockedOnTo = event.getLockedOnTo();
+    }
+
+    /** @return whether the one who fired this round rides the given driveable, which a torpedo must not hunt */
+    private boolean isLaunchersMount(Driveable driveable)
+    {
+        LivingEntity attacker = firedShot.getAttacker().orElse(null);
+        return attacker != null && attacker.getRootVehicle() == driveable;
+    }
+
     private void useDesignatedDriveableTarget()
     {
+        if (configType.isModernTorpedo())
+            return;
         Entity shooter = firedShot == null ? null : firedShot.getCausingEntity().orElse(null);
         if (!(shooter instanceof Driveable driveable))
             return;
@@ -501,6 +568,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 return;
             applyDragAndGravity();
             updatePenetrationPower();
+            listenForTarget(level);
             applyHomingIfLocked(level);
             updateShootForSettingPos();
             updateManualGuidance();
@@ -934,11 +1002,15 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     {
         if (!configType.isTorpedo() || configType.isDepthCharge())
             return;
+        // A modern torpedo that has a target is steered by its seeker alone, in depth as well.
+        if (configType.isModernTorpedo() && lockedOnTo != null)
+            return;
 
         if (isInWater())
         {
             Vec3 direction = velocity.normalize();
-            velocity = new Vec3(direction.x, velocity.y * 0.3, direction.z);
+            // An old torpedo settles towards a running depth; a modern one keeps the depth it is at.
+            velocity = new Vec3(direction.x, configType.isModernTorpedo() ? velocity.y : velocity.y * 0.3, direction.z);
         }
         else
         {
@@ -989,11 +1061,14 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
             penetrationLosses.add(new PenetrationLoss((prevPenetratingPower - penetratingPower), PenetrationLoss.EnumType.DECAY));
     }
 
-    /** PN is server-steered; accept its vanilla tracked velocity updates instead of predicting pursuit. */
+    /**
+     * PN is server-steered; accept its vanilla tracked velocity updates instead of predicting pursuit. A modern torpedo
+     * picks its target on its own mid-run, so it takes the server's motion too.
+     */
     @Override
     public void lerpMotion(double x, double y, double z)
     {
-        if (configType != null && configType.isProportionalNavigation() && Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z))
+        if (configType != null && (configType.isProportionalNavigation() || configType.isModernTorpedo()) && Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z))
             setDeltaMovement(x, y, z);
     }
 
@@ -1132,8 +1207,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         // Angle between current and desired directions (radians)
         float angle = (float) Math.abs(angleBetween(currentDirection, desiredDirection));
 
-        // FOV / seeker cone: if target too far off boresight, lose lock
-        if (angle > Math.toRadians(configType.getMaxDegreeOfMissile()))
+        // FOV / seeker cone: if target too far off boresight, lose lock. Acoustic and anti-radiation seekers have none.
+        if (angle > Math.toRadians(configType.getMaxDegreeOfMissile()) && !configType.isModernTorpedo() && !configType.isAntiRadiation())
         {
             lockedOnTo = null;
             return;

@@ -247,7 +247,7 @@ class VehicleOpticsTest
     @Test
     void opticsIntentsAreEdgesAndUnknownBitsAreRejected()
     {
-        assertEquals(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT, DriveableInput.sanitize(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT | (1 << 30)));
+        assertEquals(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT, DriveableInput.sanitize(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT | (1 << 31)));
         assertEquals(0, DriveableInput.CONTINUOUS_MASK & (DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT));
     }
 

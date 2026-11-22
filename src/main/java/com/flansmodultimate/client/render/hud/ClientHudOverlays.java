@@ -126,6 +126,7 @@ public final class ClientHudOverlays
         registrar.aboveHotbar("turret_stabilizer", TURRET_STABILIZER);
         registrar.aboveHotbar("fire_control", FIRE_CONTROL);
         registrar.aboveHotbar("submarine", SUBMARINE);
+        registrar.aboveHotbar("radar", RADAR);
         registrar.aboveHotbar("teams_rank_up", (g, partialTick, sw, sh) -> TeamsRankUpPopup.render(g, sw));
         registrar.aboveHotbar("debug_armor", (g, partialTick, sw, sh) -> DriveableArmorDebugHud.render(g, sw, sh));
     }
@@ -172,6 +173,18 @@ public final class ClientHudOverlays
             : Component.translatable("gui.flansmodultimate.submarine.status", depthText, share);
         boolean crushing = Double.isFinite(depth) && depth > type.getMaxDepth();
         g.drawString(mc.font, label, sw / 2 + 96, sh - 37, empty || crushing ? 0xFF5555 : share < 25 ? 0xFFAA00 : 0xFFFFFF);
+    };
+
+    /** Whether the driver's radar is emitting, green while active and red while passive, with the key that switches it. */
+    public static final HudOverlayPlatform.HudLayer RADAR = (g, partialTick, sw, sh) ->
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.options.hideGui || !(player.getVehicle() instanceof Seat seat) || !seat.isDriverSeat() || seat.getDriveable() == null || !seat.getDriveable().hasRadar())
+            return;
+        boolean emitting = seat.getDriveable().isRadarEmitting();
+        Component label = Component.translatable(emitting ? "gui.flansmodultimate.radar.active" : "gui.flansmodultimate.radar.passive", KeyInputHandler.getRadarKeyName());
+        g.drawString(mc.font, label, sw / 2 + 96, sh - 48, emitting ? 0x55FF55 : 0xFF5555);
     };
 
     public static final HudOverlayPlatform.HudLayer SCOPE = (g, partialTick, sw, sh) ->
@@ -1409,7 +1422,10 @@ public final class ClientHudOverlays
         int idleSmokeColor = driveable.isCountermeasureReloading() ? HUD_GOLD : HUD_GREEN;
         int smokeColor = driveable.isVarFlare() ? HUD_RED : idleSmokeColor;
         Component rollText = Component.translatable("hud.flansmodultimate.driveable.roll", Math.round(driveable.getRoll()));
-        Component altitudeText = Component.translatable("hud.flansmodultimate.driveable.altitude", Math.round(driveable.getY() - driveable.level().getSeaLevel()));
+        long altitude = Math.round(driveable.getY() - driveable.level().getSeaLevel());
+        float ceiling = driveable instanceof Plane plane && plane.getPlaneType() != null ? plane.getPlaneType().getFlightCeiling() : 0F;
+        Component altitudeText = ceiling > 0F ? Component.translatable("hud.flansmodultimate.driveable.altitude_ceiling", altitude, Math.round(ceiling))
+            : Component.translatable("hud.flansmodultimate.driveable.altitude", altitude);
         Component compassText = Component.translatable("hud.flansmodultimate.driveable.compass", compassDirection(driveable.getYaw()));
         // Vehicles marked ShootWithOpenDoor arm their weapons with the door key, which the HUD reminds of
         String weaponArmingKey = driveable.isDoorOpen() ? "hud.flansmodultimate.driveable.weapon.ready" : "hud.flansmodultimate.driveable.weapon.disabled";
