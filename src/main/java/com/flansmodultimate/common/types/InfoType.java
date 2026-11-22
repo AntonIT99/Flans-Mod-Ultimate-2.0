@@ -83,6 +83,9 @@ public abstract class InfoType implements IContentType
     protected String icon;
     @Getter
     protected String description = StringUtils.EMPTY;
+    /** Labjac Edition technology tier shown in the tooltip, or NaN when the pack gives none. */
+    @Getter
+    protected float tier = Float.NaN;
     protected String modelName;
     @Getter
     protected String modelClassName;
@@ -238,6 +241,8 @@ public abstract class InfoType implements IContentType
         originalShortName = readResource("ShortName", originalShortName, file);
         description = readValues("Descriptions", description, file);
         description = readValues("Description", description, file);
+        float authoredTier = readValue("Tier", tier, file);
+        tier = Float.isFinite(authoredTier) ? authoredTier : Float.NaN;
         icon = readResource("Icon", icon, file);
         textureName = readResource("Texture", textureName, file);
         overlayName = readResource("Overlay", overlayName, file);

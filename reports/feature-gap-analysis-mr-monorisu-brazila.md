@@ -89,11 +89,11 @@ Missing: sustained per-burst recoil growth (`sustainedRecoilPitch` / `sustainedR
 Reference: `R/common/guns/GunType` (`meleeLeft/Right/Up`, `Melee{Left,Right,Up}{Time,DamagePoint,DamageOffset}`, `AddLeftNode`/`AddRightNode`/`AddUpNode`, `spear`, `lance`, `canBlock`, `shootMelee`, `swordArmorPen`), `R/common/guns/AttachmentType` (`Bayonet`, `BayonetMeleeTime`), `R/common/network/PacketBlockerino`, `PacketBolterino`
 A melee swing goes left, right or up depending on input. Each direction has its own path, timing and damage point. Some weapons can block, and a bayonet attachment turns a gun into a stabbing weapon.
 
-Target checked: `T/common/types/GunType` (`MeleeDamage`, single `AddNode` melee path), `T/network/client/PacketGunMeleeClient`
-There is one melee path only.
+Target checked: `T/common/types/GunType` (`MeleeDamage`, `AddNode`, `readDirectionalMeleeSwing`, `CanBlock`), `T/network/client/PacketGunMeleeClient`
+**Rechecked 2026-11-22:** directional `MeleeLeft` / `MeleeRight` / `MeleeUp` swings with their own nodes, time and damage points, `ShootMelee`, `CanBlock` blocking and `SwordArmorPen` were ported in `0c1dee2de` (2026-11-10).
 
 Present: grip `Bayonet` mode uses the existing secondary-mode toggle, `AddNode` stabbing animation and attachment `BayonetMeleeTime`. The grip's short-lived `SecondaryAmmo` supplies damage through the shared projectile path with virtual ammunition; cartridges and magazines are not consumed.
-Missing: directional swings, blocking, and spear/lance behaviour.
+Missing: spear and lance behaviour (`spear`, `lance`; TaP sets `spear true` on one gun).
 
 ### Ricochet, over-penetration and penetration feedback — PARTIAL
 
@@ -184,13 +184,14 @@ Reference: `GunType` (`TacticalReloadTime`, `StagedReloadTime`, `ForceStagedRelo
 
 **Missing:** glTF switch clips, ammo refund, empty-secondary unswitch-animation policy, the fork's forced/staged reload behavior and run/crouch timing keys. Existing legacy staged-reload rendering remains available but is not the fork's full staged-reload mechanic.
 
-### Gun carry limits and gun tiers — MISSING
+### Gun carry limits and gun tiers — PARTIAL
 
 Reference: `GunType` (`Heavy`, `sidearm`, `OldGun`, `RepeatingGun`, `labigunLimit`, `hasLabigunDelay`, `Tier`), `ArmourType` pouches (`hasGunPouch`, `hasHeavyPouch`, `hasOldGunPouch`, …)
-Players may carry only a limited number of guns per class (heavy, sidearm, old). Armour pouches raise those limits, and tiers drive the gun economy.
+**Corrected 2026-11-22:** the current reference has no carry limits. `sidearm` decides which mouse button and timer fire the gun, `labigunLimit` with `hasLabigunDelay` caps a firing timer, and `OldGun` only matches `hasOldGunPouch` for reload pouches. `Tier` is shown in every item's tooltip and sets a base `expValue` for the fork's experience bonus when a lower-tier weapon kills a higher-tier vehicle.
 
 Target checked: `T/common/item/GunItem`, `T/common/types/GunType`, `ArmorType`
-Missing: carry-limit enforcement, pouch-based carrying allowances and the tier field. Reload-duration pouch effects are now implemented separately.
+**Present (2026-11-22):** `Tier` on any definition (2047 Tyrants and Plebeians items) as a tooltip line; reload-duration pouches were implemented earlier.
+Missing: the tier-gap experience bonus (the target has no experience economy), the fork's `sidearm` firing input and the `labigunLimit` firing timer.
 
 ### Ammunition evolution — MISSING
 
@@ -320,7 +321,8 @@ Reference: `DriveableType` (`slbmDelay`, `slbmFlightType`, `slbmRange`, `slbmStr
 Ballistic missiles launched from submarines follow a configured flight profile.
 
 Target checked: `T/common/types/BulletType` (`VLS`, `HasDeadZone`)
-Missing: SLBM launch profiles and `VLSTime`.
+**Checked 2026-11-22:** the `slbm*` keys (17 Tyrants and Plebeians submarines) are copied onto the entity and never read; the fork has no SLBM launch profile to port.
+Missing: `VLSTime`, not re-checked.
 
 ### Hardpoints, ordnance weight and carrier operations — MISSING
 
@@ -547,7 +549,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Weapons | Long-range armour penetration and vanilla-damage gate | PARTIAL | MEDIUM |
 | Weapons | glTF gun animation | MISSING | HIGH |
 | Weapons | Tactical reload and secondary switch timing | PARTIAL | HIGH |
-| Weapons | Gun carry limits and tiers | MISSING | HIGH |
+| Weapons | Gun carry limits and tiers | PARTIAL | HIGH |
 | Weapons | Ammunition evolution | MISSING | MEDIUM |
 | Weapons | Muzzle and chamber smoke models | PARTIAL | MEDIUM |
 | Armour | Per-zone armour and penetration | PARTIAL | HIGH |
@@ -585,7 +587,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 23 MISSING, 24 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 22 MISSING, 25 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -703,6 +705,7 @@ Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`r
 - **Turret stabiliser (fourth batch):** `TurretStabilization`; see the optics section. Also checked and left alone: `bleedMultiplier` (198 rounds) needs the fork's bleeding state, which is off by default there, and TaP ships none of its bandage, surgery or transfusion tools; `HeliCrashEffects` / `HeliCrashSpin` (20 helicopters) would overlap the target's own crash-mode physics; `labjacFuel` (265 aircraft) duplicates the target's fuel system.
 - **Fire control (fifth batch):** `FCSMode AdjustingBarrel`; see the optics section. Also checked: `CIWSable` (141 rounds) only lets a round collide with other projectiles, which take no damage, and `ciwsBullet` / `CIWSer` are never read; `hasAPS` (7 vehicles true) only starts a reload timer, a sound and a HUD readout without stopping the hit. Neither has a gameplay effect to port.
 - **Submarines (sixth batch):** `CanDive` and its oxygen and depth keys; see the vehicles section. The radar keys were checked and found mostly dormant in the reference; see the radar section.
+- **Tier and explosion push (seventh batch):** `Tier` as a tooltip line on every type, and `explosionPush` (8 TaP submarines) scaling how hard blasts shove a driveable against the fork's default. Also checked: the `slbm*` keys are dormant; directional melee and blocking were already ported; `sidearm` / `labigunLimit` are firing-input keys, not carry limits; the `seatOptics*` HUD keys parse by prefix and already work.
 - **Not ported:** vehicle `armorPen` / `penDecay` use the fork's unitless armour integers, which conflict with the target's millimetre armour model; `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` need the driving-model comparison listed under deeper audit.
 - Validation: Focused profile, with scoped Spotless, compilation and parser/behaviour tests. Not exercised in a running game.
 
@@ -718,6 +721,7 @@ What each port leaves out compared with the reference, and where it behaves diff
 - **Turret stabiliser:** yaw only, without hull-pitch compensation; driver seat only, no stabilised passenger turrets; no display-only turret interpolation and no FCS stabiliser sight settings. The toggle is client-side and per seat entity, defaults to engaged and is bound to O (the fork's H resets the optics range here).
 - **Adjusting-barrel fire control:** lases loaded terrain and entities only, not Distant Horizons terrain, and only in first person; the server trusts the client's range, capped at `FCSMaxRange`, because it cannot see far or unloaded terrain itself. Coax and other banks have their shots corrected but only the main bank raises the drawn barrel, and the shoot origin is not moved with it. No `AdjustingSight` impact marker (no TaP vehicle uses it; one authors the typo `AdjustingBarrek`, which the fork ignores too), no `FCSDebug` readouts, no `Rangefinder` key and no `FCS*Pos/Scale/Color/Label` HUD family. The drawn barrel's direction follows the aim-pitch convention (positive down) and has not been checked in game.
 - **Submarine diving:** depth is measured from the hull's position to the water surface above it, not from the fork's fixed `TeamsManager.seaLevel`, and counts up to 160 blocks of water. The depth rate is not saved and is stepped separately on the server and the predicting client. There are no `seaLevel` server setting, airship lift (`airship`, `maxAltitude`) or SLBM launch timing, which TaP also authors. `MaxDepth` also keeps its target meaning, so a diving hull's engine floods below its crush depth. The crush damage bypasses armour and hits only the core.
+- **Tier and explosion push:** the tier is display only, without the fork's tier-gap experience bonus; a missing `Tier` shows nothing rather than the fork's "Reserve Tier". `explosionPush` scales the target's own knockback, which pushes every driveable as hard as a player, so it is relative to the fork's default of 0.25 rather than its absolute value; unauthored driveables, epic ships included, keep the target's push instead of the fork's 0.25 and 0.
 - **Classified as needing nothing:** `firstShotRecoil` and the other dormant recoil keys, `starShell`, `alwaysShowTurret`, vehicle `hasSmoke`, the hard-kill `hasAPS`, `CIWSable` / `ciwsBullet` / `CIWSer`.
 - **Checked and left alone:** `bleedMultiplier` (no TaP medical tools), `HeliCrashEffects` / `HeliCrashSpin` (overlap the target's crash physics), `labjacFuel` (duplicates the target's fuel), vehicle `armorPen` / `penDecay` (conflict with millimetre armour) and `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` (need the driving-model comparison).
-- **Large TaP-used gaps not started:** the radar toggle and anti-radiation lock-on (2 rounds; the rest of the 196 driveables' radar keys are dormant), troop transport (50), SLBMs (17), passive APS (2), carrier operations and `weightLimit` (26), and the `Tier` tooltip and experience economy (2047 items).
+- **Large TaP-used gaps not started:** the radar toggle and anti-radiation lock-on (2 rounds; the rest of the 196 driveables' radar keys are dormant), troop transport and the content-pack bots it carries (50 vehicles, 33 bots), passive APS (2), carrier operations and `weightLimit` (26), and the tier experience economy.

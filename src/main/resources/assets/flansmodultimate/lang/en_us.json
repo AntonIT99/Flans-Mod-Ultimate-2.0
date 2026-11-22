@@ -1404,6 +1404,7 @@
   "tooltip.flansmodultimate.targets": "Targets",
   "tooltip.flansmodultimate.throw_damage": "Throw Damage",
   "tooltip.flansmodultimate.throw_speed": "Throw Speed",
+  "tooltip.flansmodultimate.tier": "Tier: %s",
   "tooltip.flansmodultimate.toggled_off": "[Switched Off]",
   "tooltip.flansmodultimate.toggled_on": "[Switched On]",
   "tooltip.flansmodultimate.tool_uses": "Uses",

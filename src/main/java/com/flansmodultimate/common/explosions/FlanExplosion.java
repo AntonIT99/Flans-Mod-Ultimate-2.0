@@ -585,7 +585,8 @@ public class FlanExplosion extends Explosion
         }
         if (hurt && causingEntity instanceof ServerPlayer player)
             PacketHandler.sendTo(new PacketHitMarker(false, 1.0F, true), player);
-        applyKnockback(driveable, knockbackSeen, knockbackFalloff);
+        float push = driveable instanceof Driveable blastedDriveable && blastedDriveable.getConfigType() != null ? blastedDriveable.getConfigType().getExplosionPushFactor() : 1F;
+        applyKnockback(driveable, knockbackSeen * push, knockbackFalloff);
     }
 
     /** Fraction of short rays from the detonation that reach the exposed face of one part. */

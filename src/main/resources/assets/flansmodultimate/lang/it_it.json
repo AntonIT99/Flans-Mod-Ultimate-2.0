@@ -1079,6 +1079,7 @@
   "tooltip.flansmodultimate.target_range": "Portata bersaglio",
   "tooltip.flansmodultimate.targets": "Bersagli",
   "tooltip.flansmodultimate.throw_damage": "Danno da lancio",
+  "tooltip.flansmodultimate.tier": "Livello: %s",
   "tooltip.flansmodultimate.toggled_off": "[Spento]",
   "tooltip.flansmodultimate.toggled_on": "[Acceso]",
   "tooltip.flansmodultimate.tool_uses": "Usi",

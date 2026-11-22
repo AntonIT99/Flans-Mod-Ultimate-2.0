@@ -1079,6 +1079,7 @@
   "tooltip.flansmodultimate.target_range": "Дальность до цели",
   "tooltip.flansmodultimate.targets": "Цели",
   "tooltip.flansmodultimate.throw_damage": "Урон при броске",
+  "tooltip.flansmodultimate.tier": "Уровень: %s",
   "tooltip.flansmodultimate.toggled_off": "[Выключено]",
   "tooltip.flansmodultimate.toggled_on": "[Включено]",
   "tooltip.flansmodultimate.tool_uses": "Использования",

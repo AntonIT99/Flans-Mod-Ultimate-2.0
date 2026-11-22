@@ -1079,6 +1079,7 @@
   "tooltip.flansmodultimate.target_range": "索敌范围",
   "tooltip.flansmodultimate.targets": "目标",
   "tooltip.flansmodultimate.throw_damage": "投掷伤害",
+  "tooltip.flansmodultimate.tier": "等级：%s",
   "tooltip.flansmodultimate.toggled_off": "[已关闭]",
   "tooltip.flansmodultimate.toggled_on": "[已开启]",
   "tooltip.flansmodultimate.tool_uses": "使用次数",

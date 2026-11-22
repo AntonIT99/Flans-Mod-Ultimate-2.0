@@ -1405,6 +1405,7 @@
   "tooltip.flansmodultimate.targets": "Ziele",
   "tooltip.flansmodultimate.throw_damage": "Wurfschaden",
   "tooltip.flansmodultimate.throw_speed": "Wurfgeschwindigkeit",
+  "tooltip.flansmodultimate.tier": "Stufe: %s",
   "tooltip.flansmodultimate.toggled_off": "[Ausgeschaltet]",
   "tooltip.flansmodultimate.toggled_on": "[Eingeschaltet]",
   "tooltip.flansmodultimate.tool_uses": "Verwendungen",

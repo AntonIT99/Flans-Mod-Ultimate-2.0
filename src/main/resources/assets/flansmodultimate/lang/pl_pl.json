@@ -1404,6 +1404,7 @@
   "tooltip.flansmodultimate.targets": "Cele",
   "tooltip.flansmodultimate.throw_damage": "Obrażenia rzutu",
   "tooltip.flansmodultimate.throw_speed": "Prędkość rzutu",
+  "tooltip.flansmodultimate.tier": "Poziom: %s",
   "tooltip.flansmodultimate.toggled_off": "[Wyłączone]",
   "tooltip.flansmodultimate.toggled_on": "[Włączone]",
   "tooltip.flansmodultimate.tool_uses": "Użycia",

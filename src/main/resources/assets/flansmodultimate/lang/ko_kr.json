@@ -1079,6 +1079,7 @@
   "tooltip.flansmodultimate.target_range": "목표 거리",
   "tooltip.flansmodultimate.targets": "목표",
   "tooltip.flansmodultimate.throw_damage": "투척 피해",
+  "tooltip.flansmodultimate.tier": "티어: %s",
   "tooltip.flansmodultimate.toggled_off": "[꺼짐]",
   "tooltip.flansmodultimate.toggled_on": "[켜짐]",
   "tooltip.flansmodultimate.tool_uses": "사용 횟수",

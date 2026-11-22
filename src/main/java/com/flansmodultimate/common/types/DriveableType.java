@@ -51,6 +51,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
     private static final float DEFAULT_WHEEL_GROUND_CLEARANCE = 0.375F;
+    /** The Labjac fork's default {@code explosionPush}, against which an authored value scales the push. */
+    private static final float LABJAC_DEFAULT_EXPLOSION_PUSH = 0.25F;
 
     protected final Map<EnumDriveablePart, CollisionBox> health = new EnumMap<>(EnumDriveablePart.class);
     /** Runtime baseline kept separately from authored HP weights and shoot-point overrides. */
@@ -345,6 +347,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean noWreck;
     /** Multiplier on the explosive damage the machine's parts take. */
     protected float explosionResistance = 1F;
+    /**
+     * Multiplier on how hard blasts shove the driveable, from the Labjac fork's {@code explosionPush}: the authored value
+     * against the fork's default of 0.25, so 0.5 pushes twice as hard. 1 when not authored.
+     */
+    protected float explosionPushFactor = 1F;
 
     protected String lockedOnSound = StringUtils.EMPTY;
     protected int soundTime;
@@ -892,6 +899,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             logError("explosionResistance must be a finite non-negative multiplier; using 1", file);
             explosionResistance = 1F;
         }
+        float explosionPush = readValue("explosionPush", -1F, file);
+        if (Float.isFinite(explosionPush) && explosionPush >= 0F)
+            explosionPushFactor = Math.min(8F, explosionPush / LABJAC_DEFAULT_EXPLOSION_PUSH);
         fallDamageFactor = readValue("FallDamageFactor", fallDamageFactor, file);
 
         maxThrottle = readValue("MaxThrottle", maxThrottle, file);

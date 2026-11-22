@@ -34,6 +34,9 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     {
         if (ModClientConfig.get().showPackNameInItemDescriptions && !getContentPack().isBlank())
             tooltipComponents.add(Component.literal(getContentPack()).withStyle(ChatFormatting.DARK_GRAY));
+        float tier = getConfigType().getTier();
+        if (Float.isFinite(tier))
+            tooltipComponents.add(Component.translatable("tooltip.flansmodultimate.tier", formatTier(tier)).withStyle(ChatFormatting.BLUE));
 
         // Holding sneak swaps the description for the detailed statistics, unless those are switched off
         if (!ClientHooks.TOOLTIPS.isShiftDown() || !showDetailedDescriptions())
@@ -44,6 +47,12 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
                     tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.GRAY));
             }
         }
+    }
+
+    /** @return a tier as packs write it, without a trailing {@code .0} */
+    static String formatTier(float tier)
+    {
+        return new DecimalFormat("0.##", DecimalFormatSymbols.getInstance(Locale.ROOT)).format(tier);
     }
 
     /** Whether the player wants the detailed statistics of Flan's items in their tooltips. */
