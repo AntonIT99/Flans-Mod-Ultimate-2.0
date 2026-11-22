@@ -27,9 +27,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -41,6 +45,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -83,11 +88,24 @@ public class Vehicle extends Driveable implements VehicleVisual
     /** Elevation in degrees the fire control adds to the driver's main gun, which clients raise the drawn barrel by. */
     private static final EntityDataAccessor<Float> DATA_FIRE_CONTROL_ELEVATION = SynchedEntityData.defineId(Vehicle.class, EntityDataSerializers.FLOAT);
 
+    /** Oxygen ticks a diving vehicle's crew has left, for its HUD and for predicting whether it is forced up. */
+    private static final EntityDataAccessor<Float> DATA_OXYGEN = SynchedEntityData.defineId(Vehicle.class, EntityDataSerializers.FLOAT);
+    private static final String NBT_OXYGEN = "Oxygen";
+    /** Hull damage per tick below a diving vehicle's crush depth, as in the Labjac fork. */
+    private static final float CRUSH_DAMAGE_PER_TICK = 10F;
+    /** Most blocks of water above a diving hull that are counted for its depth. */
+    private static final int MAX_DEPTH_PROBE_BLOCKS = 160;
+
     /** Range the driver last lased for the fire control, in blocks, or negative for none. Transient and server-side. */
     private double fireControlRange = -1D;
     /** The driver who lased {@link #fireControlRange}; a new driver has to lase again. */
     @Nullable
     private Entity fireControlRangedBy;
+    /** Depth rate of a diving vehicle, from -1 (diving) to 1 (surfacing). Transient; the predicting client steps its own. */
+    private float divingRate;
+    /** Depth of the hull below the water surface measured this tick, or NaN out of water, and the tick it was measured. */
+    private double diveDepth = Double.NaN;
+    private int diveDepthTick = -1;
     /** Fire-control elevation the barrel is drawn with this tick and the last one. Client side. */
     private float clientFireControlElevation;
     private float prevClientFireControlElevation;
@@ -154,8 +172,12 @@ public class Vehicle extends Driveable implements VehicleVisual
         tickAmmoRackCookOff(type);
         if (level().isClientSide)
             tickClientFireControlElevation();
-        else if (tickCount % 5 == 0)
-            updateFireControlElevation();
+        else
+        {
+            if (tickCount % 5 == 0)
+                updateFireControlElevation();
+            tickDivingSupplies(type);
+        }
     }
 
     @Override
@@ -163,6 +185,106 @@ public class Vehicle extends Driveable implements VehicleVisual
     {
         super.defineEntityData(data);
         data.define(DATA_FIRE_CONTROL_ELEVATION, 0F);
+        data.define(DATA_OXYGEN, -1F);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains(NBT_OXYGEN, Tag.TAG_ANY_NUMERIC))
+            entityData.set(DATA_OXYGEN, tag.getFloat(NBT_OXYGEN));
+    }
+
+    @Override
+    protected void addAdditionalSaveData(@NotNull CompoundTag tag)
+    {
+        super.addAdditionalSaveData(tag);
+        if (entityData.get(DATA_OXYGEN) >= 0F)
+            tag.putFloat(NBT_OXYGEN, entityData.get(DATA_OXYGEN));
+    }
+
+    /** @return the oxygen ticks a diving vehicle's crew has left: a fresh one has its full supply */
+    public float getOxygen()
+    {
+        VehicleType type = getVehicleType();
+        float oxygen = entityData.get(DATA_OXYGEN);
+        return oxygen >= 0F || type == null ? Math.max(0F, oxygen) : type.getMaxOxygen();
+    }
+
+    /** @return how deep the hull is below the water surface, in blocks, or NaN out of water. Measured once per tick. */
+    public double getDiveDepth()
+    {
+        if (diveDepthTick != tickCount)
+        {
+            diveDepthTick = tickCount;
+            diveDepth = measureDiveDepth();
+        }
+        return diveDepth;
+    }
+
+    private double measureDiveDepth()
+    {
+        int baseY = Mth.floor(getY());
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos(Mth.floor(getX()), baseY, Mth.floor(getZ()));
+        if (!level().isLoaded(cursor) || !level().getFluidState(cursor).is(FluidTags.WATER))
+            return Double.NaN;
+        double surface = Double.NaN;
+        for (int offset = 0; offset <= MAX_DEPTH_PROBE_BLOCKS; offset++)
+        {
+            cursor.setY(baseY + offset);
+            if (!level().isLoaded(cursor))
+                break;
+            FluidState fluid = level().getFluidState(cursor);
+            if (!fluid.is(FluidTags.WATER))
+                break;
+            surface = cursor.getY() + fluid.getHeight(level(), cursor);
+        }
+        return Double.isFinite(surface) ? Math.max(0D, surface - getY()) : Double.NaN;
+    }
+
+    /** Steps the driver's depth rate of a diving vehicle from this tick's controls. Server and predicting client. */
+    private void stepDivingRate(VehicleType type)
+    {
+        if (!type.isCanDive())
+        {
+            divingRate = 0F;
+            return;
+        }
+        int mask = getInputMask();
+        boolean driven = getControllingEntity() instanceof Player;
+        divingRate = SubmarineDiving.stepRate(divingRate, driven && DriveableInput.isDown(mask, DriveableInput.DESCEND), driven && DriveableInput.isDown(mask, DriveableInput.SURFACE),
+            DriveableInput.isDown(mask, DriveableInput.BRAKE | DriveableInput.ASCEND), getOxygen() > 0.1F);
+    }
+
+    /**
+     * Moves a diving vehicle at its depth rate instead of letting it float, once it is submerged or diving.
+     *
+     * @return the velocity, or null to leave a surfaced or dry vehicle to the ordinary physics
+     */
+    @Nullable
+    private Vec3 applyDiving(Vec3 velocity, VehicleType type)
+    {
+        if (!type.isCanDive())
+            return null;
+        double depth = getDiveDepth();
+        if (!Double.isFinite(depth) || divingRate >= 0F && depth <= SubmarineDiving.SUBMERGED_DEPTH)
+            return null;
+        return new Vec3(velocity.x, SubmarineDiving.verticalVelocity(divingRate, type.getDiveSpeed(), type.getSurfaceSpeed()), velocity.z);
+    }
+
+    /** Uses up and refills a diving vehicle's oxygen and crushes a hull below its crush depth. Server side. */
+    private void tickDivingSupplies(VehicleType type)
+    {
+        if (!type.isCanDive() || destroyed || isWreck())
+            return;
+        double depth = getDiveDepth();
+        float oxygen = SubmarineDiving.stepOxygen(getOxygen(), Double.isFinite(depth) ? depth : 0D, type.getMaxOxygen(), type.isUnlimitedOxygen());
+        if (Float.floatToIntBits(entityData.get(DATA_OXYGEN)) != Float.floatToIntBits(oxygen))
+            entityData.set(DATA_OXYGEN, oxygen);
+        DriveablePart core = driveableData == null ? null : driveableData.getPart(EnumDriveablePart.CORE);
+        if (core != null && Double.isFinite(depth) && depth > type.getMaxDepth())
+            core.damage(CRUSH_DAMAGE_PER_TICK, false);
     }
 
     /**
@@ -311,6 +433,7 @@ public class Vehicle extends Driveable implements VehicleVisual
         // injecting an upward suspension impulse.
         updateThrottleAndSteering(type);
         applyEpicShipThrottleLimits();
+        stepDivingRate(type);
 
         boolean pushed = type.getPushSpeedKmh() > 0F;
         float traction = traction();
@@ -763,6 +886,9 @@ public class Vehicle extends Driveable implements VehicleVisual
 
     private Vec3 applyVehicleVerticalPhysics(Vec3 velocity, VehicleType type)
     {
+        Vec3 diving = applyDiving(velocity, type);
+        if (diving != null)
+            return diving;
         if (isFloatingOnWater())
         {
             if (!type.isEpicShip())

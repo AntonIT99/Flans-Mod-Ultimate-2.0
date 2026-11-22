@@ -59,9 +59,11 @@ public final class DriveableInput
     public static final int REPAIR = 1 << 27;
     /** Arm or disarm the afterburner of an aircraft. The server owns the resulting state. */
     public static final int TOGGLE_AFTERBURNER = 1 << 28;
-    public static final int VALID_MASK = (1 << 29) - 1;
+    /** Blow the ballast of a diving vehicle and rise; diving itself is {@link #DESCEND}. */
+    public static final int SURFACE = 1 << 29;
+    public static final int VALID_MASK = (1 << 30) - 1;
     public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE | THROTTLE_INCREASE
-        | THROTTLE_DECREASE;
+        | THROTTLE_DECREASE | SURFACE;
     public static final int EDGE_TRIGGERED_MASK = VALID_MASK & ~CONTINUOUS_MASK;
 
     /**

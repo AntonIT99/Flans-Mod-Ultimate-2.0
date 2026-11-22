@@ -125,6 +125,7 @@ public final class ClientHudOverlays
         registrar.aboveHotbar("hud", HUD);
         registrar.aboveHotbar("turret_stabilizer", TURRET_STABILIZER);
         registrar.aboveHotbar("fire_control", FIRE_CONTROL);
+        registrar.aboveHotbar("submarine", SUBMARINE);
         registrar.aboveHotbar("teams_rank_up", (g, partialTick, sw, sh) -> TeamsRankUpPopup.render(g, sw));
         registrar.aboveHotbar("debug_armor", (g, partialTick, sw, sh) -> DriveableArmorDebugHud.render(g, sw, sh));
     }
@@ -150,6 +151,27 @@ public final class ClientHudOverlays
         Component label = range < 0D ? Component.translatable("gui.flansmodultimate.fire_control.no_range")
             : Component.translatable("gui.flansmodultimate.fire_control.range", String.format(Locale.ROOT, "%.0f", range));
         g.drawString(mc.font, label, sw / 2 + 96, sh - 26, range < 0D ? 0xAAAAAA : 0xFFFFFF);
+    };
+
+    /** Depth and oxygen of a diving vehicle, for its driver. */
+    public static final HudOverlayPlatform.HudLayer SUBMARINE = (g, partialTick, sw, sh) ->
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.options.hideGui || !(player.getVehicle() instanceof Seat seat) || !seat.isDriverSeat() || !(seat.getDriveable() instanceof Vehicle vehicle))
+            return;
+        VehicleType type = vehicle.getVehicleType();
+        if (type == null || !type.isCanDive())
+            return;
+        double depth = vehicle.getDiveDepth();
+        String depthText = Double.isFinite(depth) ? String.format(Locale.ROOT, "%.0f", depth) : "-";
+        float oxygen = vehicle.getOxygen();
+        int share = type.isUnlimitedOxygen() ? 100 : Math.round(100F * oxygen / Math.max(1F, type.getMaxOxygen()));
+        boolean empty = !type.isUnlimitedOxygen() && oxygen <= 0.1F;
+        Component label = empty ? Component.translatable("gui.flansmodultimate.submarine.no_oxygen")
+            : Component.translatable("gui.flansmodultimate.submarine.status", depthText, share);
+        boolean crushing = Double.isFinite(depth) && depth > type.getMaxDepth();
+        g.drawString(mc.font, label, sw / 2 + 96, sh - 37, empty || crushing ? 0xFF5555 : share < 25 ? 0xFFAA00 : 0xFFFFFF);
     };
 
     public static final HudOverlayPlatform.HudLayer SCOPE = (g, partialTick, sw, sh) ->

@@ -100,6 +100,8 @@ public final class KeyInputHandler
     private static final KeyMapping decreaseVehicleThrottleKey = key("vehicle.throttle_decrease", InputConstants.KEY_Q, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
     private static final KeyMapping increaseVehicleThrottleKey = key("vehicle.throttle_increase", InputConstants.KEY_E, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
     private static final KeyMapping turretStabilizerKey = key("vehicle.turret_stabilizer", InputConstants.KEY_O, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
+    private static final KeyMapping diveKey = key("vehicle.dive", InputConstants.KEY_V, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
+    private static final KeyMapping surfaceKey = key("vehicle.surface", InputConstants.KEY_G, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
     private static final KeyMapping vehicleZoomKey = mouseKey("vehicle.zoom", GLFW.GLFW_MOUSE_BUTTON_MIDDLE, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping cycleSightKey = key("driveable.cycle_sight", InputConstants.KEY_B, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
     private static final KeyMapping rangefinderKey = key("driveable.rangefinder", InputConstants.KEY_Y, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
@@ -143,7 +145,7 @@ public final class KeyInputHandler
     /** Ground binds plus the persistent throttle lever that only vehicles answer. */
     private static final List<KeyMapping> VEHICLE_BINDS = List.of(driveForwardKey, driveBackwardKey, steerLeftKey, steerRightKey, brakeKey, decreaseVehicleThrottleKey, increaseVehicleThrottleKey,
         vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey, driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey,
-        doorKey, engineKey, flareKey, repairKey, driveablePlayerInventoryKey, turretStabilizerKey);
+        doorKey, engineKey, flareKey, repairKey, driveablePlayerInventoryKey, turretStabilizerKey, diveKey, surfaceKey);
     /**
      * Binds read with consumeClick. Forge gates isDown on the conflict context
      * but not consumeClick, so a press made outside the context stays queued and
@@ -239,6 +241,8 @@ public final class KeyInputHandler
         register.accept(decreaseVehicleThrottleKey);
         register.accept(increaseVehicleThrottleKey);
         register.accept(turretStabilizerKey);
+        register.accept(diveKey);
+        register.accept(surfaceKey);
         register.accept(vehicleZoomKey);
         register.accept(cycleSightKey);
         register.accept(rangefinderKey);
@@ -524,6 +528,10 @@ public final class KeyInputHandler
                     mask |= DriveableInput.ASCEND;
                 if (driveable instanceof Vehicle)
                 {
+                    if (diveKey.isDown())
+                        mask |= DriveableInput.DESCEND;
+                    if (surfaceKey.isDown())
+                        mask |= DriveableInput.SURFACE;
                     if (increaseVehicleThrottleKey.isDown())
                         mask |= DriveableInput.THROTTLE_INCREASE;
                     if (decreaseVehicleThrottleKey.isDown())

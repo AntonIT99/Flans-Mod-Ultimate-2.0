@@ -86,11 +86,34 @@ public class VehicleType extends DriveableType
     protected float fireControlMaxCorrection = 20F;
     /** Share of the computed correction applied, as the fork's {@code FCSDropScale}. */
     protected float fireControlDropScale = 1F;
+    /** Whether the driver can dive and surface the vehicle in water, as the Labjac fork's submarines; {@code MaxDepth} is then its crush depth. */
+    protected boolean canDive;
+    /** Authored dive and surface speeds; the hull moves by half of them per tick at full depth rate. */
+    protected float diveSpeed = 1F;
+    protected float surfaceSpeed = 1F;
+    /** Ticks of oxygen the crew has while submerged. */
+    protected float maxOxygen = 9001F;
+    protected boolean unlimitedOxygen;
     protected final List<SmokePoint> smokers = new ArrayList<>();
     protected String stompSoundFrontRight = StringUtils.EMPTY;
     protected String stompSoundFrontLeft = StringUtils.EMPTY;
     protected String stompSoundBackRight = StringUtils.EMPTY;
     protected String stompSoundBackLeft = StringUtils.EMPTY;
+
+    private void readDiving(TypeFile file)
+    {
+        canDive = readValue("CanDive", canDive, file);
+        float dive = readValue("DiveSpeed", diveSpeed, file);
+        if (Float.isFinite(dive) && dive >= 0F)
+            diveSpeed = dive;
+        float surface = readValue("SurfaceSpeed", surfaceSpeed, file);
+        if (Float.isFinite(surface) && surface >= 0F)
+            surfaceSpeed = surface;
+        float oxygen = readValue("MaxOxygen", maxOxygen, file);
+        if (Float.isFinite(oxygen) && oxygen > 0F)
+            maxOxygen = oxygen;
+        unlimitedOxygen = readValue("UnlimitedOxygen", unlimitedOxygen, file);
+    }
 
     private void readFireControl(TypeFile file)
     {
@@ -129,6 +152,7 @@ public class VehicleType extends DriveableType
             weakspotCookTime = cookTime;
         turretStabilization = readValue("TurretStabilization", turretStabilization, file);
         readFireControl(file);
+        readDiving(file);
         fourWheelDrive = readValue("FourWheelDrive", fourWheelDrive, file);
         tank = readValue("Tank", tank, file);
         tank = readValue("TankMode", tank, file);

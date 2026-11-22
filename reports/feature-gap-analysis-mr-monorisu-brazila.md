@@ -277,7 +277,8 @@ Reference: `DriveableType` (`hasRadar`, `hasPlaneRadar`, `digitalRadar`, `radarR
 Vehicles with radar see contacts on a radar HUD. Stealth, altitude and terrain reduce how far a vehicle can be detected.
 
 Target checked: `T/common/driveables/EnumDriveablePart` (radar hitbox parts only), `T/client/distant/DistantContactsClient`
-Missing: a radar HUD and detection model.
+**Checked 2026-11-22:** in the current reference the radar has no contact display or detection model. `radarRange`, `radarRefreshDelay`, `radarPositionOffset`, `digitalRadar`, `radarVisible` and `radarDetectionRangeMultiplier` are copied onto the entity and never read (196 Tyrants and Plebeians driveables author them). The live part is the active/passive radar toggle (`hasRadar`, `hasPlaneRadar`, the F8 key) and its HUD line, which `antiRadiation` missiles (2 TaP rounds) use to lock onto vehicles radiating with an active radar.
+Missing: the active/passive radar toggle and anti-radiation lock-on; stealth (`Stealth`, `RadarDetectableAltitude`, `OnRadar`) was not re-checked.
 
 ### Active protection systems and CIWS — MISSING
 
@@ -304,13 +305,14 @@ Vehicles carry and deploy NPC troops.
 Target checked: `T/common/entity/Driveable`
 Missing: troop transport.
 
-### Submarine diving and crew oxygen — MISSING
+### Submarine diving and crew oxygen — PARTIAL
 
 Reference: `VehicleType` (`canDive`, `DiveSpeed`, `SurfaceSpeed`, `seaLevel`), `DriveableType` (`oxygen`, `maxOxygen`, `unlimitedOxygen`), `R/common/driveables/EntityVehicle` (around line 2170), `R/client/TickHandlerClient` (oxygen HUD)
 Submarines control their depth and use up oxygen while submerged, which the HUD shows.
 
 Target checked: `T/common/entity/Driveable` (`MaxDepth`, `WorksUnderWater`), `T/common/driveables/physics/EpicShipPhysics`
-Missing: controlled diving and surfacing, and the oxygen budget.
+**Present (2026-11-22):** `CanDive`, `DiveSpeed`, `SurfaceSpeed`, `MaxOxygen`, `UnlimitedOxygen` and `MaxDepth` as crush depth (32 Tyrants and Plebeians submarines), with the fork's depth-rate model, oxygen budget, forced surfacing, 10-per-tick crush damage and a depth and oxygen readout (`SubmarineDiving`, `Vehicle`). Dive and Surface are new vehicle keys (V and G) and a new `SURFACE` input bit; the brake damps the rate.
+Missing: see the submarine entry under Known gaps of the 2026-11-22 ports.
 
 ### Submarine-launched ballistic missiles and VLS timing — MISSING
 
@@ -558,7 +560,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Vehicles | APS and CIWS | MISSING | HIGH |
 | Vehicles | Remote drones and quadcopters | MISSING | HIGH |
 | Vehicles | Troop transport | MISSING | HIGH |
-| Vehicles | Submarine diving and oxygen | MISSING | HIGH |
+| Vehicles | Submarine diving and oxygen | PARTIAL | HIGH |
 | Vehicles | SLBM and VLS timing | MISSING | MEDIUM |
 | Vehicles | Hardpoints, ordnance weight and carriers | MISSING | HIGH |
 | Vehicles | Altitude performance and flight tuning | MISSING | MEDIUM |
@@ -583,7 +585,7 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 | Integration | Flan's Horizons distant terrain | UNCERTAIN | LOW |
 | Bundled | HFR/Clowder faction and industry mod | MISSING | HIGH |
 
-**Current tracked gaps:** 24 MISSING, 23 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
+**Current tracked gaps:** 23 MISSING, 24 PARTIAL, 6 UNCERTAIN. Remaining rows retain their original audit classifications unless noted; this update is not a fresh audit of every subsystem.
 
 ## Completed ports (verified 2026-10-11)
 
@@ -700,6 +702,7 @@ Selected from the Labjac keys that the Tyrants and Plebeians Redemption pack (`r
 - **Ammo-rack cook-off (third batch):** `WeakspotCookTime`; see the vehicles section. `alwaysShowTurret` (167 TaP vehicles) needs nothing: the fork hides the turret from a first-person driver unless it is set, and the target never hides it. Vehicle `hasSmoke` (274) is not read by the fork's driveable code.
 - **Turret stabiliser (fourth batch):** `TurretStabilization`; see the optics section. Also checked and left alone: `bleedMultiplier` (198 rounds) needs the fork's bleeding state, which is off by default there, and TaP ships none of its bandage, surgery or transfusion tools; `HeliCrashEffects` / `HeliCrashSpin` (20 helicopters) would overlap the target's own crash-mode physics; `labjacFuel` (265 aircraft) duplicates the target's fuel system.
 - **Fire control (fifth batch):** `FCSMode AdjustingBarrel`; see the optics section. Also checked: `CIWSable` (141 rounds) only lets a round collide with other projectiles, which take no damage, and `ciwsBullet` / `CIWSer` are never read; `hasAPS` (7 vehicles true) only starts a reload timer, a sound and a HUD readout without stopping the hit. Neither has a gameplay effect to port.
+- **Submarines (sixth batch):** `CanDive` and its oxygen and depth keys; see the vehicles section. The radar keys were checked and found mostly dormant in the reference; see the radar section.
 - **Not ported:** vehicle `armorPen` / `penDecay` use the fork's unitless armour integers, which conflict with the target's millimetre armour model; `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` need the driving-model comparison listed under deeper audit.
 - Validation: Focused profile, with scoped Spotless, compilation and parser/behaviour tests. Not exercised in a running game.
 
@@ -714,6 +717,7 @@ What each port leaves out compared with the reference, and where it behaves diff
 - **Ammo-rack cook-off:** no `fancyAmmoRackCookoff` column; no hull cook-off after the turret is lost on `needsTurret` tanks; no troops escaping a burning transport. Flames, smoke and blasts are vanilla particles and sound instead of the fork's flak flares, and there is no vanilla explosion, so nothing nearby is damaged. The driver-killed flag is not saved, so a vehicle reloaded with a destroyed rack can kill one more driver.
 - **Turret stabiliser:** yaw only, without hull-pitch compensation; driver seat only, no stabilised passenger turrets; no display-only turret interpolation and no FCS stabiliser sight settings. The toggle is client-side and per seat entity, defaults to engaged and is bound to O (the fork's H resets the optics range here).
 - **Adjusting-barrel fire control:** lases loaded terrain and entities only, not Distant Horizons terrain, and only in first person; the server trusts the client's range, capped at `FCSMaxRange`, because it cannot see far or unloaded terrain itself. Coax and other banks have their shots corrected but only the main bank raises the drawn barrel, and the shoot origin is not moved with it. No `AdjustingSight` impact marker (no TaP vehicle uses it; one authors the typo `AdjustingBarrek`, which the fork ignores too), no `FCSDebug` readouts, no `Rangefinder` key and no `FCS*Pos/Scale/Color/Label` HUD family. The drawn barrel's direction follows the aim-pitch convention (positive down) and has not been checked in game.
+- **Submarine diving:** depth is measured from the hull's position to the water surface above it, not from the fork's fixed `TeamsManager.seaLevel`, and counts up to 160 blocks of water. The depth rate is not saved and is stepped separately on the server and the predicting client. There are no `seaLevel` server setting, airship lift (`airship`, `maxAltitude`) or SLBM launch timing, which TaP also authors. `MaxDepth` also keeps its target meaning, so a diving hull's engine floods below its crush depth. The crush damage bypasses armour and hits only the core.
 - **Classified as needing nothing:** `firstShotRecoil` and the other dormant recoil keys, `starShell`, `alwaysShowTurret`, vehicle `hasSmoke`, the hard-kill `hasAPS`, `CIWSable` / `ciwsBullet` / `CIWSer`.
 - **Checked and left alone:** `bleedMultiplier` (no TaP medical tools), `HeliCrashEffects` / `HeliCrashSpin` (overlap the target's crash physics), `labjacFuel` (duplicates the target's fuel), vehicle `armorPen` / `penDecay` (conflict with millimetre armour) and `AccelerationSpeed` / `DecelerationSpeed` / `BrakeMultiplier` (need the driving-model comparison).
-- **Large TaP-used gaps not started:** radar, stealth and designation (196 driveables), troop transport (50), submarine diving and oxygen (33), SLBMs (17), passive APS (2), carrier operations and `weightLimit` (26), and the `Tier` tooltip and experience economy (2047 items).
+- **Large TaP-used gaps not started:** the radar toggle and anti-radiation lock-on (2 rounds; the rest of the 196 driveables' radar keys are dormant), troop transport (50), SLBMs (17), passive APS (2), carrier operations and `weightLimit` (26), and the `Tier` tooltip and experience economy (2047 items).
