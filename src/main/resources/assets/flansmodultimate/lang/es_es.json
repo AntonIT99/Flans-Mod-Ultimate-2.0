@@ -303,6 +303,8 @@
   "gui.flansmodultimate.editor.victoryFlag_hint": "Texture (namespace:path.png) or https:// link to a PNG",
   "gui.flansmodultimate.editor.victorySound": "Victory sound",
   "gui.flansmodultimate.editor.victorySoundEnabled": "Victory sounds: %s",
+  "gui.flansmodultimate.fire_control.no_range": "SCT ----",
+  "gui.flansmodultimate.fire_control.range": "SCT %s m",
   "gui.flansmodultimate.optics.editor": "Editor del HUD óptico",
   "gui.flansmodultimate.optics.editor_controls": "Tab: elemento | Flechas: mover | Mayús: x10 | +/-: escala | C: copiar | Esc: cerrar",
   "gui.flansmodultimate.optics.editor_hint": "Edición del HUD óptico activada (ver Controles)",

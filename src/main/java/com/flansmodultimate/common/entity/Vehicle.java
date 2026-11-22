@@ -5,9 +5,16 @@ import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.damage.AmmoRackCookOff;
 import com.flansmodultimate.common.driveables.damage.VehicleLandingDamage;
+import com.flansmodultimate.common.driveables.optics.FireControlSolution;
 import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.driveables.visual.VehicleVisual;
 import com.flansmodultimate.common.physics.ModPhysics;
+import com.flansmodultimate.api.equipment.WeaponBallistics;
+import com.flansmodultimate.common.guns.FireableGun;
+import com.flansmodultimate.common.guns.FiredShot;
+import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
@@ -67,6 +74,11 @@ public class Vehicle extends Driveable implements VehicleVisual
     private int pivotSoundTicks;
     /** Whether a burning ammunition rack has already killed the driver. Transient and server-side, as in the Labjac fork. */
     private boolean ammoRackDriverKilled;
+    /** Range the driver last lased for the fire control, in blocks, or negative for none. Transient and server-side. */
+    private double fireControlRange = -1D;
+    /** The driver who lased {@link #fireControlRange}; a new driver has to lase again. */
+    @Nullable
+    private Entity fireControlRangedBy;
 
     public Vehicle(EntityType<?> entityType, Level level)
     {
@@ -128,6 +140,55 @@ public class Vehicle extends Driveable implements VehicleVisual
         advanceAnimations(type, getX() - previousX, getZ() - previousZ, Mth.wrapDegrees(getYaw() - previousYaw));
         tickWalkerStompSounds(type, previousLeftPhase, previousRightPhase);
         tickAmmoRackCookOff(type);
+    }
+
+    /**
+     * Takes the range the driver lased for the fire control, or clears it with a negative or non-finite one. Ranges beyond
+     * the fire control's reach are not kept. Server side.
+     */
+    public void setFireControlRange(Entity driver, double range)
+    {
+        VehicleType type = getVehicleType();
+        boolean valid = type != null && type.isFireControlAdjustsBarrel() && Double.isFinite(range) && range > 0D && range <= type.getFireControlMaxRange();
+        fireControlRange = valid ? range : -1D;
+        fireControlRangedBy = valid ? driver : null;
+    }
+
+    /**
+     * Raises the driver's gun and shell shots to the ballistic solution for the lased range, within the fire control's
+     * largest correction, as the Labjac fork's adjusting-barrel fire control. Guided rounds, bombs and mines fly as aimed.
+     */
+    @Override
+    protected Vec3 applyFireControl(Vec3 direction, FireableGun fireable, BulletType bullet, @Nullable LivingEntity attacker, ItemStack ammo, EnumWeaponType weapon)
+    {
+        VehicleType type = getVehicleType();
+        if (type == null || !type.isFireControlAdjustsBarrel() || fireControlRange <= 0D || weapon != EnumWeaponType.SHELL && weapon != EnumWeaponType.GUN || isGuided(bullet))
+            return direction;
+        Entity controller = getControllingEntity();
+        if (controller == null || controller != fireControlRangedBy)
+            return direction;
+        FiredShot shot = new FiredShot(fireable, bullet, this, attacker, ShootableItem.getRoundsFired(ammo));
+        float speed = shot.getMuzzleVelocity(false);
+        if (speed <= 0F)
+            return direction;
+        double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * bullet.getFallSpeed(), level());
+        double quadraticDrag = shot.getQuadraticDrag(level());
+        double drag = quadraticDrag > 0D ? 1D : ModPhysics.dragRetention(bullet.getDragInAir(), level());
+        double horizontal = Math.sqrt(direction.x * direction.x + direction.z * direction.z);
+        if (horizontal < 1.0E-6D)
+            return direction;
+        float lineElevation = (float) Math.toDegrees(Math.atan2(direction.y, horizontal));
+        float correction = FireControlSolution.elevationCorrection(fireControlRange, lineElevation, new WeaponBallistics(speed, gravity, drag, false, quadraticDrag), type.getFireControlMaxCorrection());
+        correction = Mth.clamp(correction * type.getFireControlDropScale(), -type.getFireControlMaxCorrection(), type.getFireControlMaxCorrection());
+        double elevation = Math.toRadians(lineElevation + correction);
+        double length = direction.length();
+        return new Vec3(direction.x / horizontal * Math.cos(elevation), Math.sin(elevation), direction.z / horizontal * Math.cos(elevation)).scale(length);
+    }
+
+    private static boolean isGuided(BulletType bullet)
+    {
+        return bullet.isLockOnToPlanes() || bullet.isLockOnToVehicles() || bullet.isLockOnToMechas() || bullet.isLockOnToPlayers() || bullet.isLockOnToLivings()
+            || bullet.isEnableSACLOS() || bullet.isManualGuidance() || bullet.isLaserGuidance();
     }
 
     /** A destroyed ammunition rack kills the driver once, then burns its core or turret down with small blasts. Server side. */

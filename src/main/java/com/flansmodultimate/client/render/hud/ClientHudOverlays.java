@@ -124,6 +124,7 @@ public final class ClientHudOverlays
         registrar.aboveArmorLevel("damage_absorption", DAMAGE_ABSORPTION);
         registrar.aboveHotbar("hud", HUD);
         registrar.aboveHotbar("turret_stabilizer", TURRET_STABILIZER);
+        registrar.aboveHotbar("fire_control", FIRE_CONTROL);
         registrar.aboveHotbar("teams_rank_up", (g, partialTick, sw, sh) -> TeamsRankUpPopup.render(g, sw));
         registrar.aboveHotbar("debug_armor", (g, partialTick, sw, sh) -> DriveableArmorDebugHud.render(g, sw, sh));
     }
@@ -137,6 +138,18 @@ public final class ClientHudOverlays
             return;
         Component label = Component.translatable("gui.flansmodultimate.turret_stabilizer.indicator");
         g.drawString(mc.font, label, sw / 2 + 96, sh - 15, seat.isTurretStabilizerEngaged() ? 0x55FF55 : 0xFF5555);
+    };
+
+    /** The range the adjusting-barrel fire control works with, beside the hotbar. */
+    public static final HudOverlayPlatform.HudLayer FIRE_CONTROL = (g, partialTick, sw, sh) ->
+    {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.options.hideGui || FireControlClient.fireControlSeat() == null)
+            return;
+        double range = FireControlClient.range();
+        Component label = range < 0D ? Component.translatable("gui.flansmodultimate.fire_control.no_range")
+            : Component.translatable("gui.flansmodultimate.fire_control.range", String.format(Locale.ROOT, "%.0f", range));
+        g.drawString(mc.font, label, sw / 2 + 96, sh - 26, range < 0D ? 0xAAAAAA : 0xFFFFFF);
     };
 
     public static final HudOverlayPlatform.HudLayer SCOPE = (g, partialTick, sw, sh) ->

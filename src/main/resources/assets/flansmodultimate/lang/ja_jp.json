@@ -303,6 +303,8 @@
   "gui.flansmodultimate.editor.victoryFlag_hint": "Texture (namespace:path.png) or https:// link to a PNG",
   "gui.flansmodultimate.editor.victorySound": "Victory sound",
   "gui.flansmodultimate.editor.victorySoundEnabled": "Victory sounds: %s",
+  "gui.flansmodultimate.fire_control.no_range": "FCS ----",
+  "gui.flansmodultimate.fire_control.range": "FCS %s m",
   "gui.flansmodultimate.optics.editor": "照準HUDエディター",
   "gui.flansmodultimate.optics.editor_controls": "Tab: 項目 | 矢印: 移動 | Shift: x10 | +/-: 拡大縮小 | C: コピー | Esc: 閉じる",
   "gui.flansmodultimate.optics.editor_hint": "照準HUD編集が有効（操作設定を参照）",

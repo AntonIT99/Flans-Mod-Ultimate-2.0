@@ -242,6 +242,7 @@ public final class ClientEventHandler
         ParticleHelper.tick();
         DriveableDamageEffects.tickClient();
         GuidanceWireRenderer.tick(Minecraft.getInstance().level);
+        FireControlClient.tick();
         AircraftCockpit.tick();
         DistantHorizonsClient.tick();
         ModelPreloader.tick();
@@ -577,6 +578,7 @@ public final class ClientEventHandler
         com.flansmodultimate.network.client.debug.PacketDebugHitboxes.clearSession();
         DriveableDamageEffects.clear();
         GuidanceWireRenderer.reset();
+        FireControlClient.reset();
         DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();

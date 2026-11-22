@@ -78,11 +78,34 @@ public class VehicleType extends DriveableType
     protected float weakspotCookTime = 3F;
     /** The driver's turret aim stays fixed in world space while the hull turns, as the Labjac fork's stabiliser. */
     protected boolean turretStabilization;
+    /** Whether the fire control raises the driver's gun shots to the ballistic solution for the lased range ({@code FCSMode AdjustingBarrel}). */
+    protected boolean fireControlAdjustsBarrel;
+    /** Farthest the fire control lases, in blocks. */
+    protected float fireControlMaxRange = 400F;
+    /** Largest elevation correction the fire control applies, in degrees. */
+    protected float fireControlMaxCorrection = 20F;
+    /** Share of the computed correction applied, as the fork's {@code FCSDropScale}. */
+    protected float fireControlDropScale = 1F;
     protected final List<SmokePoint> smokers = new ArrayList<>();
     protected String stompSoundFrontRight = StringUtils.EMPTY;
     protected String stompSoundFrontLeft = StringUtils.EMPTY;
     protected String stompSoundBackRight = StringUtils.EMPTY;
     protected String stompSoundBackLeft = StringUtils.EMPTY;
+
+    private void readFireControl(TypeFile file)
+    {
+        String mode = readValue("FCSMode", "Off", file);
+        fireControlAdjustsBarrel = "AdjustingBarrel".equalsIgnoreCase(mode) || "Barrel".equalsIgnoreCase(mode) || "AutoBarrel".equalsIgnoreCase(mode);
+        float maxRange = readValue("FCSMaxRange", fireControlMaxRange, file);
+        if (Float.isFinite(maxRange) && maxRange > 0F)
+            fireControlMaxRange = maxRange;
+        float maxCorrection = readValue("FCSBarrelMaxCorrection", fireControlMaxCorrection, file);
+        if (Float.isFinite(maxCorrection) && maxCorrection >= 0F)
+            fireControlMaxCorrection = Math.min(45F, maxCorrection);
+        float dropScale = readValue("FCSDropScale", fireControlDropScale, file);
+        if (Float.isFinite(dropScale) && dropScale >= 0F)
+            fireControlDropScale = dropScale;
+    }
 
     @Override
     public boolean isTracked()
@@ -105,6 +128,7 @@ public class VehicleType extends DriveableType
         if (Float.isFinite(cookTime) && cookTime > 0F)
             weakspotCookTime = cookTime;
         turretStabilization = readValue("TurretStabilization", turretStabilization, file);
+        readFireControl(file);
         fourWheelDrive = readValue("FourWheelDrive", fourWheelDrive, file);
         tank = readValue("Tank", tank, file);
         tank = readValue("TankMode", tank, file);

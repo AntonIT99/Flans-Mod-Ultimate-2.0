@@ -2883,6 +2883,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
         Vec3 origin = getShootOrigin(point, barrel);
         Vec3 direction = getShootDirection(point, secondary);
+        if (shootableType instanceof BulletType bullet)
+            direction = applyFireControl(direction, fireable, bullet, attacker, selection.stack(), weapon);
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
         ShootingHandler handler = () ->
         {
@@ -2898,6 +2900,16 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         else
             countOrdnanceRound(secondary);
         return true;
+    }
+
+    /**
+     * Fire-control correction of a weapon bank's launch direction for the shot about to leave it. Server side.
+     *
+     * @return the direction to fire along: unchanged unless the driveable has a fire control that corrects it
+     */
+    protected Vec3 applyFireControl(Vec3 direction, FireableGun fireable, BulletType bullet, @Nullable LivingEntity attacker, ItemStack ammo, EnumWeaponType weapon)
+    {
+        return direction;
     }
 
     /**

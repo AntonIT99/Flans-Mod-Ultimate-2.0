@@ -553,6 +553,8 @@
   "gui.flansmodultimate.editor.victoryFlag_hint": "Tekstura (namespace:path.png) lub link https:// do pliku PNG",
   "gui.flansmodultimate.editor.victorySound": "Dźwięk zwycięstwa",
   "gui.flansmodultimate.editor.victorySoundEnabled": "Dźwięki zwycięstwa: %s",
+  "gui.flansmodultimate.fire_control.no_range": "SKO ----",
+  "gui.flansmodultimate.fire_control.range": "SKO %s m",
   "gui.flansmodultimate.mecha.passenger_guns": "Broń pasażerów",
   "gui.flansmodultimate.mecha.repair": "Napraw",
   "gui.flansmodultimate.optics.editor": "Edytor HUD optyki",
