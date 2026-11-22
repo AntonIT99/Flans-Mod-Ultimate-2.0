@@ -20,6 +20,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.*;
 import com.flansmodultimate.platform.PlatformSounds;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,9 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -74,11 +78,19 @@ public class Vehicle extends Driveable implements VehicleVisual
     private int pivotSoundTicks;
     /** Whether a burning ammunition rack has already killed the driver. Transient and server-side, as in the Labjac fork. */
     private boolean ammoRackDriverKilled;
+    /** Degrees per tick the drawn barrel moves toward its fire-control elevation. */
+    private static final float FIRE_CONTROL_LAYING_RATE = 1F;
+    /** Elevation in degrees the fire control adds to the driver's main gun, which clients raise the drawn barrel by. */
+    private static final EntityDataAccessor<Float> DATA_FIRE_CONTROL_ELEVATION = SynchedEntityData.defineId(Vehicle.class, EntityDataSerializers.FLOAT);
+
     /** Range the driver last lased for the fire control, in blocks, or negative for none. Transient and server-side. */
     private double fireControlRange = -1D;
     /** The driver who lased {@link #fireControlRange}; a new driver has to lase again. */
     @Nullable
     private Entity fireControlRangedBy;
+    /** Fire-control elevation the barrel is drawn with this tick and the last one. Client side. */
+    private float clientFireControlElevation;
+    private float prevClientFireControlElevation;
 
     public Vehicle(EntityType<?> entityType, Level level)
     {
@@ -140,6 +152,17 @@ public class Vehicle extends Driveable implements VehicleVisual
         advanceAnimations(type, getX() - previousX, getZ() - previousZ, Mth.wrapDegrees(getYaw() - previousYaw));
         tickWalkerStompSounds(type, previousLeftPhase, previousRightPhase);
         tickAmmoRackCookOff(type);
+        if (level().isClientSide)
+            tickClientFireControlElevation();
+        else if (tickCount % 5 == 0)
+            updateFireControlElevation();
+    }
+
+    @Override
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        super.defineEntityData(data);
+        data.define(DATA_FIRE_CONTROL_ELEVATION, 0F);
     }
 
     /**
@@ -156,33 +179,77 @@ public class Vehicle extends Driveable implements VehicleVisual
 
     /**
      * Raises the driver's gun and shell shots to the ballistic solution for the lased range, within the fire control's
-     * largest correction, as the Labjac fork's adjusting-barrel fire control. Guided rounds, bombs and mines fly as aimed.
+     * largest correction and the driver seat's pitch limits, as the Labjac fork's adjusting-barrel fire control. Guided
+     * rounds, bombs and mines fly as aimed.
      */
     @Override
     protected Vec3 applyFireControl(Vec3 direction, FireableGun fireable, BulletType bullet, @Nullable LivingEntity attacker, ItemStack ammo, EnumWeaponType weapon)
     {
+        double horizontal = Math.sqrt(direction.x * direction.x + direction.z * direction.z);
+        float correction = fireControlCorrection(direction, fireable, bullet, attacker, ammo, weapon);
+        if (correction == 0F || horizontal < 1.0E-6D)
+            return direction;
+        double elevation = Math.atan2(direction.y, horizontal) + Math.toRadians(correction);
+        return new Vec3(direction.x / horizontal * Math.cos(elevation), Math.sin(elevation), direction.z / horizontal * Math.cos(elevation)).scale(direction.length());
+    }
+
+    /** @return the elevation in degrees the fire control adds to a shot fired along a direction, or 0 for none. Server side. */
+    private float fireControlCorrection(Vec3 direction, FireableGun fireable, BulletType bullet, @Nullable LivingEntity attacker, ItemStack ammo, EnumWeaponType weapon)
+    {
         VehicleType type = getVehicleType();
         if (type == null || !type.isFireControlAdjustsBarrel() || fireControlRange <= 0D || weapon != EnumWeaponType.SHELL && weapon != EnumWeaponType.GUN || isGuided(bullet))
-            return direction;
+            return 0F;
         Entity controller = getControllingEntity();
         if (controller == null || controller != fireControlRangedBy)
-            return direction;
+            return 0F;
         FiredShot shot = new FiredShot(fireable, bullet, this, attacker, ShootableItem.getRoundsFired(ammo));
         float speed = shot.getMuzzleVelocity(false);
-        if (speed <= 0F)
-            return direction;
+        double horizontal = Math.sqrt(direction.x * direction.x + direction.z * direction.z);
+        if (speed <= 0F || horizontal < 1.0E-6D)
+            return 0F;
         double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * bullet.getFallSpeed(), level());
         double quadraticDrag = shot.getQuadraticDrag(level());
         double drag = quadraticDrag > 0D ? 1D : ModPhysics.dragRetention(bullet.getDragInAir(), level());
-        double horizontal = Math.sqrt(direction.x * direction.x + direction.z * direction.z);
-        if (horizontal < 1.0E-6D)
-            return direction;
         float lineElevation = (float) Math.toDegrees(Math.atan2(direction.y, horizontal));
-        float correction = FireControlSolution.elevationCorrection(fireControlRange, lineElevation, new WeaponBallistics(speed, gravity, drag, false, quadraticDrag), type.getFireControlMaxCorrection());
-        correction = Mth.clamp(correction * type.getFireControlDropScale(), -type.getFireControlMaxCorrection(), type.getFireControlMaxCorrection());
-        double elevation = Math.toRadians(lineElevation + correction);
-        double length = direction.length();
-        return new Vec3(direction.x / horizontal * Math.cos(elevation), Math.sin(elevation), direction.z / horizontal * Math.cos(elevation)).scale(length);
+        float maximum = type.getFireControlMaxCorrection();
+        float correction = FireControlSolution.elevationCorrection(fireControlRange, lineElevation, new WeaponBallistics(speed, gravity, drag, false, quadraticDrag), maximum);
+        correction = Mth.clamp(correction * type.getFireControlDropScale(), -maximum, maximum);
+        // The gun cannot be raised past the elevation its seat allows; aim pitch is positive downwards
+        Seat driver = getDriverSeat();
+        SeatInfo info = driver == null ? null : driver.getSeatInfo();
+        if (info != null)
+        {
+            float aimPitch = getTurretPitch();
+            correction = aimPitch - info.clampPitch(aimPitch - correction);
+        }
+        return correction;
+    }
+
+    /** Keeps the correction of the driver's main gun in step with its lased range, for clients to raise the barrel by. Server side. */
+    private void updateFireControlElevation()
+    {
+        float elevation = 0F;
+        AmmoSelection selection = fireControlRange > 0D && configType != null && !destroyed && !isWreck() ? selectDriverWeaponAmmo(false) : null;
+        Vec3 direction = selection == null ? null : getDriverWeaponDirection(false);
+        if (direction != null && selection.stack().getItem() instanceof ShootableItem item && item.getConfigType() instanceof BulletType bullet)
+            elevation = fireControlCorrection(direction, resolveFireableGun(selection, false), bullet, getControllingEntity() instanceof LivingEntity living ? living : null, selection.stack(),
+                configType.weaponType(false));
+        if (Float.floatToIntBits(entityData.get(DATA_FIRE_CONTROL_ELEVATION)) != Float.floatToIntBits(elevation))
+            entityData.set(DATA_FIRE_CONTROL_ELEVATION, elevation);
+    }
+
+    /** Moves the drawn barrel toward the synced fire-control elevation at the rate a gun is laid. Client side. */
+    private void tickClientFireControlElevation()
+    {
+        prevClientFireControlElevation = clientFireControlElevation;
+        float target = entityData.get(DATA_FIRE_CONTROL_ELEVATION);
+        clientFireControlElevation += Mth.clamp(target - clientFireControlElevation, -FIRE_CONTROL_LAYING_RATE, FIRE_CONTROL_LAYING_RATE);
+    }
+
+    @Override
+    public float getFireControlElevation(float partialTick)
+    {
+        return Mth.lerp(partialTick, prevClientFireControlElevation, clientFireControlElevation);
     }
 
     private static boolean isGuided(BulletType bullet)

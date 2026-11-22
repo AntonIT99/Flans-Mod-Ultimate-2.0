@@ -313,6 +313,8 @@ public final class DriveableAnimationHistory
         float rightTrackProgress = 0F;
         if (source instanceof VehicleVisual vehicle)
         {
+            // Aim pitch is positive downwards, so the fire control's elevation raises the gun by lowering it
+            turretPitch -= vehicle.getFireControlElevation(partialTick);
             wheelAngle = Mth.rotLerp(partialTick, vehicle.getPrevWheelAngle(), vehicle.getWheelAngle()) * Mth.DEG_TO_RAD;
             steeringAngle = Mth.rotLerp(partialTick, vehicle.getPrevWheelYaw(), vehicle.getWheelYaw());
             leftTrackProgress = wrappedLerp(partialTick, previousLeftTrack, leftTrack);

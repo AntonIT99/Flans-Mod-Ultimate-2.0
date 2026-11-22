@@ -22,4 +22,10 @@ public interface VehicleVisual extends DriveableVisual
     float getLeftTrackStep();
 
     float getRightTrackStep();
+
+    /** @return degrees the fire control raises the drawn main gun by, above where it is aimed */
+    default float getFireControlElevation(float partialTick)
+    {
+        return 0F;
+    }
 }

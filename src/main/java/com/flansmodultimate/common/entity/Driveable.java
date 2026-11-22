@@ -4781,7 +4781,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     /** @return the round the bank of the driver's trigger would fire now, or null with none loaded. Server side. */
     @Nullable
-    private AmmoSelection selectDriverWeaponAmmo(boolean secondary)
+    protected AmmoSelection selectDriverWeaponAmmo(boolean secondary)
     {
         List<ShootPoint> points = configType == null ? List.of() : configType.shootPoints(secondary);
         EnumWeaponType weapon = configType == null ? EnumWeaponType.NONE : configType.weaponType(secondary);
