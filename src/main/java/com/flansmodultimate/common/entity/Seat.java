@@ -662,7 +662,7 @@ public class Seat extends FlanEntity implements IControllable, ISeat, SeatVisual
     {
         if (driveable == null || !driveable.canPlayerAccess(player) || ToolItem.isHoldingRepairTool(player))
             return InteractionResult.PASS;
-        if (driveable instanceof Plane plane && plane.toggleTieDown(player, hand))
+        if (driveable.toggleTieDown(player, hand))
             return InteractionResult.CONSUME;
         if (!SeatOccupants.canEnter(this, player, false))
             return InteractionResult.sidedSuccess(level().isClientSide);

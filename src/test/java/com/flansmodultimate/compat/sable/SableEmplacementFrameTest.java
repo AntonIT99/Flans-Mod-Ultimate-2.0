@@ -1,7 +1,7 @@
 package com.flansmodultimate.compat.sable;
 
 import com.flansmodultimate.api.driveables.DriveableAttitude;
-import com.flansmodultimate.common.entity.geometry.PlaneTieDown;
+import com.flansmodultimate.common.entity.geometry.DeckTieDown;
 import dev.ryanhcode.sable.companion.math.Pose3d;
 import org.junit.jupiter.api.Test;
 
@@ -41,9 +41,9 @@ class SableEmplacementFrameTest
         pose.position().set(10, 20, 30);
         var frame = new SableEmplacementFrame(pose, UUID.randomUUID());
         var attitude = DriveableAttitude.of(37F, 8F, -5F);
-        var anchor = PlaneTieDown.capture(frame, BlockPos.ZERO, new Vec3(11, 22, 33), attitude);
-        var tag = PlaneTieDown.CODEC.encodeStart(NbtOps.INSTANCE, anchor).getOrThrow();
-        var restored = PlaneTieDown.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
+        var anchor = DeckTieDown.capture(frame, BlockPos.ZERO, new Vec3(11, 22, 33), attitude);
+        var tag = DeckTieDown.CODEC.encodeStart(NbtOps.INSTANCE, anchor).getOrThrow();
+        var restored = DeckTieDown.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
         assertEquals(anchor, restored);
         pose.orientation().rotateZ(Math.PI / 2);
         assertEquals(0D, frame.worldPosition(restored.position()).distanceTo(new Vec3(8, 21, 33)), 1e-8);

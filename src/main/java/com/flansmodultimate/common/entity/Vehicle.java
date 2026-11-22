@@ -120,6 +120,8 @@ public class Vehicle extends Driveable implements VehicleVisual
     @Override
     protected void tickDriveable()
     {
+        if (followTieDown())
+            return;
         VehicleType type = getVehicleType();
         if (type == null)
             return;
@@ -362,7 +364,7 @@ public class Vehicle extends Driveable implements VehicleVisual
     @Override
     public boolean supportsClientPrediction()
     {
-        return true;
+        return !getFlag(FLAG_TIED_DOWN);
     }
 
     @Override

@@ -14,6 +14,7 @@ import com.flansmodultimate.common.driveables.collision.*;
 import com.flansmodultimate.common.driveables.damage.*;
 import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.entity.geometry.EmplacementFrame;
+import com.flansmodultimate.common.entity.geometry.DeckTieDown;
 import com.flansmodultimate.common.driveables.visual.DriveableVisual;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
@@ -52,6 +53,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.*;
@@ -148,6 +150,11 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     protected static final int FLAG_AIR_BRAKE = 1 << 8;
     protected static final int FLAG_REPAIR = 1 << 9;
     protected static final int FLAG_LANDING_FLAPS = 1 << 10;
+    protected static final float PARKED_THROTTLE = 0.05F;
+    protected static final int FLAG_TIED_DOWN = 1 << 12;
+    private static final String NBT_TIE_DOWN = "deck_tie_down";
+    @Nullable
+    private DeckTieDown tieDown;
     protected static final int FLAG_AFTERBURNER = 1 << 11;
 
     protected static final EntityDataAccessor<Integer> DATA_WEAPON_HEAT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
@@ -1267,6 +1274,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         setThrottle(tag.getFloat(NBT_THROTTLE));
         setTurretAim(tag.getFloat(NBT_TURRET_YAW), tag.getFloat(NBT_TURRET_PITCH));
         entityData.set(DATA_FLAGS, tag.contains(NBT_FLAGS) ? tag.getInt(NBT_FLAGS) : FLAG_GEAR);
+        tieDown = tag.contains(NBT_TIE_DOWN) ? DeckTieDown.CODEC.parse(NbtOps.INSTANCE, tag.get(NBT_TIE_DOWN)).result().orElse(null) : null;
+        setFlag(FLAG_TIED_DOWN, tieDown != null);
         // Spawn data can describe an engine which was already running before this client began
         // tracking it. Seed the edge detector so joining the area does not replay its startup.
         wasEngineActive = isEngineActive();
@@ -1393,6 +1402,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         tag.putFloat(NBT_TURRET_YAW, getTurretYaw());
         tag.putFloat(NBT_TURRET_PITCH, getTurretPitch());
         tag.putInt(NBT_FLAGS, entityData.get(DATA_FLAGS));
+        if (tieDown != null)
+            DeckTieDown.CODEC.encodeStart(NbtOps.INSTANCE, tieDown).result().ifPresent(value -> tag.put(NBT_TIE_DOWN, value));
         tag.putInt(NBT_MODE, getDriveableMode());
         if (ownerId != null)
             tag.putUUID(NBT_OWNER, ownerId);
@@ -5984,7 +5995,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (level().isClientSide)
             return InteractionResult.SUCCESS;
 
-        if (this instanceof Plane plane && plane.toggleTieDown(player, hand))
+        if (toggleTieDown(player, hand))
             return InteractionResult.CONSUME;
 
         // A seat proxy can be hidden behind the much larger vehicle hitbox.
@@ -5998,6 +6009,64 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (target == null)
             return InteractionResult.PASS;
         return target.tryEnter(player) ? InteractionResult.CONSUME : InteractionResult.PASS;
+    }
+
+    boolean toggleTieDown(Player player, InteractionHand hand)
+    {
+        if (level().isClientSide || hand != InteractionHand.MAIN_HAND || !player.isShiftKeyDown() || !player.getItemInHand(hand).isEmpty()
+            || player.isSpectator() || isWreck() || !canPlayerAccess(player) || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
+            return false;
+        boolean aircraft = this instanceof Plane;
+        if (!aircraft && !(this instanceof Vehicle && getConfigType() instanceof VehicleType type && !type.isTracked() && !type.isShip() && !type.getWheelPositions().isEmpty()))
+            return false;
+        String message = aircraft ? "message.flansmodultimate.driveable.tie_down." : "message.flansmodultimate.driveable.chocks.";
+        if (tieDown != null)
+        {
+            clearTieDown();
+            player.displayClientMessage(Component.translatable(message + "released"), true);
+            return true;
+        }
+        if (wheelSupport == null)
+            return false;
+        EmplacementFrame frame = EmplacementFrame.at(level(), wheelSupport);
+        if (frame.deckId() == null)
+            return false;
+        if ((aircraft && !isGearDeployed()) || Math.abs(getThrottle()) > PARKED_THROTTLE || getDeltaMovement().lengthSqr() > 0.0004D)
+        {
+            player.displayClientMessage(Component.translatable(message + "stop"), true);
+            return true;
+        }
+        DriveableAttitude attitude = aircraft ? attitudeAt(getYaw(), getPitch(), getRoll()) : DriveableAttitude.of(getEntityFacingYaw(), getPitch(), getRoll());
+        tieDown = DeckTieDown.capture(frame, wheelSupport, position(), attitude);
+        setFlag(FLAG_TIED_DOWN, true);
+        player.displayClientMessage(Component.translatable(message + "secured"), true);
+        return true;
+    }
+
+    protected boolean followTieDown()
+    {
+        if (tieDown == null)
+            return false;
+        EmplacementFrame frame = EmplacementFrame.at(level(), tieDown.support());
+        if (!tieDown.deck().equals(frame.deckId()) || level().isEmptyBlock(tieDown.support()))
+        {
+            clearTieDown();
+            return false;
+        }
+        DriveableAttitude pose = tieDown.worldAttitude(frame);
+        setPos(frame.worldPosition(tieDown.position()));
+        boolean aircraft = this instanceof Plane;
+        setOrientation(LegacyDriveableCoordinates.driveableYawFromRenderedForward(pose.heading(), aircraft), aircraft ? -pose.pitch() : pose.pitch(), aircraft ? -pose.roll() : pose.roll());
+        setDeltaMovement(Vec3.ZERO);
+        setThrottle(0F);
+        return true;
+    }
+
+    private void clearTieDown()
+    {
+        tieDown = null;
+        setFlag(FLAG_TIED_DOWN, false);
+        clearWheelContact();
     }
 
     @Nullable
