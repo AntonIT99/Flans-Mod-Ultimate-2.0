@@ -18,6 +18,7 @@
       "FactionMixin",
       "FlyNodeEvaluatorMixin",
       "ItemNpcWandMixin",
+      "JobSpawnerMixin",
       "MarkovGeneratorMixin",
       "MobMixin",
       "ModelDataMixin",

@@ -6,8 +6,8 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
  * The module's common configuration, {@code wolffsmodnpcs-common.toml}: the defaults every world starts from, which operators
- * can override per world and per faction with commands, and the performance settings that decide how a large battle gives
- * way under load.
+ * can override per world and per faction with commands, the performance settings that decide how a large battle gives
+ * way under load, and how far Custom NPCs spawners let what they spawn roam.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcsCommonConfig
@@ -23,6 +23,9 @@ public final class NpcsCommonConfig
     private static final ForgeConfigSpec.IntValue AI_TICK_LOD_FAR_PERIOD;
     private static final ForgeConfigSpec.BooleanValue ASYNC_PATHFINDING;
     private static final ForgeConfigSpec.DoubleValue BUDGET_TARGET_MILLIS_PER_TICK;
+    private static final ForgeConfigSpec.IntValue SPAWNER_RANGE;
+    private static final ForgeConfigSpec.IntValue SPAWNER_VEHICLE_RANGE;
+    private static final ForgeConfigSpec.IntValue SPAWNER_AIRCRAFT_RANGE;
 
     static
     {
@@ -47,6 +50,14 @@ public final class NpcsCommonConfig
         BUDGET_TARGET_MILLIS_PER_TICK = builder.comment("Server tick time in milliseconds that the NPC target and path search limits aim to keep; 0 leaves the limits as set.",
             "Above the target the searches every NPC together may start per tick is cut back, below it the allowance grows again, so a battle loses search cadence rather than tick rate.",
             "Overrides the SearchBudget and PathBudget settings while it is not 0.").defineInRange("budgetTargetMillisPerTick", 0D, 0D, 50D);
+        builder.pop();
+        builder.push("Spawners");
+        SPAWNER_RANGE = builder.comment("Blocks along each axis a creature made by a Custom NPCs spawner job may move from the spawner before the spawner removes it.",
+            "Custom NPCs' own range is 60. The spawner's Despawn on target lost setting still applies.").defineInRange("spawnerRange", 60, 16, 1024);
+        SPAWNER_VEHICLE_RANGE = builder.comment("The same range for a spawned vehicle NPC, or a creature riding a Flan's driveable, which manoeuvres round its target.")
+            .defineInRange("spawnerVehicleRange", 128, 16, 1024);
+        SPAWNER_AIRCRAFT_RANGE = builder.comment("The same range for a spawned NPC flying as an aircraft, or a creature aboard a Flan's aircraft, which flies on past its target and turns wide.")
+            .defineInRange("spawnerAircraftRange", 256, 16, 1024);
         builder.pop();
         SPEC = builder.build();
     }
@@ -103,6 +114,24 @@ public final class NpcsCommonConfig
     public static double budgetTargetMillisPerTick()
     {
         return read(BUDGET_TARGET_MILLIS_PER_TICK);
+    }
+
+    /** @return blocks along each axis a creature made by a Custom NPCs spawner job may move from the spawner */
+    public static int spawnerRange()
+    {
+        return read(SPAWNER_RANGE);
+    }
+
+    /** @return the spawner range of a vehicle NPC or a creature riding a driveable */
+    public static int spawnerVehicleRange()
+    {
+        return read(SPAWNER_VEHICLE_RANGE);
+    }
+
+    /** @return the spawner range of an NPC flying as an aircraft or a creature aboard one */
+    public static int spawnerAircraftRange()
+    {
+        return read(SPAWNER_AIRCRAFT_RANGE);
     }
 
     /** Reads a value, or its default before the configuration is loaded. */

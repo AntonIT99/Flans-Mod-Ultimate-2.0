@@ -12,7 +12,7 @@ import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Checks production creation hooks without loading either client classes or the installed mod. */
+/** Checks the production Custom NPCs call sites of creation and spawner hooks without loading either client classes or the installed mod. */
 class NpcCreationHookContractTest
 {
     private static final Path CUSTOM_NPCS = Path.of("libs/CustomNPCs-1.20.1-GBPort-Unofficial-1.20.1.20260711.jar");
@@ -43,6 +43,13 @@ class NpcCreationHookContractTest
     {
         assertEquals(1, calls("noppes/npcs/command/CmdClone", Set.of("spawnClone"), "(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/core/BlockPos;Ljava/lang/String;)V",
             "net/minecraft/world/level/Level", Set.of("addFreshEntity", "m_7967_"), "(Lnet/minecraft/world/entity/Entity;)Z"));
+    }
+
+    @Test
+    void spawnerJobChecksTheRangeOfWhatItSpawnedExactlyOnce() throws IOException
+    {
+        assertEquals(1, calls("noppes/npcs/roles/JobSpawner", Set.of("shouldDelete"), "(Lnet/minecraft/world/entity/LivingEntity;)Z", "noppes/npcs/entity/EntityNPCInterface",
+            Set.of("isInRange"), "(Lnet/minecraft/world/entity/Entity;D)Z"));
     }
 
     private static int calls(String type, Set<String> methods, String descriptor, String owner, Set<String> names, String targetDescriptor) throws IOException
