@@ -53,6 +53,7 @@
       "GuiNPCFactionSetupMixin",
       "GuiNpcMobSpawnerMixin",
       "GuiNpcRemoteEditorMixin",
+      "GuiNpcSpawnerMixin",
       "GuiNPCManageFactionsMixin",
       "NpcArmorControlsMixin",
       "NpcBorrowedLayersMixin",
