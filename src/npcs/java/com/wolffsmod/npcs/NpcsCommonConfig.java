@@ -53,7 +53,7 @@ public final class NpcsCommonConfig
         builder.pop();
         builder.push("Spawners");
         SPAWNER_RANGE = builder.comment("Blocks along each axis a creature made by a Custom NPCs spawner job may move from the spawner before the spawner removes it.",
-            "Custom NPCs' own range is 60. The spawner's Despawn on target lost setting still applies.").defineInRange("spawnerRange", 60, 16, 1024);
+            "These are the defaults; a spawner's job page can set its own ranges. Custom NPCs' own range is 60. The spawner's Despawn on target lost setting still applies.").defineInRange("spawnerRange", 60, 16, 1024);
         SPAWNER_VEHICLE_RANGE = builder.comment("The same range for a spawned vehicle NPC, or a creature riding a Flan's driveable, which manoeuvres round its target.")
             .defineInRange("spawnerVehicleRange", 128, 16, 1024);
         SPAWNER_AIRCRAFT_RANGE = builder.comment("The same range for a spawned NPC flying as an aircraft, or a creature aboard a Flan's aircraft, which flies on past its target and turns wide.")
